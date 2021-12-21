@@ -1,0 +1,7 @@
+\beamer@sectionintoc {1}{Motivation}{3}{0}{1}
+\beamer@sectionintoc {2}{Empirical facts}{6}{0}{2}
+\beamer@subsectionintoc {2}{1}{Cross-sectional patterns}{8}{0}{2}
+\beamer@subsectionintoc {2}{2}{Perceived risks and decisions}{17}{0}{2}
+\beamer@subsectionintoc {2}{3}{Correlation with the stock market}{19}{0}{2}
+\beamer@subsectionintoc {2}{4}{Permanent/transitory decomposition (work in progress)}{27}{0}{2}
+\beamer@sectionintoc {3}{Model (work in progress)}{30}{0}{3}

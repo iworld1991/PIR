@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99d (TeX Live 2019)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: PerceivedIncomeRisk.aux
+The style file: apalike.bst
+Database file #1: PerceivedIncomeRisk.bib
+Warning--there's a number but no volume in armantier_overview_2017
+Warning--empty journal in fuhrer2018intrinsic
+Warning--empty journal in rozsypal_overpersistence_2017
+You've used 19 entries,
+            1935 wiz_defined-function locations,
+            585 strings with 6727 characters,
+and the built_in function-call counts, 7042 in all, are:
+= -- 708
+> -- 245
+< -- 18
++ -- 84
+- -- 78
+* -- 595
+:= -- 1239
+add.period$ -- 56
+call.type$ -- 19
+change.case$ -- 134
+chr.to.int$ -- 19
+cite$ -- 22
+duplicate$ -- 265
+empty$ -- 501
+format.name$ -- 111
+if$ -- 1359
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 16
+newline$ -- 96
+num.names$ -- 57
+pop$ -- 101
+preamble$ -- 1
+purify$ -- 134
+quote$ -- 0
+skip$ -- 206
+stack$ -- 0
+substring$ -- 526
+swap$ -- 25
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 112
+warning$ -- 3
+while$ -- 63
+width$ -- 0
+write$ -- 244
+(There were 3 warnings)

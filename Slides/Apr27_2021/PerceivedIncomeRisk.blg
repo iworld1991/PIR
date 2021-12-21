@@ -1,0 +1,61 @@
+This is BibTeX, Version 0.99d (TeX Live 2020)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: PerceivedIncomeRisk.aux
+The style file: apalike.bst
+Database file #1: PerceivedIncomeRisk.bib
+Repeated entry---line 348 of file PerceivedIncomeRisk.bib
+ : @article{guvenen2014nature
+ :                           ,
+I'm skipping whatever remains of this entry
+Repeated entry---line 598 of file PerceivedIncomeRisk.bib
+ : @incollection{krueger2016macroeconomics
+ :                                        ,
+I'm skipping whatever remains of this entry
+Too many commas in name 2 of "Bloom, Nicholas and Guvenen,Fatih, Pistaferri, Luigi and Sabelhaus, John and Salgado, Sergio and Song, Jae" for entry bloom2018great
+while executing---line 1023 of file apalike.bst
+Warning--there's a number but no volume in armantier_overview_2017
+Too many commas in name 2 of "Bloom, Nicholas and Guvenen,Fatih, Pistaferri, Luigi and Sabelhaus, John and Salgado, Sergio and Song, Jae" for entry bloom2018great
+while executing---line 1098 of file apalike.bst
+Warning--empty journal in rozsypal_overpersistence_2017
+You've used 32 entries,
+            1935 wiz_defined-function locations,
+            664 strings with 8838 characters,
+and the built_in function-call counts, 12841 in all, are:
+= -- 1296
+> -- 482
+< -- 21
++ -- 174
+- -- 158
+* -- 1136
+:= -- 2227
+add.period$ -- 96
+call.type$ -- 32
+change.case$ -- 241
+chr.to.int$ -- 32
+cite$ -- 34
+duplicate$ -- 451
+empty$ -- 900
+format.name$ -- 206
+if$ -- 2474
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 27
+newline$ -- 162
+num.names$ -- 96
+pop$ -- 170
+preamble$ -- 1
+purify$ -- 239
+quote$ -- 0
+skip$ -- 350
+stack$ -- 0
+substring$ -- 1058
+swap$ -- 46
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 192
+warning$ -- 2
+while$ -- 118
+width$ -- 0
+write$ -- 415
+(There were 4 error messages)
