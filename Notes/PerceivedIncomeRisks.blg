@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2019)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: PerceivedIncomeRisks.aux
+The style file: apalike.bst
+Database file #1: PerceivedIncomeRisks.bib
+Warning--I didn't find a database entry for "rozsypal2017overpersistence"
+You've used 2 entries,
+            1935 wiz_defined-function locations,
+            486 strings with 4115 characters,
+and the built_in function-call counts, 1011 in all, are:
+= -- 103
+> -- 34
+< -- 4
++ -- 10
+- -- 10
+* -- 81
+:= -- 164
+add.period$ -- 7
+call.type$ -- 2
+change.case$ -- 14
+chr.to.int$ -- 2
+cite$ -- 2
+duplicate$ -- 41
+empty$ -- 76
+format.name$ -- 16
+if$ -- 211
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 2
+newline$ -- 13
+num.names$ -- 8
+pop$ -- 12
+preamble$ -- 1
+purify$ -- 14
+quote$ -- 0
+skip$ -- 36
+stack$ -- 0
+substring$ -- 81
+swap$ -- 12
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 12
+warning$ -- 0
+while$ -- 10
+width$ -- 0
+write$ -- 30
+(There was 1 warning)
