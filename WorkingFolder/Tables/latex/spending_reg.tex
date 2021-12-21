@@ -1,0 +1,31 @@
+
+\begin{table}[p]
+\centering
+\begin{adjustbox}{width={0.9\textwidth}}
+\begin{threeparttable}
+\caption{Perceived Income Risks and Household Spending}
+\label{spending_reg}\begin{tabular}{cccccc}
+\toprule
+{} & spending I & spending II & spending III & spending IIII & spending IIIII \\
+          &            &             &              &               &                \\
+\midrule
+incexp    &   36.24*** &             &              &               &                \\
+          &     (7.46) &             &              &               &                \\
+incvar    &            &     0.63*** &              &               &                \\
+          &            &      (0.12) &              &               &                \\
+rincvar   &            &             &      1.07*** &               &                \\
+          &            &             &       (0.13) &               &                \\
+incskew   &            &             &              &          0.19 &                \\
+          &            &             &              &        (0.40) &                \\
+UEprobAgg &            &             &              &               &           0.16 \\
+          &            &             &              &               &         (0.13) \\
+N         &      61422 &       62959 &        59057 &         60560 &          87775 \\
+R2        &       0.00 &        0.00 &         0.00 &          0.00 &           0.00 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\item Standard errors are clustered by household. *** p$<$0.001, ** p$<$0.01 and * p$<$0.05. 
+\item This table reports regression results of expected spending growth on perceived income risks (incvar for nominal, rincvar for real).
+\end{tablenotes}
+\end{threeparttable}
+\end{adjustbox}
+\end{table}
