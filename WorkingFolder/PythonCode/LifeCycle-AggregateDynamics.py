@@ -43,8 +43,12 @@ import scipy.sparse.linalg
 import scipy.optimize as op
 from scipy import linalg as lg 
 from Utility import cal_ss_2markov
+from matplotlib import cm
+import joypy
 
-# +
+
+
+# + code_folding=[]
 #from HARK.distribution import DiscreteDistribution, MeanOneLogNormal,combine_indep_dstns
 
 
@@ -438,7 +442,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## parameters 
 
 U = 0.0 ## transitory ue risk 
@@ -453,8 +457,8 @@ init_b = 0.0
 transfer = 0.0
 pension = 0.5
 
-T = 40
-L = 60
+T = 20
+L = 30
 TGPos = int(L/2)
 GPos = 1.01*np.ones(TGPos)
 GNeg= 0.99*np.ones(L-TGPos)
@@ -1548,7 +1552,7 @@ def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np
     
     return grid_array, mp_pdfs_array
 
-# + code_folding=[0, 3, 9]
+# + code_folding=[3, 9]
 ## flatten the distribution of a and its corresponding pdfs 
 
 
@@ -1591,7 +1595,7 @@ def lorenz_curve(grid_distribution,
     return np.array(lc_vals),share_grids
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_cp, share_cp = lorenz_curve(cp_grid_dist,
@@ -1604,7 +1608,7 @@ share_agents_ap, share_ap = lorenz_curve(ap_grid_dist,
                                      ap_pdfs_dist,
                                      nb_share_grid = 100)
 
-# + code_folding=[0]
+# + code_folding=[]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(5,5))
@@ -1642,7 +1646,7 @@ plt.ylabel(r'$prob(a)$')
 
 # ### Life-cycle profile and distribution
 
-# + code_folding=[0]
+# + code_folding=[]
 ### Aggregate distributions within age
 
 C_life = []
@@ -1669,7 +1673,7 @@ for t in range(L):
     A_life.append(A_this_age)
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot life cycle profile
 
 fig, ax = plt.subplots()
@@ -1695,12 +1699,68 @@ ax2.set_ylabel('Consumption')
 ax.legend(loc=1)
 ax2.legend(loc=2)
 
-# +
+# + code_folding=[0, 10]
 ### Distribution over life cycle 
 
-import pandas as pd 
+## Flatten distribution by age
+
+ap_grid_dist_life = []
+ap_pdfs_dist_life = []
+cp_grid_dist_life = []
+cp_pdfs_dist_life = []
 
 
+for t in range(L):
+    
+    age_dist_sparse = np.zeros(L)
+    age_dist_sparse[t] = 1.0
+    
+    
+    ap_grid_dist_this_age, ap_pdfs_dist_this_age = faltten_dist(ap_PolGrid_list,
+                                                                mp_pdfs_2d_lists,
+                                                                ss_dstn,
+                                                                age_dist_sparse)
+    
+    ap_grid_dist_life.append(ap_grid_dist_this_age)
+    ap_pdfs_dist_life.append(ap_pdfs_dist_this_age)
+
+    cp_grid_dist_this_age, cp_pdfs_dist_this_age = faltten_dist(cp_PolGrid_list,
+                                                                mp_pdfs_2d_lists,
+                                                                ss_dstn,
+                                                                age_dist_sparse)
+    
+    cp_grid_dist_life.append(cp_grid_dist_this_age)
+    cp_pdfs_dist_life.append(cp_pdfs_dist_this_age)
+
+# +
+## create the dataframe to plot distributions over the life cycle 
+ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
+cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
+
+#ap_pdfs_life.index = np.log(ap_grid_dist_life[0]+1e-4)
+
+ap_range = list(ap_pdfs_life.index)
+cp_range = list(cp_pdfs_life.index)
+
+# + code_folding=[0]
+fig, axes = joypy.joyplot(ap_pdfs_life, 
+                          kind="values", 
+                          x_range=ap_range,
+                          figsize=(6,10),
+                          title="Wealth distribution over life cycle",
+                         colormap=cm.winter)
+
+#axes[-1].set_xticks(a_values);
+
+# + code_folding=[0]
+fig, axes = joypy.joyplot(cp_pdfs_life, 
+                          kind="values", 
+                          x_range=cp_range,
+                          figsize=(6,10),
+                          title="Consumption distribution over life cycle",
+                         colormap=cm.winter)
+
+#axes[-1].set_xticks(a_values);
 # -
 
 # ### General Equilibrium 
