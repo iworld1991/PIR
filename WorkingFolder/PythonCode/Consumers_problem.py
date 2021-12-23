@@ -728,14 +728,14 @@ class HANK_SAM_agent(MarkovConsumerType):
         
         self.vec_erg_dstn = ergodic_distr #distribution as a vector
         self.erg_dstn = ergodic_distr.reshape((len(self.dist_mGrid),len(self.dist_pGrid))) # distribution reshaped into len(mgrid) by len(pgrid) array
-        
+
     
+
     
-    
-    
-    
-#----------------------------------------------------------------------------------------    
-    
+
+
+# ----------------------------------------------------------------------------------------    
+
 
 example = HANK_SAM_agent(**HANK_SAM_Dict)
 example.cycles = 0
@@ -785,16 +785,16 @@ plt.legend()
 plt.show()
 
 
-#example.define_distribution_grid()
-#example.calc_transition_matrix()
-#example.calc_ergodic_dist()
+# example.define_distribution_grid()
+# example.calc_transition_matrix()
+# example.calc_ergodic_dist()
 
 PermShk_ntrl_msr = deepcopy(PermShkDstn)
 PermShk_ntrl_msr.pmf = PermShk_ntrl_msr.X*PermShk_ntrl_msr.pmf
 IncShkDstn_ntrl_msr_e = [combine_indep_dstns(PermShk_ntrl_msr,TranShkDstn_e)]
 IncShkDstn_ntrl_msr_u = [combine_indep_dstns(PermShk_ntrl_msr,TranShkDstn_u)]
 
-       
+
 example.define_distribution_grid(dist_pGrid = np.array([1]))
 example.calc_transition_matrix(IncShkDstn_ntrl_msr_e)
 example.calc_ergodic_dist()
@@ -805,7 +805,7 @@ steady_Dstn = example.vec_erg_dstn
 
 eigene, ergodic_distre = sp.linalg.eigs(example.tran_matrix_e , k=1 , which='LM')  # Solve for ergodic distribution
 ergodic_distre = ergodic_distre.real/np.sum(ergodic_distre.real)
-        
+
 eigenu, ergodic_distru = sp.linalg.eigs(example.tran_matrix_u , k=1 , which='LM')  # Solve for ergodic distribution
 ergodic_distru = ergodic_distru.real/np.sum(ergodic_distru.real)
 
@@ -844,13 +844,13 @@ for i in range(20):
     dstnu = np.dot(example.tran_matrix_u,dstnu)
 
 
-#plt.plot(Cagg)
-#plt.show()
-#print('Aggregate Consumption = ' +str(Cagg[10]))
+# plt.plot(Cagg)
+# plt.show()
+# print('Aggregate Consumption = ' +str(Cagg[10]))
 
-#plt.plot(Aagg)
-#plt.show()
-#print('Aggregate Asset = ' +str(Aagg[10]))
+# plt.plot(Aagg)
+# plt.show()
+# print('Aggregate Asset = ' +str(Aagg[10]))
 
 
 '''
@@ -992,8 +992,8 @@ for i in range(ghost.T_cycle):
 
 
 
-#--------------------------------------------------------------------
-#jacobian executed here
+# --------------------------------------------------------------------
+# jacobian executed here
 
 example2 = JAC_agent(**params)
 dx = -.0001
@@ -1001,7 +1001,7 @@ dx = -.0001
 
 
 
-#example2.Rfree = q*[rfree] + [rfree + dx] + (params['T_cycle'] - q )*[rfree]
+# example2.Rfree = q*[rfree] + [rfree + dx] + (params['T_cycle'] - q )*[rfree]
 
 example2.cycles = 1
 
@@ -1026,7 +1026,7 @@ AHist=[]
 
 test_set =[30]
 #for q in range(params['T_cycle']):
-    
+
 for q in test_set:
     
     example2.MrkvArray = q*example.MrkvArray + [MrkvArray_dx] + (params['T_cycle'] - q )*example.MrkvArray
@@ -1077,13 +1077,13 @@ for q in test_set:
 
     CHist.append((np.array(Agg_C)-np.array(Agg_Cg))/abs(dx))
     AHist.append((np.array(Agg_A) - np.array(Agg_Ag))/abs(dx))
-        
-    
-    
 
     
 
-    
+
+
+
+
 plt.plot((np.array(Agg_C)-np.array(Agg_Cg))/abs(dx))
 plt.plot(np.zeros(len(Agg_C)))
 plt.title('IPR of Aggregate Consumption ')

@@ -132,7 +132,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[1, 6, 9, 149]
+# + code_folding=[6, 9, 149]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -287,7 +287,7 @@ class LifeCycle:
         return np.exp(n_shk)
 
 
-# + code_folding=[5]
+# + code_folding=[]
 ## this function takes the consumption values at different grids of state 
 ###   variables from period t+1, and model class 
 ### and generates the consumption values at t 
@@ -735,22 +735,23 @@ def solve_model_backward_iter(model,        # Class with model information
     aϵs_new[0,:,:,:] = aϵ_vec
     σs_new[0,:,:,:] = σ_vec
     
-    for year2L in range(model.L-1): ## nb of years till L from 0 to Model.L-2
-        print("at work age of "+str(model.L-year2L-1))
-        age = model.L-year2L-1
-        aϵ_vec_next, σ_vec_next = aϵs_new[year2L,:,:,:],σs_new[year2L,:,:,:]
+    for year2L in range(1,model.L): ## nb of years till L from 0 to Model.L-2
+        age = model.L-year2L
+        age_id = age-1
+        print("at work age of "+str(age))
+        aϵ_vec_next, σ_vec_next = aϵs_new[year2L-1,:,:,:],σs_new[year2L-1,:,:,:]
         if br==False:
             if sv ==False:
                 print('objective model without stochastic risk')
-                aϵ_new, σ_new =EGM(aϵ_vec_next, σ_vec_next, age, model)
+                aϵ_new, σ_new =EGM(aϵ_vec_next, σ_vec_next, age_id, model)
             else:
                 print('objective model with stochastic risk')
-                aϵ_new, σ_new = EGM_sv(aϵ_vec_next, σ_vec_next, age, model)
+                aϵ_new, σ_new = EGM_sv(aϵ_vec_next, σ_vec_next, age_id, model)
         elif br==True:
             print('subjective model with stochastic risk')
-            aϵ_new, σ_new = EGM_br(aϵ_vec_next, σ_vec_next, age, model)
-        aϵs_new[year2L+1,:,:,:] = aϵ_new
-        σs_new[year2L+1,:,:,:] = σ_new
+            aϵ_new, σ_new = EGM_br(aϵ_vec_next, σ_vec_next, age_id, model)
+        aϵs_new[year2L,:,:,:] = aϵ_new
+        σs_new[year2L,:,:,:] = σ_new
 
     return aϵs_new, σs_new
 
@@ -917,7 +918,7 @@ plt.plot(a_init[:,1,1],
 
 # ### Without MA idiosyncratic income shock 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## solve the model for a range of ma(1) coefficients
 ### x!=0, adds the transitory shock an additional state variable 
 
@@ -1929,5 +1930,5 @@ for y,eps in enumerate(eps_ls):
     plt.ylabel('c')
     plt.title('Inifite horizon solution')
 # -
-
+# # 
 

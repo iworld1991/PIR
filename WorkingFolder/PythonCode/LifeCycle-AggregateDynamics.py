@@ -257,9 +257,7 @@ class LifeCycle:
         return np.exp(n_shk)
 
 
-# + code_folding=[0]
-## EGM funciton 
-
+# + code_folding=[5]
 ## this function takes the consumption values at different grids of state 
 ###   variables from period t+1, and model class 
 ### and generates the consumption values at t 
@@ -405,22 +403,23 @@ def solve_model_backward_iter(model,        # Class with model information
     aϵs_new[0,:,:,:] = aϵ_vec
     σs_new[0,:,:,:] = σ_vec
     
-    for year2L in range(model.L-1): ## nb of years till L from 0 to Model.L-2
-        print("at work age of "+str(model.L-year2L-1))
-        age = model.L-year2L-1
-        aϵ_vec_next, σ_vec_next = aϵs_new[year2L,:,:,:],σs_new[year2L,:,:,:]
+    for year2L in range(1,model.L): ## nb of years till L from 0 to Model.L-2
+        age = model.L-year2L
+        age_id = age-1
+        print("at work age of "+str(age))
+        aϵ_vec_next, σ_vec_next = aϵs_new[year2L-1,:,:,:],σs_new[year2L-1,:,:,:]
         if br==False:
             if sv ==False:
                 print('objective model without stochastic risk')
-                aϵ_new, σ_new =EGM(aϵ_vec_next, σ_vec_next, age, model)
+                aϵ_new, σ_new =EGM(aϵ_vec_next, σ_vec_next, age_id, model)
             else:
                 print('objective model with stochastic risk')
-                aϵ_new, σ_new = EGM_sv(aϵ_vec_next, σ_vec_next, age, model)
+                aϵ_new, σ_new = EGM_sv(aϵ_vec_next, σ_vec_next, age_id, model)
         elif br==True:
             print('subjective model with stochastic risk')
-            aϵ_new, σ_new = EGM_br(aϵ_vec_next, σ_vec_next, age, model)
-        aϵs_new[year2L+1,:,:,:] = aϵ_new
-        σs_new[year2L+1,:,:,:] = σ_new
+            aϵ_new, σ_new = EGM_br(aϵ_vec_next, σ_vec_next, age_id, model)
+        aϵs_new[year2L,:,:,:] = aϵ_new
+        σs_new[year2L,:,:,:] = σ_new
 
     return aϵs_new, σs_new
 
@@ -429,26 +428,26 @@ def solve_model_backward_iter(model,        # Class with model information
 
 # ### Initialize the model
 
-# + code_folding=[0]
+# + code_folding=[]
 ## parameters 
 
 U = 0.0 ## transitory ue risk 
 LivPrb = 0.99
 unemp_insurance = 0.15
-sigma_n = np.sqrt(0.03) # permanent 
+sigma_n = np.sqrt(0.001) # permanent 
 sigma_eps = np.sqrt(0.04) # transitory 
-sigma_p_init = np.sqrt(0.16)
+sigma_p_init = np.sqrt(0.03)
 init_b = 0.0
 λ = 0.0942 
 λ_SS = 0.0
 transfer = 0.0
-pension = 0.5
+pension = 0.1
 
-T = 30
-L = 50
+T = 40
+L = 60
 TGPos = int(L/2)
-GPos = 1.0*np.ones(TGPos)
-GNeg= 1.0*np.ones(L-TGPos)
+GPos = 1.01*np.ones(TGPos)
+GNeg= 0.99*np.ones(L-TGPos)
 G = np.concatenate([GPos,GNeg])
 YPath = np.cumprod(G)
 
@@ -456,7 +455,7 @@ YPath = np.cumprod(G)
 ρ = 1
 R = 1.01
 W = 1.0
-β = 0.9
+β = 0.96
 x = 0.0
 
 ## no persistent state
@@ -464,6 +463,7 @@ b_y = 0.0
 
 ## set the bool to be true to turn on unemployment/employment markov (persistent unemployment risks)
 ue_markov = True
+###################################
 
 ## natural borrowing constraint if False
 borrowing_cstr = True
@@ -476,7 +476,7 @@ theta = 0.0
 bequest_ratio = 0.0
 
 
-# +
+# + code_folding=[]
 ## a deterministic income profile 
 
 plt.title('Deterministic Life-cycle Income Profile \n')
@@ -519,7 +519,7 @@ lc_mkv = LifeCycle(sigma_n = sigma_n,
 # + code_folding=[0]
 ## solve the model 
 
-P = np.array([[0.8,0.2],
+P = np.array([[0.7,0.3],
             [0.1,0.9]])
 
 ## parameterize  
@@ -546,14 +546,14 @@ as_star_mkv, σs_star_mkv = solve_model_backward_iter(lc_mkv,
                                                  σ_init_mkv)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## compare two markov states good versus bad 
 
 
 years_left = [1,10,21,30]
 n_sub = len(years_left)
 
-eps_ls = [20]
+eps_ls = [10]
 
 fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
@@ -652,22 +652,21 @@ def define_distribution_grid(model,
 
             for i in range(model.L):
                 #Dist_pGrid is taken to cover most of the ergodic distribution
-                p_variance = model.sigma_n**2 # set variance of permanent income shocks this period
-                max_p = 20.0*p_variance**0.5 # Consider probability of staying alive this period
-                one_sided_grid = make_grid_exp_mult(1.0+1e-3, 
-                                                    np.exp(max_p), 
-                                                    num_pointsP, 
-                                                    2) 
-
-                this_dist_pGrid = np.append(np.append(1.0/np.fliplr([one_sided_grid])[0],
-                                                 np.ones(1)),
-                                       one_sided_grid) # Compute permanent income grid this period. Grid of permanent income may differ dependent on PermShkStd
+                if model.sigma_n!=0.0:
+                    std_p = model.sigma_n
+                else:
+                    std_p = 1e-2
+                max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
+                right_sided_grid = make_grid_exp_mult(1.0+1e-3, np.exp(max_p), num_pointsP, 2)
+                left_sided_gird = np.append(1.0/np.fliplr([right_sided_grid])[0],np.ones(1))
+                left_sided_gird = 1.0/np.fliplr([right_sided_grid])[0]
+                this_dist_pGrid = np.append(left_sided_gird,
+                                            right_sided_grid) # Compute permanent income grid this period. Grid of permanent income may differ dependent on PermShkStd
                 dist_pGrid.append(this_dist_pGrid)
-
+              
         else:
             dist_pGrid = [dist_pGrid] #If grid of permanent income prespecified then use as pgrid
             
-    
         return List(dist_mGrid), List(dist_pGrid)
 
 
@@ -809,7 +808,7 @@ def jump_to_grid_fast(model,
 ## testing define distribution grid 
 
 n_m = 40
-n_p = 40
+n_p = 50
 
 m_dist_grid_list,p_dist_grid_list = define_distribution_grid(lc_mkv,
                                                              num_pointsM = n_m,
@@ -1192,6 +1191,7 @@ def initial_distribution_e(model,
                         ):
     size_shk_probs  = model.shock_draw_size**2
     λ = model.λ
+    λ_SS = model.λ_SS
     init_b = model.init_b
     shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
     tran_shks = np.exp(np.repeat(model.eps_shk_draws,
@@ -1200,7 +1200,7 @@ def initial_distribution_e(model,
                           model.shock_draw_size))
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid(model,
-                              (1-λ)*tran_shks+init_b/init_p_draws+model.transfer, ## initial transitory risks and accidental bequest transfer
+                              (1-λ)*(1-λ_SS)*tran_shks+init_b/init_p_draws+model.transfer, ## initial transitory risks and accidental bequest transfer
                                init_p_draws,
                                shk_prbs,
                                dist_mGrid,
@@ -1314,7 +1314,7 @@ def stationary_age_dist(L,
     return dist 
 
 
-# + code_folding=[0]
+# + code_folding=[2]
 ## get the distributions of each age by iterating forward over life cycle 
 
 def SSDist(model,
@@ -1460,15 +1460,15 @@ tran_matrix_lists, dist_lists,mp_pdfs_2d_lists,mp_pdfs_lists,cp_PolGrid_list,ap_
                                                                                                       m_dist_grid_list,
                                                                                                       p_dist_grid_list)
 
-# + code_folding=[]
+# + code_folding=[0]
 ## stationary age distribution 
 
 age_dist = stationary_age_dist(lc_mkv.L,
                                n = 0.0,
                                LivPrb =lc_mkv.LivPrb)
 
-# + code_folding=[]
-## examine some of the transitionary matrix 
+# + code_folding=[0]
+## examine some of the transitionary matricies 
 age = L
 plt.title('Transition matrix for age '+str(age-1))
 plt.spy(tran_matrix_lists[1][age-1],
@@ -1480,7 +1480,7 @@ plt.ylabel('p x m')
 
 
 # + code_folding=[2]
-### Aggregate C or A (normalized)
+### Aggregate C or A
 
 def Aggregate(dist_lists,   ## size of nb markov state, each of which is sized model.T, each of which is sized n_m x n_p
               mp_pdfs_lists,  ## list of pdfs of over m and p grids given markov state and age
@@ -1495,7 +1495,7 @@ def Aggregate(dist_lists,   ## size of nb markov state, each of which is sized m
     return X
 
 
-# + code_folding=[7]
+# + code_folding=[2, 7]
 ## compute aggregate C 
 
 C = Aggregate(cp_PolGrid_list,
@@ -1611,7 +1611,7 @@ ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
 
-# + code_folding=[]
+# + code_folding=[0]
 ## Wealth distribution 
 
 plt.title('Wealth distribution')
@@ -1629,7 +1629,7 @@ plt.ylabel(r'$prob(a)$')
 
 # ### Life-cycle profile and distribution
 
-# + code_folding=[]
+# + code_folding=[0]
 ### Aggregate distributions within age
 
 C_life = []
@@ -1656,7 +1656,7 @@ for t in range(L):
     A_life.append(A_this_age)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot life cycle profile
 
 fig, ax = plt.subplots()
@@ -1700,7 +1700,28 @@ def unemp_insurance2tax(μ,
     return num/dem
 
 
-# + code_folding=[]
+# + code_folding=[0]
+## needs to test this function 
+
+def SS2tax(SS, ## social security /pension replacement ratio 
+           T,  ## retirement years
+           age_dist,  ## age distribution in the economy 
+           G,         ## permanent growth fractor lists over cycle
+           emp_fraction):  ## fraction of employment in work age population 
+    pic_share = np.cumprod(G)  ## generational permanent income share 
+    pic_age_share = np.multiply(pic_share,
+                               age_dist)  ## generational permanent income share weighted by population weights
+    
+    dependence_ratio = np.sum(pic_age_share[T:])/np.sum(pic_age_share[:T-1]*emp_fraction)
+    ## old dependence ratio 
+    
+    λ_SS = SS*dependence_ratio 
+    ## social security tax rate on labor income of employed 
+    
+    return λ_SS
+
+
+# + code_folding=[0]
 economy_data = [
     ('Z', float64),            
     ('K', float64),             
