@@ -428,7 +428,17 @@ def solve_model_backward_iter(model,        # Class with model information
 
 # ### Initialize the model
 
-# + code_folding=[]
+# + code_folding=[2]
+#this is a fake life cycle income function 
+
+def fake_life_cycle(L):
+    LPath = np.arange(L+1)
+    Y_fake = -0.01*(LPath-int(L/3))**2+0.03*LPath+20
+    G = Y_fake[1:]/Y_fake[:-1]
+    return G
+
+
+# + code_folding=[0]
 ## parameters 
 
 U = 0.0 ## transitory ue risk 
@@ -441,15 +451,18 @@ init_b = 0.0
 λ = 0.0942 
 λ_SS = 0.0
 transfer = 0.0
-pension = 0.1
+pension = 0.5
 
 T = 40
 L = 60
 TGPos = int(L/2)
 GPos = 1.01*np.ones(TGPos)
 GNeg= 0.99*np.ones(L-TGPos)
-G = np.concatenate([GPos,GNeg])
+#G = np.concatenate([GPos,GNeg])
+#YPath = np.cumprod(G)
+G = fake_life_cycle(L)
 YPath = np.cumprod(G)
+
 
 ## other parameters 
 ρ = 1
@@ -1208,7 +1221,7 @@ def initial_distribution_e(model,
     return NewBornDist
 
 
-# + code_folding=[5]
+# + code_folding=[1, 5]
 ## plot the initial distribution in the first period of life 
 initial_dist_u = initial_distribution_u(lc_mkv,
                                       m_dist_grid_list[0],
@@ -1611,7 +1624,7 @@ ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
 
-# + code_folding=[0]
+# + code_folding=[]
 ## Wealth distribution 
 
 plt.title('Wealth distribution')
@@ -1681,6 +1694,11 @@ ax.set_ylabel('Wealth')
 ax2.set_ylabel('Consumption')
 ax.legend(loc=1)
 ax2.legend(loc=2)
+
+# +
+### Distribution over life cycle 
+
+import pandas as pd 
 
 
 # -
