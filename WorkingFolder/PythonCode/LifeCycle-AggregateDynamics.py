@@ -26,7 +26,7 @@ from quantecon.optimize import brent_max, brentq
 from interpolation import interp, mlinterp
 from scipy import interpolate
 import numba as nb
-from numba import jit,njit, float64, int64, boolean
+from numba import jit, njit, float64, int64, boolean
 from numba.typed import List
 from numba.experimental import jitclass
 import matplotlib as mp
@@ -45,8 +45,6 @@ from scipy import linalg as lg
 from Utility import cal_ss_2markov
 from matplotlib import cm
 import joypy
-
-
 
 # + code_folding=[]
 #from HARK.distribution import DiscreteDistribution, MeanOneLogNormal,combine_indep_dstns
@@ -410,17 +408,17 @@ def solve_model_backward_iter(model,        # Class with model information
     for year2L in range(1,model.L): ## nb of years till L from 0 to Model.L-2
         age = model.L-year2L
         age_id = age-1
-        print("at work age of "+str(age))
+        #print("at work age of "+str(age))
         aϵ_vec_next, σ_vec_next = aϵs_new[year2L-1,:,:,:],σs_new[year2L-1,:,:,:]
         if br==False:
             if sv ==False:
-                print('objective model without stochastic risk')
+                #print('objective model without stochastic risk')
                 aϵ_new, σ_new =EGM(aϵ_vec_next, σ_vec_next, age_id, model)
             else:
-                print('objective model with stochastic risk')
+                #print('objective model with stochastic risk')
                 aϵ_new, σ_new = EGM_sv(aϵ_vec_next, σ_vec_next, age_id, model)
         elif br==True:
-            print('subjective model with stochastic risk')
+            #print('subjective model with stochastic risk')
             aϵ_new, σ_new = EGM_br(aϵ_vec_next, σ_vec_next, age_id, model)
         aϵs_new[year2L,:,:,:] = aϵ_new
         σs_new[year2L,:,:,:] = σ_new
@@ -442,13 +440,13 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## parameters 
 
 U = 0.0 ## transitory ue risk 
 LivPrb = 0.99
 unemp_insurance = 0.15
-sigma_n = np.sqrt(0.001) # permanent 
+sigma_n = np.sqrt(0.01) # permanent 
 sigma_eps = np.sqrt(0.04) # transitory 
 sigma_p_init = np.sqrt(0.03)
 init_b = 0.0
@@ -457,8 +455,8 @@ init_b = 0.0
 transfer = 0.0
 pension = 0.5
 
-T = 20
-L = 30
+T = 40
+L = 70
 TGPos = int(L/2)
 GPos = 1.01*np.ones(TGPos)
 GNeg= 0.99*np.ones(L-TGPos)
@@ -563,7 +561,7 @@ as_star_mkv, σs_star_mkv = solve_model_backward_iter(lc_mkv,
                                                  σ_init_mkv)
 
 
-# + code_folding=[0]
+# + code_folding=[0, 10]
 ## compare two markov states good versus bad 
 
 
@@ -821,7 +819,7 @@ def jump_to_grid_fast(model,
 
     return probGrid.flatten()
 
-# + code_folding=[]
+# + code_folding=[0]
 ## testing define distribution grid 
 
 n_m = 40
@@ -1484,7 +1482,7 @@ age_dist = stationary_age_dist(lc_mkv.L,
                                n = 0.0,
                                LivPrb =lc_mkv.LivPrb)
 
-# + code_folding=[0]
+# + code_folding=[]
 ## examine some of the transitionary matricies 
 age = L
 plt.title('Transition matrix for age '+str(age-1))
@@ -1552,7 +1550,7 @@ def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np
     
     return grid_array, mp_pdfs_array
 
-# + code_folding=[3, 9]
+# + code_folding=[]
 ## flatten the distribution of a and its corresponding pdfs 
 
 
@@ -1595,7 +1593,7 @@ def lorenz_curve(grid_distribution,
     return np.array(lc_vals),share_grids
 
 
-# + code_folding=[]
+# + code_folding=[2]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_cp, share_cp = lorenz_curve(cp_grid_dist,
@@ -1646,7 +1644,7 @@ plt.ylabel(r'$prob(a)$')
 
 # ### Life-cycle profile and distribution
 
-# + code_folding=[]
+# + code_folding=[6]
 ### Aggregate distributions within age
 
 C_life = []
@@ -1778,7 +1776,7 @@ def unemp_insurance2tax(μ,
     return num/dem
 
 
-# + code_folding=[0]
+# + code_folding=[2]
 ## needs to test this function 
 
 def SS2tax(SS, ## social security /pension replacement ratio 
@@ -1799,25 +1797,24 @@ def SS2tax(SS, ## social security /pension replacement ratio
     return λ_SS
 
 
-# + code_folding=[0]
-economy_data = [
-    ('Z', float64),            
-    ('K', float64),             
-    ('L',float64),              
-    ('α',float64),           
-    ('δ',float64)
-]
+# + code_folding=[]
+#economy_data = [
+#    ('Z', float64),            
+#    ('K', float64),             
+#    ('L',float64),              
+#    ('α',float64),           
+#    ('δ',float64)
+#]
 
-
-# + code_folding=[4]
-@jitclass(economy_data)
+# + code_folding=[1]
+#@jitclass(economy_data)
 class Economy:
     ## An economy class that saves market and production parameters 
     
     def __init__(self,
-             Z = 1.0,     
-             K = 1.0, 
-             L = 1.0,
+             Z = 1.00,     
+             K = 1.00, 
+             L = 1.00,
              α = 0.33, 
              δ = 0.025,     
              ):  
@@ -1846,15 +1843,15 @@ class Economy:
 # + code_folding=[]
 from scipy.optimize import fsolve
 
-econ_sample = Economy()
+CDEconomy = Economy()
 
 KY_ratio_target = 4.26
 W_target = 1.0 
 
 def distance(ZK):
-    econ_sample.Z,econ_sample.K = ZK
-    distance1 = econ_sample.KY()- KY_ratio_target
-    distance2 = econ_sample.YL()- W_target 
+    CDEconomy.Z,CDEconomy.K = ZK
+    distance1 = CDEconomy.KY()- KY_ratio_target
+    distance2 = CDEconomy.YL()- W_target 
     return [distance1,distance2]
 
 Z_root,K_root = fsolve(distance,
@@ -1863,11 +1860,11 @@ Z_root,K_root = fsolve(distance,
 print('Normalized Z',Z_root)
 print('Normalized K',K_root)
 
-econ_sample.Z,econ_sample.K = Z_root,K_root
+CDEconomy.Z,CDEconomy.K = Z_root,K_root
 
-W_fake = econ_sample.YL()
-KY_fake = econ_sample.KY()
-R_fake = econ_sample.R()
+W_fake = CDEconomy.YL()
+KY_fake = CDEconomy.KY()
+R_fake = CDEconomy.R()
 
 print('W',W_fake)
 print('KY',KY_fake)
@@ -1892,11 +1889,15 @@ def StE_K_d(model,
     uemp_now,emp_now = dstn[0],dstn[1]
     print('Labor force',str(emp_now))
     
+    
     ## obtaine factor prices from FOC of firms 
+    #print(K_s)
+    #print(nb.typeof(K_s))
     one_economy = Economy(Z = Z_root,
                           K = K_s,
                           L = emp_now)
-    print('Capital stock',str(K))
+    #print(nb.typeof(one_economy.K))
+    print('Capital stock',str(K_s))
     W,R = one_economy.YL(),one_economy.R()
     print('Wage rate',str(W))
     print('Real interest rate',str(R))
@@ -1904,11 +1905,26 @@ def StE_K_d(model,
     model.W, model.R = W,R
     ##################################
     
+    ## stable age distribution 
+    age_dist = stationary_age_dist(model.L,
+                                   n = 0.0,
+                                   LivPrb =model.LivPrb)
+    
     ## obtain tax rate from the government budget balance 
     
     model.λ = unemp_insurance2tax(model.unemp_insurance,
                                  uemp_now)
     print('Tax rate',str(model.λ))
+    
+    ## obtain social security rate balancing the SS replacement ratio 
+    
+    model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
+                        model.T,  ## retirement years
+                        age_dist,  ## age distribution in the economy 
+                        model.G,         ## permanent growth fractor lists over cycle
+                        emp_now)
+  
+    print('Social security tax rate',str(model.λ_SS))
 
     ################################
     ## Step 1. Solve the model 
@@ -1939,8 +1955,7 @@ def StE_K_d(model,
 
 
     ## accidental transfers 
-    
-    model.init_b = init_b
+    #model.init_b = init_b
     
     ## Get the StE K_d
     ## get the transition matrix and policy grid 
@@ -1955,10 +1970,6 @@ def StE_K_d(model,
                                                                                                           m_dist_grid_list,
                                                                                                         p_dist_grid_list)    
     
-    age_dist = stationary_age_dist(model.T,
-                                   n = 0.0,
-                                   LivPrb =model.LivPrb)
-    
     
     A = Aggregate(ap_PolGrid_list,
                   mp_pdfs_2d_lists,
@@ -1966,7 +1977,6 @@ def StE_K_d(model,
                   age_dist)
     
     K_d = A*model.W  ## no population growth otherwise diluted by (1+n)
-    
     
     ## realized accidental transfers from age 2 to L
     
@@ -1985,7 +1995,7 @@ def StE_K_d(model,
     
     return K_d
 
-# + code_folding=[1]
+# + code_folding=[]
 ## function to solve the equilibrium 
 eq_func = lambda K: StE_K_d(model=lc_mkv,
                             K_s = K,
@@ -1994,12 +2004,11 @@ eq_func = lambda K: StE_K_d(model=lc_mkv,
 # + code_folding=[]
 ## solve the fixed point 
 
-eq_result = op.fixed_point(eq_func,
-                           x0 = np.array([2.00]))
+K_eq = op.fixed_point(eq_func,
+                      x0 = 2.0)
 
-K_eq = eq_result
 
-# + code_folding=[31, 47, 53]
+# + code_folding=[0, 31, 47, 53]
 ## get the StE 
 ss_dstn = cal_ss_2markov(lc_mkv.P)
 L_ss = ss_dstn[1]
@@ -2060,7 +2069,7 @@ cp_grid_dist, cp_pdfs_dist = faltten_dist(cp_PolGrid_list,
 
 
 
-# + code_folding=[2]
+# + code_folding=[]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_ap, share_ap = lorenz_curve(ap_grid_dist,
@@ -2071,8 +2080,8 @@ share_agents_ap, share_ap = lorenz_curve(ap_grid_dist,
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(share_agents_cp,share_cp, 'r--',label='Lorenz curve of level of consumption')
-ax.plot(share_agents_cp,share_agents_cp, 'k-',label='equality curve')
+ax.plot(share_agents_ap,share_cp, 'r--',label='Lorenz curve of level of wealth')
+ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
