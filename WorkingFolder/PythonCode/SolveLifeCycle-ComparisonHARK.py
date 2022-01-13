@@ -14,7 +14,7 @@
 #     name: python3
 # ---
 
-# ## A life-cycle consumption  problem nder objective/subjective risk perceptions
+# ## A life-cycle consumption problem under objective/subjective risk perceptions
 #
 # - author: Tao Wang
 # - date: September 2021
@@ -90,7 +90,7 @@ plt.rc('font',size=11)
 
 # ## The Model Class and Solver
 
-# + code_folding=[0]
+# + code_folding=[]
 lc_data = [
     ('ρ', float64),              # utility parameter CRRA
     ('β', float64),              # discount factor
@@ -132,7 +132,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[6, 9, 123, 138, 149]
+# + code_folding=[6, 9, 149]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -549,174 +549,6 @@ def EGM_sv(aϵ_in,
     return aϵ_out, σ_out
 
 
-# + code_folding=[3]
-## this function describes assymetric extrapolative rule from realized income shock to the perceived risk 
-
-@njit
-def extrapolate(theta,
-                x,
-                eps_shk):
-    """
-    extrapolation function from realized eps_shk from unbiased risk x to the subjective risk x_sub
-    x_sub = x when eps_shk = 0  
-    theta governs the degree of extrapolation 
-    """
-    if x ==0.0:
-        alpha=0.0
-    else:
-        alpha=np.log((1-x)/x) ## get the alpha for unbiased x
-    x_sub = 1/(1+np.exp(alpha-theta*eps_shk))
-    return x_sub
-
-
-# + code_folding=[4]
-## subjective agent
-### transitory shock affects risk perceptions
-
-@njit
-def EGM_br(aϵ_in, 
-         σ_in, 
-         t,
-         lc):
-    """
-    UNDER BOUNDED RATIONALITY assumption
-    The Coleman--Reffett operator for the life-cycle consumption problem. 
-    using the endogenous grid method.
-
-        * lc is an instance of life cycle model
-        * σ_in is a n1 x n2 x n3 dimension consumption policy 
-          * n1 = dim(s), n2 = dim(eps), n3 = dim(z)
-        * aϵ_in is the same sized grid points of the three state variable 
-        * aϵ_in[:,j,z] is the vector of asset grids corresponding to j-th grid of eps and z-th grid of z 
-        * σ_in[i,j,z] is consumption at aϵ_in[i,j,z]
-    """
-
-    # Simplify names
-    u_prime, u_prime_inv = lc.u_prime, lc.u_prime_inv
-    R, ρ, P, β = lc.R, lc.ρ, lc.P, lc.β
-    z_val = lc.z_val
-    s_grid,eps_grid = lc.s_grid,lc.eps_grid
-    n_shk_draws, eps_shk_draws= lc.n_shk_draws, lc.eps_shk_draws
-    borrowing_cstr = lc.borrowing_cstr
-    ue_prob = lc.U  ## uemp prob
-    unemp_insurance = lc.unemp_insurance
-    LivProb = lc.LivPrb  ## live probabilituy
-    ue_markov = lc.ue_markov
-    adjust_prob = lc.adjust_prob  ## exogenous adjustment probability 
-    Y = lc.Y
-    ####################
-    ρ = lc.ρ
-    Γ = lc.Γ
-    G = lc.G
-    ####################################
-    G = lc.G[t+1]  ## get the age specific 
-    ####################################  
-    x = lc.x
-    λ = lc.λ
-    transfer = lc.transfer
-    pension = lc.pension
-    
-    ###################
-    T = lc.T
-    L = lc.L
-    
-    ###################
-    theta = lc.theta 
-    sigma_eps = lc.sigma_eps
-    eps_mean = -sigma_eps**2/2
-    ###################
-    
-    n = len(P)
-
-    # Create consumption function by linear interpolation
-    ########################################################
-    σ = lambda a,ϵ,z: mlinterp((aϵ_in[:,0,z],eps_grid),σ_in[:,:,z], (a,ϵ)) 
-    ########## need to replace with multiinterp 
-
-    # Allocate memory
-    σ_out = np.empty_like(σ_in)  ## grid_size_s X grid_size_ϵ X grid_size_z
-
-    # Obtain c_i at each s_i, z, store in σ_out[i, z], computing
-    # the expectation term by Monte Carlo
-    for i, s in enumerate(s_grid):
-        for j, eps in enumerate(eps_grid):
-            ##############################################################
-            #x_sj = extrapolate(theta,
-            #                   lc.x,
-            #                   eps-eps_mean) ## sj: subjective 
-            sigma_eps_sj = 0.05*np.sqrt((eps-eps_mean)**2)+0.95*lc.sigma_eps
-            np.random.seed(166789)
-            eps_shk_draws_sj = sigma_eps_sj*np.random.randn(lc.shock_draw_size)-sigma_eps_sj**2/2
-            #############################################################
-            for z in range(n):
-                # Compute expectation
-                Ez = 0.0
-                for z_hat in range(n):
-                    z_val_hat = z_val[z_hat]
-                    ################################
-                    for eps_shk in eps_shk_draws_sj:
-                        ############################
-                        for n_shk in n_shk_draws:
-                            Γ_hat = Γ(n_shk) 
-                            ###############
-                            u_shk = x*eps+eps_shk
-                            ####################
-                            if t <=lc.T-1:
-                                # work  
-                                Y_hat = (1-λ)*Y(z_val_hat,u_shk) ## conditional on being employed 
-                                c_hat = σ(R/(G*Γ_hat) * s + Y_hat+transfer/(G*Γ_hat),eps_shk,z_hat)
-                                utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
-
-                                ## for unemployed next period
-                                Y_hat_u = (1-λ)*unemp_insurance
-                                c_hat_u = σ(R/(G*Γ_hat) * s + Y_hat_u+transfer/(G*Γ_hat) ,eps_shk,z_hat)
-                                utility_u = (G*Γ_hat)**(1-ρ)*u_prime(c_hat_u)
-                                Ez += LivProb*((1-ue_prob)*utility * P[z, z_hat]+
-                                               ue_prob*utility_u* P[z, z_hat]
-                                              )
-                            else:
-                                ## retirement
-                                Y_R = lc.pension
-                                c_hat = σ(R/(G*Γ_hat) * s + (Y_R+transfer)/(G*Γ_hat),eps_shk,z_hat)
-                                utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
-                                Ez += LivProb*utility * P[z, z_hat]
-                Ez = Ez / (len(n_shk_draws)*len(eps_shk_draws_sj))
-                ## the last step depends on if adjustment is fully flexible
-                if adjust_prob ==1.0:
-                    σ_out[i, j, z] =  u_prime_inv(β * R* Ez)
-                elif adjust_prob <=1.0:
-                    σ_out[i, j, z] =  adjust_prob/(1-β*R*(1-adjust_prob))*u_prime_inv(β * R* Ez)
-
-    # Calculate endogenous asset grid
-    aϵ_out = np.empty_like(σ_out)
-            
-    for j,ϵ in enumerate(eps_grid):
-        for z in range(n):
-            aϵ_out[:,j,z] = s_grid + σ_out[:,j,z]
-
-    # Fixing a consumption-asset pair at (0, 0) improves interpolation
-    for j,ϵ in enumerate(eps_grid):
-        for z in range(n):
-            if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
-                σ_out[0,j,z] = 0.0
-                aϵ_out[0,j,z] = 0.0
-            #elif borrowing_cstr==True or ue_markov==True:
-            #    σ_out[0,j,z] = 0.0
-            #    aϵ_out[0,j,z] = min(0.0,-unemp_insurance/R)
-            else:
-                if t <=T-1:
-                    σ_out[0,j,z] = 0.0
-                    self_min_a = - np.exp(np.min(eps_grid))*G/R
-                    self_min_a = min(self_min_a,-unemp_insurance/R)
-                    aϵ_out[0,j,z] = self_min_a
-                else:
-                    σ_out[0,j,z] = 0.0
-                    self_min_a = - pension*G/R
-                    aϵ_out[0,j,z] = self_min_a
-
-    return aϵ_out, σ_out
-
-
 # + code_folding=[1]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
@@ -796,11 +628,10 @@ def solve_model_iter(model,        # Class with model information
 
 # -
 
-# ## Initialize the model
+# ### parameters 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## parameters 
-###################
 
 U = 0.2 ## transitory ue risk
 U0 = 0.0 ## transitory ue risk
@@ -810,12 +641,12 @@ sigma_n = 0.05 # permanent
 sigma_eps = 0.2 # transitory 
 
 
-λ = 0.0  ## tax rate
-λ_SS = 0.0 ## social tax rate
-transfer = 0.0  ## transfer 
+λ = 0.0
+λ_SS = 0.0
+transfer = 0.0
 
 ## life cycle 
-
+LivPrb = 0.99
 T = 15
 L = 30
 TGPos = int(L/3) ## one third of life sees income growth 
@@ -840,7 +671,139 @@ b_y = 0.0
 ## wether to have zero borrowing constraint 
 borrowing_cstr = True
 
+# -
 
+# ## Benchmark results with HARK
+#
+
+from HARK.ConsumptionSaving.ConsMarkovModel import MarkovConsumerType
+from HARK.distribution import DiscreteDistribution
+from HARK.ConsumptionSaving.ConsIndShockModel import init_lifecycle
+from copy import copy
+from HARK.ConsumptionSaving.ConsIndShockModel import init_idiosyncratic_shocks
+from HARK.utilities import plot_funcs
+
+# Define the Markov transition matrix for serially correlated unemployment
+unemp_length = 5  # Averange length of unemployment spell
+urate_good = 0.05  # Unemployment rate when economy is in good state
+urate_bad = 0.12  # Unemployment rate when economy is in bad state
+bust_prob = 0.01  # Probability of economy switching from good to bad
+recession_length = 20  # Averange length of bad state
+p_reemploy = 1.0 / unemp_length
+p_unemploy_good = p_reemploy * urate_good / (1 - urate_good)
+p_unemploy_bad = p_reemploy * urate_bad / (1 - urate_bad)
+boom_prob = 1.0 / recession_length
+MrkvArray = np.array(
+    [
+        [
+            (1 - p_unemploy_good) * (1 - bust_prob),
+            p_unemploy_good * (1 - bust_prob),
+            (1 - p_unemploy_good) * bust_prob,
+            p_unemploy_good * bust_prob,
+        ],
+        [
+            p_reemploy * (1 - bust_prob),
+            (1 - p_reemploy) * (1 - bust_prob),
+            p_reemploy * bust_prob,
+            (1 - p_reemploy) * bust_prob,
+        ],
+        [
+            (1 - p_unemploy_bad) * boom_prob,
+            p_unemploy_bad * boom_prob,
+            (1 - p_unemploy_bad) * (1 - boom_prob),
+            p_unemploy_bad * (1 - boom_prob),
+        ],
+        [
+            p_reemploy * boom_prob,
+            (1 - p_reemploy) * boom_prob,
+            p_reemploy * (1 - boom_prob),
+            (1 - p_reemploy) * (1 - boom_prob),
+        ],
+    ]
+)
+
+# +
+## create a life-cycle markov-state agent 
+
+init_life_cycle_new = copy(init_lifecycle)
+init_life_cycle_new['T_cycle'] = L-1   ## minus 1 because T_cycle is nb periods in a life cycle - 1 in HARK 
+init_life_cycle_new['CRRA'] = ρ
+init_life_cycle_new['Rfree'] = R
+init_life_cycle_new['LivPrb'] = [LivPrb]
+init_life_cycle_new['PermGroFac'] = [1.0]
+init_life_cycle_new['PermShkStd'] = [sigma_n]*init_life_cycle_new['T_cycle']
+init_life_cycle_new['TranShkStd'] = [sigma_eps]*init_life_cycle_new['T_cycle']
+#init_life_cycle_new['RiskyAvg'] = [R+phi]*init_life_cycle_new['T_cycle'] ## phi is risk premium
+#init_life_cycle_new['RiskyStd'] = [RiskyR_sigma]*init_life_cycle_new['T_cycle']
+#init_life_cycle_new['RiskyAvgTrue'] = R+phi
+#init_life_cycle_new['RiskyStdTrue'] = RiskyR_sigma
+init_life_cycle_new['DiscFac'] = β
+#init_life_cycle_new['PermGroFacAgg'] = list(G[1:])
+#init_life_cycle_new['aXtraMin'] = a_min+0.00001
+#init_life_cycle_new['aXtraMax'] = a_max
+init_life_cycle_new['aXtraCount'] = 800
+init_life_cycle_new['ShareCount'] = 100
+
+init_life_cycle_new["MrkvArray"] = [MrkvArray]
+init_life_cycle_new["UnempPrb"] = 0  # to make income distribution when employed
+init_life_cycle_new["global_markov"] = False
+
+LifeCycleType = MarkovConsumerType(**init_life_cycle_new)
+
+LifeCycleType.cycles = 1 ## life cycle problem instead of infinite horizon
+LifeCycleType.vFuncBool = False  ## no need to calculate the value for the purpose here 
+# -
+
+# Replace the default (lognormal) income distribution with a custom one
+employed_income_dist = DiscreteDistribution(np.ones(1), [np.ones(1), np.ones(1)])  # Definitely get income
+unemployed_income_dist = DiscreteDistribution(np.ones(1), [np.ones(1), np.zeros(1)]) # Definitely don't
+LifeCycleType.IncShkDstn = [
+    [
+        employed_income_dist,
+        unemployed_income_dist,
+        employed_income_dist,
+        unemployed_income_dist,
+    ]
+]
+
+# Interest factor, permanent growth rates, and survival probabilities are constant arrays
+LifeCycleType.assign_parameters(Rfree = np.array(4 * [LifeCycleType.Rfree]))
+LifeCycleType.PermGroFac = [
+    np.array(4 * LifeCycleType.PermGroFac)
+]
+LifeCycleType.LivPrb = [LifeCycleType.LivPrb * np.ones(4)]
+
+# +
+# Solve the serial unemployment consumer's problem and display solution
+t0 = time()
+
+LifeCycleType.solve()
+LifeCycleType.cFunc = [LifeCycleType.solution[t].cFunc for t in range(LifeCycleType.T_cycle)]
+t1 = time()
+
+print(
+    "Solving a Markov consumer with serially correlated unemployment took "
+    + str(t1 - t0)
+    + " seconds."
+)
+
+print("Consumption functions for each discrete state:")
+plot_funcs(LifeCycleType.solution[0].cFunc, 0, 50)
+if LifeCycleType.vFuncBool:
+    print("Value functions for each discrete state:")
+    plot_funcs(LifeCycleType.solution[0].vFunc, 5, 50)
+# -
+
+## compare the consumption function for the T-1 period
+which_period = T-1
+mGrid = np.linspace(0.0,10.0,100)
+plt.plot(mGrid,LifeCycleType.cFunc[which_period-1](mGrid),'r--',label='HARK')
+plt.legend(loc=0)
+plt.title('consumption function solved by MicroDSOP and HARK')
+plt.xlabel('m')
+plt.ylabel(r'$c_{T-1}(m)$')
+
+# ## Initialize the model
 
 # +
 ## a deterministic income profile 
@@ -1455,7 +1418,7 @@ t_finish = time()
 
 print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[11]
+# + code_folding=[]
 ## compare two markov states of emp and uemp 
 
 
