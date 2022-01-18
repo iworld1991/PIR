@@ -131,8 +131,14 @@ lc_data = [
     ('bequest_ratio',float64)         ## zero: bequest thrown to the ocea; one: fully given to newborns
 ]
 
+# +
+from parameters import life_cycle_paras as lc_paras
 
-# + code_folding=[6, 9, 123, 138, 149]
+print('model parameters:\n')
+print(str(lc_paras))
+
+
+# + code_folding=[6, 122, 137, 148]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -140,40 +146,39 @@ class LifeCycle:
     """
 
     def __init__(self,
-                 ρ = 2,     ## relative risk aversion  
-                 β = 0.96,  ## discount factor
-                 P = np.array([(0.9, 0.1),
-                             (0.1, 0.9)]),   ## transitory probability of markov state z
-                 z_val = np.array([0.0,1.0]), ## markov state from low to high  
-                 sigma_n = 0.01,     ## size of permanent income shocks
+                 ρ = lc_paras['ρ'],     ## relative risk aversion  
+                 β = lc_paras['β'],  ## discount factor
+                 P = lc_paras['P'],   ## transitory probability of markov state z
+                 z_val = lc_paras['z_val'], ## markov state from low to high  
+                 sigma_n = lc_paras['σ_ψ'],     ## size of permanent income shocks
+                 sigma_eps = lc_paras['σ_θ'],   ## size of transitory income risks
                  x = 0.9,            ## MA(1) coefficient of non-permanent inocme shocks
-                 sigma_eps = 0.03,   ## size of transitory income risks
                  borrowing_cstr = True,  ## artificial zero borrowing constraint 
-                 U = 0.0,            ## unemployment risk probability (0-1)
-                 LivPrb = 1.0,       ## living probability 
+                 U = lc_paras['U'],   ## unemployment risk probability (0-1)
+                 LivPrb = lc_paras['LivPrb'],       ## living probability 
                  b_y = 0.0,          ## loading of markov state on income  
-                 sigma_n_2mkv = np.array([0.01,0.02]),  ## permanent risks in 2 markov states
-                 sigma_eps_2mkv = np.array([0.02,0.04]),  ## transitory risks in 2 markov states
-                 R = 1.03,           ## interest factor 
-                 W = 1.0,            ## Wage rate
-                 T = 40,             ## work age, from 25 to 65
-                 L = 60,             ## life length 85
-                 G = np.ones(60),    ## growth factor list of permanent income 
+                 sigma_n_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                 sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+                 R = lc_paras['R'],           ## interest factor 
+                 W = lc_paras['W'],            ## Wage rate
+                 T = lc_paras['T'],             ## work age, from 25 to 65
+                 L = lc_paras['L'],             ## life length 85
+                 G = lc_paras['G'],    ## growth factor list of permanent income 
                  shock_draw_size = 40,
                  grid_max = 2.5,
                  grid_size = 50,
                  seed = 456789,
                  theta = 2,               ## assymetric extrapolative parameter
-                 unemp_insurance = 0.0,   #  unemp_insurance = 0.0,   
-                 pension = 1.0,           
+                 unemp_insurance = lc_paras['unemp_insurance'],   #  unemp_insurance = 0.0,   
+                 pension = lc_paras['pension'],           
                  ue_markov = False,    
                  adjust_prob = 1.0,
-                 sigma_p_init = 0.01,
-                 init_b = 0.0,
-                 λ = 0.0,
-                 λ_SS = 0.0,
-                 transfer = 0.0,
-                 bequest_ratio = 0.0):  
+                 sigma_p_init = lc_paras['σ_ψ_init'],
+                 init_b = lc_paras['init_b'],
+                 λ = lc_paras['λ'],
+                 λ_SS = lc_paras['λ_SS'],
+                 transfer = lc_paras['transfer'],
+                 bequest_ratio = lc_paras['bequest_ratio']):  
 
         np.random.seed(seed)  # arbitrary seed
         

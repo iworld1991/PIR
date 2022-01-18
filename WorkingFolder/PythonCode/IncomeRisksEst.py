@@ -16,7 +16,7 @@
 
 # ## Income Risks Estimation 
 #
-# This noteobok contains the following
+# This notebook contains the following
 #
 #  - Estimation functions of time-varying income risks for an integrated moving average(IMA) process of income/earnings
 #  - It uses the function to estimate the realized risks using PSID data(annual/biennial) and SIPP panel(monthly) 
