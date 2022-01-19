@@ -132,13 +132,14 @@ lc_data = [
 ]
 
 # +
-from parameters import life_cycle_paras as lc_paras
+import pickle
+with open("parameters.txt", "rb") as fp:
+    lc_paras = pickle.load(fp)
+    
+print(lc_paras)
 
-print('model parameters:\n')
-print(str(lc_paras))
 
-
-# + code_folding=[6, 122, 137, 148]
+# + code_folding=[122, 137, 148]
 @jitclass(lc_data)
 class LifeCycle:
     """

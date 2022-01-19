@@ -282,7 +282,7 @@ for i,paras_est in enumerate([data_para_est_full]):
     plt.xticks(rotation='vertical')
     plt.legend(loc=0)
     plt.grid(True)
-    plt.savefig('../Graph/sipp/permanent-transitory-risk.jpg')
+    plt.savefig('../Graphs/sipp/permanent-transitory-risk.jpg')
 
 # + {"code_folding": []}
 ## generate a dataset of date, permanent and transitory 
@@ -319,6 +319,30 @@ est_df
 # -
 
 est_df[['permanent','transitory']].plot()
+
+# +
+ratios = est_df['permanent']/est_df['transitory']
+
+ratios.describe()
+
+# +
+## compute the average ratio of p to t
+
+kappas_sipp  = est_df['permanent']/est_df['transitory']
+kappa_sipp = np.median(kappas.dropna())
+print('the median ratio of permanent to transitory std is ',kappa_sipp)
+
+import pickle
+
+with open("parameters.txt", "rb") as fp:
+    lc_paras = pickle.load(fp)
+    
+lc_paras['kappa'] = kappa_sipp
+    
+print(lc_paras)
+with open("parameters.txt", "wb") as fp:
+    pickle.dump(lc_paras, fp)
+# -
 
 ## export to stata
 est_df.to_stata('../OtherData/sipp/sipp_history_vol_decomposed.dta')
