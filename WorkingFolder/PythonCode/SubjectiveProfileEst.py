@@ -28,42 +28,6 @@
 # - Specific to group, such as age and education. 
 # - Conditional on macroeconomic conditions 
 
-# ### Data and Estimation
-#
-# For each individual $i$, we observe at most 12 observations of their perceived income volatility over the earning growth next year $\tilde {var}_{i,t}$ from $t$ to $t+12$. We assume the following relation between observed survey income volatility and underlying perceived permanent/transitory risks by the individual $i$ at time $t$ 
-#
-# $\newcommand{\var}{\text{var}}$
-#
-#
-# $$\tilde {\var}_{i,t}= (12 \tilde \sigma^2_{i,t,\psi} + 1/12 \tilde \sigma^2_{i,t,\theta})exp^{\xi_{t}}exp^{\eta_{i}}exp^{\epsilon_{i,t}} \\
-# \log \tilde {\var}_{i,t}= \log(12 \tilde \sigma^2_{i,t,\psi} + 1/12 \tilde \sigma^2_{i,t,\theta})+\xi_{t}+\eta_{i}+\epsilon_{i,t}$$
-#
-# Individual fixed effect $\eta_i$ and time-fixed effect $\xi_t$ can be directly controlled for. The i.i.d shock $\epsilon_{i,t}$ represents unobserved information  that is available to agent $i$ but not available to modelers. It can be also interpreted as any idiosyncratic shock that affect the risk perceptions of individual $i$. We assume it is log-normally distributed.
-#
-# $$\epsilon_{i,t} \sim N(0,\sigma^2_\epsilon)$$
-#
-# Notice that $\tilde {\var}_{i,t}$ alone is not enough to separately identify the component-specific perceived risk parameters. 
-#
-# Therefore, I make the following auxiliary assumption: the agent adopts a constant ratio of decomposition between permanent and transitory risks, $\kappa =\frac{\tilde \sigma_{i,t,\psi}}{\tilde \sigma_{i,t,\theta}}$, the value of $\kappa$ is externally estimated from the realized income data. 
-#
-# With the additional assumption, we can rewrite the above equation.
-#
-# $$\log(\tilde {\var}_{i,t})= \log[(12+\frac{1}{12\kappa^2})\tilde \sigma^2_{i,t,\psi}] + \xi_{t}+\eta_{i}+ \epsilon_{i,t}$$
-
-# Now, we transform this model to a general form of Markov switching model. 
-#
-# $$y_{i,t} = \alpha + \beta \mathbb{1}(S_{i,t}=1)+\tau_{i,t}$$
-#
-# where 
-#
-# - $y_{i,t} = \log(\tilde{\var}_{i,t})- \xi_t-\eta_i$
-# - $\alpha = \log[(12+\frac{1}{12\kappa^2})\tilde \sigma^{l2}_{i,t,\psi}]$
-# - $\alpha+\beta = \log[(12+\frac{1}{12\kappa^2})\tilde \sigma^{h2}_{i,t,\psi}]$
-# - $S_{i,t}=1$ if $\tilde \Gamma_{i,t}=\tilde \Gamma^h_{i,t}$ (high risk state) and $S_{i,t}=0$ if $\tilde \Gamma_{i,t}=\tilde \Gamma^l_{i,t}$ (low risk state)
-# - $\tau_{i,t}$ is the i.i.d. shocks whose variance $\sigma$ is to be estimated
-#
-# We have data of a short time series of many individuals, each of which is a vector of risk perceptions $\{y_{i,t}\}^{12}_{t=1}$. The objective function of the estiamtion is essentially a sum the log-likelihood proabilities of all individuals. 
-
 import numpy as np
 from scipy.optimize import minimize 
 import matplotlib.pyplot as plt 
@@ -71,7 +35,7 @@ import pandas as pd
 import statsmodels.api as sm
 
 
-# + code_folding=[2]
+# + code_folding=[2, 32]
 ## some functions used for markov-related calculations 
 
 def mkv2_M2Q(q,p):
@@ -103,7 +67,45 @@ def mkv2_M2Q(q,p):
     return qq, pp
 
 
-# + code_folding=[]
+
+def mkv2_Q2Y(q,p):
+    """
+    input
+    ======
+    q and p are staying probs at quarterly frequency 
+    
+    output
+    ======
+    qq and pp are yearly counterparts 
+    """
+    
+    ## 8 different possibilities of staying in low state 
+    qq0 = q**4                               #L LLL L
+    qq1 = q**2*(1-q)*(1-p)                   #L LLH L
+    qq2 = q*(1-q)*(1-p)*q                    #L LHL L
+    qq3 = q*(1-q)*p*(1-p)                    #L LHH L
+    qq4 = (1-q)*(1-p)*q**2                   #L HLL L
+    qq5 = (1-q)*(1-p)*(1-q)*(1-p)            #L HLH L
+    qq6 = (1-q)*p*(1-p)*q                    #L HHL L
+    qq7 = (1-q)*p**2*(1-p)                   #L HHH L
+    qq = qq0+qq1+qq2+qq3+qq4+qq5+qq6+qq7
+    
+    ## 8 different possibilities of staying in high state
+    
+    pp0 = p**4                               #H HHH H
+    pp1 = p**2*(1-p)*(1-q)                   #H HHL H
+    pp2 = p*(1-p)*(1-q)*p                    #H HLH H
+    pp3 = p*(1-p)*q*(1-q)                    #H HLL H
+    pp4 = (1-p)*(1-q)*p**2                   #H LHH H
+    pp5 = (1-p)*(1-q)*(1-p)*(1-q)            #H LHL H
+    pp6 = (1-p)*q*(1-q)*p                    #H LLH H
+    pp7 = (1-p)*q**2*(1-q)                   #H LLL H
+    pp = pp0+pp1+pp2+pp3+pp4+pp5+pp6+pp7
+    
+    return qq, pp
+
+
+# + code_folding=[0, 20]
 def mkv2_Y2M(q,
              p):
     """
@@ -355,11 +357,12 @@ class Markov2Switching:
         
         return llh_tot,update1_list,prdict1_list,f1_list
     
-# -
 
+# + code_folding=[1]
 ## create the model 
 mkv2 = Markov2Switching(AR=0,
                         nb_var=1)
+# -
 
 # ### Test using fake simulated data with known parameters
 
@@ -415,7 +418,7 @@ for i in range(nb_sim):
     fake_regime_h_list.append(regime_h)
 index = range(T_fake)
 
-# + code_folding=[]
+# + code_folding=[14]
 ## plot the simulated data 
 if len(fake_data_list)==1:
     random_id = 0
@@ -445,7 +448,7 @@ plt.legend(loc=1)
 llh,filter1,pr1,pdf = mkv2.log_likelihood(fake_data_list,
                                           para_fake)
 
-# + code_folding=[]
+# + code_folding=[19]
 ## plot the simulated data 
 if len(fake_data_list)==1:
     random_id = 0
@@ -674,16 +677,16 @@ unique_ids = list(SCEM_sub['userid'].unique())
 
 SCE_list = [SCEM_sub[SCEM_sub['userid']==ID][vars_rd_list].T.to_numpy() for ID in unique_ids]
 
-SCE_list = [x for x in SCE_list if ~np.isnan(np.array(x)).any() and x.shape[1]>=6]
+SCE_list = [x for x in SCE_list if ~np.isnan(np.array(x)).any() and x.shape[1]>=3]
 
 print('how many invidividuals have answers in successive months?',len(SCE_list))
 
-# + code_folding=[0]
+# + code_folding=[5]
 ## plot the simulated data 
 random_id = np.random.randint(0,len(SCE_list)-1)
 
 plt.figure(figsize=(10,5))
-plt.title('Time series of income risk perceptions from the survey')
+plt.title("A random respondent's earning risk perceptions from the survey")
 plt.plot(SCE_list[random_id][0,:],
          'o-',
          label=r'$y_t$')
@@ -702,7 +705,7 @@ SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
                                                 para)[0]   ## only the first output
 
 
-# + code_folding=[16, 20, 26]
+# + code_folding=[0, 20]
 ## impose some bounds for some parameter based on informed priors
 
 
@@ -752,7 +755,7 @@ SCE_para_model_est = SCE_mkv2.make_para_dict(SCE_para_est)
 #results
 print("initial guess of the parameters\n",guess_para_model)
 print("estimated parameters\n",SCE_para_model_est)
-# + code_folding=[4, 28, 31]
+# + code_folding=[0, 4, 28, 31]
 ## from the estimation to model parameters 
 
 import pickle
@@ -789,7 +792,7 @@ model_para_est['\tilde \mho^h'], model_para_est['\tilde E^h']=  mkv2_Y2Q(SCE_par
 
 print('quarterly SCE parameters\n',model_para_est)
 
-# + code_folding=[3]
+# + code_folding=[0, 3]
 ## convert to a dataframe 
 
 
