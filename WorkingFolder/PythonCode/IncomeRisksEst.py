@@ -107,7 +107,7 @@ plt.legend(loc=1)
 
 # ### Estimation
 
-# + {"code_folding": [0]}
+# + {"code_folding": []}
 ## some fake data moments with alternative parameters
 
 ## fix ratio of p and t risks
