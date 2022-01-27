@@ -1806,7 +1806,7 @@ def SS2tax(SS, ## social security /pension replacement ratio
 #    ('δ',float64)
 #]
 
-# + code_folding=[1]
+# + code_folding=[]
 #@jitclass(economy_data)
 class Economy:
     ## An economy class that saves market and production parameters 

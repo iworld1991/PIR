@@ -1058,15 +1058,15 @@
 	\begin{split}
 \xi_{i,\tau} =   \left\{
 \begin{array}{ll}
-	\theta_{i,\tau} \quad \text{if} \quad \nu_{i,\tau} =0 \quad \& \quad  \tau \leq T, \quad log(\theta_{i,\tau}) \sim N(-\frac{\sigma^2_\theta}{2},\sigma^2_\theta)\\
-	\zeta \quad \text{if} \quad \nu_{i,\tau} = 1 \quad \& \quad \tau \leq T  \\
+	\theta_{i,\tau} \quad \text{if} \quad \nu_{i,\tau} =e \quad \& \quad  \tau \leq T, \quad log(\theta_{i,\tau}) \sim N(-\frac{\sigma^2_\theta}{2},\sigma^2_\theta)\\
+	\zeta \quad \text{if} \quad \nu_{i,\tau} = u \quad \& \quad \tau \leq T  \\
 	\mathbb{S} \quad \text{if}  \quad \tau > T
 \end{array} \right. 
 \end{split}
 \end{equation*}
-	\item transition probability between $\nu=1$ and $\nu=0$
+	\item transition probability between $\nu=u$ and $\nu=e$
 \begin{equation*}
-	\pi_{i,\tau+1|\tau} = 
+	\pi (\nu_{\tau+1}|\nu_{\tau})= 
 	\begin{bmatrix} 
 		\textcolor{red}{\mho} & 1-\mho  \\
 		1-E & \textcolor{red}{E}
@@ -1106,10 +1106,11 @@
 		\end{equation*}
 	\pause
 		\item \textcolor{blue}{Government (balance budget)}
-		\begin{equation*}
-			\label{Eq:gov}
-			\lambda \left[ 1-\text{fraction of unemp}  + \zeta \text{fraction of unemp}\right]  = \zeta \text{fraction of unemp}   
-		\end{equation*}
+	\begin{equation}
+		\label{Eq:gov}
+		\lambda \left[ 1-\Pi^\mho  + \zeta \Pi^\mho \right]  = \zeta \Pi^\mho   
+	\end{equation}
+	
 	\pause
 		\item \textcolor{blue}{Demographics}
 		\begin{itemize}
@@ -1182,10 +1183,10 @@
 	\item Distribution evolution consistent with optimal $c$ and $a$ policies and exogenous probabilities of income/beliefs
 	\item The factor markets are clearing. 
 	\begin{equation*}
-		\begin{split}
-			\sum_{\tau} \mu_{\tau} \int_{X}a(x, \tau) \mathrm{d} \psi_{\tau}=K \\
-			\sum^{T-1}_{\tau=0} \mu_{\tau} \int_{X}  \mathbbm{1}(\nu_{i,\tau} =1)n(x, \tau) \mathrm{d} \psi_{\tau}=N
-		\end{split}
+	\begin{split}
+		& \sum_{\tau} \mu_{\tau} \int_{X}a(x, \tau) \mathrm{d} \psi_{\tau}=K \\
+		& \sum^{T-1}_{\tau=0} \mu_{\tau} \Pi^E_\tau= N
+	\end{split}
 	\end{equation*}
 \item Firm optimization under competitive factor markets.
 $$W = Z(1-\alpha) (K/N)^\alpha $$

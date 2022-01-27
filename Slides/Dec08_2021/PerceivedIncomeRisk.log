@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  22 JAN 2022 13:35
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  27 JAN 2022 10:27
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1270,12 +1270,6 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 [38
 
 ]
-Overfull \hbox (7.53072pt too wide) detected at line 1129
-[][]\OML/cmm/m/it/10.95 ^^U [] \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 ^^P[][]
-
- []
-
-
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
  [][]|  []\OT1/cmr/m/n/6 32/52|  
  []
@@ -1283,11 +1277,6 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 [39
 
 ]
-Overfull \hbox (7.53072pt too wide) detected at line 1129
-[]\OML/cmm/m/it/10.95 ^^U [] \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 ^^P[]
- []
-
-
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
  [][]|  []\OT1/cmr/m/n/6 32/52|  
  []
@@ -1295,11 +1284,6 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 [40
 
 ]
-Overfull \hbox (7.53072pt too wide) detected at line 1129
-[]\OML/cmm/m/it/10.95 ^^U [] \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 ^^P[]
- []
-
-
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
  [][]|  []\OT1/cmr/m/n/6 32/52|  
  []
@@ -1307,11 +1291,6 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 [41
 
 ]
-Overfull \hbox (7.53072pt too wide) detected at line 1129
-[]\OML/cmm/m/it/10.95 ^^U [] \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 ^^P[]
- []
-
-
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
  [][]|  []\OT1/cmr/m/n/6 32/52|  
  []
@@ -1333,11 +1312,6 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 [44
 
 ]
-LaTeX Font Info:    Trying to load font information for U+bbm on input line 119
-6.
- (/usr/local/texlive/2020/texmf-dist/tex/latex/bbm-macros/ubbm.fd
-File: ubbm.fd 1999/03/15 V 1.2 Font definition for bbm font - TH
-)
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
  [][]|  []\OT1/cmr/m/n/6 35/52|  
  []
@@ -1345,6 +1319,12 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 [45
 
 ] Excluding 'comment' comment.
+LaTeX Font Info:    Trying to load font information for U+bbm on input line 124
+2.
+
+(/usr/local/texlive/2020/texmf-dist/tex/latex/bbm-macros/ubbm.fd
+File: ubbm.fd 1999/03/15 V 1.2 Font definition for bbm font - TH
+)
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
  [][]|  []\OT1/cmr/m/n/6 36/52|  
  []
@@ -1369,7 +1349,7 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 <figures/hist_incstd.jpg, id=1615, 578.16pt x 433.62pt>
 File: figures/hist_incstd.jpg Graphic file (type jpg)
 <use figures/hist_incstd.jpg>
-Package pdftex.def Info: figures/hist_incstd.jpg  used on input line 1340.
+Package pdftex.def Info: figures/hist_incstd.jpg  used on input line 1341.
 (pdftex.def)             Requested size: 222.48985pt x 166.86151pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1382,7 +1362,7 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 <figures/hist_incskew.jpg, id=1645, 578.16pt x 433.62pt>
 File: figures/hist_incskew.jpg Graphic file (type jpg)
 <use figures/hist_incskew.jpg>
-Package pdftex.def Info: figures/hist_incskew.jpg  used on input line 1364.
+Package pdftex.def Info: figures/hist_incskew.jpg  used on input line 1365.
 (pdftex.def)             Requested size: 222.48985pt x 166.86151pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1397,7 +1377,7 @@ pt>
 File: figures/real_log_wage_shk_gr_by_age_compare.png Graphic file (type png)
 <use figures/real_log_wage_shk_gr_by_age_compare.png>
 Package pdftex.def Info: figures/real_log_wage_shk_gr_by_age_compare.png  used 
-on input line 1379.
+on input line 1380.
 (pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1413,7 +1393,7 @@ File: figures/log_wage_pshk_by_age_5yr_edu_gender_compare.png Graphic file (typ
 e png)
 <use figures/log_wage_pshk_by_age_5yr_edu_gender_compare.png>
 Package pdftex.def Info: figures/log_wage_pshk_by_age_5yr_edu_gender_compare.pn
-g  used on input line 1401.
+g  used on input line 1402.
 (pdftex.def)             Requested size: 150.61076pt x 109.53381pt.
 <figures/log_wage_tshk_by_age_5yr_edu_gender_compare.png, id=1706, 585.18625pt 
 x 425.59pt>
@@ -1421,7 +1401,7 @@ File: figures/log_wage_tshk_by_age_5yr_edu_gender_compare.png Graphic file (typ
 e png)
 <use figures/log_wage_tshk_by_age_5yr_edu_gender_compare.png>
 Package pdftex.def Info: figures/log_wage_tshk_by_age_5yr_edu_gender_compare.pn
-g  used on input line 1401.
+g  used on input line 1402.
 (pdftex.def)             Requested size: 150.61076pt x 109.53381pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1438,7 +1418,7 @@ File: figures/real_log_wage_shk_gr_by_age_edu_compare.png Graphic file (type pn
 g)
 <use figures/real_log_wage_shk_gr_by_age_edu_compare.png>
 Package pdftex.def Info: figures/real_log_wage_shk_gr_by_age_edu_compare.png  u
-sed on input line 1416.
+sed on input line 1417.
 (pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1454,7 +1434,7 @@ File: figures/real_log_wage_shk_gr_by_byear_5yr_edu_gender_compare.png Graphic
 file (type png)
 <use figures/real_log_wage_shk_gr_by_byear_5yr_edu_gender_compare.png>
 Package pdftex.def Info: figures/real_log_wage_shk_gr_by_byear_5yr_edu_gender_c
-ompare.png  used on input line 1433.
+ompare.png  used on input line 1434.
 (pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1470,7 +1450,7 @@ File: figures/real_log_wage_shk_by_byear_5yr_edu_gender_compare.png Graphic fil
 e (type png)
 <use figures/real_log_wage_shk_by_byear_5yr_edu_gender_compare.png>
 Package pdftex.def Info: figures/real_log_wage_shk_by_byear_5yr_edu_gender_comp
-are.png  used on input line 1447.
+are.png  used on input line 1448.
 (pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1486,7 +1466,7 @@ File: figures/real_log_wage_shk_by_byear_5yr_edu_compare.png Graphic file (type
  png)
 <use figures/real_log_wage_shk_by_byear_5yr_edu_compare.png>
 Package pdftex.def Info: figures/real_log_wage_shk_by_byear_5yr_edu_compare.png
-  used on input line 1462.
+  used on input line 1463.
 (pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1502,7 +1482,7 @@ File: figures/real_log_wage_shk_gr_by_byear_5yr_edu_compare.png Graphic file (t
 ype png)
 <use figures/real_log_wage_shk_gr_by_byear_5yr_edu_compare.png>
 Package pdftex.def Info: figures/real_log_wage_shk_gr_by_byear_5yr_edu_compare.
-png  used on input line 1477.
+png  used on input line 1478.
 (pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1515,11 +1495,11 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 <figures/tsMean3mvrexp_he.jpg, id=1901, 5781.6pt x 2890.8pt>
 File: figures/tsMean3mvrexp_he.jpg Graphic file (type jpg)
 <use figures/tsMean3mvrexp_he.jpg>
-Package pdftex.def Info: figures/tsMean3mvrexp_he.jpg  used on input line 1493.
+Package pdftex.def Info: figures/tsMean3mvrexp_he.jpg  used on input line 1494.
 
 (pdftex.def)             Requested size: 308.06367pt x 154.03212pt.
 
-Overfull \vbox (3.14047pt too high) detected at line 1493
+Overfull \vbox (3.14047pt too high) detected at line 1494
  []
 
 
@@ -1536,7 +1516,7 @@ File: figures/real_log_wage_shk_by_byear_age_compare.png Graphic file (type png
 )
 <use figures/real_log_wage_shk_by_byear_age_compare.png>
 Package pdftex.def Info: figures/real_log_wage_shk_by_byear_age_compare.png  us
-ed on input line 1512.
+ed on input line 1513.
 (pdftex.def)             Requested size: 222.48985pt x 161.81029pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1552,7 +1532,7 @@ File: figures/log_wage_pshk_by_byear_5yr_edu_gender_compare.png Graphic file (t
 ype png)
 <use figures/log_wage_pshk_by_byear_5yr_edu_gender_compare.png>
 Package pdftex.def Info: figures/log_wage_pshk_by_byear_5yr_edu_gender_compare.
-png  used on input line 1532.
+png  used on input line 1533.
 (pdftex.def)             Requested size: 150.61076pt x 109.53381pt.
 <figures/log_wage_tshk_by_byear_5yr_edu_gender_compare.png, id=1965, 585.18625p
 t x 425.59pt>
@@ -1560,7 +1540,7 @@ File: figures/log_wage_tshk_by_byear_5yr_edu_gender_compare.png Graphic file (t
 ype png)
 <use figures/log_wage_tshk_by_byear_5yr_edu_gender_compare.png>
 Package pdftex.def Info: figures/log_wage_tshk_by_byear_5yr_edu_gender_compare.
-png  used on input line 1532.
+png  used on input line 1533.
 (pdftex.def)             Requested size: 150.61076pt x 109.53381pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1575,13 +1555,13 @@ age_tshk_by_byear_5yr_edu_gender_compare.png>]
 File: figures/log_wage_sd_by_edu.png Graphic file (type png)
 <use figures/log_wage_sd_by_edu.png>
 Package pdftex.def Info: figures/log_wage_sd_by_edu.png  used on input line 155
-0.
+1.
 (pdftex.def)             Requested size: 157.45813pt x 114.5147pt.
 <figures/log_wage_shk_gr_sd_by_edu.png, id=1998, 585.18625pt x 425.59pt>
 File: figures/log_wage_shk_gr_sd_by_edu.png Graphic file (type png)
 <use figures/log_wage_shk_gr_sd_by_edu.png>
 Package pdftex.def Info: figures/log_wage_shk_gr_sd_by_edu.png  used on input l
-ine 1550.
+ine 1551.
 (pdftex.def)             Requested size: 157.45813pt x 114.5147pt.
 
 Overfull \hbox (90.15668pt too wide) has occurred while \output is active
@@ -1644,11 +1624,11 @@ Overfull \hbox (90.15668pt too wide) has occurred while \output is active
 \tf@snm=\write9
 \openout9 = `PerceivedIncomeRisk.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1572.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1572.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1573.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1573.
  (./PerceivedIncomeRisk.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1572.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1572.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1573.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1573.
 
 Package rerunfilecheck Info: File `PerceivedIncomeRisk.out' has not changed.
 (rerunfilecheck)             Checksum: D55BA7F2BF45E71A815AD4FD06EC4340;982.
@@ -1656,7 +1636,7 @@ Package rerunfilecheck Info: File `PerceivedIncomeRisk.out' has not changed.
 Here is how much of TeX's memory you used:
  21436 strings out of 480608
  411953 string characters out of 5903631
- 657844 words of memory out of 5000000
+ 657843 words of memory out of 5000000
  36552 multiletter control sequences out of 15000+600000
  544244 words of font info for 74 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1692,7 +1672,7 @@ mf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2020/texmf
 -dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2020/texmf-d
 ist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2020/texmf-di
 st/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on PerceivedIncomeRisk.pdf (68 pages, 3745998 bytes).
+Output written on PerceivedIncomeRisk.pdf (68 pages, 3746680 bytes).
 PDF statistics:
  2346 PDF objects out of 2487 (max. 8388607)
  2175 compressed objects within 22 object streams
