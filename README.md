@@ -22,7 +22,7 @@
 
 1. [Density estimation of the survey answers](./WorkingFolder/PythonCode/DensityEst.ipynb) (under test)
    
-2. [Income risks decomposition](./WorkingFolder/PythonCode/IncomeRisksEst.ipynb) that draws on the [income process class](IncomeProcess.ipynb)
+2. [Income risks decomposition](./WorkingFolder/PythonCode/IncomeRisksEst.ipynb) that draws on the [income process class](./WorkingFolder/PythonCode/IncomeProcess.ipynb)
 
 3. [Micro empirical analysis](./WorkingFolder/PythonCode/MicroRiskProfile.ipynb) on the cross-sectional heterogeneity of perceived risks (PR)
 
