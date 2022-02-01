@@ -139,7 +139,7 @@ with open("parameters.txt", "rb") as fp:
 print(lc_paras)
 
 
-# + code_folding=[122, 137, 148]
+# + code_folding=[1, 6, 122, 137, 148]
 @jitclass(lc_data)
 class LifeCycle:
     """

@@ -1,0 +1,192 @@
+\pagebreak 
+
+% ----------------------------------------------------------------
+\appendix
+\setcounter{figure}{0} \renewcommand{\thefigure}{A.\arabic{figure}}
+\setcounter{table}{0} \renewcommand{\thetable}{A.\arabic{table}}
+\section{Online Appendix}
+\label{sec:appendix}
+% ----------------------------------------------------------------
+
+\subsection{Income risk decomposition under alternative processes}
+
+\subsubsection{Baseline estimation}
+
+ \begin{figure}[!ht]
+    	\caption{Monthly permanent and transitory income risks}
+    	\label{fig:decomposed_monthly}
+    	\begin{center}
+    	\adjustimage{max size={0.8\linewidth}}{figures/permanent-transitory-risk.jpg}
+    	\end{center}
+    	\floatfoot{Note: this figure plots the estimated monthly permanent and transitory risks (variances) from SIPP between 2013m3-2019m12. }
+    \end{figure}
+    
+\pagebreak
+
+
+\begin{table}
+	\centering
+	\caption{Estimated realized income risk and perceptions}
+	\label{risk_compare}
+		\adjustbox{max height=0.5\textheight, max width=\textwidth}{ 
+			\begin{tabular}{llllll}
+				\hline 
+				\hline 
+				& PerceivedRisk & PerceivedRisk(median) & RealizedGroupVolatility & RealizedPRisk & RealizedTRisk \\
+				\hline 
+				full sample (100\%)        & 0.029         & 0.021                 & 0.090                   & 0.101         & 0.016       \\
+				\hline 
+				gender               &               &                       &                         &               &              \\
+					\hline 
+				
+				1 (50\%)             & 0.030         & 0.022                 & 0.091                   & 0.102         & 0.016        \\
+				2 (49\%)             & 0.028         & 0.022                 & 0.089                   & 0.101         & 0.016        \\
+				\hline 
+				
+				education       &               &                       &                         &               &              \\
+				\hline 
+				HS dropout (0\%)     & 0.036         & 0.022                 & 0.051                   & 0.100         & 0.016        \\
+				HS graduate (42\%)   & 0.030         & 0.022                 & 0.085                   & 0.101         & 0.016        \\
+				College/above (56\%) & 0.028         & 0.021                 & 0.094                   & 0.101         & 0.016        \\
+
+				\hline 
+				
+				5-year age           &               &                       &                         &               &              \\
+					\hline 
+				20 (2\%)             & 0.037         & 0.031                 & 0.072                   & 0.102         & 0.015        \\
+				25 (12\%)            & 0.032         & 0.027                 & 0.115                   & 0.102         & 0.016        \\
+				30 (12\%)            & 0.030         & 0.023                 & 0.091                   & 0.101         & 0.016        \\
+				35 (13\%)            & 0.029         & 0.021                 & 0.098                   & 0.101         & 0.016        \\
+				40 (13\%)            & 0.028         & 0.020                 & 0.084                   & 0.101         & 0.016        \\
+				45 (14\%)            & 0.028         & 0.020                 & 0.065                   & 0.101         & 0.016        \\
+				50 (15\%)            & 0.027         & 0.019                 & 0.078                   & 0.101         & 0.016        \\
+				55 (15\%)            & 0.027         & 0.018                 & 0.105                   & 0.100         & 0.016        \\
+				\hline 
+			\end{tabular}
+}
+\begin{tablenotes} This table reports estimated realized annual volatility, risks of different components, and the expected income volatility of different groups. All are expressed in standard deviation units.
+\end{tablenotes}
+\end{table}
+
+
+\subsubsection{A GARCH model of income risks}
+
+\subsubsection{Infrequent arrival of the transitory shocks}
+
+%\subsection{Results with earning growth expectations}
+
+\subsection{Results with PSID data}
+
+\subsection{Life-cycle earning profile}
+\label{appendix:life-cycle-determinstic}
+
+\begin{center}
+[INSERT FIGURE \ref{fig:life-cycle-determinstic} HERE]  
+\end{center}
+
+
+ \begin{figure}[!ht]
+    	\caption{Estimated Deterministic Earning Profile over the Life-Cycle}
+    	\label{fig:life-cycle-determinstic}
+    	\begin{center}
+    	\adjustimage{max size={0.7\linewidth}}{figures/age_profile.png}
+    	\end{center}
+    	\floatfoot{Note:  this figure plots the estimated average age profile of real earnings using SIPP between 2013m3-2019m12. It is based on fourth-order age polynomials regressions controlling time, education, occupations, gender, etc.}
+    \end{figure}
+    
+    
+\subsection{Income risks in the existing literature}
+
+\begin{center}
+[INSERT TABLE \ref{tab:risks_literature} HERE]  
+\end{center}
+
+	\begin{sidewaystable}[p]
+\centering
+\begin{adjustbox}{width={\textwidth}}
+\begin{threeparttable}
+\caption{The size and nature of idiosyncratic income risks in the literature}
+\label{tab:risks_literature}
+
+\begin{tabular}{llllllll}
+\hline 
+                                 & $\sigma_\psi$  & $\sigma_\theta$ & $\mho$        & $E$          & Earning Process         & Unemployment & Source    \\
+ \hline 
+\cite{huggett1996wealth}         & [0.21,+]       & N/A             & N/A           & N/A          & AR(1)                   & No           & Page 480  \\
+\cite{krusell1998income}         & N/A            & N/A             & [0.04,0.1]    & [0.9,0.96]   & N/A                     & Persistent   & Page 876  \\
+\cite{cagetti2003wealth}         & [0.264, 0.348] & N/A             & N/A           & N/A          & Random +MA innovations  & No           & Page 344  \\
+\cite{gourinchas2002consumption} & [0.108,0.166]  & [0.18, 0.256]   & 0.003         & 0.997        & Permanent +transitory   & Transitory   & Table 1   \\
+\cite{meghir2004income}          & 0.173          & [0.09, 0.21]    & N/A           & N/A          & Permanent +MA           & No           & Table 3   \\
+\cite{storesletten2004cyclical}  & [0.094; +]     & 0.255           & N/A           & N/A          & Persistent + transitory & No           & Table 2   \\
+\cite{blundell_consumption_2008} & [0.1,+]        & [0.169,+]       & N/A           & N/A          & Permanent + MA          & No           & Table 6   \\
+\cite{kaplan2014model}           & 0.11           & N/A             & N/A           & N/A          & Persistent              & No           & Page 1220 \\
+\cite{krueger2016macroeconomics} & [0.196,+]      & 0.23            & [0.046,0.095] & [0.894,0.95] & Persistent +transitory  & Persistent   & Page 26   \\
+\cite{carroll2017distribution}   & 0.10           & 0.10            & 0.07          & 0.93         & Permanent+transitory    & Transitory   & Table 2   \\
+\cite{bayer2019precautionary}    & 0.148          & 0.693           & N/A           & N/A          & Persistent time+MA      & No           & Table 1   \\
+My Estimates based on SIPP       & 0.10           & 0.016           & N/A           & N/A          & Permanent +transitory   & No           & Table A.1
+\end{tabular} \\
+\hline 
+\begin{tablenotes} 
+\item This table summarizes the  conservative (lower bound) estimates/parameterization on idiosyncratic income risks at the annual frequency seen in the literature.    
+\end{tablenotes}
+\end{threeparttable}
+\end{adjustbox}
+	\end{sidewaystable}
+
+\subsection{Estimation of the 2-regime switching model of risk perceptions}
+\label{appendix:markov}
+
+For each individual $i$, we observe at most 12 observations of their perceived income volatility over the earning growth next year $\tilde {var}_{i,t}$ from $t=1$ to $=12$. We assume the following relation between observed survey reported volatility and underlying perceived monthly permanent/transitory risks by the individual $i$ at time $t$.  
+
+
+$$\log \tilde {\var}_{i,t}= \log(12 \tilde \sigma^2_{i,t,\psi} + 1/12 \tilde \sigma^2_{i,t,\theta})+\xi_{t}+\eta_{i}+\epsilon_{i,t}$$
+
+$\eta_i$ and $\xi_t$ are individual and time fixed effect, respectively. The i.i.d shock $\epsilon_{i,t}$ represents any factor that is not available to economists working with the survey, but affects $i$'s survey answers at the time $t$. We assume it is normally distributed.
+
+Notice that $\tilde {\var}_{i,t}$ alone is not enough to separately identify the perceived permanent and transitory risks. To proceed, I make the following auxiliary assumption: the agent adopts a constant ratio of decomposition between permanent and transitory risks, $\kappa =\frac{\tilde \sigma_{i,t,\psi}}{\tilde \sigma_{i,t,\theta}}$, the value of $\kappa$ is externally estimated from the realized income data. 
+
+With the additional assumption, we can rewrite the equation above, utilizing the fact that risks for one year are the cumulative sum of monthly ones for permanent shocks and the average of monthly ones for transitory shocks.
+
+$$\log(\tilde {\var}_{i,t})= \log[(12+\frac{1}{12\kappa^2})\tilde \sigma^2_{i,t,\psi}] + \xi_{t}+\eta_{i}+ \epsilon_{i,t}$$
+
+We \textit{jointly} estimate a Markov-switching model on perceived volatility $\log(\tilde \var_{i,t})$, perceived probability on unemployment status $\tilde \mho_{i,t}$, and perceived probability on employment status $\tilde E_{i,t}$. The vector model to be estimated can be represented as below.
+
+$$\widehat{\tilde{\Gamma}}^s_{i,t} = \tilde \Gamma^l + \mathbbm{1}(J_{i,t}=1)(\tilde \Gamma^h-\tilde \Gamma^l) +\tau_{i,t}$$
+
+where $\widehat{\tilde{\Gamma}}^s_{i,t}= [\hat{\log(\tilde{\var}}_{i,t}),\hat{\tilde \mho}_{i,t},\hat{\tilde E}_{i,t}]'$ is a vector of sized three, consisting of properly transformed reported risk perceptions from the survey, excluding the time and individual fixed effects in a first step regression. $J_{i,t}=1$ for high risk state and $=0$ if at the low risk state. $\tau_{i,t}$ is a vector of three i.i.d. normally distributed shocks.
+
+The estimation of 2-regime Markov switching models produces estimates of $\tilde \Gamma_l$, $\tilde \Gamma_h$, the staying probability $q$, and $p$, and the variance of $\tau_{i,t}$. Then the following relationship can be used to recover perceived permanent and transitory risks respectively. 
+
+$$\tilde \Gamma^l=[\log[(12+\frac{1}{12\kappa^2})\tilde \sigma^{l2}_{\psi}],\tilde \mho_l,\tilde E_l]'$$
+
+$$\tilde \Gamma^h = [\log[(12+\frac{1}{12\kappa^2})\tilde \sigma^{h2}_{\psi}],\tilde \mho_h,\tilde E_h]'$$
+
+\textbf{Estimation sample} I restrict the sample to SCE respondents who were surveyed for at least 6 consecutive months with non-empty reported perceived earning volatility, separation and job-finding expectations. This left with me 6457 individuals.
+
+\subsection{Solution algorithm of the model} 
+
+
+\subsection{Model Extension: costly adjustment in consumption}
+
+In this section, I extend the benchmark consumption model to incorporate an additional discrete choice of costly extensive adjustment. This is meant to introduce one additional mechanism which helps calibrate the model to match a high level of marginal propensity to consume (MPC) seen in the empirical estimates using natural experiments. One recent example of such a model formulation is \cite{fuster2021would}. 
+
+Two issues are worth clarifying here. First, this costly adjustment can be explicitly micro-founded by various monetary or mental obstacles that prevent agents from making optimal adjustments in consumption from period to period. Regardless of its specific micro foundations, it effectively leads to extensive adjustment in consumption. Second, the assumption also conveniently captures, in the one-asset setting, the essence of implications from costly adjustment of illiquid assets in the two-asset setting, which generates wealthy hands-to-mouth behaviors, as formulated in the \citep{kaplan2014model}. 
+
+
+Specifically, I assume that there is a utility cost the agents need to incur $\chi$, when changing the consumption in each period $\tau$. Recognizing this, in each period, the agents need to first make a discrete choice of whether making adjustments to the consumption. In the case of adjustment, the agents solve the optimal consumption optimally. In the case of non-adjustment, the consumption stays at the level as the previous period, since it is the default consumption choice. Note that since the consumer always has the choice of adjustment, this naturally guarantees that in the presence of negative income shock when staying at the same level of consumption is no longer feasible, the agents will adjust the consumption to obey the budget constraints. 
+
+The change in the nature of the problem can be summarized by the restated value functions below. I restate the problem only for a consumer with objective risk profiles, as the subjective agent only has idiosyncratic risk perceptions $\tilde \Gamma_{i,\tau}$ as one additional state variable. 
+
+\begin{equation}
+\begin{split}
+& V_{\tau}(c_{i,\tau-1},u_{i,\tau}, m_{i,\tau}, p_{i,\tau}) = \textrm{max} \quad \{V^A_{\tau}(u_{i,\tau}, m_{i,\tau}, p_{i,\tau})-\chi,V^N_{\tau}(c_{i,\tau-1},u_{i,\tau}, m_{i,\tau}, p_{i,\tau})\} \\
+& V^A_{\tau}(u_{i,\tau}, m_{i,\tau}, p_{i,\tau}) = \underset{\{c_{i,\tau}\}}{\textrm{max}} \quad u(c_{i,\tau}) + (1-D)\beta \mathbb{E}_{\tau}\left[V_{\tau+1}(u_{i,\tau},R(m_{i,\tau}-c_{i,\tau})+y_{i,\tau+1}, p_{i,\tau+1})\right]  \\
+& V^N_{\tau}(c_{i,\tau-1},u_{i,\tau}, m_{i,\tau}, p_{i,\tau}) =  u(c_{i,\tau-1}) + (1-D)\beta \mathbb{E}_{\tau}\left[V_{\tau+1}(c_{i,\tau-1},u_{i,\tau},m_{i,\tau+1}, p_{i,\tau+1})\right]
+\end{split}
+\end{equation}
+
+where $V^A$ and $V^N$ represent value functions associated with adjustment and non-adjustment. Notice that in the case of non-adjustment, the consumption in previous period becomes an additional state variable. But essentially, there is no choice to be made as to consumption in the case of non-adjustment. 
+
+Solving consumption policies with the both intensive and extensive margin choices introduces additional computational challenges. In particular, it results in discrete jumps hence discontinuity in the value function over different values of state variables and the first order condition, namely the Euler equation, is no longer sufficient for the optimality of consumption. Although brutal force value function maximization is able to produce solutions to the model, I adopt the ``Discrete Choice Endogenous Grid Algorithm (DCEGM)'' introduced by \cite{iskhakov2017endogenous} to speed up the computation. (See Appendix for the detailed steps of the implementation.)
+
+%\subsubsection{Heterogeneity in time preferences}

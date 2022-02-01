@@ -1,0 +1,135 @@
+
+    \hypertarget{theoretical-framework}{%
+\section{Theoretical framework}\label{theoretical-framework}}
+
+\hypertarget{income-process-and-risk-perceptions}{%
+\subsection{Income process and risk
+perceptions}\label{income-process-and-risk-perceptions}}
+
+Conditional on employment at the same job and position and same hours of work, the log idiosyncratic earning of individual \(i\) from group \(c\) at time \(t\), $y_{i,c,t}$ consists of a predictable component $z_{i,c,t}$ and a stochastic component $e_{i,c,t}$. (Equation \ref{Eq:IncProcess0}) In general, the group \(c\) is defined such that within-group workers share the same income process, therefore, same income risks. For instance, it could be defined based on age, gender, education or the years of entering job markets. 
+
+There is an extensive discussion in the literature about the exact time-series nature of the stochastic component $e$. For instance, it may consist of a permanent part and a transitory component.\footnote{\cite{gottschalk1994growth}, and \cite{carroll1997nature}.} Or some literature replaces the permanent component with a persistent component in the form of AR process.\footnote{\cite{storesletten2004cyclical} and \cite{guvenen_empirical_2009}.} The transitory component could be moderately serially correlated with a moving-average (MA). \footnote{\cite{meghir2004income}.} I first proceed with the generic structure like in Equation \ref{Eq:IncProcess0} without differentiating these various specifications. I defer this discussion to Section \ref{dcomposed-risks-of-different-nature}. 
+
+\begin{equation}
+\begin{split}
+\label{Eq:IncProcess0}
+& y_{i,c,t} = z_{i,c,t}+ e_{i,c,t} 
+\end{split}
+\end{equation}
+
+%Idiosyncratic shocks $\psi$ and $\epsilon$ are normally distributed with zero means and possibly time-varying and group-specific variances denoted as \(\sigma^2_{t,g,\psi}\), \(\sigma^2_{t,g,\epsilon}\). In the case where risks are equal across all workers, the group subscript $g$ could be dropped. 
+
+Hence, earning growth from \(t\) to \(t+1\) consists of predictable changes from
+$z_{i,c,t+1}$, and those from realized income shocks.
+
+\begin{equation}
+\begin{split}
+\label{Eq:IncProcess1}
+\Delta y_{i,c,t+1} & =  \Delta z_{i,c,t+1} + \Delta e_{i,c,t} \\
+\end{split}
+\end{equation}
+
+Under the assumption of full-information rational expectation (FIRE), all shocks that have realized till \(t\) are observed by the agent at
+time \(t\). Therefore, the expected volatility under FIRE (with a superscript $*$), or what this paper will refer to as perceived risks (PR), is the expected
+variance of income growth from \(t\) to \(t+1\).
+
+\begin{equation}
+Var_{t}^*(\Delta y_{i,c,t+1}) =Var_{t}^*(\Delta e_{i,c,t+1}) =\sigma^2_{c,t+1|t}
+\end{equation}
+
+The predictable changes do not enter PR. Hence, the expected volatility in earning growth is the \emph{conditional} expected variance of the change in the stochastic component. Notice here that $Var_{t}^*(\Delta e_{i,c,t+1})$ crucially depends on its time-series nature. 
+
+
+
+\begin{comment}
+Under FIRE, there are a number of testable predictions about the patterns of
+perceived risks.
+
+\begin{itemize}
+\item
+  \textbf{No within-group disagreement}. First, agents who share the same income process have no disagreements
+  on perceived risks. This can be checked by comparing
+  within-cohort/group dispersion in perceived risks.
+\item
+  \textbf{State-independence}. Second, the perceived risks under such the assumed process above are
+  not dependent on past/recent income realizations. To put it differently, there is no correlation between realized shocks and the perceived risks. This can be tested
+  by estimating the correlation between perceived risks and past income
+  realizations or their proxies if the latter is not directly observed. 
+\item
+  \textbf{Correct decomposition}. Third, under the assumed progress, the variances of permanent and transitory
+  shocks enter perceived risks with loading of 1.
+\end{itemize}
+
+\end{comment}
+
+The size of the risks, including the component-specific ones under a specified structure of $e_{i,c,t}$, are not directly observed by economists. Econometricians 
+usually try to approximate it, relying upon a panel data of earnings. To be more specific, in these estimations, what is used as the proxy of the stochastic component $e$ and latter further decomposed into various components, is the regression residual of individual earnings on all the observable characteristics of the individual in a first-step regression. Denote it by $\hat e_{i,c,t}$. \footnote{$\hat e_{i,c,t}= y_{i,c,t}-\hat z_{i,c,t}$($\hat z_{i,c,t}$ is the
+observable counterpart of $z_{i,c,t}$ from data).} 
+
+Different from the PR by the agent, the cross-sectional variance of the change in residuals, $\Delta \hat e_{i,c,t}$, usually referred to as the ``income volatility'' in the literature, \footnote{For instance, \cite{gottschalk1994growth}, \cite{moffitt2002trends}, \cite{sabelhaus2010great}, \cite{dynan2012evolution}, \cite{bloom2018great}.} is an  \emph{unconditional} variance. 
+
+\begin{equation}
+Var(\Delta \hat e_{i,c,t}) = \hat\sigma^2_{c,t}+ \hat\sigma^2_{c,t+1} - 2Cov^c(\hat e_{i,c,t},\hat e_{i,c,t+1})
+\end{equation}
+
+%Combining additional auto-covariance moments of $\Delta \hat e_{i,g,t}$, previous work has been able to estimate decomposed time-varying risks of $\psi$ and $\epsilon$\footnote{Plenty of examples for this, for instance, \cite{gottschalk1994growth,carroll1997nature,meghir2004income}.}. These realized risks $\{\hat \sigma^2_{t,\psi}, \hat \sigma^2_{t,\epsilon}\}\quad \forall t$ can be then compared to the agents' ex ante expectations of the income volatility. 
+
+The distinction between the \emph{conditional} PR by the agent and the \emph{unconditional} volatility approximated by the economists is crucial. There are two important issues around the comparability of the two objects. 
+
+First, it is very likely that what is controlled for in the first-step income regression, namely $\hat z_{i,c,t}$, does not perfectly coincide with what is \emph{predictable} from the point of view of the agent at time $t$. The reasons could be either due to the ``superior information'' problem \footnote{\cite{pistaferri_superior_2001, kaufmann_disentangling_2009}.} or incomplete information, model misspecification and behavioral bias of the agents. The former issue refers to the possibility that agents may have other information regarding their earning growth that is not available to econometricians. For instance, a worker may already anticipate a recent dispute with her boss may negatively affect her earning next year, but econometricians have no way of knowing this. At the same time, econometricians may have a better idea about the real generating process of earning than the individual agents and are less subject to psychological biases. 
+The possible existence of both issues discussed here makes it challenging to attribute the differences between PR and estimated income volatility I report in the next section to a single course. 
+
+Second, the comparison is sensitive to the time-series nature of $e_{i,c,t}$. This is, again, because economists' estimated volatility is unconditional, while the perception is conditional on the information till time $t$. To illustrate this point, imagine there is a very persistent component in the income shock, then under the aforementioned process, the estimated income volatility also includes the variance of the realized shock till $t$, which enters the information set of the agents already. Therefore, even if the econometricians perfectly recover the $e_{i,c,t}$ in the first step regression, any differences in the perceived time-series nature of the $e_{i,c,t}$ by agents and econometricians would lead to differences between PR and income volatility. I return to this discussion in Section \ref{dcomposed-risks-of-different-nature}. 
+
+A summary of the relationship between PR and income volatility. On one hand, across different groups, there is a positive correlation between income volatility and PR by the agents, namely, a group $c$ with higher income volatility should be also with higher PR. But on the other hand, the relative size of the two is, in principle, ambiguous. PR could be smaller than the income volatility due to either superior information or under-perceiving of risks by agents. But PR also could be higher than the income volatility under imperfect understanding and incomplete information, or over-perceiving of risks. I test these predictions in the next section. 
+
+%Besides volatility, let's also define the inequality as the cross-sectional variance of the levels of the residuals, which is denoted by \(Var(\hat e_{i,t})\). Different from growth volatility, it includes the cumulative impacts from all the past permanent shocks, i.e. $\hat \sigma^2_{t-k,\psi}\quad \forall k=0,1,2...$, all of which are not correlated with the perceived risk under FIRE. Therefore, it only has a weak correlation with perceived risks under FIRE.
+
+\begin{comment}
+
+Once component-specific risks are estimated, we can compute the realized
+income volatility from $t$ to $t+1$ $Var_{c,t}(\Delta \hat e_{i,c,t})$ by summing $\hat \sigma^2_{t+1,\psi}$ and $\hat \sigma^2_{t+1,\epsilon}$.  Beyond the benchmark model specified above, we also consider a few alternative specifications to the earning process. Appendix report estimation and comparison results based on these alternative assumptions on income process.  
+
+
+\begin{itemize}
+\item
+  \textbf{Persistent instead of permanent shock}. If the permanent component $p$ is not unit root but just persistent, the unconditional volatility is larger. In the meantime, it does not change the perceived risk under FIRE. Therefore,
+  the effect of making the permanent shock persistent is a
+  smaller correlation between FIRE risk perception and growth
+  volatility. But the correlation will remain positive.
+\item
+  \textbf{Moving average shock or purely transitory shock}. Our model
+  actually nests both cases. Setting \(\phi=0\) corresponds to purely
+  transitory shocks. Any positive \(\phi\) allows the coexistence of MA
+  shock and transitory shocks. Our test is also robust to this
+  alternative specification.
+\item
+  \textbf{Time-invariant versus time-varying volatility}. Under the
+  former assumption, the income volatility estimated from past income
+  data can be directly comparable with the perceived risks reported for
+  a different period. But doing so under the later assumption is
+  inconsistent with the model. It requires the perceived risks and the
+  realized income data are for the same time horizon. This is hard to
+  satisfy based on the current data availability. But what's assuring is
+  that if the stochastic volatility is persistent over the time, we
+  should still expect to see positive correlation between past
+  volatility and FIRE risk perception even if the former is estimated
+  from an earlier period.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% discuss time aggregation issue here 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+There is another complication regarding the FIRE test: the superior
+information problem. It states that what econometricians treat as
+income shocks are actually in the information set of the FIRE agents.
+Think this as when the known characteristics \(\hat z\) used in the
+regression only partially captures the true predictable components
+\(z\). Hence, the variances of the sample residuals \(\hat e\) and residuals changes \(\Delta \hat e\) are bigger than its true
+counterparts and this results in higher estimated risks than what is to be perceived by a FIRE agent. It is true that this leads to a lower correlation between
+volatility and perceived risks, but it does not alter the prediction
+about the positive correlation between the two.
+
+\end{comment}

@@ -71,8 +71,31 @@ lc_G_q = y2q_interpolate(lc_G)
 # -
 
 ## create a dictionary of parameters 
-life_cycle_paras = {'ρ': 1, 'β': 0.98**(1/4), 'P': np.array([[0.9, 0.1],
-       [0.1, 0.9]]), 'z_val': np.array([0., 1.]), 'σ_ψ': np.sqrt(0.01*4/11), 'σ_θ': np.sqrt(0.01*4), 'U': 0.0, 'LivPrb': 1.0-0.00625, 'σ_ψ_2mkv': np.array([0.01, 0.02]), 'σ_θ_2mkv': np.array([0.02, 0.04]), 'R': 1.01**(1/4), 'W': 1.0, 'T': T_q, 'L': L_q, 'G':lc_G_q, 'unemp_insurance': 0.15, 'pension': 1.0, 'σ_ψ_init': 0.01, 'init_b': 0.0, 'λ': 0.0, 'λ_SS': 0.0, 'transfer': 0.0, 'bequest_ratio': 0.0,'kappa':1.7}
+life_cycle_paras = {'ρ': 1, 
+                    'β': 0.98**(1/4), 
+                    'P': np.array([[0.18, 0.82],
+                                   [0.04, 0.96]]), 
+                    'z_val': np.array([0., 1.]), 
+                    'σ_ψ': np.sqrt(0.15**2*4/11), 
+                    'σ_θ': np.sqrt(0.1**2*4), 
+                    'U': 0.0, 
+                    'LivPrb': 1.0-0.00625, 
+                    'σ_ψ_2mkv': np.array([0.01, 0.02]), 
+                    'σ_θ_2mkv': np.array([0.02, 0.04]), 
+                    'R': 1.01**(1/4), 
+                    'W': 1.0, 
+                    'T': T_q, 
+                    'L': L_q, 
+                    'G':lc_G_q, 
+                    'unemp_insurance': 0.15, 
+                    'pension': 1.0, 
+                    'σ_ψ_init': 0.01, 
+                    'init_b': 0.0, 
+                    'λ': 0.0, 
+                    'λ_SS': 0.0, 
+                    'transfer': 0.0, 
+                    'bequest_ratio': 0.0,
+                    'kappa':1.7}
 
 with open("parameters.txt", "wb") as fp:
     pickle.dump(life_cycle_paras, fp)

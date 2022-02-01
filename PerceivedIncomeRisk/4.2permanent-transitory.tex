@@ -1,0 +1,29 @@
+\hypertarget{decomposed-risks-of-different-nature}{%
+\subsection{Decomposed risks of different persistence}\label{dcomposed-risks-of-different-nature}}
+
+One crucial aspect of income risks relevant to both economists' estimation and household decisions is its time-series nature. As to the former, perceived income risks by the agents at a particular point of time, say $t$, are conditional on the information that is available by $t$. A realized permanent/persistent shock carries information regarding future income growth path, while an entirely transitory shock does not. Therefore, in the two scenarios, agents perceive different degree of income risks. For the latter, permanent income risks affect consumption/savings more substantially than the transitory risks via induced precautionary saving motives, according to the Permanent-Income Hypothesis (PIH). 
+
+Therefore, in this section, I decompose observed income volatility from income realizations into two components with different degrees of persistence, as described in Equation \ref{Eq:IncProcess}. One component is $p$ following a random-walk subject to shock $\psi$ and the other one $\theta$ is a purely transitory shock. The estimated perceived income risks under full-information rational expectation (FIRE) would be exactly the summation of the variance of the two components $\sigma^2_{\psi}+\sigma^2_{\theta}$.
+
+Using the $GMM$ approach in the literature, \footnote{See \cite{carroll1997nature}, \cite{meghir2004income}, and \cite{blundell_consumption_2008}. Essentially, this approach relies upon variance and auto-covariance of growth of income residuals.}, I identified the time-varying variances of the permanent and transitory component of the monthly earning growth, i.e. $\sigma^2_{\psi,t}$ and $\sigma^2_{\theta,t}$, using the $SIPP$ data for the same period. Then I convert these monthly risks parameters into annual frequency to be compared to perceived risks about annual earning risks. \footnote{For permanent risks, the annual earning risk is the summation of monthly permanent risks over the next 12 months. The transitory risks of annual earnings, in contrast, is the sample average of monthly risks over the next 12 months.}
+
+
+Figure \ref{fig:ts_compare} plots the recovered permanent/transitory risks and the implied expected volatility about annual earning growth against the perceived income risks reported in the $SCE$, respectively. Under correct model-specification and FIRE of the agents, one may expect the perceived risks and expected volatility to be, if not equal, at least close to each other. But the results suggest there is a negligible correlation between the two series. 
+
+More importantly, the magnitudes of the perceived risks are significantly lower than the expected income volatility implied by the income risks estimations. For instance, the latter based on the full sample should be $10\%$ in standard deviation a year, while the average earning risk perception in $SCE$ is only $2\%$. The same pattern holds even if we separately estimate income risks for different gender, education and ago. (See Table \ref{risk_compare}.)
+
+\begin{center}
+[FIGURE \ref{fig:ts_compare} HERE]
+\end{center}
+
+%% Two issues. 
+%%% Too volatile in momnthly. Then we address it by doing GARCH 
+%%% Transitory is too small once translated into annual. Then we do high-frequency identificaiton. 
+
+What are the reasons behind this substantial differences in magnitudes between risk perceptions and implied expected income volatility based on income data? There are various possible candidates, which may not be mutually exclusive. 
+
+The first reason is ``superior information'', as recognized in the literature on consumption insurance. When economists estimate income risks, the best we can do is to try to control as many as possible observable factors of individuals that may be anticipated by the agents to approach its true information set at time $t$. But it is almost surely so that what we treated as unanticipated income shock still contains information available to the agents at time $t$. 
+
+The second reason, however, is that agents are possibly overconfident, i.e. under-perceive income risks for psychological reasons. 
+
+The first reason essentially states economists estimating income risks run into an omitted-variable problem, while the second reason states the agents may mis-specifying the data generating process of the income model. Although it is an appealing question to ask, it is hard to differentiate the two possible explanations. The latter part of this paper accommodates both possibilities without taking a strong stance on which explanation is more correct. What matters is the empirical fact that perceived risks reported in the survey seem to be systematically lower than the standard estimates used to calibrate the incomplete market models. 

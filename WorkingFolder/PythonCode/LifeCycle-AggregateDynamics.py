@@ -1845,10 +1845,12 @@ from scipy.optimize import fsolve
 
 CDEconomy = Economy()
 
-KY_ratio_target = 4.26
-W_target = 1.0 
+KY_ratio_target = 3
+W_target = 1.0
+N_ss = 0.9
 
 def distance(ZK):
+    CDEconomy.N = N_ss
     CDEconomy.Z,CDEconomy.K = ZK
     distance1 = CDEconomy.KY()- KY_ratio_target
     distance2 = CDEconomy.YL()- W_target 

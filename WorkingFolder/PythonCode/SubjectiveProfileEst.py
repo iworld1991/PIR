@@ -28,14 +28,16 @@
 # - Specific to group, such as age and education. 
 # - Conditional on macroeconomic conditions 
 
+# +
 import numpy as np
 from scipy.optimize import minimize 
 import matplotlib.pyplot as plt 
 import pandas as pd
 import statsmodels.api as sm
 
+#from utility import mkv2_M2Q, mkv2_Q2Y, mkv2_Y2M, mkv2_Y2Q
 
-# + code_folding=[2, 32]
+# + code_folding=[2, 31, 68, 88]
 ## some functions used for markov-related calculations 
 
 def mkv2_M2Q(q,p):
@@ -65,7 +67,6 @@ def mkv2_M2Q(q,p):
     pp = qq0+qq1+qq2+qq3
     
     return qq, pp
-
 
 
 def mkv2_Q2Y(q,p):
@@ -105,7 +106,6 @@ def mkv2_Q2Y(q,p):
     return qq, pp
 
 
-# + code_folding=[0, 20]
 def mkv2_Y2M(q,
              p):
     """
@@ -356,7 +356,7 @@ class Markov2Switching:
             llh_tot = llh_tot+llh
         
         return llh_tot,update1_list,prdict1_list,f1_list
-    
+
 
 # + code_folding=[1]
 ## create the model 
@@ -582,7 +582,7 @@ import numpy as np
 pd.options.display.float_format = '{:,.3f}'.format
 
 
-# + code_folding=[0, 15]
+# + code_folding=[0, 14, 27, 37]
 ## import data 
 dataset = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 
@@ -591,8 +591,20 @@ vars_id = ['userid','date']
 moms_nom = ['Q24_mean','Q24_iqr','Q24_var']
 moms_real = ['Q24_rmean','Q24_rvar']
 ue_risks = ['Q13new','Q22new']
+vars_demog = ['D6']   ## level of income, 11 groups 
 
-vars_all_reg_long = (vars_id+moms_nom + moms_real+ue_risks)
+vars_job = ['Q10_1',  # full-time 
+            'Q10_2',  # part-time
+            'Q12new'] ## =1 worked for others; = 2 self-employment 
+
+vars_demog_sub = ['Q32',  ## age 
+                  'Q33',  ## gender 
+                  'Q36',  ## education (1-8 low to high, 9 other)
+                  'educ_gr',##education group (1-3)
+                  'byear',
+                 'nlit'] ## year of birth
+
+vars_all_reg_long = (vars_id+moms_nom + moms_real+ue_risks+vars_demog+vars_demog_sub+vars_job)
 
 ## select dataset 
 SCEM = dataset[vars_all_reg_long]
@@ -607,11 +619,26 @@ SCEM = SCEM.rename(columns={'Q24_mean': 'incexp',
                            'Q22new':'UE_f'
                            })
 
+
+SCEM = SCEM.rename(columns = {'D6':'HHinc',
+                              'Q10_1':'fulltime',
+                              'Q10_2':'parttime',
+                              'Q12new':'selfemp',
+                              'Q32':'age',
+                              'Q33':'gender',
+                              'Q36':'educ'})
+
 SCEM = SCEM.dropna(subset=['date'])
 
 ## add year and month variable 
 SCEM['year'] = SCEM.date.dt.year
 SCEM['month'] = SCEM.date.dt.month 
+
+
+## new variables 
+SCEM['age2']=SCEM['age']**2
+SCEM['age3']=SCEM['age']**3
+SCEM['age4']=SCEM['age']**4
 
 ## take the log 
 
@@ -625,7 +652,6 @@ SCEM['UE_f'] = SCEM['UE_f']/100
 
 SCEM['U2U_prob'] = 1-SCEM['UE_f']   #. 1- prob of find a job
 SCEM['E2E_prob'] = 1- SCEM['UE_s']*(1-SCEM['UE_f'])   ## 1- prob(loses the job and not finding one)
-
 
 
 ## trucate 0 and 1s for probs 
@@ -643,8 +669,9 @@ SCEM['U2U_prob_e'] = SCEM['U2U_prob_truc'].apply(prob_inv_func)
 SCEM['E2E_prob_e'] =  SCEM['E2E_prob_truc'].apply(prob_inv_func)
 
 
-# + code_folding=[5]
-## demean or id FE
+# + code_folding=[0]
+## first step regression
+
 vars_list = ['lrincvar',
             'U2U_prob',
             'E2E_prob']  
@@ -654,7 +681,7 @@ for var in vars_list:
     SCEM[var+'_dm'] = SCEM[var]-SCEM.groupby('userid')[var].transform('mean')
     
     ## run a panel regression to get the residuls 
-    model = smf.ols(formula = var+'~ C(date)',
+    model = smf.ols(formula = var+'~ C(date)+C(HHinc)+C(gender)+age2+age3+age4+C(educ_gr)',
                 data = SCEM)
     result = model.fit()
     residuls = result.resid

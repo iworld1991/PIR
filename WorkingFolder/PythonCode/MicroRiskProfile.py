@@ -162,6 +162,8 @@ SCEM.columns
 ## generate age square
 
 SCEM['age2']=SCEM['age']**2
+SCEM['age3']=SCEM['age']**3
+SCEM['age4']=SCEM['age']**4
 # -
 
 ## convert categorical educ_gr to int to merge 

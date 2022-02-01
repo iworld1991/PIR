@@ -1,0 +1,36 @@
+
+    \hypertarget{perceived-income-risk-and-spending}{%
+\subsection{Perceived income risk and
+consumption spending }\label{perceived-income-risk-and-spending}}
+
+Finally, how individual-specific perceived risks affect household
+economic spending decisions? One of the key testable predictions is
+higher perceived risks should induce precautionary saving motive, hence lowering current consumption, or increasing expected consumption growth. 
+SCE directly surveys the self-reported spending plan, i.e. expected spending growth over the next year, which exactly corresponds to the object of our interest
+\footnote{Other work that directly examines the impacts of expectations on readiness to spend includes \cite{bachmann2015inflation} and  \cite{coibion2020forward}. Related to this, there is a recent literature that relies on survey answers to measure marginal propoensity to consume, such as \cite{fuster2020would} and \cite{bunn2018consumption}.}. Therefore, we can evaluate if higher perceived risks translate affects spending plan consistently with precautionary saving motives. 
+
+In general, expected consumption growth with uncertain labor income does not have analytical expression with perceived income risks in it. This is because the optimal consumption paths crucially depends on the income process as well as the nature of this perceived income risks. But under auxiliary assumptions, we could attain a close form expression of expected growth in consumption. Specifically, assume the agent maximizes discounted CRRA utility from consumption with discount rate $\theta$ and exogeously given interest factor $1+r_t$, and the coefficient of relative risk aversion is $\rho$. Under log normal income process, the expected consumption growth at time $t$ can be approximated as the following when the borrowing constraint is not binding. The expected consumption growth is higher if the borrowing constraint is binding at time $t$.
+
+\begin{equation}
+    E_{i,t}(\Delta c_{i,t+1}) \approx \frac{1}{\rho}(r_t-\theta) + \frac{\rho}{2}\sigma^2_{i,t}(c_{i,t+1})
+\end{equation}
+
+The second term on the right above captures the effect from precautionary saving motive or possibly binding constraint. We could think of both as a consequence of market incompleteness\citep{parker2005precautionary}. Regardless of the particular cause of consumption fluctuations, the term increases with the size of expected consumption risks. But we do not directly observe the expected variance of consumption of the individuals. So an additional assumption regarding the degree of insurance of consumption from income risks is necessary to link expected consumption risks to perceived income risks. The scenario of zero insurance or full pass-through, namely $\sigma^2_{i,t}(c_{i,t+1})=var_{i,t}(\Delta y_{i,t+1})$, is most likely to happen when the income risks perceived by the agents are permanent. Under partial insurance, the consumption risks anticipated by the agents should be smaller than the perceived income risks. Let the partial pass-through parameter being $\kappa$, then the relationship between expected spending growth and perceived income risks can be written as the following. 
+
+
+\begin{equation}
+    E_{i,t}(\Delta c_{i,t+1}) \approx \frac{1}{\rho}(r_t-\theta) + \frac{\rho}{2}\kappa^2 var_{i,t}(\Delta y_{i,t+1})
+\end{equation}
+
+Since $\kappa\leq 1$, an OLS estimate coefficient of expected spending growth on perceived income risks reveals a lower bound of the $1/2$ of the size of relative risk aversion $\rho$. Table \ref{spending_reg} reports the regression results of planned
+log spending growth over the next year on real and nominal perceived income risk in the variance terms\footnote{There is an important econometric concern when I run regressions of the decision variable on perceived risks due to the measurement error in the regressor used here. In a typical OLS regression in which the regressor has i.i.d. measurement errors, the coefficient estimate for the imperfectly measured regressor has a bias toward zero. For this reason, if I find that expected spending growth is indeed positively correlated with perceived risks, taking into account the bias, it implies that the correlation of the two is greater in size.}. Regardless of the specification, the perceived risk is indeed positively correlated with the expected spending growth as the precautionary saving motive would predict. Specifically, after controlling for individual fixed effect, i.e. discount rate, and time fixed effect i.e. interest rate, each unit increase in perceived variance leads to around a 3 percentage points increase in expected spending growth. This implies an estimated risk aversion coefficient in the range of 6-7. Besides, the precautionary saving motives are weaker for real earning risks than the nominal, but the two are not significantly different from each other. 
+
+\begin{center}
+[TABLE \ref{spending_reg} HERE]
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% good to have a analytical formula underlying this regression
+
+%E(log(C_{i,t+1})-log(C_{t}) = 1/rho (r - beta) + rho*sigma^2/2   where sigma^2 is variance of consumption. But here I use log terms 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
