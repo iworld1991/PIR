@@ -19,17 +19,18 @@
 \beamer@slide {RegimeEstimation}{46}
 \beamer@slide {appendix:incstd}{49}
 \beamer@slide {appendix:incskew}{50}
-\beamer@slide {appendix:age_compare_figure}{51}
-\beamer@slide {appendix:monthly_decomposition_compare_psid}{52}
+\beamer@slide {appendix:age_gender_educ_level_compare_figure}{51}
+\beamer@slide {appendix:age_compare_figure}{52}
 \beamer@slide {appendix:age_educ_compare_figure}{53}
 \beamer@slide {cohort_compare}{54}
 \beamer@slide {appendix: compare_by_cohort}{54}
 \beamer@slide {appendix:cohort_compare_figure}{55}
 \beamer@slide {appendix1:cohort_edu_compare_figure}{56}
 \beamer@slide {appendix2:cohort_edu_compare_figure}{57}
-\beamer@slide {appendix:tsMean3mvrexp_he}{58}
-\beamer@slide {ts_exp}{58}
-\beamer@slide {appendix:cohort_age_compare}{59}
-\beamer@slide {appendix:cohort_age_component_compare}{60}
-\beamer@slide {appendix:monthly_inequality_vol}{61}
-\beamer@slide {appendix:RegimeEstimationDetail}{62}
+\beamer@slide {appendix:monthly_decomposition_compare_psid}{58}
+\beamer@slide {appendix:tsMean3mvrexp_he}{59}
+\beamer@slide {ts_exp}{59}
+\beamer@slide {appendix:cohort_age_compare}{60}
+\beamer@slide {appendix:cohort_age_component_compare}{61}
+\beamer@slide {appendix:monthly_inequality_vol}{62}
+\beamer@slide {appendix:RegimeEstimationDetail}{63}
