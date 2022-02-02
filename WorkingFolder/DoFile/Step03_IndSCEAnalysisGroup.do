@@ -1,5 +1,5 @@
 clear
-global mainfolder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder"
+global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
 global folder "${mainfolder}/SurveyData/"
 global graph_folder "${mainfolder}/Graphs/"
 global sum_table_folder "${mainfolder}/Tables"
@@ -197,74 +197,77 @@ graph bar rincvar, ///
 		   b1title("Household income") ///
 		   ytitle("Average perceived risk of real income") 
 graph export "${sum_graph_folder}/boxplot_rvar_HHinc_stata.png", as(png) replace 
+*/
 
 *********************************
 *** generate group summary data file *****
 **********************************
 
+local SCEgroup incmean rincmean incvar rincvar
+
 * by age 
 
 preserve 
-collapse incvar rincvar, by(age) 
+collapse `SCEgroup', by(age) 
 save "${folder}/SCE/incvar_by_age.dta",replace
 restore 
 
 * by age x gender 
 preserve
-collapse incvar rincvar, by(age gender) 
+collapse `SCEgroup', by(age gender) 
 save "${folder}/SCE/incvar_by_age_gender.dta",replace 
 restore 
 
 * by age x education 
 preserve
-collapse incvar rincvar, by(age edu_g) 
+collapse `SCEgroup', by(age edu_g) 
 save "${folder}/SCE/incvar_by_age_edu.dta",replace 
 restore 
 
 * by age x education x gender
 preserve
-collapse incvar rincvar, by(age edu_g gender) 
+collapse `SCEgroup', by(age edu_g gender) 
 save "${folder}/SCE/incvar_by_age_edu_gender.dta",replace 
 restore 
 
 * by age5 x education x gender
 preserve
-collapse incvar rincvar, by(age_5yr edu_g gender) 
+collapse `SCEgroup', by(age_5yr edu_g gender) 
 save "${folder}/SCE/incvar_by_age5y_edu_gender.dta",replace 
 restore 
 
 * by year of birth
 
 preserve 
-collapse incvar rincvar, by(byear) 
+collapse `SCEgroup', by(byear) 
 save "${folder}/SCE/incvar_by_byear.dta",replace
 restore 
 
 * by year of birth(5year) and age
 
 preserve 
-collapse incvar rincvar, by(byear_5yr age) 
+collapse `SCEgroup', by(byear_5yr age) 
 save "${folder}/SCE/incvar_by_byear_5_yr_age.dta",replace
 restore 
 
 * by year of birth and gender
 
 preserve 
-collapse incvar rincvar, by(byear gender) 
+collapse `SCEgroup', by(byear gender) 
 save "${folder}/SCE/incvar_by_byear_gender.dta",replace
 restore 
 
 * by year of birth and education
 
 preserve 
-collapse incvar rincvar, by(byear edu_g) 
+collapse `SCEgroup', by(byear edu_g) 
 save "${folder}/SCE/incvar_by_byear_edu.dta",replace
 restore 
 
 * by year of birth(5 year cohort) and education
 
 preserve 
-collapse incvar rincvar, by(byear_5yr edu_g) 
+collapse `SCEgroup', by(byear_5yr edu_g) 
 save "${folder}/SCE/incvar_by_byear_5yr_edu.dta",replace
 restore 
 
@@ -272,10 +275,10 @@ restore
 * by year of birth(5 year cohort) and education and gender 
 
 preserve 
-collapse incvar rincvar, by(byear_5yr edu_g gender) 
+collapse `SCEgroup', by(byear_5yr edu_g gender) 
 save "${folder}/SCE/incvar_by_byear_5yr_edu_gender.dta",replace
 restore 
-*/
+
 
 **********************************
 *** tables and hists of Vars *****
@@ -357,7 +360,6 @@ graph export "${sum_graph_folder}/hist/hist_`mom'_`gp'.png",as(png) replace
 }
 }
 
-*/
 
 
 *******************************************

@@ -4,10 +4,10 @@
 **************************************************************
 
 global datafolder "/Users/Myworld/Dropbox/PSID/J276289/"
-global scefolder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder/SurveyData/SCE/"
-global otherdatafolder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder/OtherData/"
-global table_folder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder/OtherData/PSID/"
-global graph_folder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder/Graphs/psid/"
+global scefolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/SurveyData/SCE/"
+global otherdatafolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/"
+global table_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/PSID/"
+global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/psid/"
 
 cd ${datafolder}
 
@@ -207,7 +207,7 @@ label var lwage_ag_shk "log wage aggregate shock"
 
 ** first difference
 
-foreach var in lwage_shk lwage_id_shk lwage_ag_shk{
+foreach var in lwage_h lwage_shk lwage_id_shk lwage_ag_shk{
 gen `var'_gr = `var'- l1.`var' if uniqueid==l1.uniqueid ///
                                    & sex_h ==l1.sex_h & ///
 								   age_h ==l1.age_h+1 & year==l.year+1
@@ -217,6 +217,7 @@ replace `var'_gr = (`var'-l2.`var')/2 if year>=1999 ///
                                    & sex_h ==l2.sex_h & ///
 								   age_h ==l2.age_h+2 & year==l2.year+2
 }
+label var lwage_h_gr "log rowth of wage"
 label var lwage_shk_gr "log growth of unexplained wage"
 label var lwage_id_shk_gr "log growth of idiosyncratic unexplained wage"
 label var lwage_ag_shk_gr "log growth of aggregate unexplained wage"
@@ -819,7 +820,8 @@ restore
 
 ** scatter 
 preserve 
-collapse (mean) lwage_shk_gr_av_age_sex = lwage_id_shk_gr ///
+collapse  (mean) lwage_h_gr_av_age_sex = lwage_h_gr ///
+          (mean) lwage_shk_gr_av_age_sex = lwage_id_shk_gr ///
          (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_gr ///
 		 (mean) lwage_shk_av_age_sex = lwage_id_shk ///
          (sd) lwage_shk_sd_age_sex = lwage_id_shk, by(age_h sex_h edu_i_g) 
@@ -831,6 +833,38 @@ drop if edu_g ==1
 merge 1:1 age gender edu_g using "${scefolder}incvar_by_age_edu_gender.dta",keep(master match) 
 gen lincvar = sqrt(incvar)
 gen lrincvar = sqrt(rincvar)
+
+* average growth rate and expected growth rate. 
+
+twoway (scatter lwage_h_gr_av_age_sex age_h, color(ltblue)) ///
+       (lfit lwage_h_gr_av_age_sex age_h, lcolor(red)) ///
+       (scatter rincmean age_h, color(gray) yaxis(2)) ///
+	   (lfit rincmean age_h,lcolor(black) yaxis(2)), ///
+       title("Realized and Expected Earning Growth by Age/Gender/Educ")  ///
+	   xtitle("age")  ///
+	   ytitle("realized growth") ///
+	   ytitle("expected growth ", axis(2)) ///
+	   ysc(titlegap(3) outergap(0)) ///
+	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
+	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
+graph export "${graph_folder}/real_log_wage_shk_gr_level_by_age_edu_gender_compare.png", as(png) replace 
+
+
+* standard deviation log wage growth and risk perception 
+twoway (scatter lwage_shk_gr_sd_age_sex age_h, color(ltblue)) ///
+       (lfit lwage_shk_gr_sd_age_sex age_h, lcolor(red)) ///
+       (scatter lrincvar age_h, color(gray) yaxis(2)) ///
+	   (lfit lrincvar age_h,lcolor(black) yaxis(2)), ///
+       title("Realized Volatility and Perceived Risks by Age/Gender/Educ")  ///
+	   xtitle("age")  ///
+	   ytitle("income volatility (std)") ///
+	   ytitle("risk perception (std)", axis(2)) ///
+	   ysc(titlegap(3) outergap(0)) ///
+	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
+	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
+graph export "${graph_folder}/real_log_wage_shk_gr_by_age_edu_gender_compare.png", as(png) replace 
+
+
 
 * standard deviation log wage growth and risk perception 
 twoway (scatter lwage_shk_gr_sd_age_sex age_h, color(ltblue)) ///
@@ -910,7 +944,7 @@ keep uniqueid year lwage_id_shk_gr edu_i_g sex_h age_5yr
 reshape wide lwage_id_shk_gr, i(uniqueid edu_i_g sex_h age_5yr) j(year)
 save "psid_matrix.dta",replace 
 restore 
-ddd
+
 ******************************
 ** cohort-time-specific experience
 *********************************
