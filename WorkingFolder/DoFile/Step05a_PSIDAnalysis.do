@@ -167,6 +167,11 @@ egen age_5yr = cut(age), ///
 	    50 55 60)
 label var age_5yr "5-year age"
 
+** save nominal wage
+
+gen wage_h_n = wage_h
+label var wage_h_n "nominal wage"
+
 ** nominal to real terms 
 replace wage_h = wage_h*CPI/100
 label var wage_h "real wage"
@@ -177,6 +182,8 @@ label var laborinc_h "real labor income"
 ** take the log
 gen lwage_h =log(wage_h)
 label var lwage_h "log wage"
+gen lwage_h_n = log(wage_h_n)
+label var lwage_h_n "log nominal wage"
 gen llbinc_h = log(laborinc_h)
 label var llbinc_h "log labor income"
 
@@ -207,7 +214,7 @@ label var lwage_ag_shk "log wage aggregate shock"
 
 ** first difference
 
-foreach var in lwage_h lwage_shk lwage_id_shk lwage_ag_shk{
+foreach var in lwage_h lwage_h_n lwage_shk lwage_id_shk lwage_ag_shk{
 gen `var'_gr = `var'- l1.`var' if uniqueid==l1.uniqueid ///
                                    & sex_h ==l1.sex_h & ///
 								   age_h ==l1.age_h+1 & year==l.year+1
@@ -217,7 +224,8 @@ replace `var'_gr = (`var'-l2.`var')/2 if year>=1999 ///
                                    & sex_h ==l2.sex_h & ///
 								   age_h ==l2.age_h+2 & year==l2.year+2
 }
-label var lwage_h_gr "log rowth of wage"
+label var lwage_h_gr "log growth of wage"
+label var lwage_h_n_gr "log growth of nominal wage" 
 label var lwage_shk_gr "log growth of unexplained wage"
 label var lwage_id_shk_gr "log growth of idiosyncratic unexplained wage"
 label var lwage_ag_shk_gr "log growth of aggregate unexplained wage"
@@ -821,6 +829,7 @@ restore
 ** scatter 
 preserve 
 collapse  (mean) lwage_h_gr_av_age_sex = lwage_h_gr ///
+          (mean) lwage_h_n_gr_av_age_sex = lwage_h_n_gr ///
           (mean) lwage_shk_gr_av_age_sex = lwage_id_shk_gr ///
          (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_gr ///
 		 (mean) lwage_shk_av_age_sex = lwage_id_shk ///
@@ -833,6 +842,23 @@ drop if edu_g ==1
 merge 1:1 age gender edu_g using "${scefolder}incvar_by_age_edu_gender.dta",keep(master match) 
 gen lincvar = sqrt(incvar)
 gen lrincvar = sqrt(rincvar)
+
+
+* average nominal growth rate and expected growth rate. 
+
+twoway (scatter lwage_h_n_gr_av_age_sex age_h, color(ltblue)) ///
+       (lfit lwage_h_n_gr_av_age_sex age_h, lcolor(red)) ///
+       (scatter incmean age_h, color(gray) yaxis(2)) ///
+	   (lfit incmean age_h,lcolor(black) yaxis(2)), ///
+       title("Realized and Expected Nominal Earning Growth by Age/Gender/Educ")  ///
+	   xtitle("age")  ///
+	   ytitle("realized growth") ///
+	   ytitle("expected growth ", axis(2)) ///
+	   ysc(titlegap(3) outergap(0)) ///
+	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
+	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
+graph export "${graph_folder}/real_log_wage_shk_gr_nlevel_by_age_edu_gender_compare.png", as(png) replace 
+
 
 * average growth rate and expected growth rate. 
 
