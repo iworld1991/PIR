@@ -20,13 +20,15 @@ import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 import numba as nb
+# -
+
+# ### Age profile of income 
 
 # +
 ## import age income profile 
 
 age_profile = pd.read_stata('../OtherData/age_profile.dta')   
 
-# +
 ## select age range for the model and turn it into an array 
 lc_wages = np.array(age_profile[(age_profile['age']>=25) &(age_profile['age']<=64)]['wage_age'])
 print(str(len(lc_wages)),'years since age 25')
@@ -79,9 +81,35 @@ lc_G_q_rt = y2q_interpolate(lc_G_rt)
 lc_G_q_full = np.concatenate([lc_G_q,lc_G_q_rt])
 # -
 
-# # subjective profile estiamtion 
+# ### Income risk estimates 
 
+# +
+risks_est = pd.read_stata('../OtherData/sipp/sipp_history_vol_decomposed.dta')
+## risks of permanent and transitory component 
 
+σ_ψ_q_sipp = np.sqrt(risks_est['permanent']**2*3)
+σ_θ_q_sipp = np.sqrt(risks_est['permanent']**2/3)
+
+## p/t ratio 
+kappas_sipp  = risks_est['permanent']/risks_est['transitory']
+kappa_sipp = np.median(kappas_sipp.dropna())
+
+# +
+## risks of permanent and transitory component 
+
+σ_ψ_q_sipp = np.sqrt(risks_est['permanent']**2*3)
+σ_θ_q_sipp = np.sqrt(risks_est['permanent']**2/3)
+
+## p/t ratio 
+kappas_sipp  = risks_est['permanent']/risks_est['transitory']
+kappa_sipp = np.median(kappas_sipp.dropna())
+# -
+
+# ### subjective profile estiamtion 
+
+## import subjective profile estimation results 
+SCE_est = pd.read_pickle('subjective_profile_est.pkl')
+SCE_est =SCE_est['baseline']
 
 # + code_folding=[]
 ## create a dictionary of parameters 
@@ -109,10 +137,23 @@ life_cycle_paras = {'ρ': 1.0,
                     'λ_SS': 0.0, 
                     'transfer': 0.0, 
                     'bequest_ratio': 0.0,
-                    'kappa':1.7}
+                    'κ':kappa_sipp,
+                    
+                    ## subjective profile
+                    'q':SCE_est.loc['$q$'],
+                    'p':SCE_est.loc['$p$'],
+                    'σ_ψ_2mkv':np.array([SCE_est.loc['$\tilde\sigma^l_\psi$'],
+                                       SCE_est.loc['$\tilde\sigma^h_\psi$']]),
+                    'σ_θ_2mkv':np.array([SCE_est.loc['$\tilde\sigma^l_\theta$'],
+                                       SCE_est.loc['$\tilde\sigma^h_\theta$']]),
+                    'mho_2mkv':np.array([SCE_est.loc['$\tilde \mho^l$'],
+                                         SCE_est.loc['$\tilde \mho^h$']]),
+                    'E_2mkv':np.array([SCE_est.loc['$\tilde E^l$'],
+                                      SCE_est.loc['$\tilde E^h$']])
+                }
 # -
+
+life_cycle_paras
 
 with open("parameters.txt", "wb") as fp:
     pickle.dump(life_cycle_paras, fp)
-
-

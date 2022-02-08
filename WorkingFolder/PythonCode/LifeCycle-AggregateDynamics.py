@@ -73,12 +73,19 @@ import pickle
 with open("parameters.txt", "rb") as fp:
     lc_paras = pickle.load(fp)
 #from PrepareParameters import life_cycle_paras as lc_para
-if __name__ == "__main__":
-    print(lc_paras)
-    
-    
+
+print(list(lc_paras))
+        
 ## income profile 
 YPath = np.cumprod(lc_paras['G'])
+
+# +
+## a deterministic income profile 
+
+plt.title('Deterministic Life-cycle Income Profile \n')
+plt.plot(YPath,'ko-')
+plt.xlabel('Age')
+plt.ylabel(r'$\hat Y$')
 
 
 # + code_folding=[2]
@@ -91,7 +98,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -140,26 +147,15 @@ theta = 0.0
 
 ## bequest ratio 
 bequest_ratio = 0.0
-
-
-
-
-# + code_folding=[]
-## a deterministic income profile 
-
-plt.title('Deterministic Life-cycle Income Profile \n')
-plt.plot(YPath,'ko-')
-plt.xlabel('Age')
-plt.ylabel(r'$\hat Y$')
-
 # -
+
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0]
-## initialize a markov state agent 
+# + code_folding=[4, 51, 53]
+## initialize a class of life-cycle model with either calibrated or test parameters 
 
-calibrated_model = False
+calibrated_model = True
 
 if calibrated_model==True:
     ## initialize the model with calibrated parameters 
@@ -236,7 +232,7 @@ else:
                       )
 
 
-# + code_folding=[2]
+# + code_folding=[0, 2]
 ## solve the model 
 
 P = np.array([[0.7,0.3],
@@ -270,7 +266,7 @@ as_star_mkv, σs_star_mkv = solve_model_backward_iter(lc_mkv,
 ## compare two markov states good versus bad 
 
 
-years_left = [1,10,21,25]
+years_left = [1,10,21,30]
 n_sub = len(years_left)
 
 eps_ls = [10]
@@ -1210,6 +1206,7 @@ plt.spy(tran_matrix_lists[1][age-1],
        )
 plt.xlabel('p x m')
 plt.ylabel('p x m')
+plt.savefig('../Graphs/model/transition_matrix_terminal.png')
 
 
 # + code_folding=[2]
@@ -1333,6 +1330,7 @@ ax.plot(share_agents_cp,share_agents_cp, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
+plt.savefig('../Graphs/model/lorenz_c_test.png')
 
 
 ## Lorenz curve of steady state wealth distribution
@@ -1343,6 +1341,7 @@ ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
+plt.savefig('../Graphs/model/lorenz_a_test.png')
 
 # + code_folding=[]
 ## Wealth distribution 
@@ -1352,6 +1351,7 @@ plt.plot(np.log(ap_grid_dist+0.0000000001),
          ap_pdfs_dist)
 plt.xlabel(r'$a$')
 plt.ylabel(r'$prob(a)$')
+plt.savefig('../Graphs/model/distribution_a_test.png')
 # -
 
 plt.title('Consumption distribution')
@@ -1359,6 +1359,7 @@ plt.plot(np.log(cp_grid_dist),
          cp_pdfs_dist)
 plt.xlabel(r'$c$')
 plt.ylabel(r'$prob(a)$')
+plt.savefig('../Graphs/model/distribution_c_test.png')
 
 # ### Life-cycle profile and distribution
 
@@ -1414,6 +1415,7 @@ ax.set_ylabel('Wealth')
 ax2.set_ylabel('Consumption')
 ax.legend(loc=1)
 ax2.legend(loc=2)
+fig.savefig('../Graphs/model/life_cycle_c_a_test.png')
 
 # + code_folding=[0, 10]
 ### Distribution over life cycle 
@@ -1458,23 +1460,24 @@ cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
 ap_range = list(ap_pdfs_life.index)
 cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[0]
+# + code_folding=[]
 fig, axes = joypy.joyplot(ap_pdfs_life, 
                           kind="values", 
                           x_range=ap_range,
                           figsize=(6,10),
                           title="Wealth distribution over life cycle",
                          colormap=cm.winter)
-
+fig.savefig('../Graphs/model/life_cycle_distribution_a_test.png')
 #axes[-1].set_xticks(a_values);
 
-# + code_folding=[0]
+# + code_folding=[]
 fig, axes = joypy.joyplot(cp_pdfs_life, 
                           kind="values", 
                           x_range=cp_range,
                           figsize=(6,10),
                           title="Consumption distribution over life cycle",
                          colormap=cm.winter)
+fig.savefig('../Graphs/model/life_cycle_distribution_c_test.png')
 
 #axes[-1].set_xticks(a_values);
 # -
@@ -1805,6 +1808,9 @@ ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
+fig.savefig('../Graphs/model/lorenz_curve_a_eq.png')
+
+
 
 # +
 ## Wealth distribution 
@@ -1814,14 +1820,19 @@ plt.plot(np.log(ap_grid_dist),
          ap_pdfs_dist)
 plt.xlabel(r'$a$')
 plt.ylabel(r'$prob(a)$')
-# -
+plt.savefig('../Graphs/model/distribution_a_eq.png')
 
+
+# +
 ## Consumption distribution 
 plt.title('Consumption distribution')
 plt.plot(np.log(cp_grid_dist), 
          cp_pdfs_dist)
 plt.xlabel(r'$c$')
 plt.ylabel(r'$prob(a)$')
+plt.savefig('../Graphs/model/distribution_c_eq.png')
+
+
 
 # +
 ## Life cycle wealth profile 

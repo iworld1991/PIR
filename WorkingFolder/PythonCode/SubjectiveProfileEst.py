@@ -448,7 +448,7 @@ plt.legend(loc=1)
 llh,filter1,pr1,pdf = mkv2.log_likelihood(fake_data_list,
                                           para_fake)
 
-# + code_folding=[19]
+# + code_folding=[0, 19]
 ## plot the simulated data 
 if len(fake_data_list)==1:
     random_id = 0
@@ -764,7 +764,7 @@ bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_inv_lb,None),(p_inv_lb,No
 
 result = minimize(SCE_obj,
                   x0 = guess,
-                  method='trust-constr',   #SLSQP
+                  method='SLSQP',   #SLSQP
                   bounds = bounds,
                   options={'disp': True,
                             'maxiter':5000}
@@ -782,22 +782,29 @@ SCE_para_model_est = SCE_mkv2.make_para_dict(SCE_para_est)
 #results
 print("initial guess of the parameters\n",guess_para_model)
 print("estimated parameters\n",SCE_para_model_est)
-# + code_folding=[28, 31]
-## from the estimation to model parameters 
+# +
+## get the kappa 
 
-import pickle
+risks_est = pd.read_stata('../OtherData/sipp/sipp_history_vol_decomposed.dta')
+## risks of permanent and transitory component 
 
-with open("parameters.txt", "rb") as fp:
-    lc_paras = pickle.load(fp)
-    
-kappa = lc_paras['kappa'] ## ratio of permanent and transitory risks 
+σ_ψ_q_sipp = np.sqrt(risks_est['permanent']**2*3)
+σ_θ_q_sipp = np.sqrt(risks_est['permanent']**2/3)
+
+## p/t ratio 
+kappas_sipp  = risks_est['permanent']/risks_est['transitory']
+kappa_sipp = np.median(kappas_sipp.dropna())
+kappa = kappa_sipp ## ratio of permanent and transitory risks 
+
+
+# + code_folding=[]
+## create a dictionary for storing parameters 
 
 model_para_est = {}
 
 ############################################
 ## from yeraly to monthly risk then to quarterly 
 ############################################
-
 
 model_para_est['q'],model_para_est['p'] = mkv2_M2Q(SCE_para_model_est['q'],
                                                    SCE_para_model_est['p'])
@@ -874,8 +881,13 @@ index_names = ['$q$',
 
 SCE_para_est_df.index = index_names
 SCE_para_est_df
+# -
+
+## save it to a pickle file 
+SCE_para_est_df.to_pickle('subjective_profile_est.pkl')
 
 # + code_folding=[5]
+"""
 import pickle
 
 with open("parameters.txt", "rb") as fp:
@@ -887,6 +899,7 @@ for key in model_para_est.keys():
 print(lc_paras)
 with open("parameters.txt", "wb") as fp:
     pickle.dump(lc_paras, fp)
+"""
 # -
 
 # ## Other tests of the code

@@ -329,7 +329,7 @@ ratios.describe()
 ## compute the average ratio of p to t
 
 kappas_sipp  = est_df['permanent']/est_df['transitory']
-kappa_sipp = np.median(kappas.dropna())
+kappa_sipp = np.median(kappas_sipp.dropna())
 print('the median ratio of permanent to transitory std is ',kappa_sipp)
 
 import pickle
