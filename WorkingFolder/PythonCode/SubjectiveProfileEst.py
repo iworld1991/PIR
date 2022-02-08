@@ -782,7 +782,7 @@ SCE_para_model_est = SCE_mkv2.make_para_dict(SCE_para_est)
 #results
 print("initial guess of the parameters\n",guess_para_model)
 print("estimated parameters\n",SCE_para_model_est)
-# + code_folding=[0, 4, 28, 31]
+# + code_folding=[28, 31]
 ## from the estimation to model parameters 
 
 import pickle
@@ -819,7 +819,7 @@ model_para_est['\tilde \mho^h'], model_para_est['\tilde E^h']=  mkv2_Y2Q(SCE_par
 
 print('quarterly SCE parameters\n',model_para_est)
 
-# + code_folding=[0, 3]
+# + code_folding=[3]
 ## convert to a dataframe 
 
 
@@ -856,7 +856,7 @@ f.write(endtex)
 f.close()
 
 
-# + code_folding=[3]
+# + code_folding=[]
 ## presentable tables 
 
 

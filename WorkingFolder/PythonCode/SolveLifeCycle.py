@@ -130,17 +130,9 @@ lc_data = [
     ('transfer', float64),            ## Transfer/current permanent income ratio
     ('bequest_ratio',float64)         ## zero: bequest thrown to the ocea; one: fully given to newborns
 ]
-# -
-
-if __name__ == "__main__":
-    import pickle
-    with open("parameters.txt", "rb") as fp:
-        lc_paras = pickle.load(fp)
-
-    print(lc_paras)
 
 
-# + code_folding=[1, 122, 137, 148]
+# + code_folding=[6, 124, 132, 136, 139, 150]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -148,39 +140,41 @@ class LifeCycle:
     """
 
     def __init__(self,
-                 ρ = lc_paras['ρ'],     ## relative risk aversion  
-                 β = lc_paras['β'],  ## discount factor
-                 P = lc_paras['P'],   ## transitory probability of markov state z
-                 z_val = lc_paras['z_val'], ## markov state from low to high  
-                 sigma_n = lc_paras['σ_ψ'],     ## size of permanent income shocks
-                 sigma_eps = lc_paras['σ_θ'],   ## size of transitory income risks
-                 x = 0.9,            ## MA(1) coefficient of non-permanent inocme shocks
+                 ρ = 1.0,     ## relative risk aversion  
+                 β = 0.99,  ## discount factor
+                 P = np.array([[0.9,0.1],
+                              [0.2,0.8]]),   ## transitory probability of markov state z
+                 z_val = np.array([0.0,
+                                   1.0]), ## markov state from low to high  
+                 sigma_n = 0.10,     ## size of permanent income shocks
+                 sigma_eps = 0.10,   ## size of transitory income risks
+                 x = 0.0,            ## MA(1) coefficient of non-permanent inocme shocks
                  borrowing_cstr = True,  ## artificial zero borrowing constraint 
-                 U = lc_paras['U'],   ## unemployment risk probability (0-1)
-                 LivPrb = lc_paras['LivPrb'],       ## living probability 
+                 U = 0.0,   ## unemployment risk probability (0-1)
+                 LivPrb = 0.995,       ## living probability 
                  b_y = 0.0,          ## loading of markov state on income  
-                 sigma_n_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                 sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                 R = lc_paras['R'],           ## interest factor 
-                 W = lc_paras['W'],            ## Wage rate
-                 T = lc_paras['T'],             ## work age, from 25 to 65
-                 L = lc_paras['L'],             ## life length 85
-                 G = lc_paras['G'],    ## growth factor list of permanent income 
+                 sigma_n_2mkv = np.array([0.05,0.2]),  ## permanent risks in 2 markov states
+                 sigma_eps_2mkv = np.array([0.08,0.12]),  ## transitory risks in 2 markov states
+                 R = 1.02,           ## interest factor 
+                 W = 1.0,            ## Wage rate
+                 T = 40,             ## work age, from 25 to 65
+                 L = 60,             ## life length 85
+                 G = np.ones(60),    ## growth factor list of permanent income 
                  shock_draw_size = 40,
                  grid_max = 2.5,
                  grid_size = 50,
                  seed = 456789,
                  theta = 2,               ## assymetric extrapolative parameter
-                 unemp_insurance = lc_paras['unemp_insurance'],   #  unemp_insurance = 0.0,   
-                 pension = lc_paras['pension'],           
+                 unemp_insurance = 0.15,   #  unemp_insurance = 0.0,   
+                 pension = 1.0,           
                  ue_markov = False,    
                  adjust_prob = 1.0,
-                 sigma_p_init = lc_paras['σ_ψ_init'],
-                 init_b = lc_paras['init_b'],
-                 λ = lc_paras['λ'],
-                 λ_SS = lc_paras['λ_SS'],
-                 transfer = lc_paras['transfer'],
-                 bequest_ratio = lc_paras['bequest_ratio']):  
+                 sigma_p_init = 0.0,
+                 init_b = 0.0,
+                 λ = 0.10,
+                 λ_SS = 0.1,
+                 transfer = 0.0,
+                 bequest_ratio = 0.0):  
 
         np.random.seed(seed)  # arbitrary seed
         
@@ -386,6 +380,9 @@ def EGM(aϵ_in,
                             else:
                                 ## retirement
                                 Y_R = lc.pension
+                                ## no income shcoks affecting individuals 
+                                Γ_hat = 1.0 
+                                eps_shk = 0.0
                                 c_hat = σ(R/(G*Γ_hat) * s + (Y_R+transfer)/(G*Γ_hat),eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
                                 Ez += LivProb*utility * P[z, z_hat]
@@ -514,6 +511,9 @@ def EGM_sv(aϵ_in,
                             else:
                                 ## retirement
                                 Y_R = lc.pension
+                                ## no income shcoks affecting individuals 
+                                Γ_hat = 1.0 
+                                eps_shk = 0.0
                                 c_hat = σ(R/(G*Γ_hat) * s + (Y_R+transfer)/(G*Γ_hat),eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
                                 Ez += LivProb*utility * P[z, z_hat]
@@ -682,8 +682,12 @@ def EGM_br(aϵ_in,
                                                ue_prob*utility_u* P[z, z_hat]
                                               )
                             else:
+                                
                                 ## retirement
                                 Y_R = lc.pension
+                                ## no income shcoks affecting individuals 
+                                Γ_hat = 1.0 
+                                eps_shk = 0.0
                                 c_hat = σ(R/(G*Γ_hat) * s + (Y_R+transfer)/(G*Γ_hat),eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
                                 Ez += LivProb*utility * P[z, z_hat]
@@ -805,7 +809,6 @@ def solve_model_iter(model,        # Class with model information
 
 # ## Initialize the model
 
-# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -815,18 +818,19 @@ if __name__ == "__main__":
     U = 0.2 ## transitory ue risk
     U0 = 0.0 ## transitory ue risk
     unemp_insurance = 0.15
-    pension = 1.0 ## pension
     sigma_n = 0.05 # permanent 
     sigma_eps = 0.2 # transitory 
 
 
-    λ = 0.0  ## tax rate
-    λ_SS = 0.0 ## social tax rate
-    transfer = 0.0  ## transfer 
+    #λ = 0.0  ## tax rate
+    #λ_SS = 0.0 ## social tax rate
+    #transfer = 0.0  ## transfer 
+    #pension = 1.0 ## pension
+
 
     ## life cycle 
 
-    T = 15
+    T = 20
     L = 30
     TGPos = int(L/3) ## one third of life sees income growth 
     GPos = 1.01*np.ones(TGPos)
@@ -849,9 +853,6 @@ if __name__ == "__main__":
 
     ## wether to have zero borrowing constraint 
     borrowing_cstr = True
-
-# -
-
 
 ## a deterministic income profile 
 if __name__ == "__main__":
@@ -879,9 +880,7 @@ def policyPF(β,
     
 """
 
-# + code_folding=[]
-## intialize a model instance
-
+# + code_folding=[2]
 if __name__ == "__main__":
     lc = LifeCycle(sigma_n = sigma_n,
                    sigma_eps = sigma_eps,
@@ -893,18 +892,13 @@ if __name__ == "__main__":
                    G=G,
                    β=β,
                    x=x,
-                   theta=theta,
                    borrowing_cstr = borrowing_cstr,
                    b_y=b_y,
                    unemp_insurance = unemp_insurance,
-                   pension = pension,
-                   λ = λ,
-                   λ_SS = λ_SS,
-                   transfer = transfer)
+                   )
 
 
-
-# + code_folding=[]
+# + code_folding=[2]
 # Initial the end-of-period consumption policy of σ = consume all assets
 
 if __name__ == "__main__":
@@ -1107,13 +1101,8 @@ if __name__ == "__main__":
                      G=G,
                      β=β,
                      x=0.0,  ## shut down ma(1)
-                     theta=theta,
                      borrowing_cstr = borrowing_cstr,
-                     b_y=1.0,
-                      unemp_insurance = unemp_insurance,
-                      pension = pension,
-                      λ = λ,
-                      transfer = transfer)
+                     b_y=1.0)
 
 
 # + code_folding=[8]
@@ -1261,18 +1250,13 @@ if __name__ == "__main__":
                    G=G,
                    β=β,
                    x=x,
-                   theta=theta,
                    sigma_n_2mkv = sigma_n_2mkv,
                    sigma_eps_2mkv = sigma_eps_2mkv,
                    borrowing_cstr = borrowing_cstr,
-                   b_y=b_y,
-                   unemp_insurance = unemp_insurance,
-                   pension = pension,
-                   λ = λ,
-                   transfer = transfer)
+                   b_y=b_y)
 
 
-# + code_folding=[8]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## solve the model for different transition matricies 
@@ -1313,7 +1297,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     ## compare two markov states low versus high risk 
 
@@ -1456,13 +1440,10 @@ if __name__ == "__main__":
                          G=G,
                          β=β,
                          x=0.0,  ## shut down ma(1)
-                         theta=theta,
                          borrowing_cstr = borrowing_cstr,
                          b_y = 0.0, ## markov state loading does not matter any more 
                          unemp_insurance = 0.3,
-                         ue_markov = True,
-                         λ = λ,
-                         transfer=transfer)
+                         ue_markov = True)
 
 # + code_folding=[]
 if __name__ == "__main__":
@@ -1596,11 +1577,8 @@ if __name__ == "__main__":
                      shock_draw_size = 30,
                      borrowing_cstr = borrowing_cstr,
                      x = x,  ## shut down ma(1)
-                     theta=theta,
                      b_y = b_y,
-                     ue_markov = True,
-                     λ = λ,
-                     transfer=transfer)
+                     ue_markov = True)
 
 # + code_folding=[8]
 if __name__ == "__main__":
@@ -1864,10 +1842,7 @@ if __name__ == "__main__":
                        x=x,
                        theta=theta,
                        borrowing_cstr = borrowing_cstr,
-                       b_y=b_y,
-                       unemp_insurance = unemp_insurance,
-                       λ = λ,
-                       transfer = transfer)
+                       b_y=b_y)
 
 
     ## initial consumption functions 

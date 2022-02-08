@@ -64,13 +64,24 @@ legendsize = 12
 
 # + code_folding=[0]
 from SolveLifeCycle import LifeCycle, EGM, solve_model_backward_iter
-
-
 # -
 
 # ### Initialize the model
 
-# + code_folding=[]
+# +
+import pickle
+with open("parameters.txt", "rb") as fp:
+    lc_paras = pickle.load(fp)
+#from PrepareParameters import life_cycle_paras as lc_para
+if __name__ == "__main__":
+    print(lc_paras)
+    
+    
+## income profile 
+YPath = np.cumprod(lc_paras['G'])
+
+
+# + code_folding=[2]
 #this is a fake life cycle income function 
 
 def fake_life_cycle(L):
@@ -80,8 +91,8 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[0]
-## parameters 
+# + code_folding=[]
+## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
 LivPrb = 0.99
@@ -95,8 +106,8 @@ init_b = 0.0
 transfer = 0.0
 pension = 0.5
 
-T = 40
-L = 70
+T = 20
+L = 30
 TGPos = int(L/2)
 GPos = 1.01*np.ones(TGPos)
 GNeg= 0.99*np.ones(L-TGPos)
@@ -131,47 +142,101 @@ theta = 0.0
 bequest_ratio = 0.0
 
 
+
+
 # + code_folding=[]
 ## a deterministic income profile 
 
 plt.title('Deterministic Life-cycle Income Profile \n')
-plt.plot(YPath,'ro')
+plt.plot(YPath,'ko-')
 plt.xlabel('Age')
 plt.ylabel(r'$\hat Y$')
+
 # -
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[2]
+# + code_folding=[0]
 ## initialize a markov state agent 
 
-lc_mkv = LifeCycle(sigma_n = sigma_n,
-                   sigma_eps = sigma_eps,
-                   U=U,
-                   LivPrb = LivPrb,
-                   ρ=ρ,
-                   R=R,
-                   W=W,
-                   G=G,
-                   T=T,
-                   L=L,
-                   β=β,
-                   x=x,  ## shut down ma(1)
-                   theta=theta,
-                   borrowing_cstr = borrowing_cstr,
-                   b_y = b_y, ## set the macro state loading to be zero, it does not matter for ue_markov
-                   unemp_insurance = unemp_insurance, 
-                   pension = pension,
-                   ue_markov = ue_markov,
-                   sigma_p_init =sigma_p_init,
-                   init_b = init_b,
-                   λ = λ,
-                   transfer = transfer,
-                   bequest_ratio = bequest_ratio
-                  )
+calibrated_model = False
+
+if calibrated_model==True:
+    ## initialize the model with calibrated parameters 
+    lc_mkv = LifeCycle(
+                    U = lc_paras['U'], ## transitory ue risk
+                    unemp_insurance = lc_paras['unemp_insurance'],
+                    pension = lc_paras['pension'], ## pension
+                    sigma_n = lc_paras['σ_ψ'], # permanent 
+                    sigma_eps = lc_paras['σ_θ'], # transitory 
+                    P = lc_paras['P'],   ## transitory probability of markov state z
+                    z_val = lc_paras['z_val'], ## markov state from low to high  
+                    x = 0.0,           ## MA(1) coefficient of non-permanent inocme shocks
+                    ue_markov = True,   
+                    adjust_prob = 1.0,
+                    sigma_p_init = lc_paras['σ_ψ_init'],
+                    init_b = lc_paras['init_b'],
+                    ## subjective risk prifile 
+                    sigma_n_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                    sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+                    λ = lc_paras['λ'],  ## tax rate
+                    λ_SS = lc_paras['λ_SS'], ## social tax rate
+                    transfer = lc_paras['transfer'],  ## transfer 
+                    bequest_ratio = lc_paras['bequest_ratio'],
+                    LivPrb = lc_paras['LivPrb'],       ## living probability 
+                    ## life cycle 
+                    T = lc_paras['T'],
+                    L = lc_paras['L'],
+                    #TGPos = int(L/3) ## one third of life sees income growth 
+                    #GPos = 1.01*np.ones(TGPos)
+                    #GNeg= 0.99*np.ones(L-TGPos)
+                    #G = np.concatenate([GPos,GNeg])
+                    #G = np.ones(L)
+                    G = lc_paras['G'],
+                    #YPath = np.cumprod(G),
+                    ## other parameters 
+                    ρ = lc_paras['ρ'],     ## relative risk aversion  
+                    β = lc_paras['β'],    ## discount factor
+                    R = lc_paras['R'],           ## interest factor 
+                    W = lc_paras['W'],            ## Wage rate
+                    ## subjective models 
+                    theta = 0.0, ## extrapolation parameter 
+
+                    ## no persistent state
+                    b_y = 0.0,
+                    ## wether to have zero borrowing constraint 
+                    borrowing_cstr = True
+        )
+
+else:
+    ## only for testing 
+    lc_mkv = LifeCycle(sigma_n = sigma_n,
+                       sigma_eps = sigma_eps,
+                       U=U,
+                       LivPrb = LivPrb,
+                       ρ=ρ,
+                       R=R,
+                       W=W,
+                       G=G,
+                       T=T,
+                       L=L,
+                       β=β,
+                       x=x,  ## shut down ma(1)
+                       theta=theta,
+                       borrowing_cstr = borrowing_cstr,
+                       b_y = b_y, ## set the macro state loading to be zero, it does not matter for ue_markov
+                       unemp_insurance = unemp_insurance, 
+                       pension = pension,
+                       ue_markov = ue_markov,
+                       sigma_p_init =sigma_p_init,
+                       init_b = init_b,
+                       λ = λ,
+                       transfer = transfer,
+                       bequest_ratio = bequest_ratio
+                      )
 
 
-# + code_folding=[0]
+# + code_folding=[2]
 ## solve the model 
 
 P = np.array([[0.7,0.3],
@@ -201,11 +266,11 @@ as_star_mkv, σs_star_mkv = solve_model_backward_iter(lc_mkv,
                                                  σ_init_mkv)
 
 
-# + code_folding=[0, 10]
+# + code_folding=[10]
 ## compare two markov states good versus bad 
 
 
-years_left = [1,10,21,30]
+years_left = [1,10,21,25]
 n_sub = len(years_left)
 
 eps_ls = [10]
@@ -470,7 +535,7 @@ m_dist_grid_list,p_dist_grid_list = define_distribution_grid(lc_mkv,
                                                              num_pointsP = n_p)
 fix_epsGrid  = 0.0   ## Without ma shock, consumption does not depend on transitory shock                                           
 
-# + code_folding=[]
+# + code_folding=[0]
 ## Markov transition matrix 
 
 print("markov state transition matrix: \n",lc_mkv.P)
@@ -633,7 +698,8 @@ def calc_transition_matrix(model,
                         mNext_ij = bNext_u[i]/perm_shks +model.transfer/perm_shks+(1-λ)*unemp_insurance 
                     else:
                         ## retirement 
-                        mNext_ij = bNext_u[i]/perm_shks +model.transfer/perm_shks+model.pension/perm_shks
+                        perm_shks_none = np.ones_like(perm_shks)
+                        mNext_ij = bNext_u[i]/perm_shks_none +model.transfer/perm_shks_none+model.pension/perm_shks_none
                     # Compute next period's market resources given todays bank balances bnext[i]
                     TranMatrix_uu[:,i] = jump_to_grid_fast(model,
                                                            mNext_ij,
@@ -649,7 +715,8 @@ def calc_transition_matrix(model,
                         mNext_ij = bNext_u[i]/perm_shks +model.transfer/perm_shks+ (1-λ)*tran_shks  
                     else:
                         ## retirement 
-                        mNext_ij = bNext_u[i]/perm_shks +model.transfer/perm_shks+model.pension/perm_shks
+                        perm_shks_none = np.ones_like(perm_shks)
+                        mNext_ij = bNext_u[i]/perm_shks_none +model.transfer/perm_shks_none+model.pension/perm_shks_none
                     # Compute next period's market resources given todays bank balances bnext[i]
                     TranMatrix_ue[:,i] = jump_to_grid_fast(model,
                                                             mNext_ij,
@@ -666,7 +733,8 @@ def calc_transition_matrix(model,
                         mNext_ij = bNext_e[i]/perm_shks +model.transfer/perm_shks+ (1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
                     else:
                         ## retirement 
-                        mNext_ij = bNext_e[i]/perm_shks +model.transfer/perm_shks+model.pension/perm_shks
+                        perm_shks_none = np.ones_like(perm_shks)
+                        mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+model.pension/perm_shks_none
                     TranMatrix_ee[:,i] = jump_to_grid_fast(model,
                                                           mNext_ij,
                                                           shk_prbs,
@@ -680,7 +748,9 @@ def calc_transition_matrix(model,
                         ## work age 
                         mNext_ij = bNext_e[i]/perm_shks +model.transfer/perm_shks+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
                     else:
-                        mNext_ij = bNext_e[i]/perm_shks +model.transfer/perm_shks+ model.pension/perm_shks
+                        ## retirement
+                        perm_shks_none = np.ones_like(perm_shks)
+                        mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+ model.pension/perm_shks_none
                     TranMatrix_eu[:,i] = jump_to_grid_fast(model,
                                                             mNext_ij, 
                                                             shk_prbs,
@@ -701,7 +771,9 @@ def calc_transition_matrix(model,
                             ## work age 
                             mNext_ij = bNext_u[i]/perm_shks +model.transfer/perm_shks+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
                         else:
-                            mNext_ij = bNext_u[i]/perm_shks +model.transfer/perm_shks+ model.pension/perm_shks
+                            perm_shks_none = np.ones_like(perm_shks)
+                            ## retirement
+                            mNext_ij = bNext_u[i]/perm_shks_none +model.transfer/perm_shks_none+ model.pension/perm_shks_none
 
                         TranMatrix_uu[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
                                                                                  mNext_ij,
@@ -725,7 +797,9 @@ def calc_transition_matrix(model,
                             ## work age 
                             mNext_ij = bNext_u[i]/perm_shks +model.transfer/perm_shks+ (1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
                         else:
-                            mNext_ij = bNext_u[i]/perm_shks +model.transfer/perm_shks+ model.pension/perm_shks
+                            ## retirement
+                            perm_shks_none = np.ones_like(perm_shks)
+                            mNext_ij = bNext_u[i]/perm_shks_none +model.transfer/perm_shks_none+ model.pension/perm_shks_none
                         TranMatrix_ue[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
                                                                                mNext_ij, 
                                                                                pNext_ij, 
@@ -745,7 +819,9 @@ def calc_transition_matrix(model,
                             ## work age 
                             mNext_ij = bNext_e[i]/perm_shks +model.transfer/perm_shks+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
                         else:
-                            mNext_ij = bNext_e[i]/perm_shks +model.transfer/perm_shks+ model.pension/perm_shks
+                            ## retirement
+                            perm_shks_none = np.ones_like(perm_shks)
+                            mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+ model.pension/perm_shks_none
                         TranMatrix_eu[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
                                                                                    mNext_ij, 
                                                                                    pNext_ij, 
@@ -763,7 +839,9 @@ def calc_transition_matrix(model,
                         if k <=model.T-1:
                             mNext_ij = bNext_e[i]/perm_shks +model.transfer/perm_shks+(1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
                         else:
-                            mNext_ij = bNext_e[i]/perm_shks +model.transfer/perm_shks+model.pension/perm_shks
+                            ## retirement
+                            perm_shks_none = np.ones_like(perm_shks)
+                            mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+model.pension/perm_shks_none
                         TranMatrix_ee[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
                                                                                mNext_ij, 
                                                                                pNext_ij, 
@@ -1190,7 +1268,7 @@ def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np
     
     return grid_array, mp_pdfs_array
 
-# + code_folding=[]
+# + code_folding=[0]
 ## flatten the distribution of a and its corresponding pdfs 
 
 
@@ -1446,7 +1524,7 @@ def SS2tax(SS, ## social security /pension replacement ratio
 #    ('δ',float64)
 #]
 
-# + code_folding=[]
+# + code_folding=[0, 4]
 #@jitclass(economy_data)
 class Economy:
     ## An economy class that saves market and production parameters 
@@ -1480,7 +1558,7 @@ class Economy:
         return 1+self.YK()-self.δ
 
 
-# + code_folding=[]
+# + code_folding=[8, 15]
 from scipy.optimize import fsolve
 
 CDEconomy = Economy()

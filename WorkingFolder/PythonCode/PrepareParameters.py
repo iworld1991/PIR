@@ -19,6 +19,7 @@ import numpy as np
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
+import numba as nb
 
 # +
 ## import age income profile 
@@ -30,12 +31,16 @@ age_profile = pd.read_stata('../OtherData/age_profile.dta')
 lc_wages = np.array(age_profile[(age_profile['age']>=25) &(age_profile['age']<=64)]['wage_age'])
 print(str(len(lc_wages)),'years since age 25')
 
-## growth rates since initial age 
+## growth rates since initial age over life cicle before retirement
 lc_G = lc_wages[1:]/lc_wages[:-1]
-lc_G = np.insert(lc_G,0,1.0)
+lc_G = np.insert(lc_G,0,1.0) 
 
 T = 40
 L = 60
+## growth rates after retirement
+
+lc_G_rt = np.ones(L-T)
+lc_G_rt[1] = 0.6
 
 T_q = T*4
 L_q = L*4
@@ -66,12 +71,21 @@ def y2q_interpolate(xs_y):
     return xs_q
 
 
-## get the quarterly income profile in life cycle 
+## get the quarterly income profile over life cycle before retirement 
 lc_G_q = y2q_interpolate(lc_G)
+
+lc_G_q_rt = y2q_interpolate(lc_G_rt)
+
+lc_G_q_full = np.concatenate([lc_G_q,lc_G_q_rt])
 # -
 
+# # subjective profile estiamtion 
+
+
+
+# + code_folding=[]
 ## create a dictionary of parameters 
-life_cycle_paras = {'ρ': 1, 
+life_cycle_paras = {'ρ': 1.0, 
                     'β': 0.98**(1/4), 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
@@ -86,7 +100,7 @@ life_cycle_paras = {'ρ': 1,
                     'W': 1.0, 
                     'T': T_q, 
                     'L': L_q, 
-                    'G':lc_G_q, 
+                    'G':lc_G_q_full, 
                     'unemp_insurance': 0.15, 
                     'pension': 1.0, 
                     'σ_ψ_init': 0.01, 
@@ -96,6 +110,7 @@ life_cycle_paras = {'ρ': 1,
                     'transfer': 0.0, 
                     'bequest_ratio': 0.0,
                     'kappa':1.7}
+# -
 
 with open("parameters.txt", "wb") as fp:
     pickle.dump(life_cycle_paras, fp)
