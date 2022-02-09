@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -1246,7 +1246,7 @@ print('aggregate savings under stationary distribution:', str(A))
 
 # ### Stationary wealth/consumption distribution
 
-# + code_folding=[]
+# + code_folding=[2]
 ## get the single vector of distribution 
 
 def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np 
@@ -1265,7 +1265,7 @@ def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np
     
     return grid_array, mp_pdfs_array
 
-# + code_folding=[]
+# + code_folding=[0]
 ## flatten the distribution of a and its corresponding pdfs 
 
 
@@ -1281,7 +1281,7 @@ cp_grid_dist, cp_pdfs_dist = faltten_dist(cp_PolGrid_list,
                                         age_dist)
 
 
-# + code_folding=[1]
+# + code_folding=[0]
 ## lorenz curve
 def lorenz_curve(grid_distribution,
                  pdfs,
@@ -1308,7 +1308,7 @@ def lorenz_curve(grid_distribution,
     return np.array(lc_vals),share_grids
 
 
-# + code_folding=[2]
+# + code_folding=[0, 2]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_cp, share_cp = lorenz_curve(cp_grid_dist,
@@ -1321,12 +1321,15 @@ share_agents_ap, share_ap = lorenz_curve(ap_grid_dist,
                                      ap_pdfs_dist,
                                      nb_share_grid = 100)
 
-# +
-# The HARK has data on the wealth distribution 
-# from the U.S. Survey of Consumer Finances
-from HARK.datasets import load_SCF_wealth_weights
-SCF_wealth, SCF_weights = load_SCF_wealth_weights()
+# + code_folding=[]
+## get the wealth distribution from SCF (net worth)
 
+SCF2016 = pd.read_stata('rscfp2016.dta')
+SCF2016 = SCF2016.drop_duplicates(subset=['yy1'])
+
+SCF_wealth, SCF_weights = np.array(SCF2016['networth']), np.array(SCF2016['wgt'])
+
+## get the lorenz curve weights from SCF 
 SCF_wealth_sort_id = SCF_wealth.argsort()
 SCF_wealth_sort = SCF_wealth[SCF_wealth_sort_id]
 SCF_weights_sort = SCF_weights[SCF_wealth_sort_id]
@@ -1334,15 +1337,12 @@ SCF_weights_sort_norm = SCF_weights_sort/SCF_weights_sort.sum()
 
 SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
                                                  SCF_weights_sort_norm,
-                                                 nb_share_grid = 3000)
+                                                 nb_share_grid = 200)
 
-#pctiles = np.linspace(0.001,0.999,15)
-#SCF_Lorenz_points = getLorenzShares(SCF_wealth,
-#                                    weights=SCF_weights,
-#                                    percentiles=pctiles)
 
-# +
-## Lorenz curve of steady state wealth distribution
+
+# + code_folding=[0]
+## Lorenz curve of steady state wealth distribution from SCF 
 
 fig, ax = plt.subplots(figsize=(5,5))
 ax.plot(SCF_share_agents_ap,SCF_share_ap, 'r--',label='Lorenz curve from SCF')
@@ -1352,7 +1352,7 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 #plt.savefig('../Graphs/model/lorenz_a_test.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(5,5))
@@ -1750,17 +1750,17 @@ def StE_K_d(model,
     
     return K_d
 
-# + code_folding=[]
+# + code_folding=[1]
 ## function to solve the equilibrium 
 eq_func = lambda K: StE_K_d(model=lc_mkv,
                             K_s = K,
                             dstn=ss_dstn)
 
-# + code_folding=[]
+# + code_folding=[0]
 ## solve the fixed point 
 
 K_eq = op.fixed_point(eq_func,
-                      x0 = 2.0)
+                      x0 = 2.0)I 
 
 
 # + code_folding=[0, 31, 47, 53]
@@ -1866,12 +1866,6 @@ plt.ylabel(r'$prob(a)$')
 plt.savefig('../Graphs/model/distribution_c_eq.png')
 
 
-
-# +
-## Life cycle wealth profile 
-
-## xxxxxx
-# -
 
 # ### Consumption Jacobians
 #
