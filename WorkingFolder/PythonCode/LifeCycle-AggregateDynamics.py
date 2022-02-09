@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
@@ -152,10 +152,10 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[4, 51, 53]
+# + code_folding=[0, 4, 51, 53]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
-calibrated_model = True
+calibrated_model = False
 
 if calibrated_model==True:
     ## initialize the model with calibrated parameters 
@@ -266,7 +266,7 @@ as_star_mkv, σs_star_mkv = solve_model_backward_iter(lc_mkv,
 ## compare two markov states good versus bad 
 
 
-years_left = [1,10,21,30]
+years_left = [1,10,21,25]
 n_sub = len(years_left)
 
 eps_ls = [10]
@@ -1246,7 +1246,7 @@ print('aggregate savings under stationary distribution:', str(A))
 
 # ### Stationary wealth/consumption distribution
 
-# + code_folding=[2]
+# + code_folding=[]
 ## get the single vector of distribution 
 
 def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np 
@@ -1265,7 +1265,7 @@ def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np
     
     return grid_array, mp_pdfs_array
 
-# + code_folding=[0]
+# + code_folding=[]
 ## flatten the distribution of a and its corresponding pdfs 
 
 
@@ -1321,6 +1321,37 @@ share_agents_ap, share_ap = lorenz_curve(ap_grid_dist,
                                      ap_pdfs_dist,
                                      nb_share_grid = 100)
 
+# +
+# The HARK has data on the wealth distribution 
+# from the U.S. Survey of Consumer Finances
+from HARK.datasets import load_SCF_wealth_weights
+SCF_wealth, SCF_weights = load_SCF_wealth_weights()
+
+SCF_wealth_sort_id = SCF_wealth.argsort()
+SCF_wealth_sort = SCF_wealth[SCF_wealth_sort_id]
+SCF_weights_sort = SCF_weights[SCF_wealth_sort_id]
+SCF_weights_sort_norm = SCF_weights_sort/SCF_weights_sort.sum()
+
+SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
+                                                 SCF_weights_sort_norm,
+                                                 nb_share_grid = 3000)
+
+#pctiles = np.linspace(0.001,0.999,15)
+#SCF_Lorenz_points = getLorenzShares(SCF_wealth,
+#                                    weights=SCF_weights,
+#                                    percentiles=pctiles)
+
+# +
+## Lorenz curve of steady state wealth distribution
+
+fig, ax = plt.subplots(figsize=(5,5))
+ax.plot(SCF_share_agents_ap,SCF_share_ap, 'r--',label='Lorenz curve from SCF')
+ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+#plt.savefig('../Graphs/model/lorenz_a_test.png')
+
 # + code_folding=[]
 ## Lorenz curve of steady state wealth distribution
 
@@ -1337,6 +1368,7 @@ plt.savefig('../Graphs/model/lorenz_c_test.png')
 
 fig, ax = plt.subplots(figsize=(5,5))
 ax.plot(share_agents_ap,share_ap, 'r--',label='Lorenz curve of level of savings')
+ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve from SCF')
 ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
@@ -1804,6 +1836,7 @@ share_agents_ap, share_ap = lorenz_curve(ap_grid_dist,
 
 fig, ax = plt.subplots(figsize=(5,5))
 ax.plot(share_agents_ap,share_cp, 'r--',label='Lorenz curve of level of wealth')
+ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve from SCF')
 ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
@@ -1821,9 +1854,9 @@ plt.plot(np.log(ap_grid_dist),
 plt.xlabel(r'$a$')
 plt.ylabel(r'$prob(a)$')
 plt.savefig('../Graphs/model/distribution_a_eq.png')
+# -
 
 
-# +
 ## Consumption distribution 
 plt.title('Consumption distribution')
 plt.plot(np.log(cp_grid_dist), 
@@ -1890,7 +1923,7 @@ plt.legend()
 plt.show()
 
 
-# + endofcell="--" code_folding=[1, 28]
+# + code_folding=[1, 28] endofcell="--"
 
 class JAC_agent(HANK_SAM_agent):
 
@@ -2144,7 +2177,7 @@ fig.tight_layout()
 
 # --
 
-# + endofcell="--" code_folding=[4, 177, 203]
+# + code_folding=[4, 177, 203] endofcell="--"
 
 # ## Old codes: simulate a cross-sectionl history 
 
@@ -2382,3 +2415,5 @@ plt.title('average log consumption (normalized)')
 plt.plot(lc_av[1:],label = r'$\widebar{ln(c/o)}$')
 plt.legend(loc=2)
 # --
+
+
