@@ -152,7 +152,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 4, 51, 53]
+# + code_folding=[4, 6, 51]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 calibrated_model = False

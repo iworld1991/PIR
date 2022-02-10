@@ -17,6 +17,7 @@
 #
 # - building on this [blog](https://notebook.community/DaveBackus/Data_Bootcamp/Code/Lab/SCF_data_experiment_Brian)
 
+import numpy as np
 import pandas as pd   #The data package
 import sys            #The code below wont work for any versions before Python 3. This just ensures that (allegedly).
 assert sys.version_info >= (3,5)
@@ -69,9 +70,9 @@ def unzip_survey_file(year = '2013'):
 
 
 # +
-df2019 = pd.read_stata(unzip_survey_file(year='2019'))
+#df2019 = pd.read_stata(unzip_survey_file(year='2019'))
 df2016 = pd.read_stata(unzip_survey_file(year='2016'))
-df2013 = pd.read_stata(unzip_survey_file(year='2013'))
+#df2013 = pd.read_stata(unzip_survey_file(year='2013'))
 #df2001 = pd.read_stata(unzip_survey_file(year = '2001'))
 #df1983 = pd.read_stata(unzip_survey_file(year = '1983'))
 #df1992 = pd.read_stata(unzip_survey_file(year = '1992'))
@@ -97,10 +98,40 @@ in the 1983 survey yet none for the other years.
 #df1983 = df1983[df1983['income']>=0]
 # -
 
-df2019['age'].hist()
-df2016['age'].hist()
-df2013['age'].hist()
+list(df2016.columns)
 
+# +
+### variables 
+
+df2016 = df2016[df2016['income']>0]
+df2016 = df2016[df2016['norminc']>0]
+df2016['lincome'] = np.log(df2016['income'])
+df2016['lnorminc'] = np.log(df2016['norminc'])
+# -
+
+# ### Life-cycle wealth and income profile 
+
+import joypy
+from matplotlib import cm
+
+# + code_folding=[1]
+labels=[y if y%10==0 else None for y in list(df2016.age.unique())]
+fig, axes = joypy.joyplot(df2016, 
+                          by="age", 
+                          column="lnorminc", 
+                          labels=labels, 
+                          range_style='own', 
+                          grid="y", 
+                          linewidth=1, 
+                          legend=False, 
+                          figsize=(6,20),
+                          title="income over life cycle",
+                          colormap=cm.autumn_r)
+
+
+# -
+
+# ### Wealth inequality 
 
 # + code_folding=[0]
 def weighted_percentiles(data, variable, weights, percentiles = [], 
@@ -203,3 +234,6 @@ years_graph = [df2019, df2016,df2013]
 labels = ['2019', '2016','2013']
 
 figureprefs(years_graph, variable = 'networth', legendlabels = labels);
+# -
+
+

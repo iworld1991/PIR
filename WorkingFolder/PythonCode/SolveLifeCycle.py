@@ -132,7 +132,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[124, 132, 136, 139, 150]
+# + code_folding=[6, 124, 132, 136, 139, 150]
 @jitclass(lc_data)
 class LifeCycle:
     """

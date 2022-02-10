@@ -24,7 +24,7 @@ import numba as nb
 
 # ### Age profile of income 
 
-# +
+# + code_folding=[0]
 ## import age income profile 
 
 age_profile = pd.read_stata('../OtherData/age_profile.dta')   
@@ -105,13 +105,45 @@ kappas_sipp  = risks_est['permanent']/risks_est['transitory']
 kappa_sipp = np.median(kappas_sipp.dropna())
 # -
 
+# ### Initial conditions
+
+# +
+from statsmodels.stats.weightstats import DescrStatsW
+
+## SCF data 
+SCF2016 = pd.read_stata('rscfp2016.dta')
+SCF2016 = SCF2016[SCF2016['age']==25]
+SCF2016 = SCF2016.drop_duplicates(subset=['yy1'])
+SCF2016 = SCF2016[['norminc','networth','wgt']]
+SCF2016 = SCF2016[SCF2016['norminc']>0]
+
+## permanent income at age 25 
+pinc_SCF = SCF2016[['norminc','wgt']]
+lpinc_SCF_pos, lpinc_SCF_wgt = np.log(pinc_SCF_pos['norminc']),np.array(pinc_SCF_pos['wgt'])
+
+## wealth 
+b_SCF = SCF2016[['networth','wgt']]
+lb_SCF_pos, lb_SCF_wgt = b_SCF['networth'],np.array(pinc_SCF_pos['wgt'])
+
+## wealth to permanent income
+SCF2016['networth2pinc'] = SCF2016['networth']/SCF2016['norminc']
+b_SCF, b_wgt = SCF2016['networth2pinc'], SCF2016['wgt']
+
+## compute data moments 
+σ_ψ_init_SCF = DescrStatsW(lpinc_SCF_pos, weights=lpinc_SCF_wgt, ddof=1).std
+σ_b_init_SCF = DescrStatsW(lb_SCF_pos, weights=lb_SCF_wgt, ddof=1).std
+b_SCF = DescrStatsW(b_SCF,weights=b_wgt, ddof=1).mean*4 ## quarterly 
+# -
+
+b_SCF
+
 # ### subjective profile estiamtion 
 
 ## import subjective profile estimation results 
 SCE_est = pd.read_pickle('subjective_profile_est.pkl')
-SCE_est =SCE_est['baseline']
+SCE_est = SCE_est['baseline']
 
-# + code_folding=[]
+# + code_folding=[1]
 ## create a dictionary of parameters 
 life_cycle_paras = {'ρ': 1.0, 
                     'β': 0.98**(1/4), 
@@ -131,8 +163,8 @@ life_cycle_paras = {'ρ': 1.0,
                     'G':lc_G_q_full, 
                     'unemp_insurance': 0.15, 
                     'pension': 1.0, 
-                    'σ_ψ_init': 0.01, 
-                    'init_b': 0.0, 
+                    'σ_ψ_init': σ_ψ_init_SCF, 
+                    'init_b': b_SCF, 
                     'λ': 0.0, 
                     'λ_SS': 0.0, 
                     'transfer': 0.0, 
