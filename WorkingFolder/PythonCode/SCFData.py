@@ -114,7 +114,7 @@ df2016['lnorminc'] = np.log(df2016['norminc'])
 import joypy
 from matplotlib import cm
 
-# + code_folding=[1]
+# + code_folding=[]
 labels=[y if y%10==0 else None for y in list(df2016.age.unique())]
 fig, axes = joypy.joyplot(df2016, 
                           by="age", 
@@ -126,7 +126,7 @@ fig, axes = joypy.joyplot(df2016,
                           legend=False, 
                           figsize=(6,20),
                           title="income over life cycle",
-                          colormap=cm.autumn_r)
+                          colormap=cm.summer)
 
 
 # -
