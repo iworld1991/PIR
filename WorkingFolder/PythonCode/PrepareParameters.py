@@ -24,7 +24,7 @@ import numba as nb
 
 # ### Age profile of income 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## import age income profile 
 
 age_profile = pd.read_stata('../OtherData/age_profile.dta')   

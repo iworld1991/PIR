@@ -1395,6 +1395,29 @@ plt.savefig('../Graphs/model/distribution_c_test.png')
 
 # ### Life-cycle profile and distribution
 
+import pandas as pd
+SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
+
+# +
+## plot life cycle profile
+
+fig, ax = plt.subplots()
+plt.title('Life cycle profile of wealth and consumption')
+ax.plot(SCF_profile.index,
+        SCF_profile['av_wealth'],
+       'r-',
+       label='wealth')
+#ax.vlines(T,
+#          np.min(A_life),
+#          np.max(A_life),
+#          color='k',
+#          label='retirement')
+
+ax.set_xlabel('Age')
+ax.set_ylabel('Net Worth')
+ax.legend(loc=1)
+#fig.savefig('../Graphs/model/life_cycle_SCF_test.png')
+
 # + code_folding=[6]
 ### Aggregate distributions within age
 

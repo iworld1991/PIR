@@ -104,7 +104,7 @@ list(df2016.columns)
 ### filters and clean variables 
 
 
-df2016 = df2016[(df2016['age']>=25) & (df2016['age']<=90)]
+df2016 = df2016[(df2016['age']>=25) & (df2016['age']<=85)]
 df2016 = df2016[df2016['income']>0]
 df2016 = df2016[df2016['norminc']>0]
 df2016['lincome'] = np.log(df2016['income'])
@@ -137,14 +137,15 @@ age = df2016['age'].unique()
 wm = lambda x: np.average(x, weights=df2016.loc[x.index, "wgt"])
 
 
-age_av_wealth = df2016.groupby('age')['networth'].agg(wm)
-age_med_wealth = df2016.groupby('age')['networth'].median()
+age_av_wealth = df2016.groupby('age').agg(av_wealth = ('networth',wm))
+age_med_wealth = df2016.groupby('age').agg(med_wealth=('networth','median'))
 
-age_av_lincome = df2016.groupby('age')['lincome'].agg(wm)
-age_med_lincome = df2016.groupby('age')['lincome'].median()
+age_av_lincome = df2016.groupby('age').agg(av_wealth = ('lincome',wm))
+age_med_lincome = df2016.groupby('age').agg(med_wealth=('lincome','median'))
 
-age_av_lnorminc = df2016.groupby('age')['lnorminc'].agg(wm)
-age_med_lnorminc = df2016.groupby('age')['lnorminc'].median()
+age_av_lnorminc = df2016.groupby('age').agg(av_wealth = ('lnorminc',wm))
+age_med_lnorminc = df2016.groupby('age').agg(med_wealth=('lnorminc','median'))
+
 # -
 
 plt.title('Net wealth over life cycle')
@@ -157,7 +158,12 @@ plt.plot(np.log(age_av_lincome),label='average income')
 plt.plot(np.log(age_med_lincome),label='median income')
 plt.legend(loc=0)
 
-# +
+plt.title('Permanent income over life cycle')
+plt.plot(np.log(age_av_lnorminc),label='average income')
+plt.plot(np.log(age_med_lnorminc),label='median income')
+plt.legend(loc=0)
+
+# + code_folding=[2]
 ## merge all age profiles 
 
 to_merge = [age_med_wealth,
@@ -174,7 +180,7 @@ for  df in to_merge:
                               left_index=True,
                               right_index=True)
     
-SCF_age_profile.to_pickle('data/SCF_age_profile')
+SCF_age_profile.to_pickle('data/SCF_age_profile.pkl')
 
 
 # -
