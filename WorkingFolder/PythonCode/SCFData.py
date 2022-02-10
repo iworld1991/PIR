@@ -101,8 +101,10 @@ in the 1983 survey yet none for the other years.
 list(df2016.columns)
 
 # +
-### variables 
+### filters and clean variables 
 
+
+df2016 = df2016[(df2016['age']>=25) & (df2016['age']<=90)]
 df2016 = df2016[df2016['income']>0]
 df2016 = df2016[df2016['norminc']>0]
 df2016['lincome'] = np.log(df2016['income'])
@@ -114,7 +116,7 @@ df2016['lnorminc'] = np.log(df2016['norminc'])
 import joypy
 from matplotlib import cm
 
-# + code_folding=[]
+# + code_folding=[1]
 labels=[y if y%10==0 else None for y in list(df2016.age.unique())]
 fig, axes = joypy.joyplot(df2016, 
                           by="age", 
@@ -127,6 +129,52 @@ fig, axes = joypy.joyplot(df2016,
                           figsize=(6,20),
                           title="income over life cycle",
                           colormap=cm.summer)
+
+# +
+## Life cycle income / wealth profiles 
+
+age = df2016['age'].unique()
+wm = lambda x: np.average(x, weights=df2016.loc[x.index, "wgt"])
+
+
+age_av_wealth = df2016.groupby('age')['networth'].agg(wm)
+age_med_wealth = df2016.groupby('age')['networth'].median()
+
+age_av_lincome = df2016.groupby('age')['lincome'].agg(wm)
+age_med_lincome = df2016.groupby('age')['lincome'].median()
+
+age_av_lnorminc = df2016.groupby('age')['lnorminc'].agg(wm)
+age_med_lnorminc = df2016.groupby('age')['lnorminc'].median()
+# -
+
+plt.title('Net wealth over life cycle')
+plt.plot(np.log(age_av_wealth),label='average net wealth')
+plt.plot(np.log(age_med_wealth),label='median net wealth')
+plt.legend(loc=0)
+
+plt.title('Income over life cycle')
+plt.plot(np.log(age_av_lincome),label='average income')
+plt.plot(np.log(age_med_lincome),label='median income')
+plt.legend(loc=0)
+
+# +
+## merge all age profiles 
+
+to_merge = [age_med_wealth,
+            age_av_lincome,
+            age_med_lincome,
+            age_av_lnorminc,
+            age_med_lnorminc]
+
+SCF_age_profile = age_av_wealth
+
+for  df in to_merge:
+    SCF_age_profile = pd.merge(SCF_age_profile,
+                              df,
+                              left_index=True,
+                              right_index=True)
+    
+SCF_age_profile.to_pickle('data/SCF_age_profile')
 
 
 # -
