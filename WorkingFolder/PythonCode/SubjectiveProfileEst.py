@@ -37,7 +37,7 @@ import statsmodels.api as sm
 
 #from utility import mkv2_M2Q, mkv2_Q2Y, mkv2_Y2M, mkv2_Y2Q
 
-# + code_folding=[2, 31, 68, 88]
+# + code_folding=[2, 30, 66, 85]
 ## some functions used for markov-related calculations 
 
 def mkv2_M2Q(q,p):
@@ -67,7 +67,6 @@ def mkv2_M2Q(q,p):
     pp = qq0+qq1+qq2+qq3
     
     return qq, pp
-
 
 def mkv2_Q2Y(q,p):
     """
@@ -105,7 +104,6 @@ def mkv2_Q2Y(q,p):
     
     return qq, pp
 
-
 def mkv2_Y2M(q,
              p):
     """
@@ -125,7 +123,6 @@ def mkv2_Y2M(q,
     pp = 1-np.exp(-poisson_pM)
     return qq,pp
 
-
 def mkv2_Y2Q(q,
              p):
     """
@@ -144,6 +141,7 @@ def mkv2_Y2Q(q,
     poisson_pM = -np.log(1-p)/3   ## = -np.log(1-qq)
     pp = 1-np.exp(-poisson_pM)
     return qq,pp
+
 
 
 # + code_folding=[0, 15, 47, 62, 69, 78, 82, 104, 124, 132]
@@ -732,7 +730,7 @@ SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
                                                 para)[0]   ## only the first output
 
 
-# + code_folding=[0, 20]
+# + code_folding=[0, 20, 29]
 ## impose some bounds for some parameter based on informed priors
 
 
@@ -788,49 +786,46 @@ print("estimated parameters\n",SCE_para_model_est)
 risks_est = pd.read_stata('../OtherData/sipp/sipp_history_vol_decomposed.dta')
 ## risks of permanent and transitory component 
 
-σ_ψ_q_sipp = np.sqrt(risks_est['permanent']**2*3)
-σ_θ_q_sipp = np.sqrt(risks_est['permanent']**2/3)
-
 ## p/t ratio 
 kappas_sipp  = risks_est['permanent']/risks_est['transitory']
 kappa_sipp = np.median(kappas_sipp.dropna())
 kappa = kappa_sipp ## ratio of permanent and transitory risks 
 
 
-# + code_folding=[]
-## create a dictionary for storing parameters 
+# + code_folding=[0]
+## create a dictionary for storing QUARTERLY parameters 
 
-model_para_est = {}
+model_para_q_est = {}
 
 ############################################
 ## from yeraly to monthly risk then to quarterly 
 ############################################
 
-model_para_est['q'],model_para_est['p'] = mkv2_M2Q(SCE_para_model_est['q'],
+model_para_q_est['q'],model_para_q_est['p'] = mkv2_M2Q(SCE_para_model_est['q'],
                                                    SCE_para_model_est['p'])
 
 alpha = SCE_para_model_est['α'][0]
 beta = SCE_para_model_est['β'][0]
 
-model_para_est['\tilde\sigma_\psi^l'] = np.sqrt(3*np.exp(alpha)/(12+1/(12*kappa**2)))
-model_para_est['\tilde\sigma_\theta^l'] =  1/3*model_para_est['\tilde\sigma_\psi^l']/kappa
-model_para_est['\tilde\sigma_\psi^h'] =  np.sqrt(3*np.exp(alpha+beta)/(12+1/(12*kappa**2)))
-model_para_est['\tilde\sigma_\theta^h'] =  1/3*model_para_est['\tilde\sigma_\psi^h']/kappa
+model_para_q_est['\tilde\sigma_\psi^l'] = np.sqrt(3*np.exp(alpha)/(12+1/(12*kappa**2)))
+model_para_q_est['\tilde\sigma_\theta^l'] =  1/3*model_para_q_est['\tilde\sigma_\psi^l']/kappa
+model_para_q_est['\tilde\sigma_\psi^h'] =  np.sqrt(3*np.exp(alpha+beta)/(12+1/(12*kappa**2)))
+model_para_q_est['\tilde\sigma_\theta^h'] =  1/3*model_para_q_est['\tilde\sigma_\psi^h']/kappa
 
 
-model_para_est['\tilde \mho^l'],model_para_est['\tilde E^l'] = mkv2_Y2Q(SCE_para_model_est['α'][1],
+model_para_q_est['\tilde \mho^l'],model_para_q_est['\tilde E^l'] = mkv2_Y2Q(SCE_para_model_est['α'][1],
                                                                         SCE_para_model_est['α'][2])
 
-model_para_est['\tilde \mho^h'], model_para_est['\tilde E^h']=  mkv2_Y2Q(SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1],
+model_para_q_est['\tilde \mho^h'], model_para_q_est['\tilde E^h']=  mkv2_Y2Q(SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1],
                                                                          SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2])
 
-print('quarterly SCE parameters\n',model_para_est)
+print('quarterly SCE parameters\n',model_para_q_est)
 
-# + code_folding=[3]
+
 ## convert to a dataframe 
 
 
-SCE_para_est_df = pd.DataFrame.from_dict(model_para_est,
+SCE_para_est_q_df = pd.DataFrame.from_dict(model_para_q_est,
                                          orient='index',
                                          dtype=None, 
                                          columns=['baseline']
@@ -857,13 +852,13 @@ for the 2-state Markov switching model of subjective risk perceptions. Risks are
 ## write to latex 
 f = open('../Tables/latex/PRMarkovEst.tex', 'w')
 f.write(beginningtex)
-tb_ltx = SCE_para_est_df.to_latex()
+tb_ltx = SCE_para_est_q_df.to_latex()
 f.write(tb_ltx)
 f.write(endtex)
 f.close()
 
 
-# + code_folding=[]
+
 ## presentable tables 
 
 
@@ -879,12 +874,99 @@ index_names = ['$q$',
               '$\tilde E^h$']
 
 
-SCE_para_est_df.index = index_names
-SCE_para_est_df
-# -
+SCE_para_est_q_df.index = index_names
+SCE_para_est_q_df
+
 
 ## save it to a pickle file 
-SCE_para_est_df.to_pickle('subjective_profile_est.pkl')
+SCE_para_est_q_df.to_pickle('data/subjective_profile_est_q.pkl')
+
+# + code_folding=[0, 32, 67]
+## create a dictionary for storing YEARLY parameters 
+
+model_para_y_est = {}
+
+############################################
+## from yeraly to monthly risk then to quarterly 
+############################################
+
+###!!!! Here you need to transform montly mkv to 1 year
+
+model_para_y_est['q'],model_para_y_est['p'] = mkv2_M2Q(SCE_para_model_est['q'],
+                                                   SCE_para_model_est['p'])
+
+alpha = SCE_para_model_est['α'][0]
+beta = SCE_para_model_est['β'][0]
+
+model_para_y_est['\tilde\sigma_\psi^l'] = np.sqrt(12*np.exp(alpha)/(12+1/(12*kappa**2)))
+model_para_y_est['\tilde\sigma_\theta^l'] =  1/12*model_para_q_est['\tilde\sigma_\psi^l']/kappa
+model_para_y_est['\tilde\sigma_\psi^h'] =  np.sqrt(12*np.exp(alpha+beta)/(12+1/(12*kappa**2)))
+model_para_y_est['\tilde\sigma_\theta^h'] =  1/12*model_para_q_est['\tilde\sigma_\psi^h']/kappa
+
+
+model_para_y_est['\tilde \mho^l'],model_para_y_est['\tilde E^l'] = SCE_para_model_est['α'][1],SCE_para_model_est['α'][2]
+
+model_para_y_est['\tilde \mho^h'], model_para_y_est['\tilde E^h']=  SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1],SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2]
+
+print('yearly SCE parameters\n',model_para_y_est)
+
+
+## convert to a dataframe 
+
+
+SCE_para_est_y_df = pd.DataFrame.from_dict(model_para_y_est,
+                                         orient='index',
+                                         dtype=None, 
+                                         columns=['baseline']
+                                        )
+
+## output tables 
+
+beginningtex = """
+\\begin{table}[p]
+\\centering
+\\begin{adjustbox}{width=0.3\\textwidth}
+\\begin{threeparttable}
+\\caption{Estimated subjective risk perceptions (yearly)}
+\\label{tab:PRMarkovEst}"""
+
+endtex = """\\begin{tablenotes}\item This table reports estimates of the parameters 
+for the 2-state Markov switching model of subjective risk perceptions. Risks are at the monthly frequency. 
+\\end{tablenotes}
+\\end{threeparttable}
+\\end{adjustbox}
+\\end{table}"""
+
+
+## write to latex 
+f = open('../Tables/latex/PRMarkovEst_y.tex', 'w')
+f.write(beginningtex)
+tb_ltx = SCE_para_est_y_df.to_latex()
+f.write(tb_ltx)
+f.write(endtex)
+f.close()
+
+
+## presentable tables 
+
+index_names = ['$q$',
+              '$p$',
+              '$\tilde\sigma^l_\psi$',
+              '$\tilde\sigma^l_\theta$',
+              '$\tilde\sigma^h_\psi$',
+              '$\tilde\sigma^h_\theta$',
+              '$\tilde \mho^l$',
+              '$\tilde \mho^h$',
+              '$\tilde E^l$',
+              '$\tilde E^h$']
+
+SCE_para_est_y_df.index = index_names
+SCE_para_est_y_df
+
+
+## save it to a pickle file 
+SCE_para_est_y_df.to_pickle('data/subjective_profile_est_y.pkl')
+
 
 # + code_folding=[5]
 """

@@ -22,9 +22,9 @@
 
 import numpy as np
 import pandas as pd
-from quantecon.optimize import brent_max, brentq
+#from quantecon.optimize import brent_max, brentq
 from interpolation import interp, mlinterp
-from scipy import interpolate
+#from scipy import interpolate
 import numba as nb
 from numba import jit, njit, float64, int64, boolean
 from numba.typed import List
@@ -68,19 +68,17 @@ from SolveLifeCycle import LifeCycle, EGM, solve_model_backward_iter
 
 # ### Initialize the model
 
-# +
-import pickle
-with open("parameters.txt", "rb") as fp:
-    lc_paras = pickle.load(fp)
-#from PrepareParameters import life_cycle_paras as lc_para
+from PrepareParameters import life_cycle_paras_q as lc_paras_q
+from PrepareParameters import life_cycle_paras_y as lc_paras_y
 
 print(list(lc_paras))
-        
-## income profile 
-YPath = np.cumprod(lc_paras['G'])
+
 
 # +
 ## a deterministic income profile 
+
+## income profile 
+YPath = np.cumprod(lc_paras_y['G'])
 
 plt.title('Deterministic Life-cycle Income Profile \n')
 plt.plot(YPath,'ko-')
@@ -152,12 +150,26 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[4, 6, 51]
+# + code_folding=[0, 20]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
-calibrated_model = False
+#################################
+calibrated_model = True
+model_frequency = 'yearly'
+#################################
 
-if calibrated_model==True:
+if calibrated_model == True:
+
+    if model_frequency=='yearly':
+        ## yearly parameters 
+
+        lc_paras = lc_paras_y
+
+    elif model_frequency=='quarterly':
+        ## yearly parameters 
+        lc_paras = lc_paras_q
+
+
     ## initialize the model with calibrated parameters 
     lc_mkv = LifeCycle(
                     U = lc_paras['U'], ## transitory ue risk
@@ -202,7 +214,8 @@ if calibrated_model==True:
                     b_y = 0.0,
                     ## wether to have zero borrowing constraint 
                     borrowing_cstr = True
-        )
+    )
+
 
 else:
     ## only for testing 
@@ -531,7 +544,7 @@ m_dist_grid_list,p_dist_grid_list = define_distribution_grid(lc_mkv,
                                                              num_pointsP = n_p)
 fix_epsGrid  = 0.0   ## Without ma shock, consumption does not depend on transitory shock                                           
 
-# + code_folding=[0]
+# + code_folding=[]
 ## Markov transition matrix 
 
 print("markov state transition matrix: \n",lc_mkv.P)
@@ -937,7 +950,7 @@ def initial_distribution_e(model,
     return NewBornDist
 
 
-# + code_folding=[1, 5]
+# + code_folding=[5]
 ## plot the initial distribution in the first period of life 
 initial_dist_u = initial_distribution_u(lc_mkv,
                                       m_dist_grid_list[0],
@@ -947,7 +960,7 @@ initial_dist_e = initial_distribution_e(lc_mkv,
                                       m_dist_grid_list[0],
                                       p_dist_grid_list[0])
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot the initial distribution in the first period of life 
 
 plt.title('Initial distributions over m and p given u')
@@ -1198,9 +1211,9 @@ age_dist = stationary_age_dist(lc_mkv.L,
 
 # + code_folding=[]
 ## examine some of the transitionary matricies 
-age = L
-plt.title('Transition matrix for age '+str(age-1))
-plt.spy(tran_matrix_lists[1][age-1],
+#age = L
+plt.title('Transition matrix for age '+str(lc_mkv.L-1))
+plt.spy(tran_matrix_lists[1][lc_mkv.L-1],
        #precision=0.1, 
         markersize = 2
        )
@@ -1375,7 +1388,7 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 plt.savefig('../Graphs/model/lorenz_a_test.png')
 
-# + code_folding=[]
+# + code_folding=[3]
 ## Wealth distribution 
 
 plt.title('Wealth distribution')
@@ -1398,7 +1411,7 @@ plt.savefig('../Graphs/model/distribution_c_test.png')
 import pandas as pd
 SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
 
-# +
+# + code_folding=[0]
 ## plot life cycle profile
 
 fig, ax = plt.subplots()
@@ -1418,15 +1431,15 @@ ax.set_ylabel('Net Worth')
 ax.legend(loc=1)
 #fig.savefig('../Graphs/model/life_cycle_SCF_test.png')
 
-# + code_folding=[6]
+# + code_folding=[0]
 ### Aggregate distributions within age
 
 C_life = []
 A_life = []
 
 
-for t in range(L):
-    age_dist_sparse = np.zeros(L)
+for t in range(lc_mkv.L):
+    age_dist_sparse = np.zeros(lc_mkv.L)
     age_dist_sparse[t] = 1.0
     
     ## age specific wealth 
@@ -1445,22 +1458,22 @@ for t in range(L):
     A_life.append(A_this_age)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot life cycle profile
 
 fig, ax = plt.subplots()
 plt.title('Life cycle profile of wealth and consumption')
-ax.plot(range(L),
+ax.plot(range(lc_mkv.L),
         A_life,
        'r-',
        label='wealth')
-ax.vlines(T,
+ax.vlines(lc_mkv.T,
           np.min(A_life),
           np.max(A_life),
           color='k',
           label='retirement')
 ax2= ax.twinx()
-ax2.plot(range(L),
+ax2.plot(range(lc_mkv.L),
         C_life,
         'b--',
         label='consumption (RHS)')
@@ -1472,7 +1485,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_c_a_test.png')
 
-# + code_folding=[0, 10]
+# + code_folding=[0]
 ### Distribution over life cycle 
 
 ## Flatten distribution by age
@@ -1483,9 +1496,9 @@ cp_grid_dist_life = []
 cp_pdfs_dist_life = []
 
 
-for t in range(L):
+for t in range(lc_mkv.L):
     
-    age_dist_sparse = np.zeros(L)
+    age_dist_sparse = np.zeros(lc_mkv.L)
     age_dist_sparse[t] = 1.0
     
     
@@ -1505,7 +1518,7 @@ for t in range(L):
     cp_grid_dist_life.append(cp_grid_dist_this_age)
     cp_pdfs_dist_life.append(cp_pdfs_dist_this_age)
 
-# +
+# + code_folding=[0]
 ## create the dataframe to plot distributions over the life cycle 
 ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
 cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
@@ -1515,7 +1528,7 @@ cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
 ap_range = list(ap_pdfs_life.index)
 cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[]
+# + code_folding=[0]
 fig, axes = joypy.joyplot(ap_pdfs_life, 
                           kind="values", 
                           x_range=ap_range,
@@ -1525,7 +1538,7 @@ fig, axes = joypy.joyplot(ap_pdfs_life,
 fig.savefig('../Graphs/model/life_cycle_distribution_a_test.png')
 #axes[-1].set_xticks(a_values);
 
-# + code_folding=[]
+# + code_folding=[0]
 fig, axes = joypy.joyplot(cp_pdfs_life, 
                           kind="values", 
                           x_range=cp_range,
@@ -1773,17 +1786,17 @@ def StE_K_d(model,
     
     return K_d
 
-# + code_folding=[1]
+# + code_folding=[]
 ## function to solve the equilibrium 
 eq_func = lambda K: StE_K_d(model=lc_mkv,
                             K_s = K,
                             dstn=ss_dstn)
 
-# + code_folding=[0]
+# + code_folding=[]
 ## solve the fixed point 
 
 K_eq = op.fixed_point(eq_func,
-                      x0 = 2.0)I 
+                      x0 = 2.0)
 
 
 # + code_folding=[0, 31, 47, 53]

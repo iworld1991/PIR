@@ -24,14 +24,14 @@ import numba as nb
 
 # ### Age profile of income 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## import age income profile 
 
 age_profile = pd.read_stata('../OtherData/age_profile.dta')   
 
 ## select age range for the model and turn it into an array 
 lc_wages = np.array(age_profile[(age_profile['age']>=25) &(age_profile['age']<=64)]['wage_age'])
-print(str(len(lc_wages)),'years since age 25')
+#print(str(len(lc_wages)),'years since age 25')
 
 ## growth rates since initial age over life cicle before retirement
 lc_G = lc_wages[1:]/lc_wages[:-1]
@@ -43,6 +43,9 @@ L = 60
 
 lc_G_rt = np.ones(L-T)
 lc_G_rt[1] = 0.6
+
+
+lc_G_full = np.concatenate([lc_G,lc_G_rt])
 
 T_q = T*4
 L_q = L*4
@@ -119,11 +122,11 @@ SCF2016 = SCF2016[SCF2016['norminc']>0]
 
 ## permanent income at age 25 
 pinc_SCF = SCF2016[['norminc','wgt']]
-lpinc_SCF_pos, lpinc_SCF_wgt = np.log(pinc_SCF_pos['norminc']),np.array(pinc_SCF_pos['wgt'])
+lpinc_SCF_pos, lpinc_SCF_wgt = np.log(pinc_SCF['norminc']),np.array(pinc_SCF['wgt'])
 
 ## wealth 
 b_SCF = SCF2016[['networth','wgt']]
-lb_SCF_pos, lb_SCF_wgt = b_SCF['networth'],np.array(pinc_SCF_pos['wgt'])
+lb_SCF_pos, lb_SCF_wgt = b_SCF['networth'],np.array(b_SCF['wgt'])
 
 ## wealth to permanent income
 SCF2016['networth2pinc'] = SCF2016['networth']/SCF2016['norminc']
@@ -132,20 +135,21 @@ b_SCF, b_wgt = SCF2016['networth2pinc'], SCF2016['wgt']
 ## compute data moments 
 σ_ψ_init_SCF = DescrStatsW(lpinc_SCF_pos, weights=lpinc_SCF_wgt, ddof=1).std
 σ_b_init_SCF = DescrStatsW(lb_SCF_pos, weights=lb_SCF_wgt, ddof=1).std
-b_SCF = DescrStatsW(b_SCF,weights=b_wgt, ddof=1).mean*4 ## quarterly 
+b_SCF = DescrStatsW(b_SCF,weights=b_wgt, ddof=1).mean ## quarterly 
+b_q_SCF = b_SCF*4
 # -
-
-b_SCF
 
 # ### subjective profile estiamtion 
 
 ## import subjective profile estimation results 
-SCE_est = pd.read_pickle('subjective_profile_est.pkl')
-SCE_est = SCE_est['baseline']
+SCE_est_q = pd.read_pickle('data/subjective_profile_est_q.pkl')
+SCE_est_y = pd.read_pickle('data/subjective_profile_est_y.pkl')
+SCE_est_q = SCE_est_q['baseline']
+SCE_est_y = SCE_est_y['baseline']
 
-# + code_folding=[1]
+# + code_folding=[]
 ## create a dictionary of parameters 
-life_cycle_paras = {'ρ': 1.0, 
+life_cycle_paras_q = {'ρ': 1.0, 
                     'β': 0.98**(1/4), 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
@@ -154,13 +158,52 @@ life_cycle_paras = {'ρ': 1.0,
                     'σ_θ': np.sqrt(0.1**2*4), 
                     'U': 0.0, 
                     'LivPrb': 1.0-0.00625, 
-                    'σ_ψ_2mkv': np.array([0.01, 0.02]), 
-                    'σ_θ_2mkv': np.array([0.02, 0.04]), 
                     'R': 1.01**(1/4), 
                     'W': 1.0, 
                     'T': T_q, 
                     'L': L_q, 
                     'G':lc_G_q_full, 
+                    'unemp_insurance': 0.15, 
+                    'pension': 1.0, 
+                    'σ_ψ_init': σ_ψ_init_SCF, 
+                    'init_b': b_q_SCF, 
+                    'λ': 0.0, 
+                    'λ_SS': 0.0, 
+                    'transfer': 0.0, 
+                    'bequest_ratio': 0.0,
+                    'κ':kappa_sipp,
+                    
+                    ## subjective profile
+                    'q':SCE_est_q.loc['$q$'],
+                    'p':SCE_est_q.loc['$p$'],
+                    'σ_ψ_2mkv':np.array([SCE_est_q.loc['$\tilde\sigma^l_\psi$'],
+                                       SCE_est_q.loc['$\tilde\sigma^h_\psi$']]),
+                    'σ_θ_2mkv':np.array([SCE_est_q.loc['$\tilde\sigma^l_\theta$'],
+                                       SCE_est_q.loc['$\tilde\sigma^h_\theta$']]),
+                    'mho_2mkv':np.array([SCE_est_q.loc['$\tilde \mho^l$'],
+                                         SCE_est_q.loc['$\tilde \mho^h$']]),
+                    'E_2mkv':np.array([SCE_est_q.loc['$\tilde E^l$'],
+                                      SCE_est_q.loc['$\tilde E^h$']])
+                }
+# -
+
+life_cycle_paras_q
+
+## create a dictionary of parameters 
+life_cycle_paras_y = {'ρ': 1.0, 
+                    'β': 0.98, 
+                    'P': np.array([[0.18, 0.82],
+                                   [0.04, 0.96]]), 
+                    'z_val': np.array([0., 1.]), 
+                    'σ_ψ': np.sqrt(0.15**2), 
+                    'σ_θ': np.sqrt(0.1**2), 
+                    'U': 0.0, 
+                    'LivPrb': 1.0-0.00625, 
+                    'R': 1.01, 
+                    'W': 1.0, 
+                    'T': T, 
+                    'L': L, 
+                    'G':lc_G_full, 
                     'unemp_insurance': 0.15, 
                     'pension': 1.0, 
                     'σ_ψ_init': σ_ψ_init_SCF, 
@@ -172,20 +215,20 @@ life_cycle_paras = {'ρ': 1.0,
                     'κ':kappa_sipp,
                     
                     ## subjective profile
-                    'q':SCE_est.loc['$q$'],
-                    'p':SCE_est.loc['$p$'],
-                    'σ_ψ_2mkv':np.array([SCE_est.loc['$\tilde\sigma^l_\psi$'],
-                                       SCE_est.loc['$\tilde\sigma^h_\psi$']]),
-                    'σ_θ_2mkv':np.array([SCE_est.loc['$\tilde\sigma^l_\theta$'],
-                                       SCE_est.loc['$\tilde\sigma^h_\theta$']]),
-                    'mho_2mkv':np.array([SCE_est.loc['$\tilde \mho^l$'],
-                                         SCE_est.loc['$\tilde \mho^h$']]),
-                    'E_2mkv':np.array([SCE_est.loc['$\tilde E^l$'],
-                                      SCE_est.loc['$\tilde E^h$']])
+                    'q':SCE_est_y.loc['$q$'],
+                    'p':SCE_est_y.loc['$p$'],
+                    'σ_ψ_2mkv':np.array([SCE_est_y.loc['$\tilde\sigma^l_\psi$'],
+                                       SCE_est_y.loc['$\tilde\sigma^h_\psi$']]),
+                    'σ_θ_2mkv':np.array([SCE_est_y.loc['$\tilde\sigma^l_\theta$'],
+                                       SCE_est_y.loc['$\tilde\sigma^h_\theta$']]),
+                    'mho_2mkv':np.array([SCE_est_y.loc['$\tilde \mho^l$'],
+                                         SCE_est_y.loc['$\tilde \mho^h$']]),
+                    'E_2mkv':np.array([SCE_est_y.loc['$\tilde E^l$'],
+                                      SCE_est_y.loc['$\tilde E^h$']])
                 }
-# -
 
-life_cycle_paras
+life_cycle_paras_y
 
-with open("parameters.txt", "wb") as fp:
-    pickle.dump(life_cycle_paras, fp)
+# +
+#with open("parameters.txt", "wb") as fp:
+#    pickle.dump(life_cycle_paras, fp)
