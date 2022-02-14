@@ -45,10 +45,15 @@ from numpy import log, exp # For ease of reading in get_improved_grid
 
 # This implements a Python version of the discrete approximation code used in Carroll's Microeconomic DSOP notes. 
 
-# + code_folding=[2, 49, 65]
+# + code_folding=[49, 65]
 class DiscreteApproximation(object):
         
-    def __init__(self, N, cdf, pdf, invcdf, precise_summation=False):
+    def __init__(self, 
+                 N, 
+                 cdf, 
+                 pdf, 
+                 invcdf, 
+                 precise_summation=False):
         """
         Given a cdf, pdf, and invererse cdf, and number of evenly-spaced bins
         (a partition) of a state space, find the conditional expected values 

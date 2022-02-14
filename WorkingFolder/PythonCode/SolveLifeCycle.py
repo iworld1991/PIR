@@ -753,13 +753,13 @@ def solve_model_backward_iter(model,        # Class with model information
         aϵ_vec_next, σ_vec_next = aϵs_new[year2L-1,:,:,:],σs_new[year2L-1,:,:,:]
         if br==False:
             if sv ==False:
-                print('objective model without stochastic risk')
+                #print('objective model without stochastic risk')
                 aϵ_new, σ_new =EGM(aϵ_vec_next, σ_vec_next, age_id, model)
             else:
-                print('objective model with stochastic risk')
+                #print('objective model with stochastic risk')
                 aϵ_new, σ_new = EGM_sv(aϵ_vec_next, σ_vec_next, age_id, model)
         elif br==True:
-            print('subjective model with stochastic risk')
+            #print('subjective model with stochastic risk')
             aϵ_new, σ_new = EGM_br(aϵ_vec_next, σ_vec_next, age_id, model)
         aϵs_new[year2L,:,:,:] = aϵ_new
         σs_new[year2L,:,:,:] = σ_new

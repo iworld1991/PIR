@@ -71,10 +71,10 @@ from SolveLifeCycle import LifeCycle, EGM, solve_model_backward_iter
 from PrepareParameters import life_cycle_paras_q as lc_paras_q
 from PrepareParameters import life_cycle_paras_y as lc_paras_y
 
-print(list(lc_paras))
+print(list(lc_paras_y))
 
 
-# +
+# + code_folding=[0]
 ## a deterministic income profile 
 
 ## income profile 
@@ -308,98 +308,14 @@ for x,year in enumerate(years_left):
 
 # -
 
-# ## Transition matricies
+# ## Aggregate steady state distribution
 
-# + code_folding=[1]
-## create distribution grid points 
-def define_distribution_grid(model,
-                             dist_mGrid = None, 
-                             dist_pGrid = None, 
-                             m_density = 0, 
-                             num_pointsM = 48,  
-                             num_pointsP = 50, 
-                             max_p_fac = 20.0):
-        
-        '''
-        Defines the grid on which the distribution is defined. Stores the grid of market resources and permanent income as attributes of self.
-        Grid for normalized market resources and permanent income may be prespecified 
-        as dist_mGrid and dist_pGrid, respectively. If not then default grid is computed based off given parameters.
-        
-        Parameters
-        ----------
-        dist_mGrid : np.array
-                Prespecified grid for distribution over normalized market resources
-            
-        dist_pGrid : np.array
-                Prespecified grid for distribution over permanent income. 
-            
-        m_density: float
-                Density of normalized market resources grid. Default value is mdensity = 0.
-                Only affects grid of market resources if dist_mGrid=None.
-            
-        num_pointsM: float
-                Number of gridpoints for market resources grid.
-        
-        num_pointsP: float
-                 Number of gridpoints for permanent income. 
-                 This grid will be exponentiated by the function make_grid_exp_mult.
-                
-        max_p_fac : float
-                Factor that scales the maximum value of permanent income grid. 
-                Larger values increases the maximum value of permanent income grid.
-        
-        Returns
-        -------
-        List(dist_mGrid): numba typed list, sized of 1, each of which is sized n_m
-        List(dist_pGrid): numba typed list, sized of T, each of which is sized n_p
-        '''  
- 
-        ## m distribution grid 
-        if dist_mGrid == None:
-            aXtra_Grid = make_grid_exp_mult(ming = model.s_grid[0], 
-                                            maxg = model.s_grid[-1], 
-                                            ng = num_pointsM, 
-                                            timestonest = 3) #Generate Market resources grid given density and number of points
+# + code_folding=[6, 101, 140, 163, 508, 522, 560, 583, 605, 620, 638]
+#################################
+## general functions used 
+# for computing transition matrix
+##################################
 
-            for i in range(m_density):
-                axtra_shifted = np.delete(aXtra_Grid,-1) 
-                axtra_shifted = np.insert(axtra_shifted, 0,1.00000000e-04)
-                dist_betw_pts = aXtra_Grid - axtra_shifted
-                dist_betw_pts_half = dist_betw_pts/2
-                new_A_grid = axtra_shifted + dist_betw_pts_half
-                aXtra_Grid = np.concatenate((aXtra_Grid,new_A_grid))
-                aXtra_Grid = np.sort(aXtra_Grid)
-                
-            dist_mGrid =  [aXtra_Grid]
-
-        else:
-            dist_mGrid = [dist_mGrid] #If grid of market resources prespecified then use as mgrid
-            
-        ## permanent distribution grid 
-        if dist_pGrid == None:
-            dist_pGrid = [] #list of grids of permanent income    
-
-            for i in range(model.L):
-                #Dist_pGrid is taken to cover most of the ergodic distribution
-                if model.sigma_n!=0.0:
-                    std_p = model.sigma_n
-                else:
-                    std_p = 1e-2
-                max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
-                right_sided_grid = make_grid_exp_mult(1.0+1e-3, np.exp(max_p), num_pointsP, 2)
-                left_sided_gird = np.append(1.0/np.fliplr([right_sided_grid])[0],np.ones(1))
-                left_sided_gird = 1.0/np.fliplr([right_sided_grid])[0]
-                this_dist_pGrid = np.append(left_sided_gird,
-                                            right_sided_grid) # Compute permanent income grid this period. Grid of permanent income may differ dependent on PermShkStd
-                dist_pGrid.append(this_dist_pGrid)
-              
-        else:
-            dist_pGrid = [dist_pGrid] #If grid of permanent income prespecified then use as pgrid
-            
-        return List(dist_mGrid), List(dist_pGrid)
-
-
-# + code_folding=[1, 96]
 @njit
 def jump_to_grid(model, 
                  m_vals, 
@@ -533,28 +449,28 @@ def jump_to_grid_fast(model,
 
     return probGrid.flatten()
 
-# + code_folding=[0]
-## testing define distribution grid 
+## get the stationary age distribution 
+@njit
+def stationary_age_dist(L,
+                        n,
+                       LivPrb):
+    """
+    stationary age distribution of the economy given 
+    T: nb of periods of life 
+    n: Population growth rate 
+    ProbLiv: survival probability 
+    """
+    cum = 0.0
+    for i in range(L):
+        cum = cum + LivPrb**i/(1+n)
+    sigma1 = 1/cum
+    
+    dist = np.empty(L)
+    
+    for i in range(L):
+        dist[i] = sigma1*LivPrb**i/(1+n)
+    return dist 
 
-n_m = 40
-n_p = 50
-
-m_dist_grid_list,p_dist_grid_list = define_distribution_grid(lc_mkv,
-                                                             num_pointsM = n_m,
-                                                             num_pointsP = n_p)
-fix_epsGrid  = 0.0   ## Without ma shock, consumption does not depend on transitory shock                                           
-
-# + code_folding=[]
-## Markov transition matrix 
-
-print("markov state transition matrix: \n",lc_mkv.P)
-
-ss_dstn = cal_ss_2markov(lc_mkv.P)
-
-print('steady state of markov state:\n',ss_dstn)
-
-
-# + code_folding=[3]
 ## compute the list of transition matrix from age t to t+1 for all age 
 
 @njit
@@ -588,6 +504,7 @@ def calc_transition_matrix(model,
             ## each of which is sized of T, each of which is sized of n_m x n_p 
         
         ''' 
+        fix_epsGrid = 0.0
         
         ## nb of states 
         state_num = len(model.P)
@@ -901,8 +818,58 @@ def calc_transition_matrix(model,
         
         return tran_matrix_list, cPol_Grid_list,aPol_Grid_list
 
+@njit
+def aggregate_transition_matrix(model,
+                                tran_matrix_lists,  ## size model.T 
+                                dstn_0,    ## size n.z
+                                age_dist): ## size model.T 
+    ## aggregate different ages in the population
+    n1,n2 = tran_matrix_lists[0][0].shape
+    trans_matrix_agg = np.zeros((n1,n2),
+                                dtype=np.float64)
+    for z in range(len(dstn_0)):
+        for k in range(model.L):
+            trans_matrix_agg = trans_matrix_agg+dstn_0[z]*age_dist[k]*tran_matrix_lists[z][k] 
+    return trans_matrix_agg
 
-# + code_folding=[1, 24]
+"""
+def calc_ergodic_dist(transition_matrix = None):
+
+    '''
+    Calculates the ergodic distribution for the transition_matrix, 
+    here it is the distribution (before being reshaped) over normalized market resources and
+    permanent income as the eigenvector associated with the eigenvalue 1.
+    
+
+    Parameters
+    ----------
+    transition_matrix: array 
+                transition matrix whose ergordic distribution is to be solved
+
+    Returns
+    -------
+    ergodic_distr: a vector array 
+    The distribution is stored as a vector 
+    ## reshaping it to (n_m, n_p) gives a reshaped array with the ij'th element representing
+    the probability of being at the i'th point on the mGrid and the j'th
+    point on the pGrid.
+    '''
+
+    #if transition_matrix == None:
+    #    #transition_matrix = [self.tran_matrix]
+    #    print('needs transition_matrix')
+    
+    eigen, ergodic_distr = sp.linalg.eigs(transition_matrix , k=1 , which='LM')  # Solve for ergodic distribution
+    ergodic_distr = ergodic_distr.real/np.sum(ergodic_distr.real)   
+
+    #vec_erg_dstn = ergodic_distr #distribution as a vector
+    #erg_dstn = ergodic_distr.reshape((len(m_dist_grid_list[0]),
+    #                                  len(p_dist_grid_list[0]))) # distribution reshaped into len(mgrid) by len(pgrid) array
+    return ergodic_distr 
+    
+    
+"""
+
 @njit
 def initial_distribution_u(model,
                          dist_mGrid, ## new, array, grid of m for distribution 
@@ -949,283 +916,7 @@ def initial_distribution_e(model,
                                dist_pGrid)
     return NewBornDist
 
-
-# + code_folding=[5]
-## plot the initial distribution in the first period of life 
-initial_dist_u = initial_distribution_u(lc_mkv,
-                                      m_dist_grid_list[0],
-                                      p_dist_grid_list[0])
-
-initial_dist_e = initial_distribution_e(lc_mkv,
-                                      m_dist_grid_list[0],
-                                      p_dist_grid_list[0])
-
-# + code_folding=[]
-## plot the initial distribution in the first period of life 
-
-plt.title('Initial distributions over m and p given u')
-plt.spy(initial_dist_u.reshape(n_m,-1),
-       markersize = 2)
-plt.xlabel('p')
-plt.ylabel('m')
-
-# + code_folding=[0]
-## plot the initial distribution in the first period of life 
-
-plt.title('Initial distributions over m and p given e')
-plt.spy(initial_dist_e.reshape(n_m,-1),
-       markersize = 2)
-plt.xlabel('p')
-plt.ylabel('m')
-
-
-# + code_folding=[2, 17]
-## These two functions have no use for life cycle models 
-@njit
-def aggregate_transition_matrix(model,
-                                tran_matrix_lists,  ## size model.T 
-                                dstn_0,    ## size n.z
-                                age_dist): ## size model.T 
-    ## aggregate different ages in the population
-    n1,n2 = tran_matrix_lists[0][0].shape
-    trans_matrix_agg = np.zeros((n1,n2),
-                                dtype=np.float64)
-    for z in range(len(dstn_0)):
-        for k in range(model.L):
-            trans_matrix_agg = trans_matrix_agg+dstn_0[z]*age_dist[k]*tran_matrix_lists[z][k] 
-    return trans_matrix_agg
-
-## for any transition matrix, compute the ergodic distribution 
-
-def calc_ergodic_dist(transition_matrix = None):
-
-    '''
-    Calculates the ergodic distribution for the transition_matrix, 
-    here it is the distribution (before being reshaped) over normalized market resources and
-    permanent income as the eigenvector associated with the eigenvalue 1.
-    
-
-    Parameters
-    ----------
-    transition_matrix: array 
-                transition matrix whose ergordic distribution is to be solved
-
-    Returns
-    -------
-    ergodic_distr: a vector array 
-    The distribution is stored as a vector 
-    ## reshaping it to (n_m, n_p) gives a reshaped array with the ij'th element representing
-    the probability of being at the i'th point on the mGrid and the j'th
-    point on the pGrid.
-    '''
-
-    #if transition_matrix == None:
-    #    #transition_matrix = [self.tran_matrix]
-    #    print('needs transition_matrix')
-    
-    eigen, ergodic_distr = sp.linalg.eigs(transition_matrix , k=1 , which='LM')  # Solve for ergodic distribution
-    ergodic_distr = ergodic_distr.real/np.sum(ergodic_distr.real)   
-
-    #vec_erg_dstn = ergodic_distr #distribution as a vector
-    #erg_dstn = ergodic_distr.reshape((len(m_dist_grid_list[0]),
-    #                                  len(p_dist_grid_list[0]))) # distribution reshaped into len(mgrid) by len(pgrid) array
-    return ergodic_distr 
-
-
-# + code_folding=[2]
-## get the stationary age distribution 
-@njit
-def stationary_age_dist(L,
-                        n,
-                       LivPrb):
-    """
-    stationary age distribution of the economy given 
-    T: nb of periods of life 
-    n: Population growth rate 
-    ProbLiv: survival probability 
-    """
-    cum = 0.0
-    for i in range(L):
-        cum = cum + LivPrb**i/(1+n)
-    sigma1 = 1/cum
-    
-    dist = np.empty(L)
-    
-    for i in range(L):
-        dist[i] = sigma1*LivPrb**i/(1+n)
-    return dist 
-
-
-# + code_folding=[2]
-## get the distributions of each age by iterating forward over life cycle 
-
-def SSDist(model,
-          as_star,
-          σs_star,
-          m_dist_grid_list,
-          p_dist_grid_list):
-    
-    time_start = time()
-    
-    
-    ## get the embedded list sized n_z x T x n_m x n_p
-
-    tran_matrix_lists,c_PolGrid_list,a_PolGrid_list = calc_transition_matrix(model,
-                                                                             as_star, ## 
-                                                                             σs_star,
-                                                                             m_dist_grid_list,
-                                                                             p_dist_grid_list,
-                                                                            fast = False)
-    
-    
-    ## plot the initial distribution in the first period of life 
-    initial_dist_u = initial_distribution_u(model,
-                                          m_dist_grid_list[0],
-                                          p_dist_grid_list[0])
-
-    initial_dist_e = initial_distribution_e(model,
-                                            m_dist_grid_list[0],
-                                            p_dist_grid_list[0])
-    
-    ## iterate forward 
-    
-    n_m = len(m_dist_grid_list[0])
-    
-
-    dist_u_lists = []
-    dist_e_lists = []
-    dist_u_lists.append(initial_dist_u)
-    dist_e_lists.append(initial_dist_e)
-
-
-    mp_pdfs_lists_u_2d = []
-    mp_pdfs_lists_e_2d = []
-    mp_pdfs_lists_u_2d.append(initial_dist_u.reshape(n_m,-1))
-    mp_pdfs_lists_e_2d.append(initial_dist_e.reshape(n_m,-1))
-
-    mp_pdfs_lists_u = []
-    mp_pdfs_lists_e = []
-    mp_pdfs_lists_u.append(initial_dist_u.reshape(n_m,-1).sum(axis=1))
-    mp_pdfs_lists_e.append(initial_dist_e.reshape(n_m,-1).sum(axis=1))
-    
-
-    ## policy grid lists 
-    cp_u_PolGrid_list = []
-    cp_e_PolGrid_list = []
-    ap_u_PolGrid_list = []
-    ap_e_PolGrid_list = []
-
-
-    ## m/p distribution in the first period in life (newborns)
-    this_dist_u = initial_dist_u
-    this_dist_e = initial_dist_e
-
-
-    ## iterate forward for all periods in life 
-    for k in range(model.L-1):
-        ## uemp 
-        this_dist_u = np.matmul(tran_matrix_lists[0][k],
-                                this_dist_u)
-        dist_u_lists.append(this_dist_u)
-
-        this_dist_u_2d = this_dist_u.reshape(n_m,-1)
-        mp_pdfs_lists_u_2d.append(this_dist_u_2d)
-
-        this_dist_u_2d_marginal = this_dist_u_2d.sum(axis=1)
-        mp_pdfs_lists_u.append(this_dist_u_2d_marginal)
-
-        ##emp
-        this_dist_e = np.matmul(tran_matrix_lists[1][k],
-                                 this_dist_e)
-        dist_e_lists.append(this_dist_e)
-        this_dist_e_2d = this_dist_e.reshape(n_m,-1)
-        mp_pdfs_lists_e_2d.append(this_dist_e_2d)
-
-        this_dist_e_2d_marginal = this_dist_e_2d.sum(axis=1)
-        mp_pdfs_lists_e.append(this_dist_e_2d_marginal)
-    
-    for k in range(model.L):
-           
-        ## c and a for u 
-        cp_PolGrid = np.multiply.outer(c_PolGrid_list[0][k],
-                                       p_dist_grid_list[k])
-        cp_u_PolGrid_list.append(cp_PolGrid)
-
-        ap_PolGrid = np.multiply.outer(a_PolGrid_list[0][k],
-                                       p_dist_grid_list[k])
-        ap_u_PolGrid_list.append(ap_PolGrid)
-
-        ## c and a for e 
-        cp_PolGrid = np.multiply.outer(c_PolGrid_list[1][k],
-                                       p_dist_grid_list[k])
-        cp_e_PolGrid_list.append(cp_PolGrid)
-
-
-        ap_PolGrid = np.multiply.outer(a_PolGrid_list[1][k],
-                                       p_dist_grid_list[k])
-        ap_e_PolGrid_list.append(ap_PolGrid)
-
-    ## stack the distribution lists 
-    dist_lists = [dist_u_lists,
-                 dist_e_lists]
-
-    ##  joint pdfs over m and p
-    mp_pdfs_2d_lists = [mp_pdfs_lists_u_2d,
-                       mp_pdfs_lists_e_2d]
-
-    ## marginalized pdfs over m 
-    mp_pdfs_lists = [mp_pdfs_lists_u,
-                     mp_pdfs_lists_e]  ## size of n_z x model.T
-
-
-    ## c policy grid 
-    cp_PolGrid_list = [cp_u_PolGrid_list,
-                      cp_e_PolGrid_list]
-
-    # a policy grid 
-
-    ap_PolGrid_list = [ap_u_PolGrid_list,
-                      ap_e_PolGrid_list]
-
-
-    time_end = time()
-    print('time taken:'+str(time_end-time_start))
-    
-    return tran_matrix_lists,dist_lists,mp_pdfs_2d_lists,mp_pdfs_lists,cp_PolGrid_list,ap_PolGrid_list
-
-# + code_folding=[2]
-## get the transition matrix and policy grid 
-
-tran_matrix_lists, dist_lists,mp_pdfs_2d_lists,mp_pdfs_lists,cp_PolGrid_list,ap_PolGrid_list = SSDist(lc_mkv,
-                                                                                                      as_star_mkv,
-                                                                                                      σs_star_mkv,
-                                                                                                      m_dist_grid_list,
-                                                                                                      p_dist_grid_list)
-
-# + code_folding=[0]
-## stationary age distribution 
-
-age_dist = stationary_age_dist(lc_mkv.L,
-                               n = 0.0,
-                               LivPrb =lc_mkv.LivPrb)
-
-# + code_folding=[]
-## examine some of the transitionary matricies 
-#age = L
-plt.title('Transition matrix for age '+str(lc_mkv.L-1))
-plt.spy(tran_matrix_lists[1][lc_mkv.L-1],
-       #precision=0.1, 
-        markersize = 2
-       )
-plt.xlabel('p x m')
-plt.ylabel('p x m')
-plt.savefig('../Graphs/model/transition_matrix_terminal.png')
-
-
-# + code_folding=[2]
-### Aggregate C or A
-
-def Aggregate(dist_lists,   ## size of nb markov state, each of which is sized model.T, each of which is sized n_m x n_p
+def AggregateDist(dist_lists,   ## size of nb markov state, each of which is sized model.T, each of which is sized n_m x n_p
               mp_pdfs_lists,  ## list of pdfs of over m and p grids given markov state and age
               dstn_0, 
               age_dist):      ## distribution over ages
@@ -1238,28 +929,6 @@ def Aggregate(dist_lists,   ## size of nb markov state, each of which is sized m
     return X
 
 
-# + code_folding=[2, 7]
-## compute aggregate C 
-
-C = Aggregate(cp_PolGrid_list,
-              mp_pdfs_2d_lists,
-              ss_dstn,
-              age_dist)
-
-A = Aggregate(ap_PolGrid_list,
-              mp_pdfs_2d_lists,
-              ss_dstn,
-              age_dist)
-
-# -
-
-print('aggregate consumption under stationary distribution:', str(C))
-print('aggregate savings under stationary distribution:', str(A))
-
-
-# ### Stationary wealth/consumption distribution
-
-# + code_folding=[2]
 ## get the single vector of distribution 
 
 def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np 
@@ -1278,23 +947,7 @@ def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np
     
     return grid_array, mp_pdfs_array
 
-# + code_folding=[0]
-## flatten the distribution of a and its corresponding pdfs 
 
-
-ap_grid_dist, ap_pdfs_dist = faltten_dist(ap_PolGrid_list,
-                                        mp_pdfs_2d_lists,
-                                        ss_dstn,
-                                        age_dist)
-
-
-cp_grid_dist, cp_pdfs_dist = faltten_dist(cp_PolGrid_list,
-                                        mp_pdfs_2d_lists,
-                                        ss_dstn,
-                                        age_dist)
-
-
-# + code_folding=[0]
 ## lorenz curve
 def lorenz_curve(grid_distribution,
                  pdfs,
@@ -1321,20 +974,479 @@ def lorenz_curve(grid_distribution,
     return np.array(lc_vals),share_grids
 
 
-# + code_folding=[0, 2]
-## compute things needed for lorenz curve plot of asset accumulation 
+# + code_folding=[0, 5, 17, 113, 341, 356, 386]
+class HH_OLG_Markov:
+    """
+    A class that deals with distributions of the household (HH) block
+    """
 
-share_agents_cp, share_cp = lorenz_curve(cp_grid_dist,
-                                     cp_pdfs_dist,
-                                     nb_share_grid = 100)
+    def __init__(self,
+                 model = None):  
 
-## compute things needed for lorenz curve plot of asset accumulation 
+        self.model = model
+        
+        self.age_dist = stationary_age_dist(model.L,
+                                            n = 0.0,
+                                            LivPrb = model.LivPrb)
+        
+        self.ss_dstn = cal_ss_2markov(model.P)
+        
+    ## create distribution grid points 
+    def define_distribution_grid(self,
+                                 dist_mGrid = None, 
+                                 dist_pGrid = None, 
+                                 m_density = 0, 
+                                 num_pointsM = 48,  
+                                 num_pointsP = 50, 
+                                 max_p_fac = 20.0):
 
-share_agents_ap, share_ap = lorenz_curve(ap_grid_dist,
-                                     ap_pdfs_dist,
-                                     nb_share_grid = 100)
+            '''
+            Defines the grid on which the distribution is defined. Stores the grid of market resources and permanent income as attributes of self.
+            Grid for normalized market resources and permanent income may be prespecified 
+            as dist_mGrid and dist_pGrid, respectively. If not then default grid is computed based off given parameters.
+
+            Parameters
+            ----------
+            dist_mGrid : np.array
+                    Prespecified grid for distribution over normalized market resources
+
+            dist_pGrid : np.array
+                    Prespecified grid for distribution over permanent income. 
+
+            m_density: float
+                    Density of normalized market resources grid. Default value is mdensity = 0.
+                    Only affects grid of market resources if dist_mGrid=None.
+
+            num_pointsM: float
+                    Number of gridpoints for market resources grid.
+
+            num_pointsP: float
+                     Number of gridpoints for permanent income. 
+                     This grid will be exponentiated by the function make_grid_exp_mult.
+
+            max_p_fac : float
+                    Factor that scales the maximum value of permanent income grid. 
+                    Larger values increases the maximum value of permanent income grid.
+
+            Returns
+            -------
+            List(dist_mGrid): numba typed list, sized of 1, each of which is sized n_m
+            List(dist_pGrid): numba typed list, sized of T, each of which is sized n_p
+            '''  
+            
+            ## model
+            
+            model = self.model 
+            
+            ## m distribution grid 
+            if dist_mGrid == None:
+                aXtra_Grid = make_grid_exp_mult(ming = model.s_grid[0], 
+                                                maxg = model.s_grid[-1], 
+                                                ng = num_pointsM, 
+                                                timestonest = 3) #Generate Market resources grid given density and number of points
+
+                for i in range(m_density):
+                    axtra_shifted = np.delete(aXtra_Grid,-1) 
+                    axtra_shifted = np.insert(axtra_shifted, 0,1.00000000e-04)
+                    dist_betw_pts = aXtra_Grid - axtra_shifted
+                    dist_betw_pts_half = dist_betw_pts/2
+                    new_A_grid = axtra_shifted + dist_betw_pts_half
+                    aXtra_Grid = np.concatenate((aXtra_Grid,new_A_grid))
+                    aXtra_Grid = np.sort(aXtra_Grid)
+
+                dist_mGrid =  [aXtra_Grid]
+
+            else:
+                dist_mGrid = [dist_mGrid] #If grid of market resources prespecified then use as mgrid
+
+            ## permanent distribution grid 
+            if dist_pGrid == None:
+                dist_pGrid = [] #list of grids of permanent income    
+
+                for i in range(model.L):
+                    #Dist_pGrid is taken to cover most of the ergodic distribution
+                    if model.sigma_n!=0.0:
+                        std_p = model.sigma_n
+                    else:
+                        std_p = 1e-2
+                    max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
+                    right_sided_grid = make_grid_exp_mult(1.0+1e-3, np.exp(max_p), num_pointsP, 2)
+                    left_sided_gird = np.append(1.0/np.fliplr([right_sided_grid])[0],np.ones(1))
+                    left_sided_gird = 1.0/np.fliplr([right_sided_grid])[0]
+                    this_dist_pGrid = np.append(left_sided_gird,
+                                                right_sided_grid) # Compute permanent income grid this period. Grid of permanent income may differ dependent on PermShkStd
+                    dist_pGrid.append(this_dist_pGrid)
+
+            else:
+                dist_pGrid = [dist_pGrid] #If grid of permanent income prespecified then use as pgrid
+                
+            self.m_dist_grid_list = List(dist_mGrid)
+            self.p_dist_grid_list = List(dist_pGrid)
+
+            #return self.dist_mGrid, self.dist_pGrid
+        
+            
+    ## get the distributions of each age by iterating forward over life cycle 
+
+    def ComputeSSDist(self,
+              as_star = None,
+              σs_star = None,
+              m_dist_grid_list = None,
+              p_dist_grid_list = None):
+        
+        model = self.model
+        m_dist_grid_list = self.m_dist_grid_list
+        p_dist_grid_list = self.p_dist_grid_list
+        ss_dstn = self.ss_dstn
+        age_dist = self.age_dist
+        
+        
+        time_start = time()
+
+        ## get the embedded list sized n_z x T x n_m x n_p
+
+        tran_matrix_lists,c_PolGrid_list,a_PolGrid_list = calc_transition_matrix(model,
+                                                                                 as_star, ## 
+                                                                                 σs_star,
+                                                                                 m_dist_grid_list,
+                                                                                 p_dist_grid_list,
+                                                                                 fast = False)
+        
+        ## save the output into the model 
+        self.tran_matrix_lists = tran_matrix_lists
+        
+        ## the initial distribution in the first period of life 
+        initial_dist_u = initial_distribution_u(model,
+                                              m_dist_grid_list[0],
+                                              p_dist_grid_list[0])
+
+        initial_dist_e = initial_distribution_e(model,
+                                                m_dist_grid_list[0],
+                                                p_dist_grid_list[0])
+        
+        self.initial_dist_u=initial_dist_u
+        self.initial_dist_e=initial_dist_e
+
+
+        ## iterate forward 
+
+        n_m = len(m_dist_grid_list[0])
+
+
+        dist_u_lists = []
+        dist_e_lists = []
+        dist_u_lists.append(initial_dist_u)
+        dist_e_lists.append(initial_dist_e)
+
+
+        mp_pdfs_lists_u_2d = []
+        mp_pdfs_lists_e_2d = []
+        mp_pdfs_lists_u_2d.append(initial_dist_u.reshape(n_m,-1))
+        mp_pdfs_lists_e_2d.append(initial_dist_e.reshape(n_m,-1))
+
+        mp_pdfs_lists_u = []
+        mp_pdfs_lists_e = []
+        mp_pdfs_lists_u.append(initial_dist_u.reshape(n_m,-1).sum(axis=1))
+        mp_pdfs_lists_e.append(initial_dist_e.reshape(n_m,-1).sum(axis=1))
+
+
+        ## policy grid lists 
+        cp_u_PolGrid_list = []
+        cp_e_PolGrid_list = []
+        ap_u_PolGrid_list = []
+        ap_e_PolGrid_list = []
+
+
+        ## m/p distribution in the first period in life (newborns)
+        this_dist_u = initial_dist_u
+        this_dist_e = initial_dist_e
+
+
+        ## iterate forward for all periods in life 
+        for k in range(model.L-1):
+            ## uemp 
+            this_dist_u = np.matmul(tran_matrix_lists[0][k],
+                                    this_dist_u)
+            dist_u_lists.append(this_dist_u)
+
+            this_dist_u_2d = this_dist_u.reshape(n_m,-1)
+            mp_pdfs_lists_u_2d.append(this_dist_u_2d)
+
+            this_dist_u_2d_marginal = this_dist_u_2d.sum(axis=1)
+            mp_pdfs_lists_u.append(this_dist_u_2d_marginal)
+
+            ##emp
+            this_dist_e = np.matmul(tran_matrix_lists[1][k],
+                                     this_dist_e)
+            dist_e_lists.append(this_dist_e)
+            this_dist_e_2d = this_dist_e.reshape(n_m,-1)
+            mp_pdfs_lists_e_2d.append(this_dist_e_2d)
+
+            this_dist_e_2d_marginal = this_dist_e_2d.sum(axis=1)
+            mp_pdfs_lists_e.append(this_dist_e_2d_marginal)
+
+        for k in range(model.L):
+
+            ## c and a for u 
+            cp_PolGrid = np.multiply.outer(c_PolGrid_list[0][k],
+                                           p_dist_grid_list[k])
+            cp_u_PolGrid_list.append(cp_PolGrid)
+
+            ap_PolGrid = np.multiply.outer(a_PolGrid_list[0][k],
+                                           p_dist_grid_list[k])
+            ap_u_PolGrid_list.append(ap_PolGrid)
+
+            ## c and a for e 
+            cp_PolGrid = np.multiply.outer(c_PolGrid_list[1][k],
+                                           p_dist_grid_list[k])
+            cp_e_PolGrid_list.append(cp_PolGrid)
+
+
+            ap_PolGrid = np.multiply.outer(a_PolGrid_list[1][k],
+                                           p_dist_grid_list[k])
+            ap_e_PolGrid_list.append(ap_PolGrid)
+
+        ## stack the distribution lists 
+        dist_lists = [dist_u_lists,
+                     dist_e_lists]
+
+        ##  joint pdfs over m and p
+        mp_pdfs_2d_lists = [mp_pdfs_lists_u_2d,
+                           mp_pdfs_lists_e_2d]
+
+        ## marginalized pdfs over m 
+        mp_pdfs_lists = [mp_pdfs_lists_u,
+                         mp_pdfs_lists_e]  ## size of n_z x model.T
+
+
+        ## c policy grid 
+        cp_PolGrid_list = [cp_u_PolGrid_list,
+                          cp_e_PolGrid_list]
+
+        # a policy grid 
+
+        ap_PolGrid_list = [ap_u_PolGrid_list,
+                          ap_e_PolGrid_list]
+
+
+        time_end = time()
+        print('time taken:'+str(time_end-time_start))
+        
+        self.dist_list = dist_lists
+        self.mp_pdfs_2d_lists = mp_pdfs_2d_lists
+        self.mp_pdfs_lists = mp_pdfs_lists
+        self.ap_PolGrid_list = ap_PolGrid_list
+        self.cp_PolGrid_list = cp_PolGrid_list
+        
+        
+        ## also store flatten list of level of a and c
+        self.ap_grid_dist, self.ap_pdfs_dist = faltten_dist(ap_PolGrid_list,
+                                                            mp_pdfs_2d_lists,
+                                                            ss_dstn,
+                                                            age_dist)
+            
+        self.cp_grid_dist, self.cp_pdfs_dist = faltten_dist(cp_PolGrid_list,
+                                                            mp_pdfs_2d_lists,
+                                                            ss_dstn,
+                                                            age_dist)
+
+        #return tran_matrix_lists,dist_lists,mp_pdfs_2d_lists,mp_pdfs_lists,cp_PolGrid_list,ap_PolGrid_list
+        
+
+    ### Aggregate C or A
+
+    def Aggregate(self):
+        ## compute aggregate C 
+        cp_PolGrid_list = self.cp_PolGrid_list
+        ap_PolGrid_list = self.ap_PolGrid_list
+        mp_pdfs_2d_lists = self.mp_pdfs_2d_lists
+        ss_dstn = self.ss_dstn
+        age_dist = self.age_dist
+
+
+        self.C = AggregateDist(cp_PolGrid_list,
+                              mp_pdfs_2d_lists,
+                              ss_dstn,
+                              age_dist)
+
+        self.A = AggregateDist(ap_PolGrid_list,
+                              mp_pdfs_2d_lists,
+                              ss_dstn,
+                              age_dist)
+
+    ### Aggregate within age 
+    
+    def AggregatebyAge(self):
+        
+        model = self.model 
+        
+        cp_PolGrid_list = self.cp_PolGrid_list
+        ap_PolGrid_list = self.ap_PolGrid_list
+        mp_pdfs_2d_lists = self.mp_pdfs_2d_lists
+        ss_dstn = self.ss_dstn
+        age_dist = self.age_dist
+        
+            ### Aggregate distributions within age
+
+        C_life = []
+        A_life = []
+
+
+        for t in range(model.L):
+            age_dist_sparse = np.zeros(model.L)
+            age_dist_sparse[t] = 1.0
+
+            ## age specific wealth 
+            C_this_age = AggregateDist(cp_PolGrid_list,
+                                   mp_pdfs_2d_lists,
+                                   ss_dstn,
+                                   age_dist_sparse)
+
+            C_life.append(C_this_age)
+
+            A_this_age = AggregateDist(ap_PolGrid_list,
+                                  mp_pdfs_2d_lists,
+                                  ss_dstn,
+                                  age_dist_sparse)
+            A_life.append(A_this_age)
+            
+        self.A_life = A_life
+        self.C_life = C_life 
+        
+        
+    ### Wealth distribution over life cycle 
+
+    def get_lifecycle_dist(self):
+
+        model = self.model 
+        ap_PolGrid_list = self.ap_PolGrid_list
+        cp_PolGrid_list = self.cp_PolGrid_list
+        mp_pdfs_2d_lists = self.mp_pdfs_2d_lists
+        ss_dstn = self.ss_dstn
+
+        ## Flatten distribution by age
+        ap_grid_dist_life = []
+        ap_pdfs_dist_life = []
+        cp_grid_dist_life = []
+        cp_pdfs_dist_life = []
+
+
+        for t in range(model.L):
+
+            age_dist_sparse = np.zeros(model.L)
+            age_dist_sparse[t] = 1.0
+
+            ap_grid_dist_this_age, ap_pdfs_dist_this_age = faltten_dist(ap_PolGrid_list,
+                                                                        mp_pdfs_2d_lists,
+                                                                        ss_dstn,
+                                                                        age_dist_sparse)
+
+            ap_grid_dist_life.append(ap_grid_dist_this_age)
+            ap_pdfs_dist_life.append(ap_pdfs_dist_this_age)
+
+            cp_grid_dist_this_age, cp_pdfs_dist_this_age = faltten_dist(cp_PolGrid_list,
+                                                                        mp_pdfs_2d_lists,
+                                                                        ss_dstn,
+                                                                        age_dist_sparse)
+
+            cp_grid_dist_life.append(cp_grid_dist_this_age)
+            cp_pdfs_dist_life.append(cp_pdfs_dist_this_age)
+
+
+        self.ap_grid_dist_life = ap_grid_dist_life
+        self.ap_pdfs_dist_life = ap_pdfs_dist_life
+
+        self.cp_grid_dist_life = cp_grid_dist_life
+        self.cp_pdfs_dist_life = cp_pdfs_dist_life
+            
+            
+    ### Get lorenz weights  
+    def Lorenz(self,
+              variable='a'):
+        """
+        returns the lorenz weights and value 
+        """
+        ap_grid_dist = self.ap_grid_dist
+        ap_pdfs_dist = self.ap_pdfs_dist
+        cp_grid_dist = self.cp_grid_dist
+        cp_pdfs_dist = self.cp_pdfs_dist
+    
+        
+        if variable =='a':
+            
+            
+        ## flatten the distribution of a and its corresponding pdfs 
+
+
+             ## compute things needed for lorenz curve plot of asset accumulation 
+            
+            share_agents_ap, share_ap = lorenz_curve(ap_grid_dist,
+                                                 ap_pdfs_dist,
+                                                 nb_share_grid = 100)
+            
+            return share_agents_ap,share_ap
+        
+        elif variable =='c':
+            
+            
+            ## compute things needed for lorenz curve plot of asset accumulation 
+
+            share_agents_cp, share_cp = lorenz_curve(cp_grid_dist,
+                                                 cp_pdfs_dist,
+                                                 nb_share_grid = 100)
+            
+            return share_agents_cp,share_cp
+
+
+# + code_folding=[0]
+## testing of the economy class 
+
+HH = HH_OLG_Markov(model=lc_mkv)
+
+## Markov transition matrix 
+
+print("markov state transition matrix: \n",lc_mkv.P)
+
+print('steady state of markov state:\n',HH.ss_dstn)
+
+
+## computing transition matrix 
+
+HH.define_distribution_grid(num_pointsM = 40, 
+                            num_pointsP = 50)
+HH.ComputeSSDist(as_star = as_star_mkv,
+                  σs_star = σs_star_mkv)
+
+HH.Aggregate()
 
 # + code_folding=[]
+## plot the initial distribution in the first period of life 
+
+plt.title('Initial distributions over m and p given u')
+plt.spy(HH.initial_dist_u.reshape(n_m,-1),
+       markersize = 2)
+plt.xlabel('p')
+plt.ylabel('m')
+
+# + code_folding=[]
+## plot the initial distribution in the first period of life 
+
+plt.title('Initial distributions over m and p given e')
+plt.spy(HH.initial_dist_e.reshape(n_m,-1),
+       markersize = 2)
+plt.xlabel('p')
+plt.ylabel('m')
+# -
+
+print('aggregate consumption under stationary distribution:', str(HH.C))
+print('aggregate savings under stationary distribution:', str(HH.A))
+
+# ### Stationary wealth/consumption distribution
+
+share_agents_cp,share_cp = HH.Lorenz(variable='c')
+share_agents_ap,share_ap = HH.Lorenz(variable='a')
+
+# + code_folding=[0]
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
@@ -1355,170 +1467,111 @@ SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
 
 
 # + code_folding=[0]
-## Lorenz curve of steady state wealth distribution from SCF 
-
-fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(SCF_share_agents_ap,SCF_share_ap, 'r--',label='Lorenz curve from SCF')
-ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
-#plt.savefig('../Graphs/model/lorenz_a_test.png')
-
-# + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(share_agents_cp,share_cp, 'r--',label='Lorenz curve of level of consumption')
+ax.plot(share_agents_cp,share_cp, 'r--',label='Lorenz curve of consumption')
 ax.plot(share_agents_cp,share_agents_cp, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
 plt.savefig('../Graphs/model/lorenz_c_test.png')
 
-
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(share_agents_ap,share_ap, 'r--',label='Lorenz curve of level of savings')
-ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve from SCF')
+ax.plot(share_agents_ap,share_ap, 'r--',label='Lorenz curve of wealth: model')
+ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve of wealth: SCF')
 ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
 plt.savefig('../Graphs/model/lorenz_a_test.png')
 
-# + code_folding=[3]
+# + code_folding=[]
 ## Wealth distribution 
 
-plt.title('Wealth distribution')
-plt.plot(np.log(ap_grid_dist+0.0000000001), 
+ap_grid_dist = HH.ap_grid_dist
+ap_pdfs_dist = HH.ap_pdfs_dist
+cp_grid_dist = HH.cp_grid_dist
+cp_pdfs_dist = HH.cp_pdfs_dist
+
+
+fig, ax = plt.subplots(figsize=(6,4))
+ax.set_title('Wealth distribution')
+ax.plot(np.log(ap_grid_dist+0.0000000001), 
          ap_pdfs_dist)
-plt.xlabel(r'$a$')
-plt.ylabel(r'$prob(a)$')
-plt.savefig('../Graphs/model/distribution_a_test.png')
+ax.set_xlabel(r'$a$')
+ax.set_ylabel(r'$prob(a)$')
+fig.savefig('../Graphs/model/distribution_a_test.png')
+
+fig, ax = plt.subplots(figsize=(6,4))
+ax.set_title('Consumption distribution')
+ax.plot(np.log(cp_grid_dist), 
+         cp_pdfs_dist)
+ax.set_xlabel(r'$c$')
+ax.set_ylabel(r'$prob(a)$')
+fig.savefig('../Graphs/model/distribution_c_test.png')
 # -
 
-plt.title('Consumption distribution')
-plt.plot(np.log(cp_grid_dist), 
-         cp_pdfs_dist)
-plt.xlabel(r'$c$')
-plt.ylabel(r'$prob(a)$')
-plt.savefig('../Graphs/model/distribution_c_test.png')
-
-# ### Life-cycle profile and distribution
+# ### Life-cycle profile and wealth distribution
 
 import pandas as pd
 SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
 
+# + code_folding=[]
+HH.AggregatebyAge()
+
+A_life = HH.A_life
+C_life = HH.C_life
+
+
 # + code_folding=[0]
 ## plot life cycle profile
 
-fig, ax = plt.subplots()
+age_lc = SCF_profile.index
+
+fig, ax = plt.subplots(figsize=(10,5))
 plt.title('Life cycle profile of wealth and consumption')
-ax.plot(SCF_profile.index,
-        SCF_profile['av_wealth'],
+ax.plot(age_lc[1:],
+        np.log(A_life),
        'r-',
-       label='wealth')
-#ax.vlines(T,
+       label='model')
+
+#ax.vlines(lc_mkv.T+25,
 #          np.min(A_life),
 #          np.max(A_life),
-#          color='k',
+#          color='b',
 #          label='retirement')
 
+ax2 = ax.twinx()
+ax2.set_ylim([10.5,11.5])
+ax2.bar(age_lc[1:],
+        SCF_profile['av_wealth'][1:],
+       #'k--',
+       label='SCF (RHS)')
+
+#ax2.plot(age,
+#        C_life,
+#        'b--',
+#        label='consumption (RHS)')
+
 ax.set_xlabel('Age')
-ax.set_ylabel('Net Worth')
-ax.legend(loc=1)
-#fig.savefig('../Graphs/model/life_cycle_SCF_test.png')
-
-# + code_folding=[0]
-### Aggregate distributions within age
-
-C_life = []
-A_life = []
-
-
-for t in range(lc_mkv.L):
-    age_dist_sparse = np.zeros(lc_mkv.L)
-    age_dist_sparse[t] = 1.0
-    
-    ## age specific wealth 
-    C_this_age = Aggregate(cp_PolGrid_list,
-              mp_pdfs_2d_lists,
-              ss_dstn,
-              age_dist_sparse)
-    
-    C_life.append(C_this_age)
-
-    A_this_age = Aggregate(ap_PolGrid_list,
-                          mp_pdfs_2d_lists,
-                          ss_dstn,
-                          age_dist_sparse)
-    
-    A_life.append(A_this_age)
-
-
-# + code_folding=[0]
-## plot life cycle profile
-
-fig, ax = plt.subplots()
-plt.title('Life cycle profile of wealth and consumption')
-ax.plot(range(lc_mkv.L),
-        A_life,
-       'r-',
-       label='wealth')
-ax.vlines(lc_mkv.T,
-          np.min(A_life),
-          np.max(A_life),
-          color='k',
-          label='retirement')
-ax2= ax.twinx()
-ax2.plot(range(lc_mkv.L),
-        C_life,
-        'b--',
-        label='consumption (RHS)')
-
-ax.set_xlabel('Age since entering job market')
-ax.set_ylabel('Wealth')
-ax2.set_ylabel('Consumption')
+ax.set_ylabel('Log wealth')
+ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_c_a_test.png')
+fig.savefig('../Graphs/model/life_cycle_a_test.png')
 
-# + code_folding=[0]
-### Distribution over life cycle 
+# + code_folding=[]
+## get the within-age distribution 
 
-## Flatten distribution by age
+HH.get_lifecycle_dist()
 
-ap_grid_dist_life = []
-ap_pdfs_dist_life = []
-cp_grid_dist_life = []
-cp_pdfs_dist_life = []
+ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
+cp_grid_dist_life,cp_pdfs_dist_life = HH.cp_grid_dist_life,HH.cp_pdfs_dist_life
 
-
-for t in range(lc_mkv.L):
-    
-    age_dist_sparse = np.zeros(lc_mkv.L)
-    age_dist_sparse[t] = 1.0
-    
-    
-    ap_grid_dist_this_age, ap_pdfs_dist_this_age = faltten_dist(ap_PolGrid_list,
-                                                                mp_pdfs_2d_lists,
-                                                                ss_dstn,
-                                                                age_dist_sparse)
-    
-    ap_grid_dist_life.append(ap_grid_dist_this_age)
-    ap_pdfs_dist_life.append(ap_pdfs_dist_this_age)
-
-    cp_grid_dist_this_age, cp_pdfs_dist_this_age = faltten_dist(cp_PolGrid_list,
-                                                                mp_pdfs_2d_lists,
-                                                                ss_dstn,
-                                                                age_dist_sparse)
-    
-    cp_grid_dist_life.append(cp_grid_dist_this_age)
-    cp_pdfs_dist_life.append(cp_pdfs_dist_this_age)
-
-# + code_folding=[0]
+# + code_folding=[]
 ## create the dataframe to plot distributions over the life cycle 
 ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
 cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
@@ -1528,7 +1581,7 @@ cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
 ap_range = list(ap_pdfs_life.index)
 cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[0]
+# + code_folding=[]
 fig, axes = joypy.joyplot(ap_pdfs_life, 
                           kind="values", 
                           x_range=ap_range,
@@ -1538,7 +1591,6 @@ fig, axes = joypy.joyplot(ap_pdfs_life,
 fig.savefig('../Graphs/model/life_cycle_distribution_a_test.png')
 #axes[-1].set_xticks(a_values);
 
-# + code_folding=[0]
 fig, axes = joypy.joyplot(cp_pdfs_life, 
                           kind="values", 
                           x_range=cp_range,
@@ -1552,52 +1604,17 @@ fig.savefig('../Graphs/model/life_cycle_distribution_c_test.png')
 
 # ### General Equilibrium 
 
-# + code_folding=[0]
-def unemp_insurance2tax(μ,
-                        ue_fraction):
-    """
-    under balanced government budget, what is the tax rate on income corresponds to the ue benefit μ
-    (1-ue_fraction)x tax + ue_fraction x mu x tax = ue_fraction x mu 
-    --> tax = (ue_fraction x mu)/(1-ue_fraction)+ue_fraction x mu
-    """
-    num = (ue_fraction*μ)
-    dem = (1-ue_fraction)+(ue_fraction*μ)
-    return num/dem
+# + code_folding=[0, 9, 12, 37, 40]
+economy_data = [
+    ('Z', float64),            
+    ('K', float64),             
+    ('L',float64),              
+    ('α',float64),           
+    ('δ',float64)
+]
 
-
-# + code_folding=[2]
-## needs to test this function 
-
-def SS2tax(SS, ## social security /pension replacement ratio 
-           T,  ## retirement years
-           age_dist,  ## age distribution in the economy 
-           G,         ## permanent growth fractor lists over cycle
-           emp_fraction):  ## fraction of employment in work age population 
-    pic_share = np.cumprod(G)  ## generational permanent income share 
-    pic_age_share = np.multiply(pic_share,
-                               age_dist)  ## generational permanent income share weighted by population weights
-    
-    dependence_ratio = np.sum(pic_age_share[T:])/np.sum(pic_age_share[:T-1]*emp_fraction)
-    ## old dependence ratio 
-    
-    λ_SS = SS*dependence_ratio 
-    ## social security tax rate on labor income of employed 
-    
-    return λ_SS
-
-
-# + code_folding=[]
-#economy_data = [
-#    ('Z', float64),            
-#    ('K', float64),             
-#    ('L',float64),              
-#    ('α',float64),           
-#    ('δ',float64)
-#]
-
-# + code_folding=[0, 4]
 #@jitclass(economy_data)
-class Economy:
+class CDProduction:
     ## An economy class that saves market and production parameters 
     
     def __init__(self,
@@ -1627,246 +1644,359 @@ class Economy:
     
     def R(self):
         return 1+self.YK()-self.δ
+    
+    def normlize_Z(self,
+                  target_KY = 3.0,
+                  target_W = 1.0,
+                  N_ss = 0.9):
+        from scipy.optimize import fsolve
 
 
-# + code_folding=[8, 15]
-from scipy.optimize import fsolve
+        KY_ratio_target = 3
+        W_target = 1.0
+        print('target KY',KY_ratio_target)
+        print('steady state emp pop',N_ss)
 
-CDEconomy = Economy()
+        def distance(ZK):
+            self.N = N_ss
+            self.Z,self.K = ZK
+            distance1 = self.KY()- KY_ratio_target
+            distance2 = self.YL()- W_target 
+            return [distance1,distance2]
 
-KY_ratio_target = 3
-W_target = 1.0
-N_ss = 0.9
+        Z_root,K_root = fsolve(distance,
+                               [0.7,0.5])
 
-def distance(ZK):
-    CDEconomy.N = N_ss
-    CDEconomy.Z,CDEconomy.K = ZK
-    distance1 = CDEconomy.KY()- KY_ratio_target
-    distance2 = CDEconomy.YL()- W_target 
-    return [distance1,distance2]
+        print('Normalized Z',Z_root)
+        print('Normalized K',K_root)
 
-Z_root,K_root = fsolve(distance,
-                       [0.7,0.5])
+        self.Z,self.K = Z_root,K_root
 
-print('Normalized Z',Z_root)
-print('Normalized K',K_root)
+        W_fake = self.YL()
+        KY_fake = self.KY()
+        R_fake = self.R()
 
-CDEconomy.Z,CDEconomy.K = Z_root,K_root
-
-W_fake = CDEconomy.YL()
-KY_fake = CDEconomy.KY()
-R_fake = CDEconomy.R()
-
-print('W',W_fake)
-print('KY',KY_fake)
-print('R',R_fake)
+        print('W',W_fake)
+        print('KY',KY_fake)
+        print('R',R_fake)
 
 
-# + code_folding=[2]
-## stationary asset demand for a given capital stock/factor price
-
-def StE_K_d(model,
-            K_s,
-            dstn):  ## distribution between emp and unemp 
+# + code_folding=[0, 13]
+def unemp_insurance2tax(μ,
+                        ue_fraction):
     """
-    Given a proposed capital stock/asset supply and initial wealth from accidental bequests,
-    this function generates the stationary asset demands, and resulting accidental bequests 
-
+    under balanced government budget, what is the tax rate on income corresponds to the ue benefit μ
+    (1-ue_fraction)x tax + ue_fraction x mu x tax = ue_fraction x mu 
+    --> tax = (ue_fraction x mu)/(1-ue_fraction)+ue_fraction x mu
     """
-    ################################
-    ## Step 0. Parameterize the model 
-    ################################
-    ## get the L based on current employed fraction
-    uemp_now,emp_now = dstn[0],dstn[1]
-    print('Labor force',str(emp_now))
-    
-    
-    ## obtaine factor prices from FOC of firms 
-    #print(K_s)
-    #print(nb.typeof(K_s))
-    one_economy = Economy(Z = Z_root,
-                          K = K_s,
-                          L = emp_now)
-    #print(nb.typeof(one_economy.K))
-    print('Capital stock',str(K_s))
-    W,R = one_economy.YL(),one_economy.R()
-    print('Wage rate',str(W))
-    print('Real interest rate',str(R))
-    ##################################
-    model.W, model.R = W,R
-    ##################################
-    
-    ## stable age distribution 
-    age_dist = stationary_age_dist(model.L,
-                                   n = 0.0,
-                                   LivPrb =model.LivPrb)
-    
-    ## obtain tax rate from the government budget balance 
-    
-    model.λ = unemp_insurance2tax(model.unemp_insurance,
-                                 uemp_now)
-    print('Tax rate',str(model.λ))
-    
-    ## obtain social security rate balancing the SS replacement ratio 
-    
-    model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
-                        model.T,  ## retirement years
-                        age_dist,  ## age distribution in the economy 
-                        model.G,         ## permanent growth fractor lists over cycle
-                        emp_now)
-  
-    print('Social security tax rate',str(model.λ_SS))
+    num = (ue_fraction*μ)
+    dem = (1-ue_fraction)+(ue_fraction*μ)
+    return num/dem
 
-    ################################
-    ## Step 1. Solve the model 
-    ################################
+## needs to test this function 
 
-    ## terminal period solution
-    k = len(model.s_grid)
-    k2 =len(model.eps_grid)
-    n = len(model.P)
-
-    σ_init = np.empty((k,k2,n))
-    a_init = np.empty((k,k2,n))
-
-    # terminal solution c = m 
-    for z in range(n):
-        for j in range(k2):
-            a_init[:,j,z] = 2*model.s_grid
-            σ_init[:,j,z] = a_init[:,j,z] 
-
-    ## solve the model 
-    as_star, σs_star = solve_model_backward_iter(model,
-                                                 a_init,
-                                                 σ_init)
+def SS2tax(SS, ## social security /pension replacement ratio 
+           T,  ## retirement years
+           age_dist,  ## age distribution in the economy 
+           G,         ## permanent growth fractor lists over cycle
+           emp_fraction):  ## fraction of employment in work age population 
+    pic_share = np.cumprod(G)  ## generational permanent income share 
+    pic_age_share = np.multiply(pic_share,
+                               age_dist)  ## generational permanent income share weighted by population weights
     
-    ################################
-    ## Step 2. StE distribution
-    ################################
+    dependence_ratio = np.sum(pic_age_share[T:])/np.sum(pic_age_share[:T-1]*emp_fraction)
+    ## old dependence ratio 
+    
+    λ_SS = SS*dependence_ratio 
+    ## social security tax rate on labor income of employed 
+    
+    return λ_SS
 
 
-    ## accidental transfers 
-    #model.init_b = init_b
-    
-    ## Get the StE K_d
-    ## get the transition matrix and policy grid 
-    
-    m_dist_grid_list,p_dist_grid_list = define_distribution_grid(model,
-                                                             num_pointsM = n_m,
-                                                             num_pointsP = n_p)
+# + code_folding=[5, 26, 160, 172]
+class Market_OLG_mkv:
+    """
+    A class of the market
+    """
 
-    tran_matrix_lists, dist_lists,mp_pdfs_2d_lists,mp_pdfs_lists,cp_PolGrid_list,ap_PolGrid_list = SSDist(model,
-                                                                                                          as_star,
-                                                                                                          σs_star,
-                                                                                                          m_dist_grid_list,
-                                                                                                        p_dist_grid_list)    
+    def __init__(self,
+                 households=None,
+                 production=None):  
+
+        self.households = households   ## HH block 
+        self.model = households.model  ## life-cycle model 
+        
+        ### normalize A based on the model parameters first
+        ss_dstn = households.ss_dstn
+        age_dist = households.age_dist 
+        T =  self.model.T
+        L_ss = np.sum(age_dist[:T-1])*ss_dstn[1] ## employment fraction for working age population
+        self.households.emp_ss = L_ss
+        production.normlize_Z(target_KY = 3.0,
+                              target_W = 1.0,
+                               N_ss = L_ss)
+        self.production = production   ## Produciton function 
+
+
+    ## stationary asset demand for a given capital stock/factor price
+
+    def StE_K_d(self,
+                K_s,   ## given asset supply 
+                dstn):  ## distribution between emp and unemp 
+        """
+        Given a proposed capital stock/asset supply ,
+        this function generates the stationary asset demands 
+
+        """
+        model = self.model 
+        households = self.households
+        production = self.production 
+        emp_now = households.emp_ss
+        age_dist = households.age_dist
+        T = self.model.T ## retirement age 
+        ################################
+        ## Step 0. Parameterize the model 
+        ################################
+        ## get the L based on current employed fraction
+        uemp_now,emp_now = dstn[0]*np.sum(age_dist[:T-1]),dstn[1]*np.sum(age_dist[:T-1])
+        print('Labor force',str(emp_now))
+
+
+        ## obtaine factor prices from FOC of firms 
+        
+        production.K = K_s
+        production.L = emp_now
+        
+        #print(nb.typeof(one_economy.K))
+        print('Capital stock',str(K_s))
+        W,R = production.YL(),production.R()
+        print('Wage rate',str(W))
+        print('Real interest rate',str(R))
+        
+        ##################################
+        model.W, model.R = W,R
+        ##################################
+
+        ## stable age distribution 
+        age_dist = households.age_dist
+        #stationary_age_dist(model.L,#n = 0.0,#LivPrb =model.LivPrb)
+
+        ## obtain tax rate from the government budget balance 
+
+        model.λ = unemp_insurance2tax(model.unemp_insurance,
+                                     uemp_now)
+        print('Tax rate',str(model.λ))
+
+        ## obtain social security rate balancing the SS replacement ratio 
+
+        model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
+                            model.T,  ## retirement years
+                            age_dist,  ## age distribution in the economy 
+                            model.G,         ## permanent growth fractor lists over cycle
+                            emp_now)
+
+        print('Social security tax rate',str(model.λ_SS))
+
+        ################################
+        ## Step 1. Solve the model 
+        ################################
+
+        ## terminal period solution
+        k = len(model.s_grid)
+        k2 =len(model.eps_grid)
+        n = len(model.P)
+
+        σ_init = np.empty((k,k2,n))
+        a_init = np.empty((k,k2,n))
+
+        # terminal solution c = m 
+        for z in range(n):
+            for j in range(k2):
+                a_init[:,j,z] = 2*model.s_grid
+                σ_init[:,j,z] = a_init[:,j,z] 
+
+        ## solve the model 
+        as_star, σs_star = solve_model_backward_iter(model,
+                                                     a_init,
+                                                     σ_init)
+
+        ################################
+        ## Step 2. StE distribution
+        ################################
+
+
+        ## accidental transfers 
+        #model.init_b = init_b
+
+        ## Get the StE K_d
+        ## get the transition matrix and policy grid 
+        
+        n_m = 40
+        n_p = 50
+        households.define_distribution_grid(num_pointsM = n_m, 
+                                            num_pointsP = n_p)
+        households.ComputeSSDist(as_star = as_star,
+                                 σs_star = σs_star)
+
+        households.Aggregate()
+        #m_dist_grid_list,p_dist_grid_list = define_distribution_grid(model,
+        #                                                         num_pointsM = n_m,
+        #                                                         num_pointsP = n_p)
+
+        #tran_matrix_lists, dist_lists,mp_pdfs_2d_lists,mp_pdfs_lists,cp_PolGrid_list,ap_PolGrid_list = SSDist(model,
+        #                                                                                                      as_star,
+        #                                                                                                      σs_star,
+        #                                                                                                      m_dist_grid_list,
+        #                                                                                                   p_dist_grid_list)    
+
+
+        #A = Aggregate(ap_PolGrid_list,
+        #              mp_pdfs_2d_lists,
+        #              ss_dstn,
+        #              age_dist)
+
+        K_d = households.A*model.W  ## no population growth otherwise diluted by (1+n)
+
+        ## realized accidental transfers from age 2 to L
+
+        #ap_PolGrid_list_old = [ap_PolGrid_list[0][1:],ap_PolGrid_list[1][1:]]
+        #mp_pdfs_2d_lists_old = [mp_pdfs_2d_lists[0][1:],mp_pdfs_2d_lists[1][1:]]
+        #age_dist_old =  age_dist[1:]
+        #A_old = Aggregate(ap_PolGrid_list_old,
+        #                  mp_pdfs_2d_lists_old,
+        #                  ss_dstn,
+        #                 age_dist_old)*model.W 
+
+        #init_b_out = model.bequest_ratio*(1-model.LivPrb)*A_old*(1-age_dist[0])*model.R/age_dist[0]
+
+        print('Induced capital stock',str(K_d))
+        #print('Induced  bequest',str(init_b_out))
+
+        return K_d
     
+    def get_equilibrium_k(self):
+        ss_dstn = self.households.ss_dstn
+        
+        ## function to solve the equilibrium 
+        eq_func = lambda K: self.StE_K_d(K_s = K,
+                                         dstn = ss_dstn)
+        ## solve the fixed point 
+        K_eq = op.fixed_point(eq_func,
+                              x0 = 7.3)
+        
+        self.K_eq = K_eq
     
-    A = Aggregate(ap_PolGrid_list,
-                  mp_pdfs_2d_lists,
-                  ss_dstn,
-                  age_dist)
-    
-    K_d = A*model.W  ## no population growth otherwise diluted by (1+n)
-    
-    ## realized accidental transfers from age 2 to L
-    
-    #ap_PolGrid_list_old = [ap_PolGrid_list[0][1:],ap_PolGrid_list[1][1:]]
-    #mp_pdfs_2d_lists_old = [mp_pdfs_2d_lists[0][1:],mp_pdfs_2d_lists[1][1:]]
-    #age_dist_old =  age_dist[1:]
-    #A_old = Aggregate(ap_PolGrid_list_old,
-    #                  mp_pdfs_2d_lists_old,
-    #                  ss_dstn,
-    #                 age_dist_old)*model.W 
-    
-    #init_b_out = model.bequest_ratio*(1-model.LivPrb)*A_old*(1-age_dist[0])*model.R/age_dist[0]
-    
-    print('Induced capital stock',str(K_d))
-    #print('Induced  bequest',str(init_b_out))
-    
-    return K_d
+    def get_equilibrium_dist(self):
+        
+        households = self.households 
+        model = self.model 
+        
+        ### get equilibrium values 
+        K_eq = self.K_eq 
+        L_ss = households.emp_ss
+        
+        ## compute factor prices in StE
+        production.K = K_eq
+        production.L = L_ss
+        
+        print('SS Capital stock',str(K_eq))
+        W_eq,R_eq = production.YL(),production.R()
+        print('SS Wage Rate',str(W_eq))
+        print('SS Real interest rate',str(R_eq))
+
+        ## get the distribution under SS
+        model.W,model.R = W_eq,R_eq
+
+        ## solve the model again 
+
+        ## terminal period solution
+        k = len(model.s_grid)
+        k2 =len(model.eps_grid)
+        n = len(model.P)
+
+        σ_init = np.empty((k,k2,n))
+        a_init = np.empty((k,k2,n))
+
+        # terminal solution c = m 
+        for z in range(n):
+            for j in range(k2):
+                a_init[:,j,z] = 2*model.s_grid
+                σ_init[:,j,z] = a_init[:,j,z] 
+
+        as_star, σs_star = solve_model_backward_iter(model,
+                                                     a_init,
+                                                     σ_init)
+
+        households.define_distribution_grid(num_pointsM = 40, 
+                                            num_pointsP = 50)
+        households.ComputeSSDist(as_star = as_star,
+                                 σs_star = σs_star)
+
+        ## operation for the StE, such as aggregation
+        households.Aggregate()
+        households.AggregatebyAge()
+        
+        
+        self.households = households
+
 
 # + code_folding=[]
-## function to solve the equilibrium 
-eq_func = lambda K: StE_K_d(model=lc_mkv,
-                            K_s = K,
-                            dstn=ss_dstn)
+## initialize a market and solve the equilibrium 
 
-# + code_folding=[]
-## solve the fixed point 
+production = CDProduction() 
 
-K_eq = op.fixed_point(eq_func,
-                      x0 = 2.0)
+market_OLG_mkv = Market_OLG_mkv(households = HH,
+                                production = production)
 
+market_OLG_mkv.get_equilibrium_k()
 
-# + code_folding=[0, 31, 47, 53]
-## get the StE 
-ss_dstn = cal_ss_2markov(lc_mkv.P)
-L_ss = ss_dstn[1]
+# -
 
-## compute factor prices in StE
-one_economy = Economy(K=K_eq,
-                      L=L_ss)
-print('SS Capital stock',str(K_eq))
-W_eq,R_eq = one_economy.YL(),one_economy.R()
-print('SS Wage Rate',str(W_eq))
-print('SS Real interest rate',str(R_eq))
+market_OLG_mkv.get_equilibrium_dist()
 
-## get the distribution under SS
-lc_mkv.W,lc_mkv.R = W_eq,R_eq
+age_lc[:-1]
 
-## solve the model again 
+# + code_folding=[0]
+## plot life cycle profile
 
-## terminal period solution
-k = len(lc_mkv.s_grid)
-k2 =len(lc_mkv.eps_grid)
-n = len(lc_mkv.P)
+age_lc = SCF_profile.index
 
-σ_init = np.empty((k,k2,n))
-a_init = np.empty((k,k2,n))
+fig, ax = plt.subplots(figsize=(10,5))
+plt.title('Life cycle profile of wealth and consumption')
+ax.plot(age_lc[:-2],
+        np.log(market_OLG_mkv.households.A_life)[:-1],
+       'r-',
+       label='model')
 
-# terminal solution c = m 
-for z in range(n):
-    for j in range(k2):
-        a_init[:,j,z] = 2*lc_mkv.s_grid
-        σ_init[:,j,z] = a_init[:,j,z] 
+#ax.vlines(lc_mkv.T+25,
+#          np.min(A_life),
+#          np.max(A_life),
+#          color='b',
+#          label='retirement')
 
-as_star, σs_star = solve_model_backward_iter(lc_mkv,
-                                             a_init,
-                                             σ_init)
+ax2 = ax.twinx()
+ax2.set_ylim([10.5,11.5])
+ax2.bar(age_lc,
+        SCF_profile['av_wealth'],
+       #'k--',
+       label='SCF (RHS)')
 
-## get the transition matrix and policy grid 
+#ax2.plot(age,
+#        C_life,
+#        'b--',
+#        label='consumption (RHS)')
 
-tran_matrix_lists, dist_lists,mp_pdfs_2d_lists,mp_pdfs_lists,cp_PolGrid_list,ap_PolGrid_list = SSDist(lc_mkv,
-                                                                                                      as_star_mkv,
-                                                                                                      σs_star_mkv,
-                                                                                                      m_dist_grid_list,
-                                                                                                      p_dist_grid_list)
-
-
-## flatten the distribution of a and its corresponding pdfs 
-
-
-ap_grid_dist, ap_pdfs_dist = faltten_dist(ap_PolGrid_list,
-                                        mp_pdfs_2d_lists,
-                                        ss_dstn,
-                                        age_dist)
-
-
-cp_grid_dist, cp_pdfs_dist = faltten_dist(cp_PolGrid_list,
-                                        mp_pdfs_2d_lists,
-                                        ss_dstn,
-                                        age_dist)
-
-
+ax.set_xlabel('Age')
+ax.set_ylabel('Log wealth')
+ax2.set_ylabel('Log wealth SCF')
+ax.legend(loc=1)
+ax2.legend(loc=2)
+fig.savefig('../Graphs/model/life_cycle_a_eq.png')
 
 # + code_folding=[]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
-share_agents_ap, share_ap = lorenz_curve(ap_grid_dist,
-                                     ap_pdfs_dist,
-                                     nb_share_grid = 100)
-
+share_agents_ap, share_ap = market_OLG_mkv.households.Lorenz(variable='a')
 
 ## Lorenz curve of steady state wealth distribution
 
@@ -1884,566 +2014,18 @@ fig.savefig('../Graphs/model/lorenz_curve_a_eq.png')
 # +
 ## Wealth distribution 
 
-plt.title('Wealth distribution')
-plt.plot(np.log(ap_grid_dist), 
+fig, ax = plt.subplots(figsize=(6,4))
+ax.set_title('Wealth distribution')
+ax.plot(np.log(market_OLG_mkv.households.ap_grid_dist+0.0000000001), 
          ap_pdfs_dist)
-plt.xlabel(r'$a$')
-plt.ylabel(r'$prob(a)$')
-plt.savefig('../Graphs/model/distribution_a_eq.png')
-# -
+ax.set_xlabel(r'$a$')
+ax.set_ylabel(r'$prob(a)$')
+fig.savefig('../Graphs/model/distribution_a_eq.png')
 
-
-## Consumption distribution 
-plt.title('Consumption distribution')
-plt.plot(np.log(cp_grid_dist), 
+fig, ax = plt.subplots(figsize=(6,4))
+ax.set_title('Consumption distribution')
+ax.plot(np.log(market_OLG_mkv.households.cp_grid_dist), 
          cp_pdfs_dist)
-plt.xlabel(r'$c$')
-plt.ylabel(r'$prob(a)$')
-plt.savefig('../Graphs/model/distribution_c_eq.png')
-
-
-
-# ### Consumption Jacobians
-#
-#
-
-# + code_folding=[8]
-# a test to see if its stable
-
-
-Ce =[]
-Cu =[]
-Cagg =[]
-Aagg =[]
-
-for i in range(20):
-    for k in range(lc_mkv(T)):
-        dstne = mp_pdfs_lists_e[k]
-        dstnu = mp_pdfs_lists_u[k]
-        
-        Ae = np.dot(example.aPol_Grid_e,dstne)
-        Au = np.dot(example.aPol_Grid_u,dstnu)
-    
-    Ce.append(np.dot(example.cPol_Grid_e,dstne))
-    Cu.append(np.dot(example.cPol_Grid_u,dstnu))
-    
-    Cagg.append(np.dot(example.cPol_Grid_e,dstne)* example.prb_emp + example.prb_unemp*np.dot(example.cPol_Grid_u,dstnu))
-    Aagg.append(Ae* example.prb_emp +  Au*example.prb_unemp)
-    
-    dstne = np.dot(example.tran_matrix_e,dstne)
-    dstnu = np.dot(example.tran_matrix_u,dstnu)
-
-
-# +
-##
-#plt.plot(Cagg)
-#plt.show()
-#print('Aggregate Consumption = ' +str(Cagg[10]))
-
-#plt.plot(Aagg)
-#plt.show()
-#print('Aggregate Asset = ' +str(Aagg[10]))
-
-# + code_folding=[]
-plt.plot(example.dist_mGrid,steady_Dstn, label = 'all')
-plt.plot(example.dist_mGrid,dstne, label = 'employed')
-plt.plot(example.dist_mGrid,dstnu, label = 'unemployed')
-plt.title('permanent income weighted distribution')
-plt.legend()
-plt.show()
-
-
-# + code_folding=[1, 28] endofcell="--"
-
-class JAC_agent(HANK_SAM_agent):
-
-    
-    def update_solution_terminal(self):
-        """
-        Update the terminal period solution.  This method should be run when a
-        new AgentType is created or when CRRA changes.
-        Parameters
-        ----------
-        none
-        Returns
-        -------
-        none
-        """
-        #IndShockConsumerType.update_solution_terminal(self)
-
-        # Make replicated terminal period solution: consume all resources, no human wealth, minimum m is 0
-        StateCount = self.MrkvArray[0].shape[0]
-        self.solution_terminal.cFunc = example.solution[0].cFunc
-        self.solution_terminal.vFunc = example.solution[0].vFunc
-        self.solution_terminal.vPfunc = example.solution[0].vPfunc
-        self.solution_terminal.vPPfunc = example.solution[0].vPPfunc
-        self.solution_terminal.mNrmMin = np.zeros(StateCount)
-        self.solution_terminal.hRto = np.zeros(StateCount)
-        self.solution_terminal.MPCmax = np.ones(StateCount)
-        self.solution_terminal.MPCmin = np.ones(StateCount)
-        
-    def check_markov_inputs(self):
-        """
-        Many parameters used by MarkovConsumerType are arrays.  Make sure those arrays are the
-        right shape.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        None
-        """
-        StateCount = self.MrkvArray[0].shape[0]
-
-
-
-# Jacobian
-params = deepcopy(HANK_SAM_Dict)
-params['T_cycle'] = 100
-params['LivPrb']= params['T_cycle']*example.LivPrb
-params['PermGroFac']=params['T_cycle']*example.PermGroFac
-params['PermShkStd'] = params['T_cycle']*example.PermShkStd
-params['TranShkStd']= params['T_cycle']*example.TranShkStd
-params['Rfree'] = params['T_cycle']*[rfree]
-params['MrkvArray'] = params['T_cycle']*example.MrkvArray
-
-# ghost
-
-ghost = JAC_agent(**params)
-ghost.IncShkDstn = params['T_cycle']*example.IncShkDstn
-ghost.del_from_time_inv('Rfree')
-ghost.add_to_time_vary('Rfree')
-ghost.dstn_0 = ss_dstn
-ghost.cycles = 1
-
-ghost.wage = 1.2
-ghost.unemp_insurance = params['T_cycle']*[example.unemp_insurance]
-ghost.job_find = params['T_cycle']*[example.job_find]
-ghost.job_sep = params['T_cycle']* [example.job_sep]
-
-ghost.solve()
-
-
-
-
-ghost.define_distribution_grid(dist_pGrid = params['T_cycle']*[np.array([1])])
-ghost.calc_transition_matrix(params['T_cycle']*[IncShkDstn_ntrl_msr_e])
-
-
-Agg_Cg =[]
-Agg_Ag =[]
-Agg_ceg =[]
-Agg_cug =[]
-
-Agg_aeg =[]
-Agg_aug =[]
-
-dstne = ergodic_distre
-dstnu = ergodic_distru
-for i in range(ghost.T_cycle):
-    
-    Ae = np.dot(ghost.aPol_Grid_e[i],dstne)
-    Au = np.dot(ghost.aPol_Grid_u[i],dstnu)
-    Agg_aeg.append(Ae)
-    Agg_aug.append(Au)
-    
-    Ce = np.dot(ghost.cPol_Grid_e[i],dstne)
-    Cu = np.dot(ghost.cPol_Grid_u[i],dstnu)
-    Agg_ceg.append(Ce)
-    Agg_cug.append(Cu)
-    
-    Agg_Ag.append(Ae* ghost.prb_emp[i] + Au*ghost.prb_unemp[i])
-    Agg_Cg.append(Ce* ghost.prb_emp[i] + Cu*ghost.prb_unemp[i])
-    
-    dstne = np.dot(ghost.tran_matrix_e[i],dstne)
-    dstnu = np.dot(ghost.tran_matrix_u[i],dstnu)
-
-
-
-#--------------------------------------------------------------------
-#jacobian executed here
-
-example2 = JAC_agent(**params)
-dx = -.0001
-
-
-
-
-#example2.Rfree = q*[rfree] + [rfree + dx] + (params['T_cycle'] - q )*[rfree]
-
-example2.cycles = 1
-
-example2.wage = example.wage
-
-example2.unemp_insurance = params['T_cycle']*[example.unemp_insurance]
-
-#example2.job_find = params['T_cycle']*[example.job_find]
-example2.job_sep = params['T_cycle']* [example.job_sep]
-example2.IncShkDstn = params['T_cycle']*[ [employed_IncShkDstn, unemployed_IncShkDstn] ]
-example2.del_from_time_inv('Rfree')
-example2.add_to_time_vary('Rfree')
-example2.dstn_0 = ss_dstn
-
-MrkvArray_dx = np.array( [ [1 - job_sep*(1-(job_find + dx)) , job_find + dx] ,  #" The sum of entries in each column in t should equal one. "
-                          
-                               [job_sep*(1- (job_find +dx) ), 1 -( job_find+dx) ] ]  ).T
-
-
-CHist=[]
-AHist=[]
-
-test_set =[30]
-#for q in range(params['T_cycle']):
-    
-for q in test_set:
-    
-    example2.MrkvArray = q*example.MrkvArray + [MrkvArray_dx] + (params['T_cycle'] - q )*example.MrkvArray
-    
-    example2.job_find =    q*[example.job_find] + [example.job_find + dx]+ (params['T_cycle'] - q )*[example.job_find] 
-    
-    example2.solve()
-
-
-    start = time.time()
-
-    example2.define_distribution_grid(dist_pGrid = params['T_cycle']*[np.array([1])])
-    example2.calc_transition_matrix(params['T_cycle']*[IncShkDstn_ntrl_msr_e])
-    
-    print('seconds past : ' + str(time.time()-start))
-    
-    Agg_C =[]
-    Agg_A =[]
-    dstne = ergodic_distre
-    dstnu = ergodic_distru
-    
-    Agg_ce =[]
-    Agg_cu =[]
-    
-    Agg_ae =[]
-    Agg_au =[]
-    
-    for i in range(example2.T_cycle):
-        
-        Ae = np.dot(example2.aPol_Grid_e[i],dstne)
-        Au = np.dot(example2.aPol_Grid_u[i],dstnu)
-        
-        Agg_ae.append(Ae)
-        Agg_au.append(Au)
-        
-        Ce = np.dot(example2.cPol_Grid_e[i],dstne)
-        Cu = np.dot(example2.cPol_Grid_u[i],dstnu)
-        Agg_ce.append(Ce)
-        Agg_cu.append(Cu)
-        
-        Agg_A.append(Ae* example2.prb_emp[i] + Au*example2.prb_unemp[i])
-        Agg_C.append(Ce* example2.prb_emp[i] + Cu*example2.prb_unemp[i])
-        
-        dstne = np.dot(example2.tran_matrix_e[i],dstne)
-        dstnu = np.dot(example2.tran_matrix_u[i],dstnu)
-
-
-
-    CHist.append((np.array(Agg_C)-np.array(Agg_Cg))/abs(dx))
-    AHist.append((np.array(Agg_A) - np.array(Agg_Ag))/abs(dx))
-        
-    
-    
-
-    
-
-    
-plt.plot((np.array(Agg_C)-np.array(Agg_Cg))/abs(dx))
-plt.plot(np.zeros(len(Agg_C)))
-plt.title('IPR of Aggregate Consumption ')
-plt.show()
-
-plt.plot((np.array(Agg_A) - np.array(Agg_Ag))/abs(dx))
-plt.plot(np.zeros(len(Agg_A)))
-plt.title(' IPR of Aggregate Assets')
-plt.show()
-
-
-plt.plot((np.array(Agg_ce)-np.array(Agg_ceg))/abs(dx))
-plt.title('IPR of Employed consumption')
-plt.show()
-plt.plot((np.array(Agg_cu)-np.array(Agg_cug))/abs(dx))
-plt.title('IPR of Unemployed Consumption')
-plt.show()
-
-plt.plot((np.array(Agg_ae)-np.array(Agg_aeg))/abs(dx))
-plt.title('IPR of Employed Savings')
-plt.show()
-plt.plot((np.array(Agg_au)-np.array(Agg_aug))/abs(dx))
-plt.title('IPR of Unemployed Savings')
-plt.show()
-
-
-
-fig, axs = plt.subplots(2, 2)
-axs[0, 0].plot((np.array(Agg_C)-np.array(Agg_Cg))/abs(dx),'darkgreen' )
-axs[0, 0].set_title("IPR of Aggregate Consumption")
-axs[1, 0].plot((np.array(Agg_ce)-np.array(Agg_ceg))/abs(dx),'forestgreen' )
-axs[1, 0].set_title("IPR of Employed consumption")
-axs[1, 0].sharex(axs[0, 0])
-axs[0, 1].plot((np.array(Agg_cu)-np.array(Agg_cug))/abs(dx), 'forestgreen')
-axs[0, 1].set_title("IPR of Unemployed Consumption")
-fig.tight_layout()
-
-
-
-fig, axs = plt.subplots(2, 2)
-axs[0, 0].plot((np.array(Agg_A)-np.array(Agg_Ag))/abs(dx),'darkgreen' )
-axs[0, 0].set_title("IPR of Aggregate Savings")
-axs[1, 0].plot((np.array(Agg_ae)-np.array(Agg_aeg))/abs(dx),'forestgreen' )
-axs[1, 0].set_title("IPR of Employed Savings")
-axs[1, 0].sharex(axs[0, 0])
-axs[0, 1].plot((np.array(Agg_au)-np.array(Agg_aug))/abs(dx), 'forestgreen')
-axs[0, 1].set_title("IPR of Unemployed Savings")
-fig.tight_layout()
-
-# -
-
-# --
-
-# + code_folding=[4, 177, 203] endofcell="--"
-
-# ## Old codes: simulate a cross-sectionl history 
-
-#@njit
-def simulate_time_series(lc, σ, z_idx_seq, p_income,T=400):
-    """
-    Simulates a time series of length T for assets/consumptions, given optimal
-    consumption/demand functions.
-    * z_seq is a time path for {Z_t} recorded by index, instead of its numeric value
-
-    """
-    
-    # Simulate the asset path
-    a = np.zeros(T)+1e-4
-    c  = np.empty_like(a)
-    #c1 = np.empty_like(a)
-    #c2 = np.empty_like(a)
-    
-    ## simulate histories
-    ζ_sim = np.random.randn(T)
-    η_sim = np.random.randn(T)
-    
-    
-    R = lc.R
-    z_val = lc.z_val ## values of the state 
-    
-    
-    ## permanent income shocks
-    
-    Γs = p_income[1:]/p_income[:-1] 
-    
-    for t in range(T):
-        z_idx = z_idx_seq[t]
-        z = z_val[z_idx]    
-        Y = lc.Y(z, η_sim[t])
-        c[t] = σ(a[t], z_idx)
-        #c1[t],c2[t] = allocate(c[t], S = S) 
-        #if t<T-1:
-        #    a[t+1] = R/Γs[t] * (a[t] - c1[t]*p_vec[0]-c2[t]*p_vec[1]) + Y
-        if t<T-1:
-            a[t+1] = R/Γs[t] * (a[t] - c[t]) + Y
-        
-    ## multiply permanent income level 
-    #c = c*p_income
-    #c1 =c1*p_income
-    #c2 = c2*p_income
-    #a = a * p_income 
-    
-    return a,c
-
-def simulate_time_series_new(lc, σ, z_seq, p_income, T=400):
-    """
-    Simulates a time series of length T for assets/consumptions, given optimal
-    consumption/demand functions.
-
-        * ifp is an instance of IFP
-        * a_star is the endogenous grid solution
-        * σ_star is optimal consumption on the grid
-        * z_seq is a time path for {Z_t} recorded by its numeric value (different from the previous function)
-
-    """
-    
-    # Simulate the asset path
-    a = np.zeros(T)+1e-4
-    c = np.empty_like(a)
-    #c1 = np.empty_like(a)
-    #c2 = np.empty_like(a)
-    
-    ## simulate histories
-    ζ_sim = np.random.randn(T)
-    η_sim = np.random.randn(T)
-    
-    
-    R = lc.R
-    #z_val = ifp.z_val ## values of the state 
-    
-    ## permanent income shocks
-    
-    Γs = p_income[1:]/p_income[:-1] 
-    
-    for t in range(T):
-        z = z_seq[t] ## z values
-        S = lc.ϕ(z,ζ_sim[t])
-        Y = lc.Y(z, η_sim[t])
-        c[t] = σ(a[t], z)
-        #c1[t],c2[t] = allocate(c[t], S = S) 
-        #if t<T-1:
-        #    a[t+1] = R/Γs[t] * (a[t] - c1[t]*p_vec[0]-c2[t]*p_vec[1]) + Y
-        if t<T-1:
-            a[t+1] = R/Γs[t] * (a[t] - c[t]) + Y
-        
-    ## multiply permanent income level 
-    #c = c*p_income
-    #c1 =c1*p_income
-    #c2 = c2*p_income
-    #a = a * p_income 
-    
-    return a,c
-
-## now, we simulate the time-series of a cross-sectional matrix of N agents 
-
-#@njit
-def simulate_distribution(lc, 
-                          a_star, 
-                          p_vec, 
-                          σ_star,
-                          z_mat, 
-                          p_income_mat,
-                          N = 3000, 
-                          T = 400,
-                          discrete = True):
-    N_z, T_z = z_mat.shape
-    
-    assert N_z>=N and T_z >=T, 'history of the markov states are smaller than the simulated matrix'
-    
-    
-    z_mat = z_mat[0:N,0:T]
-    ## z_mat is a N_sim x T sized matrix that takes the simulated Markov states 
-    a_mat = np.empty((N,T))
-    c_mat = np.empty((N,T))
-    #c1_mat = np.empty((N,T))
-    #c2_mat = np.empty((N,T))
-    
-    ## get the policy function
-    
-    if discrete ==True:
-        σ = policyfunc(lc,
-                       a_star,
-                       σ_star,
-                       discrete = True)  ## interpolate for discrete z index 
-        for i in range (N):
-            a_mat[i,:],c_mat[i,:] = simulate_time_series(lc,
-                                                         σ,
-                                                         z_mat[i,:],
-                                                         p_income_mat[i,:],
-                                                         T = T)
-    else:
-        σ = policyfunc(lc,
-                       a_star,
-                       σ_star,
-                       discrete = False) ## interpolate for continous z value 
-        for i in range (N):
-            a_mat[i,:],c_mat[i,:]= simulate_time_series_new(lc,
-                                                            σ,
-                                                            z_mat[i,:],
-                                                            p_income_mat[i,:],
-                                                            T = T)
-            
-    ## multiply permanent income level 
-    #c_mat= np.multiply(c_mat,p_income_mat)
-    #c1_mat = np.multiply(c1_mat,p_income_mat)
-    #c2_mat = np.multiply(c2_mat,p_income_mat)
-    #a_mat = np.multiply(a_mat,p_income_mat) 
-
-    return a_mat,c_mat
-
-# # + code_folding=[0]
-## simulate a Markov sequence 
-
-mc = MarkovChain(lc.P)
-
-### Simulate history of Idiosyncratic Z states 
-#### (For Z to be aggregate state. We can directly copy Z for different agents) 
-
-## number of agents 
-
-N = 1000
-T = 25        ## simulated history of time period
-
-z_idx_ts = mc.simulate(T, random_state=13274)
-z_idx_mat = np.tile(z_idx_ts,(N,1))
-
-
-# # + code_folding=[3]
-## simulate a permanent income distributions 
-
-@njit
-def PerIncSimulate(T,
-               sigma,
-               init = 0.001):
-    pshk_draws = sigma*np.random.randn(T)-sigma**2/2
-    log_p_inc = np.empty(T)
-    log_p_inc[0] = init
-    for t in range(T-1):
-        log_p_inc[t+1] = log_p_inc[t]+ pshk_draws[t+1]
-    p_income = np.exp(log_p_inc)
-    return p_income
-
-## simulate histories of permanent income 
-
-p_income_mat = np.empty((N,T))
-
-for n in range(N):
-    p_income_mat[n,:] = PerIncSimulate(T,
-                                       sigma = lc.sigma_n,
-                                       init = 0.0001)
-
-# # + code_folding=[]
-## Simulate the distribution of consumption/asset (perfect understanding)
-as_star = as_stars[0]
-σs_star = σs_stars[0]
-
-p_vec = (1,1) 
-a_dist,c_dist = simulate_distribution(lc,
-                                      as_star,
-                                      p_vec,
-                                      σs_star,
-                                      z_idx_mat,
-                                      p_income_mat,
-                                      N = N,
-                                      T = T,
-                                      discrete = True)
-
-# # + code_folding=[]
-## aggregate history 
-
-co_mat = np.multiply(c_dist,p_income_mat)  ## non-normalized consumption
-lco_mat = np.log(co_mat)
-lco_av = np.mean(lco_mat,axis = 0)
-
-#p_av =  np.mean(p_income_mat,axis = 0)  
-#lp_av = np.log(p_av)
-lp_income_mat = np.log(p_income_mat)   ## permanent income level 
-lp_av = np.mean(lp_income_mat,axis = 0)
-
-#c_av = np.mean(c_dist,axis=0)
-#lc_av = np.log(c_av)
-lc_mat = np.log(c_dist)             ## normalized consumption
-lc_av = np.mean(lc_mat,axis = 0) 
-
-lc_sd = np.sqrt(np.diag(np.cov(lc_mat.T)))
-# -
-
-plt.title('average log consumption (normalized)')
-plt.plot(lc_av[1:],label = r'$\widebar{ln(c/o)}$')
-plt.legend(loc=2)
-# --
-
-
+ax.set_xlabel(r'$c$')
+ax.set_ylabel(r'$prob(a)$')
+fig.savefig('../Graphs/model/distribution_c_eq.png')

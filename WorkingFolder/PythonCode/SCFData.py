@@ -116,12 +116,12 @@ df2016['lnorminc'] = np.log(df2016['norminc'])
 import joypy
 from matplotlib import cm
 
-# + code_folding=[1]
-labels=[y if y%10==0 else None for y in list(df2016.age.unique())]
+# + code_folding=[]
+#labels=[y if y%10==0 else None for y in list(df2016.age.unique())]
 fig, axes = joypy.joyplot(df2016, 
                           by="age", 
                           column="lnorminc", 
-                          labels=labels, 
+                          #labels=labels, 
                           range_style='own', 
                           grid="y", 
                           linewidth=1, 
