@@ -78,6 +78,8 @@ from scipy import linalg as lg
 from numba.typed import List
 from Utility import cal_ss_2markov
 
+from resources_jit import MeanOneLogNormal as lognorm
+
 # + code_folding=[]
 ## figure plotting configurations
 
@@ -132,7 +134,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[6, 124, 132, 136, 139, 150]
+# + code_folding=[]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -160,7 +162,7 @@ class LifeCycle:
                  T = 40,             ## work age, from 25 to 65
                  L = 60,             ## life length 85
                  G = np.ones(60),    ## growth factor list of permanent income 
-                 shock_draw_size = 40,
+                 shock_draw_size = 10,
                  grid_max = 2.5,
                  grid_size = 50,
                  seed = 456789,
@@ -169,7 +171,7 @@ class LifeCycle:
                  pension = 1.0,           
                  ue_markov = False,    
                  adjust_prob = 1.0,
-                 sigma_p_init = 0.0,
+                 sigma_p_init = 0.01,
                  init_b = 0.0,
                  λ = 0.10,
                  λ_SS = 0.1,
@@ -213,31 +215,50 @@ class LifeCycle:
         
         ## these codes use equalprob discretized distributions at the cost of not being jittable 
         
-        #mu_n = -sigma_n**2/2
-        #mu_eps = -sigma_eps**2/2
-        #theta_n = stats.lognorm(sigma_n, 0, np.exp(mu_n))    # Create "frozen" distribution instance
-        #theta_eps = stats.lognorm(sigma_eps, 0, np.exp(mu_eps)) # Create "frozen" distribution instance
-        #self.n_shk_draws = DiscreteApproximation(N = shock_draw_size, 
-        #                                         cdf=theta_n.cdf, 
-        #                                         pdf=theta_n.pdf, 
-        #                                         invcdf=theta_n.ppf)
-        #self.eps_shk_draws = DiscreteApproximation(N = shock_draw_size, 
-        #                                         cdf=theta_eps.cdf, 
-        #                                         pdf=theta_eps.pdf, 
-        #                                         invcdf=theta_eps.ppf)
+        ##################################################################
+         ## discretized distributions 
+        ##################################################################
+        n_shk_dist = lognorm(sigma_n,100000)
+        n_shk_dist.discretize(shock_draw_size)
+        self.n_shk_draws = np.log(n_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
         
+        eps_shk_dist = lognorm(sigma_eps,100000)
+        eps_shk_dist.discretize(shock_draw_size)
+        self.eps_shk_draws = np.log(n_shk_dist.X)
         
-        ## draw shocks for constant volatility scenario
-        self.n_shk_draws = sigma_n*np.random.randn(shock_draw_size)-sigma_n**2/2
-        self.eps_shk_draws = sigma_eps*np.random.randn(shock_draw_size)-sigma_eps**2/2
-        self.init_p_draws = sigma_p_init*np.random.randn(shock_draw_size)-sigma_p_init**2/2
+        init_p_dist = lognorm(sigma_p_init,100000)
+        init_p_dist.discretize(shock_draw_size)
+        self.init_p_draws = np.log(init_p_dist.X)
+        
+        ## draw shocks using monte-carlo for constant volatility scenario
+        #self.n_shk_draws = sigma_n*np.random.randn(shock_draw_size)-sigma_n**2/2
+        #self.eps_shk_draws = sigma_eps*np.random.randn(shock_draw_size)-sigma_eps**2/2
+        #self.init_p_draws = sigma_p_init*np.random.randn(shock_draw_size)-sigma_p_init**2/2
+        
         
         ## draw shocks for stochastic volatility scenario
         sigma_n_2mkv_r = sigma_n_2mkv.reshape(n_mkv,-1)
         sigma_eps_2mkv_r = sigma_eps_2mkv.reshape(n_mkv,-1)
         
-        self.n_shk_mkv_draws = sigma_n_2mkv_r*np.random.randn(shock_draw_size)-sigma_n_2mkv_r**2/2
-        self.eps_shk_mkv_draws = sigma_eps_2mkv_r*np.random.randn(shock_draw_size)-sigma_eps_2mkv_r**2/2
+
+        sigma_n_2mkv_l = lognorm(sigma_n_2mkv[0],100000)
+        sigma_n_2mkv_l.discretize(shock_draw_size)
+        sigma_n_2mkv_h = lognorm(sigma_n_2mkv[1],100000)
+        sigma_n_2mkv_h.discretize(shock_draw_size)
+        
+        self.n_shk_mkv_draws = np.stack((np.log(sigma_n_2mkv_l.X),
+                                         np.log(sigma_n_2mkv_h.X)))
+        
+        sigma_eps_2mkv_l = lognorm(sigma_eps_2mkv[0],100000)
+        sigma_eps_2mkv_l.discretize(shock_draw_size)
+        sigma_eps_2mkv_h = lognorm(sigma_eps_2mkv[1],100000)
+        sigma_eps_2mkv_h.discretize(shock_draw_size)
+        
+        self.eps_shk_mkv_draws = np.stack((np.log(sigma_eps_2mkv_l.X),
+                                         np.log(sigma_eps_2mkv_h.X)))
+                
+        #self.n_shk_mkv_draws = sigma_n_2mkv_r*np.random.randn(shock_draw_size)-sigma_n_2mkv_r**2/2
+        #self.eps_shk_mkv_draws = sigma_eps_2mkv_r*np.random.randn(shock_draw_size)-sigma_eps_2mkv_r**2/2
 
         
         ## ma(1) shock grid 
@@ -809,6 +830,7 @@ def solve_model_iter(model,        # Class with model information
 
 # ## Initialize the model
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -818,8 +840,8 @@ if __name__ == "__main__":
     U = 0.2 ## transitory ue risk
     U0 = 0.0 ## transitory ue risk
     unemp_insurance = 0.15
-    sigma_n = 0.05 # permanent 
-    sigma_eps = 0.2 # transitory 
+    sigma_n = 0.1 # permanent 
+    sigma_eps = 0.1 # transitory 
 
 
     #λ = 0.0  ## tax rate
@@ -853,6 +875,7 @@ if __name__ == "__main__":
 
     ## wether to have zero borrowing constraint 
     borrowing_cstr = True
+# -
 
 ## a deterministic income profile 
 if __name__ == "__main__":
@@ -952,7 +975,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -972,12 +995,14 @@ if __name__ == "__main__":
         age = lc.L-year
         i = lc.L-age
         for y,eps in enumerate(eps_ls):
-            axes[x].plot(as_star[i,:,eps,0],
-                         σs_star[i,:,eps,0],
+            m_plt,c_plt = as_star[i,:,eps,0],σs_star[i,:,eps,0]
+            axes[x].plot(m_plt,
+                         c_plt,
                          label = str(round(lc.eps_grid[eps],2)),
                          lw=3,
                         )
         axes[x].legend()
+        axes[x].set_xlim(0.0,np.max(m_plt))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -1033,7 +1058,7 @@ ax.set_title('consumption at a certain age')
 """
 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## plot 3d functions over life cycle 
@@ -1102,10 +1127,10 @@ if __name__ == "__main__":
                      β=β,
                      x=0.0,  ## shut down ma(1)
                      borrowing_cstr = borrowing_cstr,
-                     b_y=1.0)
+                     b_y=0.5)
 
 
-# + code_folding=[8]
+# + code_folding=[0, 11]
 if __name__ == "__main__":
 
 
@@ -1177,17 +1202,20 @@ if __name__ == "__main__":
         age = lc_ar.L-year
         i = lc_ar.L-age
         for y,eps in enumerate(eps_ls):
-            axes[x].plot(as_stars_ar[0][i,:,y,0],
-                         σs_stars_ar[0][i,:,y,0],
+            m_plt_l,c_plt_l = as_stars_ar[0][i,:,y,0],σs_stars_ar[0][i,:,y,0]
+            m_plt_h,c_plt_h  = as_stars_ar[0][i,:,y,1],σs_stars_ar[0][i,:,y,1]
+            axes[x].plot(m_plt_l,
+                         c_plt_l,
                          '--',
                          label ='bad',
                          lw=3)
-            axes[x].plot(as_stars_ar[0][i,:,y,1],
-                         σs_stars_ar[0][i,:,y,1],
+            axes[x].plot(m_plt_h,
+                         c_plt_h,
                          '-.',
                          label ='good',
                          lw=3)
         axes[x].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt_h)))
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'c at $age={}$'.format(age))
@@ -1235,7 +1263,7 @@ if __name__ == "__main__":
     print('permanent risk state is '+str(sigma_n_2mkv))
     print('transitory risk state is '+str(sigma_eps_2mkv))
 
-# + code_folding=[2]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## another model instance 
@@ -1297,7 +1325,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     ## compare two markov states low versus high risk 
 
@@ -1312,17 +1340,23 @@ if __name__ == "__main__":
     for x,year in enumerate(years_left):
         age = lc.L-year
         i = lc.L-age
-        axes[x].plot(as_stars_sv[0][i,:,eps_id,0], ## 0 indicates the low risk state 
-                     σs_stars_sv[0][i,:,eps_id,0],
+        m_plt_l,c_plt_l = as_stars_sv[0][i,:,eps_id,0],σs_stars_sv[0][i,:,eps_id,0]
+        m_plt_h,c_plt_h = as_stars_sv[0][i,:,eps_id,1],σs_stars_sv[0][i,:,eps_id,1]
+        
+        axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
+                     c_plt_l,
                      '--',
                      label ='low risk',
                      lw=3)
-        axes[x].plot(as_stars_sv[0][i,:,eps_id,1], ## 1 indicates the high risk state 
-                     σs_stars_sv[0][i,:,eps_id,1],
+        
+        axes[x].plot(m_plt_h, ## 1 indicates the high risk state 
+                     c_plt_h,
                      '-.',
                      label ='high risk',
                      lw=3)
         axes[x].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt_h)))
+
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'c under SV at $age={}$'.format(age))
@@ -1330,7 +1364,7 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[10]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1349,8 +1383,9 @@ if __name__ == "__main__":
         i = lc.L-age
         for y,eps in enumerate(eps_ls):
             ## baseline: no ma shock 
-            axes[x].plot(as_star[i,:,eps,0],
-                         σs_star[i,:,eps,0],
+            m_plt,c_plt = as_star[i,:,eps,0],σs_star[i,:,eps,0]
+            axes[x].plot(m_plt,
+                         c_plt,
                          label = 'objective',
                          lw=3)
             ## persistent 
@@ -1365,13 +1400,16 @@ if __name__ == "__main__":
             #             label ='good',
             #             lw=3)
              ## stochastic volatility 
-            axes[x].plot(as_stars_sv[0][i,:,eps_id,0], ## 0 indicates the low risk state 
-                         σs_stars_sv[0][i,:,eps_id,0],
+            m_plt_l,c_plt_l = as_stars_sv[0][i,:,eps_id,0],σs_stars_sv[0][i,:,eps_id,0]
+            m_plt_h,c_plt_h = as_stars_sv[0][i,:,eps_id,1],σs_stars_sv[0][i,:,eps_id,1]
+            
+            axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
+                         c_plt_l,
                          '--',
                          label ='subjective: low risk',
                          lw=3)
-            axes[x].plot(as_stars_sv[0][i,:,eps_id,1], ## 1 indicates the high risk state 
-                         σs_stars_sv[0][i,:,eps_id,1],
+            axes[x].plot(m_plt_h, ## 1 indicates the high risk state 
+                         c_plt_h,
                          '-.',
                          label ='subjective: high risk',
                          lw=3)
@@ -1399,6 +1437,7 @@ if __name__ == "__main__":
             #             lw=3)
 
         axes[0].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt)))
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'working age$={}$'.format(age))
@@ -1503,17 +1542,21 @@ if __name__ == "__main__":
     for x,year in enumerate(years_left):
         age = lc_uemkv.L-year
         i = lc_uemkv.L-age
-        axes[x].plot(as_stars_uemkv[0][i,:,eps_id,0], ## 0 indicates the low risk state 
-                     σs_stars_uemkv[0][i,:,eps_id,0],
+        m_plt_u, c_plt_u = as_stars_uemkv[0][i,:,eps_id,0],σs_stars_uemkv[0][i,:,eps_id,0]
+        m_plt_e, c_plt_e = as_stars_uemkv[0][i,:,eps_id,1],σs_stars_uemkv[0][i,:,eps_id,1]
+
+        axes[x].plot(m_plt_u, ## 0 indicates the low risk state 
+                     c_plt_u,
                      '--',
                      label ='unemployed',
                      lw=3)
-        axes[x].plot(as_stars_uemkv[0][i,:,eps_id,1], ## 1 indicates the high risk state 
-                     σs_stars_uemkv[0][i,:,eps_id,1],
+        axes[x].plot(m_plt_e, ## 1 indicates the high risk state 
+                     c_plt_e,
                      '-.',
                      label ='employed',
                      lw=3)
         axes[x].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt_e)))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'c under UE Markov at $age={}$'.format(age))
@@ -1557,7 +1600,7 @@ if __name__ == "__main__":
     print('average permanent risk is '+str(av_sigma_n_cr)+' compared to objective model '+str(sigma_n))
     print('average transitory risk is '+str(av_sigma_eps_cr)+' compared to objective model '+str(sigma_eps))
 
-# + code_folding=[1]
+# + code_folding=[4]
 if __name__ == "__main__":
 
 
@@ -1580,7 +1623,7 @@ if __name__ == "__main__":
                      b_y = b_y,
                      ue_markov = True)
 
-# + code_folding=[8]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1639,13 +1682,16 @@ if __name__ == "__main__":
     for x,year in enumerate(years_left):
         age = lc.L-year
         i = lc.L-age
-        axes[x].plot(as_stars_cr[0][i,:,eps_id,0], ## 0 indicates the low risk state 
-                     σs_stars_cr[0][i,:,eps_id,0],
+        m_plt_l,c_plt_l = as_stars_cr[0][i,:,eps_id,0],σs_stars_cr[0][i,:,eps_id,0]
+        m_plt_h,c_plt_h = as_stars_cr[0][i,:,eps_id,1],σs_stars_cr[0][i,:,eps_id,1]
+        
+        axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
+                     c_plt_l,
                      '--',
                      label ='une+ high risk',
                      lw=3)
-        axes[x].plot(as_stars_cr[0][i,:,eps_id,1], ## 1 indicates the high risk state 
-                     σs_stars_cr[0][i,:,eps_id,1],
+        axes[x].plot(m_plt_h, ## 1 indicates the high risk state 
+                     c_plt_h,
                      '-.',
                      label ='emp+ low risk',
                      lw=3)
@@ -1657,7 +1703,7 @@ if __name__ == "__main__":
 
 # ### Objective and subject state-dependent profile
 
-# + code_folding=[11]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## compare subjective and objective models 
@@ -1681,13 +1727,15 @@ if __name__ == "__main__":
             #             label = 'objective',
             #             lw=3)
             ## persistent 
-            axes[x].plot(as_stars_uemkv[0][i,:,y,0],
-                         σs_stars_uemkv[0][i,:,y,0],
+            m_plt_u, c_plt_u = as_stars_uemkv[0][i,:,y,0],σs_stars_uemkv[0][i,:,y,0]
+            m_plt_e, c_plt_e = as_stars_uemkv[0][i,:,y,1],σs_stars_uemkv[0][i,:,y,1]
+            axes[x].plot(m_plt_u,
+                         c_plt_u,
                          '--',
                          label ='unemployed',
                          lw=3)
-            axes[x].plot(as_stars_uemkv[0][i,:,y,1],
-                         σs_stars_uemkv[0][i,:,y,1],
+            axes[x].plot(m_plt_e,
+                         c_plt_e,
                          '-.',
                          label ='employed',
                          lw=3)
@@ -1703,13 +1751,15 @@ if __name__ == "__main__":
             #             label ='sv:high risk',
             #             lw=3)
             ## countercyclical 
-            axes[x].plot(as_stars_cr[0][i,:,eps_id,0], ## 0 indicates the low risk state 
-                     σs_stars_cr[0][i,:,eps_id,0],
+            m_plt_l,c_plt_l = as_stars_cr[0][i,:,eps_id,0],σs_stars_cr[0][i,:,eps_id,0]
+            m_plt_h,c_plt_h = as_stars_cr[0][i,:,eps_id,1],σs_stars_cr[0][i,:,eps_id,1]
+            axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
+                     c_plt_l,
                      '--',
                      label ='ue + high risk',
                      lw=3)
-            axes[x].plot(as_stars_cr[0][i,:,eps_id,1], ## 1 indicates the high risk state 
-                         σs_stars_cr[0][i,:,eps_id,1],
+            axes[x].plot(m_plt_h, ## 1 indicates the high risk state 
+                         c_plt_h,
                          '-.',
                          label ='emp + low risk',
                          lw=3)
@@ -1726,6 +1776,7 @@ if __name__ == "__main__":
             #             lw=3)
 
         axes[0].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt_e)))
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'working age$={}$'.format(age))
@@ -1825,7 +1876,7 @@ if __name__ == "__main__":
 # -
 # ## Infinite horizon problem
 
-# + code_folding=[2]
+# + code_folding=[0, 5]
 if __name__ == "__main__":
 
 
@@ -1907,7 +1958,7 @@ if __name__ == "__main__":
 #
 #
 
-# + code_folding=[2]
+# + code_folding=[0, 5]
 if __name__ == "__main__":
 
 

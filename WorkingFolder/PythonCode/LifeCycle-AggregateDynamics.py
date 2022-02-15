@@ -47,10 +47,6 @@ from matplotlib import cm
 import joypy
 
 # + code_folding=[]
-#from HARK.distribution import DiscreteDistribution, MeanOneLogNormal,combine_indep_dstns
-
-
-# + code_folding=[0]
 ## figure plotting configurations
 
 mp.rc('xtick', labelsize=14) 
@@ -62,7 +58,7 @@ legendsize = 12
 
 # ### The Life-cycle Model Class and Its Solver
 
-# + code_folding=[0]
+# + code_folding=[]
 from SolveLifeCycle import LifeCycle, EGM, solve_model_backward_iter
 # -
 
@@ -150,7 +146,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 20]
+# + code_folding=[0, 20, 68]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -171,8 +167,8 @@ if calibrated_model == True:
 
 
     ## initialize the model with calibrated parameters 
-    lc_mkv = LifeCycle(
-                    U = lc_paras['U'], ## transitory ue risk
+    lc_mkv = LifeCycle(shock_draw_size=30,
+                       U = lc_paras['U'], ## transitory ue risk
                     unemp_insurance = lc_paras['unemp_insurance'],
                     pension = lc_paras['pension'], ## pension
                     sigma_n = lc_paras['σ_ψ'], # permanent 
@@ -245,7 +241,7 @@ else:
                       )
 
 
-# + code_folding=[0, 2]
+# + code_folding=[2, 24]
 ## solve the model 
 
 P = np.array([[0.7,0.3],
@@ -275,11 +271,11 @@ as_star_mkv, σs_star_mkv = solve_model_backward_iter(lc_mkv,
                                                  σ_init_mkv)
 
 
-# + code_folding=[10]
+# + code_folding=[0]
 ## compare two markov states good versus bad 
 
 
-years_left = [1,10,21,25]
+years_left = [1,10,21,40]
 n_sub = len(years_left)
 
 eps_ls = [10]
@@ -290,17 +286,20 @@ for x,year in enumerate(years_left):
     age = lc_mkv.L-year
     i = lc_mkv.L -age
     for y,eps in enumerate(eps_ls):
-        axes[x].plot(as_star_mkv[i,:,y,0],
-                     σs_star_mkv[i,:,y,0],
+        m_plt_u,c_plt_u = as_star_mkv[i,:,y,0],σs_star_mkv[i,:,y,0]
+        m_plt_e, c_plt_e = as_star_mkv[i,:,y,1],σs_star_mkv[i,:,y,1]
+        axes[x].plot(m_plt_u,
+                     c_plt_u,
                      '--',
                      label ='unemployed',
                      lw=3)
-        axes[x].plot(as_star_mkv[i,:,y,1],
-                     σs_star_mkv[i,:,y,1],
+        axes[x].plot(m_plt_e,
+                     c_plt_e,
                      '-.',
                      label ='employed',
                      lw=3)
     axes[x].legend()
+    axes[x].set_xlim((0.0,3.0))
     axes[x].set_xlabel('asset')
     axes[0].set_ylabel('c')
     axes[x].set_title(r'c at $age={}$'.format(age))
@@ -308,9 +307,9 @@ for x,year in enumerate(years_left):
 
 # -
 
-# ## Aggregate steady state distribution
+# ## Aggregate steady state distributions
 
-# + code_folding=[6, 101, 140, 163, 508, 522, 560, 583, 605, 620, 638]
+# + code_folding=[6, 101, 140, 163, 508, 545, 567, 582, 600, 626]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -832,44 +831,6 @@ def aggregate_transition_matrix(model,
             trans_matrix_agg = trans_matrix_agg+dstn_0[z]*age_dist[k]*tran_matrix_lists[z][k] 
     return trans_matrix_agg
 
-"""
-def calc_ergodic_dist(transition_matrix = None):
-
-    '''
-    Calculates the ergodic distribution for the transition_matrix, 
-    here it is the distribution (before being reshaped) over normalized market resources and
-    permanent income as the eigenvector associated with the eigenvalue 1.
-    
-
-    Parameters
-    ----------
-    transition_matrix: array 
-                transition matrix whose ergordic distribution is to be solved
-
-    Returns
-    -------
-    ergodic_distr: a vector array 
-    The distribution is stored as a vector 
-    ## reshaping it to (n_m, n_p) gives a reshaped array with the ij'th element representing
-    the probability of being at the i'th point on the mGrid and the j'th
-    point on the pGrid.
-    '''
-
-    #if transition_matrix == None:
-    #    #transition_matrix = [self.tran_matrix]
-    #    print('needs transition_matrix')
-    
-    eigen, ergodic_distr = sp.linalg.eigs(transition_matrix , k=1 , which='LM')  # Solve for ergodic distribution
-    ergodic_distr = ergodic_distr.real/np.sum(ergodic_distr.real)   
-
-    #vec_erg_dstn = ergodic_distr #distribution as a vector
-    #erg_dstn = ergodic_distr.reshape((len(m_dist_grid_list[0]),
-    #                                  len(p_dist_grid_list[0]))) # distribution reshaped into len(mgrid) by len(pgrid) array
-    return ergodic_distr 
-    
-    
-"""
-
 @njit
 def initial_distribution_u(model,
                          dist_mGrid, ## new, array, grid of m for distribution 
@@ -974,7 +935,46 @@ def lorenz_curve(grid_distribution,
     return np.array(lc_vals),share_grids
 
 
-# + code_folding=[0, 5, 17, 113, 341, 356, 386]
+"""
+def calc_ergodic_dist(transition_matrix = None):
+
+    '''
+    Calculates the ergodic distribution for the transition_matrix, 
+    here it is the distribution (before being reshaped) over normalized market resources and
+    permanent income as the eigenvector associated with the eigenvalue 1.
+    
+
+    Parameters
+    ----------
+    transition_matrix: array 
+                transition matrix whose ergordic distribution is to be solved
+
+    Returns
+    -------
+    ergodic_distr: a vector array 
+    The distribution is stored as a vector 
+    ## reshaping it to (n_m, n_p) gives a reshaped array with the ij'th element representing
+    the probability of being at the i'th point on the mGrid and the j'th
+    point on the pGrid.
+    '''
+
+    #if transition_matrix == None:
+    #    #transition_matrix = [self.tran_matrix]
+    #    print('needs transition_matrix')
+    
+    eigen, ergodic_distr = sp.linalg.eigs(transition_matrix , k=1 , which='LM')  # Solve for ergodic distribution
+    ergodic_distr = ergodic_distr.real/np.sum(ergodic_distr.real)   
+
+    #vec_erg_dstn = ergodic_distr #distribution as a vector
+    #erg_dstn = ergodic_distr.reshape((len(m_dist_grid_list[0]),
+    #                                  len(p_dist_grid_list[0]))) # distribution reshaped into len(mgrid) by len(pgrid) array
+    return ergodic_distr 
+    
+    
+"""
+
+
+# + code_folding=[5, 17, 113, 280, 301, 341, 356, 386]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1398,7 +1398,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## testing of the economy class 
 
 HH = HH_OLG_Markov(model=lc_mkv)
@@ -1411,9 +1411,11 @@ print('steady state of markov state:\n',HH.ss_dstn)
 
 
 ## computing transition matrix 
+n_m = 40
+n_p = 50
 
-HH.define_distribution_grid(num_pointsM = 40, 
-                            num_pointsP = 50)
+HH.define_distribution_grid(num_pointsM = n_m, 
+                            num_pointsP = n_p)
 HH.ComputeSSDist(as_star = as_star_mkv,
                   σs_star = σs_star_mkv)
 
@@ -1581,30 +1583,35 @@ cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
 ap_range = list(ap_pdfs_life.index)
 cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[]
-fig, axes = joypy.joyplot(ap_pdfs_life, 
-                          kind="values", 
-                          x_range=ap_range,
-                          figsize=(6,10),
-                          title="Wealth distribution over life cycle",
-                         colormap=cm.winter)
-fig.savefig('../Graphs/model/life_cycle_distribution_a_test.png')
-#axes[-1].set_xticks(a_values);
+# + code_folding=[2, 11]
+joy = False
+if joy == True:
+    fig, axes = joypy.joyplot(ap_pdfs_life, 
+                              kind="values", 
+                              x_range=ap_range,
+                              figsize=(6,10),
+                              title="Wealth distribution over life cycle",
+                             colormap=cm.winter)
+    fig.savefig('../Graphs/model/life_cycle_distribution_a_test.png')
+    #axes[-1].set_xticks(a_values);
 
-fig, axes = joypy.joyplot(cp_pdfs_life, 
-                          kind="values", 
-                          x_range=cp_range,
-                          figsize=(6,10),
-                          title="Consumption distribution over life cycle",
-                         colormap=cm.winter)
-fig.savefig('../Graphs/model/life_cycle_distribution_c_test.png')
+    fig, axes = joypy.joyplot(cp_pdfs_life, 
+                              kind="values", 
+                              x_range=cp_range,
+                              figsize=(6,10),
+                              title="Consumption distribution over life cycle",
+                             colormap=cm.winter)
+    fig.savefig('../Graphs/model/life_cycle_distribution_c_test.png')
 
-#axes[-1].set_xticks(a_values);
+    #axes[-1].set_xticks(a_values);
+    
+else:
+    pass
 # -
 
 # ### General Equilibrium 
 
-# + code_folding=[0, 9, 12, 37, 40]
+# + code_folding=[9, 12, 37, 40]
 economy_data = [
     ('Z', float64),            
     ('K', float64),             
@@ -1713,7 +1720,7 @@ def SS2tax(SS, ## social security /pension replacement ratio
     return λ_SS
 
 
-# + code_folding=[5, 26, 160, 172]
+# + code_folding=[0, 5, 26, 160, 172]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1940,7 +1947,7 @@ class Market_OLG_mkv:
         self.households = households
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## initialize a market and solve the equilibrium 
 
 production = CDProduction() 
@@ -1953,8 +1960,6 @@ market_OLG_mkv.get_equilibrium_k()
 # -
 
 market_OLG_mkv.get_equilibrium_dist()
-
-age_lc[:-1]
 
 # + code_folding=[0]
 ## plot life cycle profile
@@ -1993,7 +1998,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_eq.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_ap, share_ap = market_OLG_mkv.households.Lorenz(variable='a')
@@ -2011,7 +2016,7 @@ fig.savefig('../Graphs/model/lorenz_curve_a_eq.png')
 
 
 
-# +
+# + code_folding=[0]
 ## Wealth distribution 
 
 fig, ax = plt.subplots(figsize=(6,4))
