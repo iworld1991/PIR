@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
@@ -70,7 +70,7 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_y
 print(list(lc_paras_y))
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## a deterministic income profile 
 
 ## income profile 
@@ -92,7 +92,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -146,7 +146,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 20, 68]
+# + code_folding=[68]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -167,7 +167,7 @@ if calibrated_model == True:
 
 
     ## initialize the model with calibrated parameters 
-    lc_mkv = LifeCycle(shock_draw_size=30,
+    lc_mkv = LifeCycle(shock_draw_size=8,
                        U = lc_paras['U'], ## transitory ue risk
                     unemp_insurance = lc_paras['unemp_insurance'],
                     pension = lc_paras['pension'], ## pension
@@ -309,7 +309,7 @@ for x,year in enumerate(years_left):
 
 # ## Aggregate steady state distributions
 
-# + code_folding=[6, 101, 140, 163, 508, 545, 567, 582, 600, 626]
+# + code_folding=[6, 101, 140, 163, 508, 522, 545, 567, 582, 600, 626]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -682,7 +682,7 @@ def calc_transition_matrix(model,
                                                             this_dist_mGrid) 
 
 
-            else:  ## slow method  (Markov implemented as well)
+            else:  ## slow method  (Markov implemented)
 
 
                 # Generate Transition Matrix for u2u 
@@ -1294,7 +1294,7 @@ class HH_OLG_Markov:
 
         for t in range(model.L):
             age_dist_sparse = np.zeros(model.L)
-            age_dist_sparse[t] = 1.0
+            age_dist_sparse[t] = 1.0 ## a fake age distribution that gives the age t the total weight
 
             ## age specific wealth 
             C_this_age = AggregateDist(cp_PolGrid_list,
@@ -1518,8 +1518,11 @@ fig.savefig('../Graphs/model/distribution_c_test.png')
 
 # ### Life-cycle profile and wealth distribution
 
+# +
 import pandas as pd
 SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
+
+SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # + code_folding=[]
 HH.AggregatebyAge()
@@ -1528,7 +1531,7 @@ A_life = HH.A_life
 C_life = HH.C_life
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -1549,7 +1552,7 @@ ax.plot(age_lc[1:],
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,11.5])
 ax2.bar(age_lc[1:],
-        SCF_profile['av_wealth'][1:],
+        SCF_profile['mv_wealth'][1:],
        #'k--',
        label='SCF (RHS)')
 
@@ -1565,7 +1568,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_test.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## get the within-age distribution 
 
 HH.get_lifecycle_dist()
@@ -1573,7 +1576,7 @@ HH.get_lifecycle_dist()
 ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
 cp_grid_dist_life,cp_pdfs_dist_life = HH.cp_grid_dist_life,HH.cp_pdfs_dist_life
 
-# + code_folding=[]
+# + code_folding=[0]
 ## create the dataframe to plot distributions over the life cycle 
 ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
 cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
@@ -1583,7 +1586,7 @@ cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
 ap_range = list(ap_pdfs_life.index)
 cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[2, 11]
+# + code_folding=[1, 2, 11]
 joy = False
 if joy == True:
     fig, axes = joypy.joyplot(ap_pdfs_life, 
@@ -1611,7 +1614,7 @@ else:
 
 # ### General Equilibrium 
 
-# + code_folding=[9, 12, 37, 40]
+# + code_folding=[0, 9, 12, 37, 40]
 economy_data = [
     ('Z', float64),            
     ('K', float64),             
@@ -1961,7 +1964,7 @@ market_OLG_mkv.get_equilibrium_k()
 
 market_OLG_mkv.get_equilibrium_dist()
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -1982,7 +1985,7 @@ ax.plot(age_lc[:-2],
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,11.5])
 ax2.bar(age_lc,
-        SCF_profile['av_wealth'],
+        SCF_profile['mv_wealth'],
        #'k--',
        label='SCF (RHS)')
 
@@ -2034,3 +2037,6 @@ ax.plot(np.log(market_OLG_mkv.households.cp_grid_dist),
 ax.set_xlabel(r'$c$')
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_c_eq.png')
+# -
+
+

@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
@@ -24,7 +24,7 @@ import numba as nb
 
 # ### Age profile of income 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## import age income profile 
 
 age_profile = pd.read_stata('../OtherData/age_profile.dta')   
@@ -46,6 +46,7 @@ lc_G_rt[1] = 0.6
 
 
 lc_G_full = np.concatenate([lc_G,lc_G_rt])
+#lc_G_full = np.ones_like(lc_G_full)
 
 T_q = T*4
 L_q = L*4
@@ -232,3 +233,6 @@ life_cycle_paras_y
 # +
 #with open("parameters.txt", "wb") as fp:
 #    pickle.dump(life_cycle_paras, fp)
+# -
+
+

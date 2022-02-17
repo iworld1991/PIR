@@ -162,7 +162,7 @@ class LifeCycle:
                  T = 40,             ## work age, from 25 to 65
                  L = 60,             ## life length 85
                  G = np.ones(60),    ## growth factor list of permanent income 
-                 shock_draw_size = 10,
+                 shock_draw_size = 8,
                  grid_max = 2.5,
                  grid_size = 50,
                  seed = 456789,
@@ -1876,7 +1876,7 @@ if __name__ == "__main__":
 # -
 # ## Infinite horizon problem
 
-# + code_folding=[0, 5]
+# + code_folding=[5]
 if __name__ == "__main__":
 
 
