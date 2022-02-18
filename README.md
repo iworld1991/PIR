@@ -30,7 +30,7 @@
 ## Model
 
 
-1.  [SCFMoments](SCFData.ipynb)
+1.  [SCFMoments](./WorkingFolder/PythonCode/SCFData.ipynb)
 2. [Parameters](./WorkingFolder/PythonCode/PrepareParameters.ipynb)
 
    - prepare the baseline parameters, stored in a txt file. 
