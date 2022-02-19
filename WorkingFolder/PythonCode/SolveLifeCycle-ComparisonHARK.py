@@ -14,7 +14,7 @@
 #     name: python3
 # ---
 
-# ## Comparing the solution of this model with that in HARK 
+# ## Comparing the PIR and HARK solution
 #
 # - author: Tao Wang
 # - date: Feb 2022
@@ -58,9 +58,13 @@ from PrepareParameters import life_cycle_paras_y as inf_paras
 
 # ### parameters 
 
+# +
 inf_paras['G'] =  np.ones_like(inf_paras['G'])
 inf_paras['unemp_insurance'] = 0.0
 inf_paras['P'] = np.array([[0.9,0.1],[0.2,0.8]])
+
+grid_max = 5.0
+grid_size = 50
 
 # + code_folding=[0]
 inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
@@ -86,11 +90,6 @@ inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
                     ## life cycle 
                     T = inf_paras['T'],
                     L = inf_paras['L'],
-                    #TGPos = int(L/3) ## one third of life sees income growth 
-                    #GPos = 1.01*np.ones(TGPos)
-                    #GNeg= 0.99*np.ones(L-TGPos)
-                    #G = np.concatenate([GPos,GNeg])
-                    #G = np.ones(L)
                     G = inf_paras['G'],
                     #YPath = np.cumprod(G),
                     ## other parameters 
@@ -100,14 +99,16 @@ inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
                     W = inf_paras['W'],            ## Wage rate
                     ## subjective models 
                     theta = 0.0, ## extrapolation parameter 
-
                     ## no persistent state
                     b_y = 0.0,
                     ## wether to have zero borrowing constraint 
-                    borrowing_cstr = True
+                    borrowing_cstr = True,
+                    ## a grids 
+                    grid_max = 20,
+                    grid_size = 200,
     )
 
-# + code_folding=[9]
+# + code_folding=[0, 9]
 ## initial consumption functions 
 
 k = len(inf_mkv.s_grid)
@@ -140,12 +141,10 @@ m_plt_e, c_plt_e = a_inf_star[:,eps,1], σ_inf_star[:,eps,1]
 plt.plot(m_plt_u,
          c_plt_u,
          label = 'unemployed',
-         lw=3
         )
 plt.plot(m_plt_e,
          c_plt_e,
          label = 'employed',
-         lw=3
         )
 plt.legend()
 plt.xlabel(r'$m$')
@@ -156,52 +155,59 @@ plt.title('Inifite horizon solution')
 # ## Solving the same model with HARK
 #
 
+from copy import copy
 from HARK.ConsumptionSaving.ConsMarkovModel import MarkovConsumerType
 from HARK.distribution import DiscreteDistribution
 from HARK.ConsumptionSaving.ConsIndShockModel import init_lifecycle
-from copy import copy
 from HARK.ConsumptionSaving.ConsIndShockModel import init_idiosyncratic_shocks
 from HARK.utilities import plot_funcs
 
 ## for infinite horizon 
-init_serial_unemployment = copy(init_idiosyncratic_shocks)
-init_serial_unemployment["MrkvArray"] = [inf_paras['P']]
-init_serial_unemployment["UnempPrb"] = inf_paras['U']  # to make income distribution when employed
-init_serial_unemployment["global_markov"] = False
-init_serial_unemployment['CRRA'] = inf_paras['ρ']
-init_serial_unemployment['Rfree'] = inf_paras['R']
-init_serial_unemployment['LivPrb'] = [inf_paras['LivPrb']]
-init_serial_unemployment['PermGroFac'] = [1.0]
-init_serial_unemployment['PermShkStd'] = [inf_paras['σ_ψ']]
-init_serial_unemployment['TranShkStd'] = [inf_paras['σ_θ']]
-init_serial_unemployment['DiscFac'] = inf_paras['β']
+hark_mkv_para = copy(init_idiosyncratic_shocks)
+hark_mkv_para["MrkvArray"] = [inf_paras['P']]
+hark_mkv_para["UnempPrb"] = inf_paras['U']  # to make income distribution when employed
+hark_mkv_para["global_markov"] = False
+hark_mkv_para['CRRA'] = inf_paras['ρ']
+hark_mkv_para['Rfree'] = inf_paras['R']
+hark_mkv_para['LivPrb'] = [inf_paras['LivPrb']]
+hark_mkv_para['PermGroFac'] = [1.0]
+hark_mkv_para['PermShkStd'] = [inf_paras['σ_ψ']]
+hark_mkv_para['TranShkStd'] = [inf_paras['σ_θ']]
+hark_mkv_para['DiscFac'] = inf_paras['β']
+hark_mkv_para['aXtraMax'] = grid_max
+hark_mkv_para['aXtraCount'] = grid_size-1
 
-print('HARK parameterization',str(init_serial_unemployment))
+print('HARK parameterization',str(hark_mkv_para))
 print('PIR parameterization',str(inf_paras))
 
-SerialUnemploymentExample = MarkovConsumerType(**init_serial_unemployment)
-SerialUnemploymentExample.cycles = 0
-SerialUnemploymentExample.vFuncBool = False  # for easy toggling here
+hark_mkv = MarkovConsumerType(**hark_mkv_para)
+hark_mkv.cycles = 0
+hark_mkv.vFuncBool = False  # for easy toggling here
 
+# + code_folding=[]
 # Interest factor, permanent growth rates, and survival probabilities are constant arrays
-SerialUnemploymentExample.assign_parameters(Rfree = np.array(2 * [SerialUnemploymentExample.Rfree]))
-SerialUnemploymentExample.PermGroFac = [
-    np.array(2 * SerialUnemploymentExample.PermGroFac)
+hark_mkv.assign_parameters(Rfree = np.array(2 * [hark_mkv.Rfree]))
+hark_mkv.PermGroFac = [
+    np.array(2 * hark_mkv.PermGroFac)
 ]
-SerialUnemploymentExample.LivPrb = [SerialUnemploymentExample.LivPrb * np.ones(2)]
+hark_mkv.LivPrb = [hark_mkv.LivPrb * np.ones(2)]
 
+# + code_folding=[3]
 # Replace the default (lognormal) income distribution with a custom one
 employed_income_dist = DiscreteDistribution(np.ones(1), [np.ones(1), np.ones(1)])  # Definitely get income
 unemployed_income_dist = DiscreteDistribution(np.ones(1), [np.ones(1), np.zeros(1)]) # Definitely don't
-SerialUnemploymentExample.IncShkDstn = [
+hark_mkv.IncShkDstn = [
     [
         unemployed_income_dist,
         employed_income_dist
     ]
 ]
 
+# + code_folding=[]
+## solve the model 
+
 start_time = time()
-SerialUnemploymentExample.solve()
+hark_mkv.solve()
 end_time = time()
 print(
     "Solving a Markov consumer with serially correlated unemployment took "
@@ -209,43 +215,17 @@ print(
     + " seconds."
 )
 print("Consumption functions for each discrete state:")
-plot_funcs(SerialUnemploymentExample.solution[0].cFunc, 0, 50)
-if SerialUnemploymentExample.vFuncBool:
+plot_funcs(hark_mkv.solution[0].cFunc, 0, 20)
+if hark_mkv.vFuncBool:
     print("Value functions for each discrete state:")
-    plot_funcs(SerialUnemploymentExample.solution[0].vFunc, 5, 50)
-
-## for life cycle 
-"""
-init_life_cycle_new = copy(init_lifecycle)
-init_life_cycle_new['T_cycle'] = lc_paras['L']-1   ## minus 1 because T_cycle is nb periods in a life cycle - 1 in HARK 
-init_serial_unemployment['CRRA'] = lc_paras['ρ']
-init_serial_unemployment['Rfree'] = lc_paras['R']
-init_serial_unemployment['LivPrb'] = [lc_paras['LivPrb']]
-init_serial_unemployment['PermGroFac'] = [1.0]
-init_serial_unemployment['PermShkStd'] = [lc_paras['σ_ψ']]*init_life_cycle_new['T_cycle']
-init_serial_unemployment['TranShkStd'] = [lc_paras['σ_θ']]*init_life_cycle_new['T_cycle']
-init_serial_unemployment['DiscFac'] = [lc_paras['β']]
-#init_life_cycle_new['PermGroFacAgg'] = list(G[1:])
-#init_life_cycle_new['aXtraMin'] = a_min+0.00001
-#init_life_cycle_new['aXtraMax'] = a_max
-#init_life_cycle_new['aXtraCount'] = 800
-#init_life_cycle_new['ShareCount'] = 100
-
-init_life_cycle_new["MrkvArray"] = [lc_paras['P']]
-init_life_cycle_new["UnempPrb"] = lc_paras['U']  # to make income distribution when employed
-init_life_cycle_new["global_markov"] = False
-
-LifeCycleType = MarkovConsumerType(**init_life_cycle_new)
-
-LifeCycleType.cycles = 1 ## life cycle problem instead of infinite horizon
-LifeCycleType.vFuncBool = False  ## no need to calculate the value for the purpose here 
-"""
+    plot_funcs(hark_mkv.solution[0].vFunc, 5, 20)
 
 # +
 ## compare the solutions 
 
-c_u_HARK = SerialUnemploymentExample.solution[0].cFunc[0](m_plt_u)
-c_e_HARK = SerialUnemploymentExample.solution[0].cFunc[1](m_plt_e)
+## get the HARK c  
+c_u_HARK = hark_mkv.solution[0].cFunc[0](m_plt_u)
+c_e_HARK = hark_mkv.solution[0].cFunc[1](m_plt_e)
 
 plt.title('Comparing consumption policies')
 plt.plot(m_plt_u,c_u_HARK,'k-',label='uemp:HARK')
@@ -254,4 +234,75 @@ plt.plot(m_plt_e,c_e_HARK,'b--',label='emp:HARK')
 plt.plot(m_plt_e,c_plt_e,'go',label='emp:PIR')
 plt.legend(loc=0)
 # -
+# ## Wealth distribution over life cycle 
 
+lc_paras
+
+# +
+## for life cycle 
+init_life_cycle_new = copy(init_lifecycle)
+lc_paras = inf_paras
+
+init_life_cycle_new['T_cycle'] = lc_paras['L']-1   ## minus 1 because T_cycle is nb periods in a life cycle - 1 in HARK 
+init_life_cycle_new['CRRA'] = lc_paras['ρ']
+init_life_cycle_new['T_retire'] = lc_paras['T']
+init_life_cycle_new['Rfree'] = lc_paras['R']
+init_life_cycle_new['LivPrb'] = [lc_paras['LivPrb']]*init_life_cycle_new['T_cycle']
+init_life_cycle_new['PermGroFac'] = lc_paras['G']
+init_life_cycle_new['PermShkStd'] = [lc_paras['σ_ψ']]*init_life_cycle_new['T_cycle']
+init_life_cycle_new['TranShkStd'] = [lc_paras['σ_θ']]*init_life_cycle_new['T_cycle']
+init_life_cycle_new['DiscFac'] = lc_paras['β']
+init_life_cycle_new['PermGroFacAgg'] = 1.0
+init_life_cycle_new['aNrmInitMean']= lc_paras['init_b']
+init_life_cycle_new['aNrmInitStd']= 0.0
+init_life_cycle_new['pLvlInitMean']= 1.0
+init_life_cycle_new['pLvlInitStd']= lc_paras['σ_ψ_init']
+init_life_cycle_new["UnempPrb"] = lc_paras['U']  # to make income distribution when employed
+
+#init_life_cycle_new['aXtraMin'] = a_min+0.00001
+#init_life_cycle_new['aXtraMax'] = a_max
+#init_life_cycle_new['aXtraCount'] = 800
+
+#init_life_cycle_new["MrkvArray"] = [lc_paras['P']]
+#init_life_cycle_new["global_markov"] = False
+
+"""
+LifeCycleType = MarkovConsumerType(**init_life_cycle_new)
+
+LifeCycleType.cycles = 1 ## life cycle problem instead of infinite horizon
+LifeCycleType.vFuncBool = False  ## no need to calculate the value for the purpose here 
+"""
+# -
+
+import HARK.ConsumptionSaving.ConsIndShockModel as HARK_model         # The consumption-saving micro model
+from HARK.utilities import plot_funcs_der, plot_funcs              # Some tools
+
+LifeCyclePop = HARK_model.IndShockConsumerType(**init_life_cycle_new)
+LifeCyclePop.cycles = 1
+LifeCyclePop.vFuncBool = False  # for easy toggling here
+
+# +
+LifeCyclePop.solve()                            # Obtain consumption rules by age 
+LifeCyclePop.unpack('cFunc')                      # Expose the consumption rules
+
+# Which variables do we want to track
+LifeCyclePop.track_vars = ['aNrm','pLvl','mNrm','cNrm','TranShk']
+
+LifeCyclePop.T_sim = lc_paras['L']-1              # Nobody lives to be older than 145 years (=25+120)
+LifeCyclePop.initialize_sim()                     # Construct the age-25 distribution of income and assets
+LifeCyclePop.simulate()
+# -
+
+LifeCyclePop.history['aLvl'] = LifeCyclePop.history['aNrm']*LifeCyclePop.history['pLvl']
+aGro41=LifeCyclePop.history['aLvl'][41]/LifeCyclePop.history['aLvl'][40]
+aGro41NoU=aGro41[aGro41[:]>0.2] # Throw out extreme outliers
+aGro41NoU = aGro41NoU[aGro41NoU[:]<2]
+
+# Plot the distribution of growth rates of wealth between age 65 and 66 (=25 + 41)
+n, bins, patches = plt.hist(aGro41NoU,50,density=True)
+
+plt.plot(LifeCyclePop.history['aLvl'].mean(axis=1))
+
+plt.plot(np.log(LifeCyclePop.history['aLvl'].mean(axis=1)))
+
+plt.plot(LifeCyclePop.history['aLvl'].std(axis=1))
