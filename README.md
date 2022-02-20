@@ -7,7 +7,7 @@
 
 - To download the entire working repo, go to the shell, navigate to the desirable locaiton, and type 
   - `git init`
-  - `git clone https://github.com/iworld1991/IncExpProject.git`.   
+  - `git clone https://github.com/iworld1991/PIR.git`.   
 - For the most recent draft, see [here](./PIR.pdf).
 - For replication of all the work, navigate [here](/WorkingFolder/PythonCode/) and run "do_all.py'' by doing the following in the shell: 
   - `ipython do_all.py`
