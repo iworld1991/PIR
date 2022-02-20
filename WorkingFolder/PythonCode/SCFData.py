@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -20,7 +20,7 @@
 import numpy as np
 import pandas as pd   #The data package
 import sys            #The code below wont work for any versions before Python 3. This just ensures that (allegedly).
-assert sys.version_info >= (3,5)
+
 
 import requests
 import io
@@ -103,12 +103,12 @@ list(df2016.columns)
 # +
 ### filters and clean variables 
 
-
 df2016 = df2016[(df2016['age']>=25) & (df2016['age']<=85)]
 df2016 = df2016[df2016['income']>0]
 df2016 = df2016[df2016['norminc']>0]
 df2016['lincome'] = np.log(df2016['income'])
 df2016['lnorminc'] = np.log(df2016['norminc'])
+df2016['w2income']=df2016['networth']/ df2016['norminc']
 # -
 
 # ### Life-cycle wealth and income profile 
@@ -134,23 +134,31 @@ fig, axes = joypy.joyplot(df2016,
 ## Life cycle income / wealth profiles 
 
 age = df2016['age'].unique()
-wm = lambda x: np.average(x, weights=df2016.loc[x.index, "wgt"])
 
+wm = lambda x: np.average(x, weights=df2016.loc[x.index, "wgt"])
 
 age_av_wealth = df2016.groupby('age').agg(av_wealth = ('networth',wm))
 age_med_wealth = df2016.groupby('age').agg(med_wealth=('networth','median'))
 
-age_av_lincome = df2016.groupby('age').agg(av_wealth = ('lincome',wm))
-age_med_lincome = df2016.groupby('age').agg(med_wealth=('lincome','median'))
+age_av_w2i = df2016.groupby('age').agg(av_w2i = ('w2income',wm))
+age_med_w2i = df2016.groupby('age').agg(med_w2i=('w2income','median'))
 
-age_av_lnorminc = df2016.groupby('age').agg(av_wealth = ('lnorminc',wm))
-age_med_lnorminc = df2016.groupby('age').agg(med_wealth=('lnorminc','median'))
+age_av_lincome = df2016.groupby('age').agg(av_lincome = ('lincome',wm))
+age_med_lincome = df2016.groupby('age').agg(med_lincome=('lincome','median'))
+
+age_av_lnorminc = df2016.groupby('age').agg(av_lnorminc = ('lnorminc',wm))
+age_med_lnorminc = df2016.groupby('age').agg(med_lnorminc=('lnorminc','median'))
 
 # -
 
 plt.title('Net wealth over life cycle')
 plt.plot(np.log(age_av_wealth),label='average net wealth')
 plt.plot(np.log(age_med_wealth),label='median net wealth')
+plt.legend(loc=0)
+
+plt.title('Net wealth over life cycle')
+plt.plot(np.log(age_av_w2i),label='average net wealth/income ratio')
+plt.plot(np.log(age_med_w2i),label='median net wealth/income ratio')
 plt.legend(loc=0)
 
 plt.title('Income over life cycle')
@@ -163,10 +171,12 @@ plt.plot(np.log(age_av_lnorminc),label='average income')
 plt.plot(np.log(age_med_lnorminc),label='median income')
 plt.legend(loc=0)
 
-# + code_folding=[2]
+# + code_folding=[]
 ## merge all age profiles 
 
 to_merge = [age_med_wealth,
+            age_av_w2i,
+            age_med_w2i,
             age_av_lincome,
             age_med_lincome,
             age_av_lnorminc,
@@ -181,9 +191,10 @@ for  df in to_merge:
                               right_index=True)
     
 SCF_age_profile.to_pickle('data/SCF_age_profile.pkl')
-
-
 # -
+
+SCF_age_profile
+
 
 # ### Wealth inequality 
 
@@ -284,10 +295,7 @@ def figureprefs(data, variable = 'income', labels = False, legendlabels = []):
    
     plt.legend(loc = 2)
 
-years_graph = [df2019, df2016,df2013]
-labels = ['2019', '2016','2013']
+years_graph = [df2016]
+labels = ['2016']
 
 figureprefs(years_graph, variable = 'networth', legendlabels = labels);
-# -
-
-

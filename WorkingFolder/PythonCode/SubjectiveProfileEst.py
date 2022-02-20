@@ -144,7 +144,7 @@ def mkv2_Y2Q(q,
 
 
 
-# + code_folding=[0, 15, 47, 62, 69, 78, 82, 104, 124, 132]
+# + code_folding=[15, 47, 62, 69, 78, 82, 104, 124, 132]
 class Markov2Switching:
     """
     A class that stores primitives for the Markov Regime Switching Model
@@ -599,8 +599,8 @@ vars_demog_sub = ['Q32',  ## age
                   'Q33',  ## gender 
                   'Q36',  ## education (1-8 low to high, 9 other)
                   'educ_gr',##education group (1-3)
-                  'byear',
-                 'nlit'] ## year of birth
+                  'byear', ## year of birth
+                 'nlit'] 
 
 vars_all_reg_long = (vars_id+moms_nom + moms_real+ue_risks+vars_demog+vars_demog_sub+vars_job)
 
@@ -642,7 +642,6 @@ SCEM['age4']=SCEM['age']**4
 
 SCEM['lrincvar'] = np.log(SCEM['rincvar'])
 
-
 ### some data transformation 
 
 SCEM['UE_s'] = SCEM['UE_s']/100
@@ -653,11 +652,14 @@ SCEM['E2E_prob'] = 1- SCEM['UE_s']*(1-SCEM['UE_f'])   ## 1- prob(loses the job a
 
 
 ## trucate 0 and 1s for probs 
-SCEM['U2U_prob_truc'] = np.where((SCEM['U2U_prob']==1),1-1e-10,SCEM['U2U_prob'])
-SCEM['U2U_prob_truc'] = np.where((SCEM['U2U_prob']==0),0+1e-10,SCEM['U2U_prob'])
+SCEM['U2U_prob_truc'] = SCEM['U2U_prob']
+SCEM['U2U_prob_truc'] = SCEM['U2U_prob_truc'].mask(SCEM['U2U_prob_truc']>=1.0,0.99)
+SCEM['U2U_prob_truc'] = SCEM['U2U_prob_truc'].mask(SCEM['U2U_prob_truc']<=0.0,0.001)
 
-SCEM['E2E_prob_truc'] = np.where((SCEM['E2E_prob']==1),1-1e-10,SCEM['E2E_prob'])
-SCEM['E2E_prob_truc'] = np.where((SCEM['E2E_prob']==0),0+1e-10,SCEM['E2E_prob'])
+
+SCEM['E2E_prob_truc'] = SCEM['E2E_prob']
+SCEM['E2E_prob_truc'] = SCEM['E2E_prob_truc'].mask(SCEM['E2E_prob_truc']>=1.0,0.99)
+SCEM['E2E_prob_truc'] = SCEM['E2E_prob_truc'].mask(SCEM['E2E_prob_truc']<=0.0,0.001)
 
 
 ### transform 0-1 prob to a R 
@@ -665,35 +667,48 @@ SCEM['E2E_prob_truc'] = np.where((SCEM['E2E_prob']==0),0+1e-10,SCEM['E2E_prob'])
 prob_inv_func = lambda x: np.log(x)-np.log(1-x)
 SCEM['U2U_prob_e'] = SCEM['U2U_prob_truc'].apply(prob_inv_func)
 SCEM['E2E_prob_e'] =  SCEM['E2E_prob_truc'].apply(prob_inv_func)
+# -
 
+
+## filter by numeracy score
+print('nb of observations before:',str(len(SCEM)))
+SCEM =SCEM[SCEM['nlit']>=2.0]
+print('nb of observations before:',str(len(SCEM)))
 
 # + code_folding=[0]
 ## first step regression
 
 vars_list = ['lrincvar',
-            'U2U_prob',
-            'E2E_prob']  
+            'U2U_prob_e',
+            'E2E_prob_e']  
 
 for var in vars_list:
     ## demeaned 
     SCEM[var+'_dm'] = SCEM[var]-SCEM.groupby('userid')[var].transform('mean')
     
     ## run a panel regression to get the residuls 
-    model = smf.ols(formula = var+'~ C(date)+C(HHinc)+C(gender)+age2+age3+age4+C(educ_gr)',
+    #model = smf.ols(formula = var+'~ C(date)+C(HHinc)+C(gender)+age2+age3+age4+C(educ_gr)',
+    #            data = SCEM)
+    model = smf.ols(formula = var+'_dm~ C(date)',
                 data = SCEM)
     result = model.fit()
     residuls = result.resid
     SCEM[var+'_rd'] = residuls
 
 
+# +
+## correlation 
+
+SCEM[vars_list].corr()
+
 # + code_folding=[]
 ## convert the panel data of rincvar into a list of time series sequence
 vars_rd_list = ['lrincvar_rd',
-                'U2U_prob',
-                'E2E_prob']  
+                'U2U_prob_e_rd',
+                'E2E_prob_e_rd']  
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## convert it to a list of arrays storing all time series data for each individual
 
 SCEM_sub = SCEM[['userid']+vars_rd_list].dropna(how='any')
@@ -706,18 +721,32 @@ SCE_list = [x for x in SCE_list if ~np.isnan(np.array(x)).any() and x.shape[1]>=
 
 print('how many invidividuals have answers in successive months?',len(SCE_list))
 
-# + code_folding=[5]
+# + code_folding=[0]
+## correlation 
+
+SCEM_sub[vars_rd_list].corr()
+
+# + code_folding=[0]
 ## plot the simulated data 
 random_id = np.random.randint(0,len(SCE_list)-1)
 
-plt.figure(figsize=(10,5))
-plt.title("A random respondent's earning risk perceptions from the survey")
-plt.plot(SCE_list[random_id][0,:],
+fig, axes = plt.subplots(3,1,figsize=(10,8))
+axes[0].set_title("A random respondent's risk perceptions from the survey")
+axes[0].plot(SCE_list[random_id][0,:],
          'o-',
-         label=r'$y_t$')
-plt.legend(loc=1)
+         label='perceived earnign risk')
+axes[0].legend(loc=1)
+axes[1].plot(SCE_list[random_id][1,:],
+         'o-',
+         label='perceived U2E prob')
+axes[1].legend(loc=1)
+axes[2].plot(SCE_list[random_id][2,:],
+         'o-',
+         label='perceived E2E prob')
+axes[2].legend(loc=1)
+fig.savefig('../Graphs/sce/markov_example.png')
 
-# + code_folding=[1, 8]
+# + code_folding=[0, 1]
 ## create the model 
 SCE_mkv2 = Markov2Switching(AR=0,
                             paras = np.array([0.1,0.1,0.1,0.7,0.7,
@@ -730,9 +759,8 @@ SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
                                                 para)[0]   ## only the first output
 
 
-# + code_folding=[0, 20, 29]
-## impose some bounds for some parameter based on informed priors
-
+# + code_folding=[]
+## impose some bounds for some parameters with sensible priors
 
 ## the size of the shock cannot exceed the sample variation
 sigma_ub0 = np.mean([np.std(np.array(x[0,:])) for x in SCE_list])
@@ -744,20 +772,25 @@ sigma_inv_ub1 = SCE_mkv2.exp_func_inv(sigma_ub1)
 sigma_ub2 = np.mean([np.std(np.array(x[2,:])) for x in SCE_list])
 sigma_inv_ub2 = SCE_mkv2.exp_func_inv(sigma_ub1)
 
-## staying probabilities of both 2 states are above half, indicating persistency 
+## staying probabilities of both 2 states are above half 
 q_lb = 0.5  ## persistent 
-q_inv_lb =SCE_mkv2.prob_func_inv(q_lb) 
+q_inv_lb = SCE_mkv2.prob_func_inv(q_lb) 
 p_lb = 0.5 ## persistent 
-p_inv_lb =SCE_mkv2.prob_func_inv(p_lb)
+p_inv_lb = SCE_mkv2.prob_func_inv(p_lb)
 
 ## estimation 
 guess = np.array([0.2,0.4,-0.5,0.1,0.4,
                 0.2,0.4,-2,0.1,0.4,
                 0.2,-0.1,-2,0.1,0.4])
 
-bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_inv_lb,None),(p_inv_lb,None),
-         (None,None),(0.0,None),(-4,sigma_inv_ub1),(None,None),(None,None),
-         (None,None),(None,0.0),(-4,sigma_inv_ub2),(None,None),(None,None),)
+
+bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),
+         (None,None),(0.0,None),(-1,sigma_inv_ub1),(None,None),(None,None),
+         (None,None),(None,0.0),(-1,sigma_inv_ub2),(None,None),(None,None),)
+
+#bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_inv_lb,None),(p_inv_lb,None),
+#         (None,None),(0.0,None),(-2,sigma_inv_ub1),(None,None),(None,None),
+#         (None,None),(None,0.0),(-2,sigma_inv_ub2),(None,None),(None,None),)
 
 
 result = minimize(SCE_obj,
@@ -765,17 +798,15 @@ result = minimize(SCE_obj,
                   method='SLSQP',   #SLSQP
                   bounds = bounds,
                   options={'disp': True,
-                            'maxiter':5000}
+                            'maxiter':20000}
                    )
 print('success? ',result['success'])
 SCE_para_est = result['x']
 ## get alpha, beta, sigma, q, p 
 
-
 ## get model parameters 
 guess_para_model = SCE_mkv2.make_para_dict(guess)
 SCE_para_model_est = SCE_mkv2.make_para_dict(SCE_para_est)
-
 
 #results
 print("initial guess of the parameters\n",guess_para_model)
@@ -792,7 +823,7 @@ kappa_sipp = np.median(kappas_sipp.dropna())
 kappa = kappa_sipp ## ratio of permanent and transitory risks 
 
 
-# + code_folding=[0]
+# + code_folding=[8]
 ## create a dictionary for storing QUARTERLY parameters 
 
 model_para_q_est = {}
@@ -812,12 +843,18 @@ model_para_q_est['\tilde\sigma_\theta^l'] =  1/3*model_para_q_est['\tilde\sigma_
 model_para_q_est['\tilde\sigma_\psi^h'] =  np.sqrt(3*np.exp(alpha+beta)/(12+1/(12*kappa**2)))
 model_para_q_est['\tilde\sigma_\theta^h'] =  1/3*model_para_q_est['\tilde\sigma_\psi^h']/kappa
 
+alpha_q = SCE_para_model_est['α'][1]
+beta_q = SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1]
 
-model_para_q_est['\tilde \mho^l'],model_para_q_est['\tilde E^l'] = mkv2_Y2Q(SCE_para_model_est['α'][1],
-                                                                        SCE_para_model_est['α'][2])
+alpha_p = SCE_para_model_est['α'][2]
+beta_p = SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2]
 
-model_para_q_est['\tilde \mho^h'], model_para_q_est['\tilde E^h']=  mkv2_Y2Q(SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1],
-                                                                         SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2])
+
+model_para_q_est['\tilde \mho^l'],model_para_q_est['\tilde E^l'] = mkv2_Y2Q(SCE_mkv2.prob_func(alpha_q),
+                                                                        SCE_mkv2.prob_func(alpha_p))
+
+model_para_q_est['\tilde \mho^h'], model_para_q_est['\tilde E^h']=  mkv2_Y2Q(SCE_mkv2.prob_func(alpha_q+beta_q),
+                                                                         SCE_mkv2.prob_func(alpha_p+beta_p))
 
 print('quarterly SCE parameters\n',model_para_q_est)
 
@@ -875,19 +912,22 @@ index_names = ['$q$',
 
 
 SCE_para_est_q_df.index = index_names
-SCE_para_est_q_df
 
 
 ## save it to a pickle file 
 SCE_para_est_q_df.to_pickle('data/subjective_profile_est_q.pkl')
 
-# + code_folding=[0, 32, 67]
+SCE_para_est_q_df
+
+
+
+# + code_folding=[39, 74]
 ## create a dictionary for storing YEARLY parameters 
 
 model_para_y_est = {}
 
 ############################################
-## from yeraly to monthly risk then to quarterly 
+## from yeraly to monthly risk
 ############################################
 
 ###!!!! Here you need to transform montly mkv to 1 year
@@ -904,9 +944,16 @@ model_para_y_est['\tilde\sigma_\psi^h'] =  np.sqrt(12*np.exp(alpha+beta)/(12+1/(
 model_para_y_est['\tilde\sigma_\theta^h'] =  1/12*model_para_q_est['\tilde\sigma_\psi^h']/kappa
 
 
-model_para_y_est['\tilde \mho^l'],model_para_y_est['\tilde E^l'] = SCE_para_model_est['α'][1],SCE_para_model_est['α'][2]
+alpha_q = SCE_para_model_est['α'][1]
+beta_q = SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1]
 
-model_para_y_est['\tilde \mho^h'], model_para_y_est['\tilde E^h']=  SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1],SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2]
+alpha_p = SCE_para_model_est['α'][2]
+beta_p = SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2]
+
+
+model_para_y_est['\tilde \mho^l'],model_para_y_est['\tilde E^l'] = SCE_mkv2.prob_func(alpha_q),SCE_mkv2.prob_func(alpha_p)
+
+model_para_y_est['\tilde \mho^h'], model_para_y_est['\tilde E^h']=  SCE_mkv2.prob_func(alpha_q+beta_q),SCE_mkv2.prob_func(alpha_p+beta_p)
 
 print('yearly SCE parameters\n',model_para_y_est)
 
@@ -961,11 +1008,13 @@ index_names = ['$q$',
               '$\tilde E^h$']
 
 SCE_para_est_y_df.index = index_names
-SCE_para_est_y_df
 
 
 ## save it to a pickle file 
 SCE_para_est_y_df.to_pickle('data/subjective_profile_est_y.pkl')
+
+SCE_para_est_y_df
+
 
 
 # + code_folding=[5]
@@ -991,126 +1040,139 @@ with open("parameters.txt", "wb") as fp:
 #
 
 # + code_folding=[7, 11]
-import pandas_datareader.data as web
-import datetime
+if __name__ == "__main__":
 
-start = datetime.datetime(1945, 1, 1)
-end = datetime.datetime(2019, 12, 31)
+    import pandas_datareader.data as web
+    import datetime
+
+    start = datetime.datetime(1945, 1, 1)
+    end = datetime.datetime(2019, 12, 31)
 
 
-rec = web.DataReader("USREC", 
-                     "fred", 
-                     start, 
-                     end)
-gdp = web.DataReader('GDPC1',
-                     'fred',
-                     start,
-                     end)
-gdp_gr = gdp.pct_change().dropna()
-gdp_gr.index = pd.DatetimeIndex(gdp_gr.index, freq="QS")
+    rec = web.DataReader("USREC", 
+                         "fred", 
+                         start, 
+                         end)
+    gdp = web.DataReader('GDPC1',
+                         'fred',
+                         start,
+                         end)
+    gdp_gr = gdp.pct_change().dropna()
+    gdp_gr.index = pd.DatetimeIndex(gdp_gr.index, freq="QS")
 
 
 # + code_folding=[2]
-## use statsmodels 
+if __name__ == "__main__":
 
-mod_hamilton = sm.tsa.MarkovAutoregression(
-    gdp_gr, 
-    k_regimes=2, 
-    order= 4, 
-    switching_ar=False
-)
-res_hamilton = mod_hamilton.fit()
+
+    ## use statsmodels 
+
+    mod_hamilton = sm.tsa.MarkovAutoregression(
+        gdp_gr, 
+        k_regimes=2, 
+        order= 4, 
+        switching_ar=False
+    )
+    res_hamilton = mod_hamilton.fit()
 # -
 
-res_hamilton.summary()
+if __name__ == "__main__":
+    res_hamilton.summary()
 
-# +
-fig, axes = plt.subplots(2, figsize=(7, 7))
-ax = axes[0]
-ax.plot(res_hamilton.filtered_marginal_probabilities[0])
-ax.fill_between(rec.index, 
-                0, 
-                1, 
-                where=rec["USREC"].values, 
-                color="k", 
-                alpha=0.1)
-ax.set_xlim(gdp_gr.index[4], gdp_gr.index[-1])
-ax.set(title="Filtered probability of recession")
-
-ax = axes[1]
-ax.plot(res_hamilton.smoothed_marginal_probabilities[0])
-ax.fill_between(rec.index, 0, 1, where=rec["USREC"].values, color="k", alpha=0.1)
-ax.set_xlim(gdp_gr.index[4], gdp_gr.index[-1])
-ax.set(title="Smoothed probability of recession")
-
-fig.tight_layout()
-
-# +
-## estimation using codes here 
-
-mkv2_gdp = Markov2Switching(AR=1,
-                           nb_var=1)
-fake_data_list = [np.array(gdp_gr['GDPC1'])]
-
-obj = lambda para: -mkv2_gdp.log_likelihood(fake_data_list,
-                                        para)[0]   ## only the first output
-
-## estimation 
-guess = (0.0,0.2,0.4,0.2,0.2,0.9)
-#bounds = [(None,None),(None,None),(0.03,1.0),(0.0,1.0),(0.0,1.0)] 
-
-para_est = minimize(obj,
-                    x0=guess,
-                    method='CG',
-                    options={'disp': True,
-                            #'maxls':40,
-                            #'ftol': 2.220446049250313e-11
-                            }
-                   )['x']
-
-#results
-print('Estimated model parameters:',[round(x,2) for x in mkv2_gdp.get_model_para(para_est)])
-
-llh,filter1,pr1,pdf = mkv2_gdp.log_likelihood(fake_data_list,
-                                          para_est)
+if __name__ == "__main__":
 
 
-# + code_folding=[]
-## plot the time series 
+    fig, axes = plt.subplots(2, figsize=(7, 7))
+    ax = axes[0]
+    ax.plot(res_hamilton.filtered_marginal_probabilities[0])
+    ax.fill_between(rec.index, 
+                    0, 
+                    1, 
+                    where=rec["USREC"].values, 
+                    color="k", 
+                    alpha=0.1)
+    ax.set_xlim(gdp_gr.index[4], gdp_gr.index[-1])
+    ax.set(title="Filtered probability of recession")
 
-lw = 2
-figsize = (15,5)
-fontsize = 10
+    ax = axes[1]
+    ax.plot(res_hamilton.smoothed_marginal_probabilities[0])
+    ax.fill_between(rec.index, 0, 1, where=rec["USREC"].values, color="k", alpha=0.1)
+    ax.set_xlim(gdp_gr.index[4], gdp_gr.index[-1])
+    ax.set(title="Smoothed probability of recession")
 
-## plot 
-fig, ax = plt.subplots(figsize = figsize)
-ax2 = ax.twinx()
-ax.plot(gdp_gr.index[2:-1],
-        gdp_gr[2:-1],
-        color='black',
-           lw= lw,
-           label= 'gdp growth ')
-ax2.plot(gdp_gr.index[2:-1],
-         filter1[0][2:-1],
-         'r-',
-         lw = lw,
-         label = 'filter prob (RHS)')
-ax.legend(loc = 2,
-         fontsize = fontsize)
-ax.set_xlabel("month",fontsize = fontsize)
-ax.grid()
-ax.set_ylabel('% growth',fontsize = fontsize)
-ax.tick_params(axis='both', 
-               which='major', 
-               labelsize = fontsize)
-ax2.tick_params(axis='both', 
-               which='major', 
-               labelsize = fontsize)
-ax2.fill_between(rec.index, 
-                min(filter1[0][1:-1]), 
-                max(filter1[0][1:-1]), 
-                where=rec["USREC"].values, 
-                color="k", 
-                alpha=0.1)
-ax2.legend(loc = 1,
-          fontsize = fontsize)
+    fig.tight_layout()
+
+if __name__ == "__main__":
+
+
+    ## estimation using codes here 
+
+    mkv2_gdp = Markov2Switching(AR=1,
+                               nb_var=1)
+    fake_data_list = [np.array(gdp_gr['GDPC1'])]
+
+    obj = lambda para: -mkv2_gdp.log_likelihood(fake_data_list,
+                                            para)[0]   ## only the first output
+
+    ## estimation 
+    guess = (0.0,0.2,0.4,0.2,0.2,0.9)
+    #bounds = [(None,None),(None,None),(0.03,1.0),(0.0,1.0),(0.0,1.0)] 
+
+    para_est = minimize(obj,
+                        x0=guess,
+                        method='CG',
+                        options={'disp': True,
+                                #'maxls':40,
+                                #'ftol': 2.220446049250313e-11
+                                }
+                       )['x']
+
+    #results
+    print('Estimated model parameters:',[round(x,2) for x in mkv2_gdp.get_model_para(para_est)])
+
+    llh,filter1,pr1,pdf = mkv2_gdp.log_likelihood(fake_data_list,
+                                              para_est)
+
+
+# + code_folding=[0]
+if __name__ == "__main__":
+
+
+    ## plot the time series 
+
+    lw = 2
+    figsize = (15,5)
+    fontsize = 10
+
+    ## plot 
+    fig, ax = plt.subplots(figsize = figsize)
+    ax2 = ax.twinx()
+    ax.plot(gdp_gr.index[2:-1],
+            gdp_gr[2:-1],
+            color='black',
+               lw= lw,
+               label= 'gdp growth ')
+    ax2.plot(gdp_gr.index[2:-1],
+             filter1[0][2:-1],
+             'r-',
+             lw = lw,
+             label = 'filter prob (RHS)')
+    ax.legend(loc = 2,
+             fontsize = fontsize)
+    ax.set_xlabel("month",fontsize = fontsize)
+    ax.grid()
+    ax.set_ylabel('% growth',fontsize = fontsize)
+    ax.tick_params(axis='both', 
+                   which='major', 
+                   labelsize = fontsize)
+    ax2.tick_params(axis='both', 
+                   which='major', 
+                   labelsize = fontsize)
+    ax2.fill_between(rec.index, 
+                    min(filter1[0][1:-1]), 
+                    max(filter1[0][1:-1]), 
+                    where=rec["USREC"].values, 
+                    color="k", 
+                    alpha=0.1)
+    ax2.legend(loc = 1,
+              fontsize = fontsize)

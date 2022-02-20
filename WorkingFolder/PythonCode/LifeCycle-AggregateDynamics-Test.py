@@ -74,6 +74,7 @@ lc_paras_q = copy(lc_paras_Q)
 ## make some modifications 
 lc_paras_y['P'] =np.array([[0.01,0.99],[0.01,0.99]])
 lc_paras_y['unemp_insurance'] = 0.0 
+lc_paras_y['init_b'] = 0.0 
 #lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
 
 print(lc_paras_y)
@@ -1504,7 +1505,7 @@ A_life = HH.A_life
 C_life = HH.C_life
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -1512,7 +1513,7 @@ age_lc = SCF_profile.index
 fig, ax = plt.subplots(figsize=(10,5))
 plt.title('Life cycle profile of wealth')
 ax.plot(age_lc[1:],
-       A_life,
+       np.log(A_life),
        'r-',
        label='model')
 
@@ -1549,7 +1550,7 @@ HH.get_lifecycle_dist()
 ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
 cp_grid_dist_life,cp_pdfs_dist_life = HH.cp_grid_dist_life,HH.cp_pdfs_dist_life
 
-# + code_folding=[]
+# + code_folding=[0]
 ## create the dataframe to plot distributions over the life cycle 
 ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
 cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
@@ -1587,7 +1588,7 @@ else:
 
 # ### General Equilibrium 
 
-# + code_folding=[0, 12, 37, 40]
+# + code_folding=[0, 9, 12, 37, 40]
 economy_data = [
     ('Z', float64),            
     ('K', float64),             
@@ -1664,10 +1665,18 @@ class CDProduction:
         print('R',R_fake)
 
 
-# + code_folding=[0, 13]
+# + code_folding=[0, 21]
 def unemp_insurance2tax(μ,
                         ue_fraction):
     """
+    input
+    =====
+    μ: replcament ratio
+    ue_fraction: fraction of the working population that is unemployed 
+    output
+    ======
+    tax rate: labor income tax rate that balances government budget paying for uemp insurance 
+    
     under balanced government budget, what is the tax rate on income corresponds to the ue benefit μ
     (1-ue_fraction)x tax + ue_fraction x mu x tax = ue_fraction x mu 
     --> tax = (ue_fraction x mu)/(1-ue_fraction)+ue_fraction x mu
@@ -1937,7 +1946,7 @@ market_OLG_mkv.get_equilibrium_k()
 
 market_OLG_mkv.get_equilibrium_dist()
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index

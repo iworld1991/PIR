@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -17,7 +17,7 @@
 # ## A life-cycle consumption  problem nder objective/subjective risk perceptions
 #
 # - author: Tao Wang
-# - date: September 2021
+# - date: Feb 2022
 # - this is a companion notebook to the paper "Perceived income risks"
 
 # - This notebook builds on a standard life-cycle consumption model under an incomplete market and extends it to allow subjective belief formation about income risks
@@ -26,34 +26,9 @@
 #       - CRRA utility 
 #       - During work: labor income risk: permanent + MA(1)/persistent/transitory/2-state Markov between UE and EMP or between low and high risk + i.i.d. unemployment shock
 #        -  a deterministic growth rate of permanent income over the life cycle 
-#       - During retirement: receives a constant pension proportional to permanent income (hence still subject to permanent income risks)
+#       - During retirement: receives a constant pension proportional to permanent income (no permanent/transitory income risks)
 #       - A positive probability of death before terminal age 
 #   
-
-# - Objective v.s. subjective
-#      - All state variables are obsersable: permanent income, ma(1) shock or the persistent shock
-#      - What may not be perfectly known is the size and nature of the risks 
-#   1. Perfect understanding case
-#   2. Benchmark case without perfect understanding
-#       - individual observe past income realizations
-#       - overreact to transitory shock realizations
-#           - perceived risk of transitory shock is a weighted average of long-run mean and short-run deviations
-#           - similarly, the same mechanism can be for permanent risks 
-#       - individuals swing between low and high risk perceptions (either about permanent or transitory income risks) following a 2-state Markov 
-
-# - Other bolder extensions
-#   - Extention 1
-#        - subjective determine the degree of persistence or the ma(1) coefficient 
-#        - assymetric extrolation 
-#       
-#   - Extention 2 
-#        - adding aggregate risks, and agents need to learn about the growth rate using cross-sectional experiences
-#        - so subjectively determine the cross-sectional correlation
-#        - form the best guess and the corresponding uncertainty based on the attribution
-#          
-#   - Extenstion 3
-#        - persistence attribution is assymmetric: determined by realized income shocks 
-#        - correlation attribution is assymetric: determined by realized income shocks 
 
 import numpy as np
 import pandas as pd
@@ -134,7 +109,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[]
+# + code_folding=[6]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -163,7 +138,7 @@ class LifeCycle:
                  L = 60,             ## life length 85
                  G = np.ones(60),    ## growth factor list of permanent income 
                  shock_draw_size = 8,
-                 grid_max = 2.5,
+                 grid_max = 5.0,
                  grid_size = 50,
                  seed = 456789,
                  theta = 2,               ## assymetric extrapolative parameter
@@ -279,7 +254,10 @@ class LifeCycle:
 
     ## utility function 
     def u(self,c):
-        return c**(1-self.ρ)/(1-ρ)
+        if self.ρ!=1:
+            return c**(1-self.ρ)/(1-ρ)
+        elif self.ρ==1:
+            return np.log(c)
     
     # Marginal utility
     def u_prime(self, c):
@@ -309,7 +287,7 @@ class LifeCycle:
         return np.exp(n_shk)
 
 
-# + code_folding=[5]
+# + code_folding=[]
 ## this function takes the consumption values at different grids of state 
 ###   variables from period t+1, and model class 
 ### and generates the consumption values at t 
@@ -350,7 +328,7 @@ def EGM(aϵ_in,
     ρ = lc.ρ
     Γ = lc.Γ
     ####################################
-    G = lc.G[t+1]  ## get the age specific 
+    G = lc.G[t]  ## get the age specific growth rate, G[T] is the sudden drop in retirement from working age
     ####################################
 
     x = lc.x
@@ -440,7 +418,7 @@ def EGM(aϵ_in,
     return aϵ_out, σ_out
 
 
-# + code_folding=[4]
+# + code_folding=[]
 ## the operator under markov stochastic risks 
 ## now the permanent and transitory risks are different between a good macro and bad macro state 
 
@@ -479,7 +457,7 @@ def EGM_sv(aϵ_in,
     ρ = lc.ρ
     Γ = lc.Γ
     ####################################
-    G = lc.G[t+1]  ## get the age specific 
+    G = lc.G[t]   ## get the age specific 
     ####################################    
     x = lc.x
     λ = lc.λ
@@ -597,7 +575,7 @@ def extrapolate(theta,
     return x_sub
 
 
-# + code_folding=[4]
+# + code_folding=[]
 ## subjective agent
 ### transitory shock affects risk perceptions
 
@@ -635,9 +613,8 @@ def EGM_br(aϵ_in,
     ####################
     ρ = lc.ρ
     Γ = lc.Γ
-    G = lc.G
     ####################################
-    G = lc.G[t+1]  ## get the age specific 
+    G = lc.G[t]   ## get the age specific 
     ####################################  
     x = lc.x
     λ = lc.λ
@@ -1449,7 +1426,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent unemployment state
 
-# + code_folding=[4]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1464,7 +1441,7 @@ if __name__ == "__main__":
     #                    (0.05, 0.95)])   # markov transition matricies 
 
 
-# + code_folding=[1]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1484,7 +1461,7 @@ if __name__ == "__main__":
                          unemp_insurance = 0.3,
                          ue_markov = True)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## solve the model for different transition matricies of UE markov
@@ -1525,7 +1502,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[11]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1567,6 +1544,7 @@ if __name__ == "__main__":
 # - unemployed perceive higher risks
 #
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1665,7 +1643,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1703,7 +1681,7 @@ if __name__ == "__main__":
 
 # ### Objective and subject state-dependent profile
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## compare subjective and objective models 

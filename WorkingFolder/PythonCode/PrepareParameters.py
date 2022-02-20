@@ -9,7 +9,7 @@
 #       format_version: '1.5'
 #       jupytext_version: 1.13.0
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -30,19 +30,18 @@ import numba as nb
 age_profile = pd.read_stata('../OtherData/age_profile.dta')   
 
 ## select age range for the model and turn it into an array 
-lc_wages = np.array(age_profile[(age_profile['age']>=25) &(age_profile['age']<=64)]['wage_age'])
+lc_wages = np.array(age_profile[(age_profile['age']>=24) &(age_profile['age']<=64)]['wage_age'])
 #print(str(len(lc_wages)),'years since age 25')
 
 ## growth rates since initial age over life cicle before retirement
 lc_G = lc_wages[1:]/lc_wages[:-1]
-lc_G = np.insert(lc_G,0,1.0) 
 
 T = 40
 L = 60
 ## growth rates after retirement
 
 lc_G_rt = np.ones(L-T)
-lc_G_rt[1] = 0.6
+lc_G_rt[0] = 0.6
 
 
 lc_G_full = np.concatenate([lc_G,lc_G_rt])
@@ -136,8 +135,8 @@ b_SCF, b_wgt = SCF2016['networth2pinc'], SCF2016['wgt']
 ## compute data moments 
 σ_ψ_init_SCF = DescrStatsW(lpinc_SCF_pos, weights=lpinc_SCF_wgt, ddof=1).std
 σ_b_init_SCF = DescrStatsW(lb_SCF_pos, weights=lb_SCF_wgt, ddof=1).std
-b_SCF = DescrStatsW(b_SCF,weights=b_wgt, ddof=1).mean ## quarterly 
-b_q_SCF = b_SCF*4
+b_SCF = DescrStatsW(b_SCF,weights=b_wgt, ddof=1).mean ## annual 
+b_q_SCF = b_SCF*4  ## quarterly  
 # -
 
 # ### subjective profile estiamtion 
@@ -150,7 +149,7 @@ SCE_est_y = SCE_est_y['baseline']
 
 # + code_folding=[]
 ## create a dictionary of parameters 
-life_cycle_paras_q = {'ρ': 1.0, 
+life_cycle_paras_q = {'ρ': 2.0, 
                     'β': 0.98**(1/4), 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
@@ -191,7 +190,7 @@ life_cycle_paras_q = {'ρ': 1.0,
 life_cycle_paras_q
 
 ## create a dictionary of parameters 
-life_cycle_paras_y = {'ρ': 1.0, 
+life_cycle_paras_y = {'ρ': 2.0, 
                     'β': 0.98, 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 

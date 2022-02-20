@@ -42,8 +42,10 @@ import scipy.sparse.linalg
 from scipy import linalg as lg 
 from numba.typed import List
 from Utility import cal_ss_2markov
+from copy import copy
 
-# + code_folding=[]
+
+# + code_folding=[0]
 ## figure plotting configurations
 
 mp.rc('xtick', labelsize=11) 
@@ -54,17 +56,18 @@ plt.rc('font',size=11)
 # -
 
 from SolveLifeCycle import LifeCycle, EGM, solve_model_iter
-from PrepareParameters import life_cycle_paras_y as inf_paras
+from PrepareParameters import life_cycle_paras_y 
 
 # ### parameters 
 
 # +
+inf_paras = copy(life_cycle_paras_y)
 inf_paras['G'] =  np.ones_like(inf_paras['G'])
 inf_paras['unemp_insurance'] = 0.0
 inf_paras['P'] = np.array([[0.9,0.1],[0.2,0.8]])
 
 grid_max = 5.0
-grid_size = 50
+grid_size = 30
 
 # + code_folding=[0]
 inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
@@ -155,7 +158,6 @@ plt.title('Inifite horizon solution')
 # ## Solving the same model with HARK
 #
 
-from copy import copy
 from HARK.ConsumptionSaving.ConsMarkovModel import MarkovConsumerType
 from HARK.distribution import DiscreteDistribution
 from HARK.ConsumptionSaving.ConsIndShockModel import init_lifecycle
@@ -236,35 +238,32 @@ plt.legend(loc=0)
 # -
 # ## Wealth distribution over life cycle 
 
-lc_paras
-
-# +
+# + code_folding=[]
 ## for life cycle 
 init_life_cycle_new = copy(init_lifecycle)
-lc_paras = inf_paras
+lc_paras = copy(life_cycle_paras_y)
+
+
+years_retire = lc_paras['L']- lc_paras['T']
 
 init_life_cycle_new['T_cycle'] = lc_paras['L']-1   ## minus 1 because T_cycle is nb periods in a life cycle - 1 in HARK 
 init_life_cycle_new['CRRA'] = lc_paras['ρ']
-init_life_cycle_new['T_retire'] = lc_paras['T']
+init_life_cycle_new['T_retire'] = lc_paras['T']-1
 init_life_cycle_new['Rfree'] = lc_paras['R']
 init_life_cycle_new['LivPrb'] = [lc_paras['LivPrb']]*init_life_cycle_new['T_cycle']
-init_life_cycle_new['PermGroFac'] = lc_paras['G']
-init_life_cycle_new['PermShkStd'] = [lc_paras['σ_ψ']]*init_life_cycle_new['T_cycle']
-init_life_cycle_new['TranShkStd'] = [lc_paras['σ_θ']]*init_life_cycle_new['T_cycle']
+init_life_cycle_new['PermGroFac'] = np.ones_like(lc_paras['G'])
+init_life_cycle_new['PermShkStd'] = [lc_paras['σ_ψ']]*init_life_cycle_new['T_retire']+[0.0]*years_retire
+init_life_cycle_new['TranShkStd'] = [lc_paras['σ_θ']]*init_life_cycle_new['T_retire']+[0.0]*years_retire
 init_life_cycle_new['DiscFac'] = lc_paras['β']
 init_life_cycle_new['PermGroFacAgg'] = 1.0
-init_life_cycle_new['aNrmInitMean']= lc_paras['init_b']
+init_life_cycle_new['aNrmInitMean']= np.log(lc_paras['init_b'])
 init_life_cycle_new['aNrmInitStd']= 0.0
-init_life_cycle_new['pLvlInitMean']= 1.0
+init_life_cycle_new['pLvlInitMean']= np.log(1.0)
 init_life_cycle_new['pLvlInitStd']= lc_paras['σ_ψ_init']
 init_life_cycle_new["UnempPrb"] = lc_paras['U']  # to make income distribution when employed
-
-#init_life_cycle_new['aXtraMin'] = a_min+0.00001
-#init_life_cycle_new['aXtraMax'] = a_max
-#init_life_cycle_new['aXtraCount'] = 800
-
-#init_life_cycle_new["MrkvArray"] = [lc_paras['P']]
-#init_life_cycle_new["global_markov"] = False
+init_life_cycle_new['UnempPrbRet'] = 0.0
+init_life_cycle_new['IncUnemp'] = 0.0
+init_life_cycle_new['aXtraMax'] = 5.0
 
 """
 LifeCycleType = MarkovConsumerType(**init_life_cycle_new)
@@ -273,6 +272,8 @@ LifeCycleType.cycles = 1 ## life cycle problem instead of infinite horizon
 LifeCycleType.vFuncBool = False  ## no need to calculate the value for the purpose here 
 """
 # -
+
+print(init_life_cycle_new)
 
 import HARK.ConsumptionSaving.ConsIndShockModel as HARK_model         # The consumption-saving micro model
 from HARK.utilities import plot_funcs_der, plot_funcs              # Some tools
@@ -286,9 +287,9 @@ LifeCyclePop.solve()                            # Obtain consumption rules by ag
 LifeCyclePop.unpack('cFunc')                      # Expose the consumption rules
 
 # Which variables do we want to track
-LifeCyclePop.track_vars = ['aNrm','pLvl','mNrm','cNrm','TranShk']
+LifeCyclePop.track_vars = ['aNrm','pLvl','mNrm','cNrm']
 
-LifeCyclePop.T_sim = lc_paras['L']-1              # Nobody lives to be older than 145 years (=25+120)
+LifeCyclePop.T_sim = lc_paras['L']              
 LifeCyclePop.initialize_sim()                     # Construct the age-25 distribution of income and assets
 LifeCyclePop.simulate()
 # -
@@ -298,11 +299,49 @@ aGro41=LifeCyclePop.history['aLvl'][41]/LifeCyclePop.history['aLvl'][40]
 aGro41NoU=aGro41[aGro41[:]>0.2] # Throw out extreme outliers
 aGro41NoU = aGro41NoU[aGro41NoU[:]<2]
 
+## wealth distribution  
+wealth_dist=plt.hist(np.log(LifeCyclePop.history['aLvl'].flatten()+0.00000001),bins=100)
+
 # Plot the distribution of growth rates of wealth between age 65 and 66 (=25 + 41)
 n, bins, patches = plt.hist(aGro41NoU,50,density=True)
 
-plt.plot(LifeCyclePop.history['aLvl'].mean(axis=1))
+# ## Wealthy over life cycle  
 
-plt.plot(np.log(LifeCyclePop.history['aLvl'].mean(axis=1)))
+A_life = LifeCyclePop.history['aLvl'].mean(axis=1)
 
-plt.plot(LifeCyclePop.history['aLvl'].std(axis=1))
+A_life[0]
+
+# +
+import pandas as pd
+SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
+
+SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
+## plot life cycle profile
+
+age_lc = SCF_profile.index
+
+fig, ax = plt.subplots(figsize=(10,5))
+plt.title('Life cycle profile of wealth and consumption')
+ax.plot(age_lc[1:],
+        np.log(A_life),
+       'r-',
+       label='model from HARK')
+
+#ax.vlines(lc_mkv.T+25,
+#          np.min(A_life),
+#          np.max(A_life),
+#          color='b',
+#          label='retirement')
+
+ax2 = ax.twinx()
+ax2.set_ylim([10.5,15])
+ax2.bar(age_lc[1:],
+        np.log(SCF_profile['av_wealth'][1:]),
+       #'k--',
+       label='SCF (RHS)')
+
+ax.set_xlabel('Age')
+ax.set_ylabel('Log wealth')
+ax2.set_ylabel('Log wealth SCF')
+ax.legend(loc=1)
+ax2.legend(loc=2)

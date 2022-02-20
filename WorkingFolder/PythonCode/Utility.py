@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -146,5 +146,33 @@ def make_grid_exp_mult(ming, maxg, ng, timestonest=20):
         Lgrid = np.arange(Lming, Lmaxg + 0.000001, Lstep)
         grid = np.exp(Lgrid)
     return grid
+
+
+# + code_folding=[1]
+## lorenz curve
+def lorenz_curve(grid_distribution,
+                 pdfs,
+                 nb_share_grid = 50):
+    """
+    parameters
+    ======
+    grid_distribution: grid on which distribution is defined
+    pdfs: the fractions/pdfs of each grid ranges 
+    
+    return
+    ======
+    lc_vals: the fraction of people corresponding whose total wealth reaches the corresponding share, x axis in lorenz curve
+    share_grids: different grid points of the share of total wealth, y axis in lorenz curve
+    """
+    total = np.dot(grid_distribution,pdfs)
+    share_grids = np.linspace(0.0,0.99,nb_share_grid)
+    share_cum = np.multiply(grid_distribution,pdfs).cumsum()/total
+    lc_vals = []
+    for i,share in enumerate(share_grids):
+        where = min([x for x in range(len(share_cum)) if share_cum[x]>=share])
+        this_lc_val = pdfs[0:where].sum()
+        lc_vals.append(this_lc_val)
+    return np.array(lc_vals),share_grids
+
 
 
