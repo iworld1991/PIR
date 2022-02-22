@@ -20,6 +20,7 @@ import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 import numba as nb
+from copy import copy
 # -
 
 # ### Age profile of income 
@@ -253,5 +254,96 @@ life_cycle_paras_y
 #with open("parameters.txt", "wb") as fp:
 #    pickle.dump(life_cycle_paras, fp)
 # -
+# ### Export the parameters into a table used in the draft
+
+
+life_cycle_paras_y_copy = copy(life_cycle_paras_y)
+
+# +
+del life_cycle_paras_y_copy['G']  
+del life_cycle_paras_y_copy['σ_ψ_2mkv']  
+del life_cycle_paras_y_copy['σ_θ_2mkv']  
+del life_cycle_paras_y_copy['mho_2mkv']  
+del life_cycle_paras_y_copy['E_2mkv']  
+del life_cycle_paras_y_copy['P']  
+del life_cycle_paras_y_copy['z_val']  
+del life_cycle_paras_y_copy['U']  
+del life_cycle_paras_y_copy['κ']  
+del life_cycle_paras_y_copy['q']  
+del life_cycle_paras_y_copy['p']  
+
+
+## rewrite some parameters' names
+
+life_cycle_paras_y_copy['U2U'] = life_cycle_paras_y['P'][0,0]
+life_cycle_paras_y_copy['E2E'] = life_cycle_paras_y['P'][1,1]
+
+## rename some 
+life_cycle_paras_y_copy['1-D'] =  life_cycle_paras_y_copy.pop('LivPrb')
+life_cycle_paras_y_copy['μ'] =  life_cycle_paras_y_copy.pop('unemp_insurance')
+
+
+## rounding 
+life_cycle_paras_y_copy['1-D'] = round(life_cycle_paras_y_copy['1-D'],3)
+life_cycle_paras_y_copy['σ_ψ_init'] = round(life_cycle_paras_y_copy['σ_ψ_init'],3)
+life_cycle_paras_y_copy['init_b'] = round(life_cycle_paras_y_copy['init_b'],3)
+
+# +
+## turn scalor to list 
+
+#for key in life_cycle_paras_y_copy.keys():
+#    life_cycle_paras_y_copy[key] = [life_cycle_paras_y_copy[key]]
+# -
+
+life_cycle_paras_y_copy
+
+# +
+# making blocks 
+
+blocknames =['risk',
+            'initial condition',
+            'life-cycle',
+            'preference',
+            'policy',
+            'production']
+
+prefernece = ['ρ','β']
+lifecycle = ['T','L','1-D']
+risk  = ['σ_ψ','σ_θ','U2U','E2E']
+initial = ['σ_ψ_init','init_b','bequest_ratio']
+policy = ['μ','λ','λ_SS','transfer']
+
+block_all= [risk,
+            initial,
+            lifecycle,
+            prefernece,
+            policy]
+
+## create multiple layer dictionary 
+
+life_cycle_paras_y_copy_ml = {}
+
+for i,block in enumerate(block_all):
+    life_cycle_paras_y_copy_ml[blocknames[i]] =  {k: v for k, v 
+                                               in life_cycle_paras_y_copy.items() 
+                                               if k in block}
+# -
+
+life_cycle_paras_y_copy_ml
+
+life_cycle_paras_y_copy_df = pd.DataFrame.from_dict({(i,j): life_cycle_paras_y_copy_ml[i][j] 
+                           for i in life_cycle_paras_y_copy_ml.keys() 
+                           for j in life_cycle_paras_y_copy_ml[i].keys()},
+                       orient='index')
+
+# +
+## add another column 
+
+life_cycle_paras_y_copy_df.columns =['values']
+# -
+
+life_cycle_paras_y_copy_df
+
+life_cycle_paras_y_copy_df.to_excel('../Tables/calibration.xlsx')
 
 

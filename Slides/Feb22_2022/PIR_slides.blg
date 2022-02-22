@@ -1,13 +1,13 @@
 This is BibTeX, Version 0.99d (TeX Live 2020)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
-The top-level auxiliary file: PerceivedIncomeRisk.aux
+The top-level auxiliary file: PIR_slides.aux
 The style file: apalike.bst
-Database file #1: PerceivedIncomeRisk.bib
-Repeated entry---line 348 of file PerceivedIncomeRisk.bib
+Database file #1: PIR_slides.bib
+Repeated entry---line 348 of file PIR_slides.bib
  : @article{guvenen2014nature
  :                           ,
 I'm skipping whatever remains of this entry
-Repeated entry---line 598 of file PerceivedIncomeRisk.bib
+Repeated entry---line 598 of file PIR_slides.bib
  : @incollection{krueger2016macroeconomics
  :                                        ,
 I'm skipping whatever remains of this entry
@@ -19,7 +19,7 @@ while executing---line 1098 of file apalike.bst
 Warning--empty journal in rozsypal_overpersistence_2017
 You've used 34 entries,
             1935 wiz_defined-function locations,
-            673 strings with 9081 characters,
+            673 strings with 9063 characters,
 and the built_in function-call counts, 13629 in all, are:
 = -- 1381
 > -- 496
