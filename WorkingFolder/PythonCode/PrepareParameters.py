@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -24,36 +24,16 @@ import numba as nb
 
 # ### Age profile of income 
 
-# + code_folding=[]
-## import age income profile 
-
-age_profile = pd.read_stata('../OtherData/age_profile.dta')   
-
-## select age range for the model and turn it into an array 
-lc_wages = np.array(age_profile[(age_profile['age']>=24) &(age_profile['age']<=64)]['wage_age'])
-#print(str(len(lc_wages)),'years since age 25')
-
-## growth rates since initial age over life cicle before retirement
-lc_G = lc_wages[1:]/lc_wages[:-1]
-
+# +
+## some life cycle paras 
 T = 40
 L = 60
-## growth rates after retirement
-
-lc_G_rt = np.ones(L-T)
-lc_G_rt[0] = 0.6
-
-
-lc_G_full = np.concatenate([lc_G,lc_G_rt])
-#lc_G_full = np.ones_like(lc_G_full)
 
 T_q = T*4
 L_q = L*4
 
 
-# + code_folding=[2]
-## turn yearly number to quarterly number with interpolation 
-
+# + code_folding=[0]
 def y2q_interpolate(xs_y):
     
     """
@@ -76,12 +56,52 @@ def y2q_interpolate(xs_y):
     return xs_q
 
 
-## get the quarterly income profile over life cycle before retirement 
-lc_G_q = y2q_interpolate(lc_G)
+# + code_folding=[]
+age_profile_data ='SCF'
 
-lc_G_q_rt = y2q_interpolate(lc_G_rt)
+if age_profile_data=='SIPP':
+    ## import age income profile 
 
-lc_G_q_full = np.concatenate([lc_G_q,lc_G_q_rt])
+    age_profile = pd.read_stata('../OtherData/age_profile.dta')   
+
+    ## select age range for the model and turn it into an array 
+    lc_wages = np.array(age_profile[(age_profile['age']>=24) &(age_profile['age']<=64)]['wage_age'])
+    #print(str(len(lc_wages)),'years since age 25')
+
+    ## growth rates since initial age over life cicle before retirement
+    lc_G = lc_wages[1:]/lc_wages[:-1]
+
+    T = 40
+    L = 60
+    ## growth rates after retirement
+
+    lc_G_rt = np.ones(L-T)
+    lc_G_rt[0] = 0.6
+
+
+    lc_G_full = np.concatenate([lc_G,lc_G_rt])
+    #lc_G_full = np.ones_like(lc_G_full)
+
+    
+    ## turn yearly number to quarterly number with interpolation 
+
+    ## get the quarterly income profile over life cycle before retirement 
+    lc_G_q = y2q_interpolate(lc_G)
+
+    lc_G_q_rt = y2q_interpolate(lc_G_rt)
+
+    lc_G_q_full = np.concatenate([lc_G_q,lc_G_q_rt])
+    
+    
+elif age_profile_data=='SCF':
+    ## import age income profile 
+    SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
+    SCF_profile = SCF_profile[(SCF_profile.index>=24) & (SCF_profile.index<=85)]
+    lc_p_incom = np.exp(np.array(SCF_profile['av_lnorminc']))
+    lc_G_full = lc_p_incom[1:]/lc_p_incom[:-1] 
+    assert len(lc_G_full) == L,'length of G needs to be equal to L'
+    lc_G_q_full = y2q_interpolate(lc_G_full)
+
 # -
 
 # ### Income risk estimates 

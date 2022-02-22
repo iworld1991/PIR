@@ -109,7 +109,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[6]
+# + code_folding=[1, 6, 161]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -134,7 +134,7 @@ class LifeCycle:
                  sigma_eps_2mkv = np.array([0.08,0.12]),  ## transitory risks in 2 markov states
                  R = 1.02,           ## interest factor 
                  W = 1.0,            ## Wage rate
-                 T = 40,             ## work age, from 25 to 65
+                 T = 40,             ## work age, from 25 to 65 (including 65)
                  L = 60,             ## life length 85
                  G = np.ones(60),    ## growth factor list of permanent income 
                  shock_draw_size = 8,
@@ -287,7 +287,7 @@ class LifeCycle:
         return np.exp(n_shk)
 
 
-# + code_folding=[]
+# + code_folding=[5]
 ## this function takes the consumption values at different grids of state 
 ###   variables from period t+1, and model class 
 ### and generates the consumption values at t 
@@ -295,7 +295,7 @@ class LifeCycle:
 @njit
 def EGM(aϵ_in,
       σ_in,
-      t, ## the period for which the c policy is computed 
+      age_id, ## the period id for which the c policy is computed, first period age_id=0, last period age_id=L-1, retirement after age_id=T-1
       lc):
     """
     The Coleman--Reffett operator for the life-cycle consumption problem,
@@ -307,8 +307,7 @@ def EGM(aϵ_in,
         * aϵ_in is the same sized grid points of the three state variable 
         * aϵ_in[:,j,z] is the vector of asset grids corresponding to j-th grid of eps and z-th grid of z 
         * σ_in[i,j,z] is consumption at aϵ_in[i,j,z]
-    """
-
+    """    
     # Simplify names
     u_prime, u_prime_inv = lc.u_prime, lc.u_prime_inv
     R, ρ, P, β = lc.R, lc.ρ, lc.P, lc.β
@@ -328,7 +327,7 @@ def EGM(aϵ_in,
     ρ = lc.ρ
     Γ = lc.Γ
     ####################################
-    G = lc.G[t]  ## get the age specific growth rate, G[T] is the sudden drop in retirement from working age
+    G = lc.G[age_id+1]  ## get the age specific growth rate, G[T] is the sudden drop in retirement from working age
     ####################################
 
     x = lc.x
@@ -362,7 +361,8 @@ def EGM(aϵ_in,
                             ## for employed next period 
                             Γ_hat = Γ(n_shk) 
                             u_shk = x*eps+eps_shk
-                            if t <=lc.T-1:
+                            age = age_id + 1
+                            if age <=lc.T-1:   #till say 39, because consumption policy for t=40 changes   
                                 ## work 
                                 Y_hat = (1-λ)*(1-λ_SS)*Y(z_val_hat,u_shk) ## conditional on being employed 
                                 c_hat = σ(R/(G*Γ_hat) * s + Y_hat+transfer/(G*Γ_hat),eps_shk,z_hat)
@@ -418,14 +418,14 @@ def EGM(aϵ_in,
     return aϵ_out, σ_out
 
 
-# + code_folding=[]
+# + code_folding=[0, 4]
 ## the operator under markov stochastic risks 
 ## now the permanent and transitory risks are different between a good macro and bad macro state 
 
 @njit
 def EGM_sv(aϵ_in, 
          σ_in, 
-         t,
+         age_id,
          lc):
     """
     The Coleman--Reffett operator for the life-cycle consumption problem,
@@ -457,7 +457,7 @@ def EGM_sv(aϵ_in,
     ρ = lc.ρ
     Γ = lc.Γ
     ####################################
-    G = lc.G[t]   ## get the age specific 
+    G = lc.G[age_id+1]   ## get the age specific 
     ####################################    
     x = lc.x
     λ = lc.λ
@@ -494,7 +494,8 @@ def EGM_sv(aϵ_in,
                         for n_shk in n_shk_draws:
                             Γ_hat = Γ(n_shk) 
                             u_shk = x*eps+eps_shk
-                            if t <=lc.T-1:
+                            age = age_id + 1
+                            if age<=lc.T-1:
                                 # work  
                                 Y_hat = (1-λ)*Y(z_val_hat,u_shk) ## conditional on being employed 
                                 c_hat = σ(R/(G*Γ_hat) * s + Y_hat+transfer/(G*Γ_hat),eps_shk,z_hat)
@@ -541,7 +542,7 @@ def EGM_sv(aϵ_in,
             #    σ_out[0,j,z] = 0.0
             #    aϵ_out[0,j,z] = min(0.0,-unemp_insurance/R)
             else:
-                if t <=T-1:
+                if age <=T-1:
                     σ_out[0,j,z] = 0.0
                     self_min_a = - np.exp(np.min(eps_grid))*G/R
                     self_min_a = min(self_min_a,-unemp_insurance/R)
@@ -582,7 +583,7 @@ def extrapolate(theta,
 @njit
 def EGM_br(aϵ_in, 
          σ_in, 
-         t,
+         age_id,
          lc):
     """
     UNDER BOUNDED RATIONALITY assumption
@@ -614,7 +615,7 @@ def EGM_br(aϵ_in,
     ρ = lc.ρ
     Γ = lc.Γ
     ####################################
-    G = lc.G[t]   ## get the age specific 
+    G = lc.G[age_id+1]   ## get the age specific 
     ####################################  
     x = lc.x
     λ = lc.λ
@@ -666,7 +667,8 @@ def EGM_br(aϵ_in,
                             ###############
                             u_shk = x*eps+eps_shk
                             ####################
-                            if t <=lc.T-1:
+                            age = age_id+1
+                            if age <=lc.T-1:
                                 # work  
                                 Y_hat = (1-λ)*Y(z_val_hat,u_shk) ## conditional on being employed 
                                 c_hat = σ(R/(G*Γ_hat) * s + Y_hat+transfer/(G*Γ_hat),eps_shk,z_hat)
@@ -713,7 +715,7 @@ def EGM_br(aϵ_in,
             #    σ_out[0,j,z] = 0.0
             #    aϵ_out[0,j,z] = min(0.0,-unemp_insurance/R)
             else:
-                if t <=T-1:
+                if age <=T-1:
                     σ_out[0,j,z] = 0.0
                     self_min_a = - np.exp(np.min(eps_grid))*G/R
                     self_min_a = min(self_min_a,-unemp_insurance/R)
@@ -729,10 +731,10 @@ def EGM_br(aϵ_in,
 # + code_folding=[1]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
-                                  aϵ_vec,        # Initial condition for assets and MA shocks
-                                  σ_vec,        # Initial condition for consumption
-                                  br = False,
-                                  sv = False):
+                              aϵ_vec,        # Initial condition for assets and MA shocks
+                              σ_vec,        # Initial condition for consumption
+                              br = False,
+                             sv = False):
 
     ## memories for life-cycle solutions 
     n_grids1 = σ_vec.shape[0]
@@ -807,7 +809,7 @@ def solve_model_iter(model,        # Class with model information
 
 # ## Initialize the model
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -829,8 +831,8 @@ if __name__ == "__main__":
 
     ## life cycle 
 
-    T = 20
-    L = 30
+    T = 40
+    L = 60
     TGPos = int(L/3) ## one third of life sees income growth 
     GPos = 1.01*np.ones(TGPos)
     GNeg= 0.99*np.ones(L-TGPos)
@@ -880,7 +882,7 @@ def policyPF(β,
     
 """
 
-# + code_folding=[2]
+# + code_folding=[0]
 if __name__ == "__main__":
     lc = LifeCycle(sigma_n = sigma_n,
                    sigma_eps = sigma_eps,
@@ -1067,7 +1069,7 @@ if __name__ == "__main__":
 # - could be either individual unemployment state or macroeconomic state
 #
 
-# + code_folding=[0, 4]
+# + code_folding=[]
 if __name__ == "__main__":
     at_age = 4
     at_asset_id = 20
@@ -1075,7 +1077,7 @@ if __name__ == "__main__":
     for i,x in enumerate(x_ls):
         this_σs_star = σs_stars[i]
         plt.plot(lc.eps_grid,
-                 this_σs_star[lc.T-at_age,at_asset_id,:,0],
+                 this_σs_star[lc.L-at_age,at_asset_id,:,0],
                  '-.',
                  label = r'$x={}$'.format(x),
                  lw=3)
@@ -1261,7 +1263,7 @@ if __name__ == "__main__":
                    b_y=b_y)
 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## solve the model for different transition matricies 
@@ -1768,7 +1770,7 @@ if __name__ == "__main__":
 
 # ### Subjective perceptions 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1789,7 +1791,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1820,7 +1822,7 @@ if __name__ == "__main__":
         axes[0].set_ylabel('c')
         axes[x].set_title(r'subjective c at $age={}$'.format(age))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1830,7 +1832,7 @@ if __name__ == "__main__":
 
     plt.plot(lc.eps_grid,x_sj)
 
-# + code_folding=[3, 8]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1854,7 +1856,7 @@ if __name__ == "__main__":
 # -
 # ## Infinite horizon problem
 
-# + code_folding=[5]
+# + code_folding=[0, 5]
 if __name__ == "__main__":
 
 
