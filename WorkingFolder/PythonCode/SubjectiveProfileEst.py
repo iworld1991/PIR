@@ -24,9 +24,9 @@
 #   - where $\tilde \Gamma_l = \{\tilde \sigma^l_\psi,\tilde \sigma^l_\theta, \tilde{\mho^l}, \tilde{E^l}\}$ and $\tilde \Gamma_h = \{\tilde \sigma^h_\psi,\tilde \sigma^h_\theta, \tilde{\mho^h}, \tilde{E^h}\}$ where we impose the restriction that $\tilde \sigma^h_\psi > \tilde \sigma^l_\psi$ and $\tilde \sigma^h_\theta > \tilde \sigma^l_\theta$, $\tilde{\mho^h}>\tilde{\mho^l}$, and $\tilde{E^h}<\tilde{E^l}$.
 #  
 #   
-# Possible extensions
-# - Specific to group, such as age and education. 
-# - Conditional on macroeconomic conditions 
+# Possible extensions (not implemented yet)
+# - Specific to group, such as to age and education. 
+# - Conditional on macroeconomic cycles or labor market tightness
 
 # +
 import numpy as np
@@ -35,116 +35,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import statsmodels.api as sm
 
-#from utility import mkv2_M2Q, mkv2_Q2Y, mkv2_Y2M, mkv2_Y2Q
-
-# + code_folding=[2, 30, 66, 85]
-## some functions used for markov-related calculations 
-
-def mkv2_M2Q(q,p):
-    """
-    input
-    ======
-    q and p are staying probs at monthly frequency 
-    
-    output
-    ======
-    qq and pp are quarterly counterparts 
-    """
-    
-    ## different possibilities of staying in low state 
-    qq0 = q**3   #LLLL
-    qq1 = q*(1-q)*(1-p)    ## LLHL
-    qq2 = (1-q)*(1-p)*q    ## LHLL
-    qq3 = (1-q)*q*(1-q)    ## LHHL
-    qq = qq0+qq1+qq2+qq3
-    
-    ## different possibilities of staying in high state
-    
-    pp0 = p**3             #HHHH
-    pp1 = p*(1-p)*(1-q)    ## HHLH
-    pp2 = (1-p)*(1-q)*p    ## HLHH
-    pp3 = (1-q)*p*(1-p)    ## HLLH 
-    pp = qq0+qq1+qq2+qq3
-    
-    return qq, pp
-
-def mkv2_Q2Y(q,p):
-    """
-    input
-    ======
-    q and p are staying probs at quarterly frequency 
-    
-    output
-    ======
-    qq and pp are yearly counterparts 
-    """
-    
-    ## 8 different possibilities of staying in low state 
-    qq0 = q**4                               #L LLL L
-    qq1 = q**2*(1-q)*(1-p)                   #L LLH L
-    qq2 = q*(1-q)*(1-p)*q                    #L LHL L
-    qq3 = q*(1-q)*p*(1-p)                    #L LHH L
-    qq4 = (1-q)*(1-p)*q**2                   #L HLL L
-    qq5 = (1-q)*(1-p)*(1-q)*(1-p)            #L HLH L
-    qq6 = (1-q)*p*(1-p)*q                    #L HHL L
-    qq7 = (1-q)*p**2*(1-p)                   #L HHH L
-    qq = qq0+qq1+qq2+qq3+qq4+qq5+qq6+qq7
-    
-    ## 8 different possibilities of staying in high state
-    
-    pp0 = p**4                               #H HHH H
-    pp1 = p**2*(1-p)*(1-q)                   #H HHL H
-    pp2 = p*(1-p)*(1-q)*p                    #H HLH H
-    pp3 = p*(1-p)*q*(1-q)                    #H HLL H
-    pp4 = (1-p)*(1-q)*p**2                   #H LHH H
-    pp5 = (1-p)*(1-q)*(1-p)*(1-q)            #H LHL H
-    pp6 = (1-p)*q*(1-q)*p                    #H LLH H
-    pp7 = (1-p)*q**2*(1-q)                   #H LLL H
-    pp = pp0+pp1+pp2+pp3+pp4+pp5+pp6+pp7
-    
-    return qq, pp
-
-def mkv2_Y2M(q,
-             p):
-    """
-    input
-    =====
-    transition probs at the annual frequency 
-    output
-    =====
-    monthly transition probs computed via continuous time Poisson rate 
-    """
-    
-    ## to be completed 
-    poisson_qM = -np.log(1-q)/12   ## = -np.log(1-qq)
-    qq = 1-np.exp(-poisson_qM)
-    
-    poisson_pM = -np.log(1-p)/12   ## = -np.log(1-qq)
-    pp = 1-np.exp(-poisson_pM)
-    return qq,pp
-
-def mkv2_Y2Q(q,
-             p):
-    """
-    input
-    =====
-    transition probs at the annual frequency 
-    output
-    =====
-    quarterly transition probs computed via continuous time Poisson rate 
-    """
-    
-    ## to be completed 
-    poisson_qM = -np.log(1-q)/3   ## = -np.log(1-qq)
-    qq = 1-np.exp(-poisson_qM)
-    
-    poisson_pM = -np.log(1-p)/3   ## = -np.log(1-qq)
-    pp = 1-np.exp(-poisson_pM)
-    return qq,pp
+from Utility import mkv2_M2Q, mkv2_Q2Y, mkv2_Y2M, mkv2_Y2Q
 
 
-
-# + code_folding=[15, 47, 62, 69, 78, 82, 104, 124, 132]
+# + code_folding=[0, 15, 47, 62, 69, 78, 82, 104, 124, 132]
 class Markov2Switching:
     """
     A class that stores primitives for the Markov Regime Switching Model
@@ -364,7 +258,7 @@ mkv2 = Markov2Switching(AR=0,
 
 # ### Test using fake simulated data with known parameters
 
-# + code_folding=[14]
+# + code_folding=[14, 32]
 import quantecon as qe
 from quantecon import MarkovChain
 
@@ -580,7 +474,7 @@ import numpy as np
 pd.options.display.float_format = '{:,.3f}'.format
 
 
-# + code_folding=[0, 14, 27, 37]
+# + code_folding=[0, 14, 28, 38]
 ## import data 
 dataset = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 
@@ -600,7 +494,8 @@ vars_demog_sub = ['Q32',  ## age
                   'Q36',  ## education (1-8 low to high, 9 other)
                   'educ_gr',##education group (1-3)
                   'byear', ## year of birth
-                 'nlit'] 
+                  'tenure', ## nb of months staying in the survey 
+                   'nlit'] 
 
 vars_all_reg_long = (vars_id+moms_nom + moms_real+ue_risks+vars_demog+vars_demog_sub+vars_job)
 
@@ -670,12 +565,15 @@ SCEM['E2E_prob_e'] =  SCEM['E2E_prob_truc'].apply(prob_inv_func)
 # -
 
 
-## filter by numeracy score
+## filter by basic/necessary criteria  
 print('nb of observations before:',str(len(SCEM)))
+SCEM =SCEM[SCEM['tenure']>=3]
+SCEM =SCEM[(SCEM['age']<=65) & (SCEM['age']>=25) ]
 SCEM =SCEM[SCEM['nlit']>=2.0]
-print('nb of observations before:',str(len(SCEM)))
+#SCEM =SCEM[SCEM['educ']>=2]
+print('nb of observations after dropping low numeracy/low education sample:',str(len(SCEM)))
 
-# + code_folding=[0]
+# + code_folding=[0, 6]
 ## first step regression
 
 vars_list = ['lrincvar',
@@ -687,19 +585,23 @@ for var in vars_list:
     SCEM[var+'_dm'] = SCEM[var]-SCEM.groupby('userid')[var].transform('mean')
     
     ## run a panel regression to get the residuls 
-    #model = smf.ols(formula = var+'~ C(date)+C(HHinc)+C(gender)+age2+age3+age4+C(educ_gr)',
-    #            data = SCEM)
-    model = smf.ols(formula = var+'_dm~ C(date)',
+    model = smf.ols(formula = var+'~ C(date)+C(HHinc)+C(gender)+age2+age3+age4+C(educ_gr)',
                 data = SCEM)
+    #model = smf.ols(formula = var+'_dm~ C(date)',
+    #            data = SCEM)
     result = model.fit()
     residuls = result.resid
     SCEM[var+'_rd'] = residuls
+# -
 
 
-# +
 ## correlation 
-
+print('unconditional correlation')
 SCEM[vars_list].corr()
+
+## correlation 
+print('residual correlation')
+SCEM_sub[vars_rd_list].corr()
 
 # + code_folding=[]
 ## convert the panel data of rincvar into a list of time series sequence
@@ -720,11 +622,6 @@ SCE_list = [SCEM_sub[SCEM_sub['userid']==ID][vars_rd_list].T.to_numpy() for ID i
 SCE_list = [x for x in SCE_list if ~np.isnan(np.array(x)).any() and x.shape[1]>=3]
 
 print('how many invidividuals have answers in successive months?',len(SCE_list))
-
-# + code_folding=[0]
-## correlation 
-
-SCEM_sub[vars_rd_list].corr()
 
 # + code_folding=[0]
 ## plot the simulated data 
@@ -759,7 +656,7 @@ SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
                                                 para)[0]   ## only the first output
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## impose some bounds for some parameters with sensible priors
 
 ## the size of the shock cannot exceed the sample variation
@@ -823,7 +720,7 @@ kappa_sipp = np.median(kappas_sipp.dropna())
 kappa = kappa_sipp ## ratio of permanent and transitory risks 
 
 
-# + code_folding=[8]
+# + code_folding=[0, 8, 75]
 ## create a dictionary for storing QUARTERLY parameters 
 
 model_para_q_est = {}
@@ -921,7 +818,7 @@ SCE_para_est_q_df
 
 
 
-# + code_folding=[39, 74]
+# + code_folding=[0, 39, 74]
 ## create a dictionary for storing YEARLY parameters 
 
 model_para_y_est = {}
@@ -1039,7 +936,7 @@ with open("parameters.txt", "wb") as fp:
 #
 #
 
-# + code_folding=[7, 11]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     import pandas_datareader.data as web

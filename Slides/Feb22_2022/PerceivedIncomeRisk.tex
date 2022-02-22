@@ -78,7 +78,7 @@
 %   affiliation.
 
 \date{\today \\
-	Macro/Finance Brownbag Seminar}
+	Macro Seminar}
 % - Either use conference name or its abbreviation.
 % - Not really informative to the audience, more for people (including
 %   yourself) who are reading the slides online
@@ -1039,7 +1039,7 @@
 
 
 
-\begin{frame}{Income process}
+\begin{frame}{Income process over the life-cycle}
 	\begin{itemize}
 		\item income
 	\begin{equation*}
@@ -1052,7 +1052,7 @@
 \begin{equation*}
 	\begin{split}
 		p_{i,\tau} = G_\tau p_{i,\tau-1}\psi_{i,\tau}, \quad
-		log (\psi_{i,\tau}) \sim N(-\sigma^2_{\psi}/2,\textcolor{red}{\sigma^2_{\psi}})
+		log (\psi_{i,\tau}) \sim N(-\sigma^2_{\psi}/2,\textcolor{red}{\sigma^2_{\psi}}) \quad \forall \tau \leq T \\
 	\end{split}
 \end{equation*}
 	\item persistent/transitory component 
@@ -1060,7 +1060,7 @@
 	\begin{split}
 \xi_{i,\tau} =   \left\{
 \begin{array}{ll}
-	\theta_{i,\tau} \quad \text{if} \quad \nu_{i,\tau} =e \quad \& \quad  \tau \leq T, \quad log(\theta_{i,\tau}) \sim N(-\frac{\sigma^2_\theta}{2},\sigma^2_\theta)\\
+	\theta_{i,\tau} \quad \text{if} \quad \nu_{i,\tau} =e \quad \& \quad  \tau \leq T, \quad log(\theta_{i,\tau}) \sim N(-\frac{\sigma^2_\theta}{2},\textcolor{red}{\sigma^2_\theta})\\
 	\zeta \quad \text{if} \quad \nu_{i,\tau} = u \quad \& \quad \tau \leq T  \\
 	\mathbb{S} \quad \text{if}  \quad \tau > T
 \end{array} \right. 
@@ -1094,7 +1094,10 @@
 \begin{frame}{Why \textcolor{red}{subjective} risk perceptions?}
 	\begin{itemize}
 		\item I don't take a stance on if agents perceptions are correct or wrong
-		\item It could be due to unobserved information to economists, or because of psychological reasons
+		\begin{itemize}
+			\item  unobserved information to economists
+			\item or agents under-perceive the true risks 
+		\end{itemize}
 		\item The subjective risk profile is disciplined by the survey data 
 		\item Risk parameters are exogenous to the model, therefore, does not contradict with rational expectation. 
 	\end{itemize}
@@ -1216,7 +1219,7 @@ $$R = 1+Z\alpha (K/N)^{\alpha-1} - \delta$$
 \end{comment}
 
 
-\begin{frame}{StE Distribution of the Objective model (preliminary)}
+\begin{frame}{StE Distribution of the objective model (preliminary)}
 	\label{objectivemodelresults}
 	
 		\begin{figure}[ht]

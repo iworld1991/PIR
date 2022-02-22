@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -18,7 +18,6 @@ import numba as nb
 import numpy as np
 from interpolation import interp, mlinterp
 from numba import jit,njit, float64, int64, boolean
-
 
 
 # + code_folding=[0]
@@ -65,7 +64,7 @@ def policyfuncMA(lc,
     return σ
 
 
-# + code_folding=[]
+# + code_folding=[1]
 @njit
 def policyfuncMAjit(lc,
                  aϵ_star,
@@ -87,18 +86,6 @@ def policyfuncMAjit(lc,
 
 
 # -
-
-## a simple function that computes steady state of 2-state markov
-@njit
-def cal_ss_2markov(P):
-    ## an analytical solution for 2-state markov for double checking 
-    ## when P's row sums up to 1
-    #P.T = [[q,1-p],[1-q,p]]
-    q = P.T[0,0]
-    p = P.T[1,1]
-    h = (1-p)/(2-p-q)
-    return np.array([h,1-h])
-
 
 # ==============================================================================
 # ============== Functions for generating state space grids  ===================
@@ -148,6 +135,8 @@ def make_grid_exp_mult(ming, maxg, ng, timestonest=20):
     return grid
 
 
+# ## Tools used for wealth distributions 
+
 # + code_folding=[1]
 ## lorenz curve
 def lorenz_curve(grid_distribution,
@@ -174,5 +163,130 @@ def lorenz_curve(grid_distribution,
         lc_vals.append(this_lc_val)
     return np.array(lc_vals),share_grids
 
+
+
+# -
+
+# ## Tools for Markov regime switching 
+#
+
+# +
+## some functions used for markov-related calculations 
+## a simple function that computes steady state of 2-state markov
+@njit
+def cal_ss_2markov(P):
+    ## an analytical solution for 2-state markov for double checking 
+    ## when P's row sums up to 1
+    #P.T = [[q,1-p],[1-q,p]]
+    q = P.T[0,0]
+    p = P.T[1,1]
+    h = (1-p)/(2-p-q)
+    return np.array([h,1-h])
+
+def mkv2_M2Q(q,p):
+    """
+    input
+    ======
+    q and p are staying probs at monthly frequency 
+    
+    output
+    ======
+    qq and pp are quarterly counterparts 
+    """
+    
+    ## different possibilities of staying in low state 
+    qq0 = q**3   #LLLL
+    qq1 = q*(1-q)*(1-p)    ## LLHL
+    qq2 = (1-q)*(1-p)*q    ## LHLL
+    qq3 = (1-q)*q*(1-q)    ## LHHL
+    qq = qq0+qq1+qq2+qq3
+    
+    ## different possibilities of staying in high state
+    
+    pp0 = p**3             #HHHH
+    pp1 = p*(1-p)*(1-q)    ## HHLH
+    pp2 = (1-p)*(1-q)*p    ## HLHH
+    pp3 = (1-q)*p*(1-p)    ## HLLH 
+    pp = qq0+qq1+qq2+qq3
+    
+    return qq, pp
+
+def mkv2_Q2Y(q,p):
+    """
+    input
+    ======
+    q and p are staying probs at quarterly frequency 
+    
+    output
+    ======
+    qq and pp are yearly counterparts 
+    """
+    
+    ## 8 different possibilities of staying in low state 
+    qq0 = q**4                               #L LLL L
+    qq1 = q**2*(1-q)*(1-p)                   #L LLH L
+    qq2 = q*(1-q)*(1-p)*q                    #L LHL L
+    qq3 = q*(1-q)*p*(1-p)                    #L LHH L
+    qq4 = (1-q)*(1-p)*q**2                   #L HLL L
+    qq5 = (1-q)*(1-p)*(1-q)*(1-p)            #L HLH L
+    qq6 = (1-q)*p*(1-p)*q                    #L HHL L
+    qq7 = (1-q)*p**2*(1-p)                   #L HHH L
+    qq = qq0+qq1+qq2+qq3+qq4+qq5+qq6+qq7
+    
+    ## 8 different possibilities of staying in high state
+    
+    pp0 = p**4                               #H HHH H
+    pp1 = p**2*(1-p)*(1-q)                   #H HHL H
+    pp2 = p*(1-p)*(1-q)*p                    #H HLH H
+    pp3 = p*(1-p)*q*(1-q)                    #H HLL H
+    pp4 = (1-p)*(1-q)*p**2                   #H LHH H
+    pp5 = (1-p)*(1-q)*(1-p)*(1-q)            #H LHL H
+    pp6 = (1-p)*q*(1-q)*p                    #H LLH H
+    pp7 = (1-p)*q**2*(1-q)                   #H LLL H
+    pp = pp0+pp1+pp2+pp3+pp4+pp5+pp6+pp7
+    
+    return qq, pp
+
+def mkv2_Y2M(q,
+             p):
+    """
+    input
+    =====
+    transition probs at the annual frequency 
+    output
+    =====
+    monthly transition probs computed via continuous time Poisson rate 
+    """
+    
+    ## to be completed 
+    poisson_qM = -np.log(1-q)/12   ## = -np.log(1-qq)
+    qq = 1-np.exp(-poisson_qM)
+    
+    poisson_pM = -np.log(1-p)/12   ## = -np.log(1-qq)
+    pp = 1-np.exp(-poisson_pM)
+    return qq,pp
+
+def mkv2_Y2Q(q,
+             p):
+    """
+    input
+    =====
+    transition probs at the annual frequency 
+    output
+    =====
+    quarterly transition probs computed via continuous time Poisson rate 
+    """
+    
+    ## to be completed 
+    poisson_qM = -np.log(1-q)/3   ## = -np.log(1-qq)
+    qq = 1-np.exp(-poisson_qM)
+    
+    poisson_pM = -np.log(1-p)/3   ## = -np.log(1-qq)
+    pp = 1-np.exp(-poisson_pM)
+    return qq,pp
+
+
+
+# -
 
 

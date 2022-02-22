@@ -24,8 +24,7 @@ expected life-long utility, under a discount factor $\beta$ and constant surviva
 where $c_{i,\tau}$ represents consumption at the work-age of $\tau$. The
 felicity function $u(c)$ takes a standard CRRA form with relative risk
 aversion of $\rho$: $u(c) = \frac{c^{1-\rho}}{1-\rho}$.  \footnote{There is are bequest motive and
-preference-shifter along life cycle 
-, but these features can be easily incorporated.}
+preference-shifter along life cycle, but these features can be easily incorporated.}
 
 
  Denote total cash in hand at the beginning of the period
@@ -56,12 +55,12 @@ n_{i,\tau} = p_{i,\tau}\xi_{i,\tau}
 \end{split}
 \end{equation}
 
-The permanent income component is subject to a mean-one white-noise shock $\psi$ in each period and grows according to a deterministic life-cycle profile governed by $G_\tau$ over the life cycle, which usually follows a hump-shape according to existing estimates. \citep{gourinchas2002consumption}
+During the work, the permanent income component is subject to a mean-one white-noise shock $\psi$ in each period and grows according to a deterministic life-cycle profile governed by $G_\tau$, which usually follows a hump-shape according to existing estimates. \citep{gourinchas2002consumption}
 
 \begin{equation}
 \begin{split}
-p_{i,\tau} = G_\tau p_{i,\tau-1}\psi_{i,\tau} \\
-log (\psi_{i,\tau}) \sim N(-\frac{\sigma^2_{\psi}}{2},\sigma^2_{\psi})
+& p_{i,\tau} = G_\tau p_{i,\tau-1}\psi_{i,\tau} \\
+& log (\psi_{i,\tau}) \sim N(-\frac{\sigma^2_{\psi}}{2},\sigma^2_{\psi}) \quad \forall \tau \leq T \\
 \end{split}
 \end{equation}
 
@@ -79,7 +78,7 @@ The persistent/transitory shock $\xi_{i,\tau}$ takes different values depending 
 \end{split}
 \end{equation}
 
-where $\zeta$ is the replacement ratio of the unemployment insurance and $\theta_{i,\tau}$ is the i.i.d. mean-one white noise shock to the transitory component of the income conditional on staying employed. Notice that the process above also contains the income process after retirement at $\tau=T$. The agent receives social security with replacement ratio $\mathbb{S}$. Therefore, the effective pension benefit received is $\mathbb{S}p_{i,\tau}W$. This assumption makes the idiosyncratic permanent risks still relevant for the agent after retirement. 
+where $\zeta$ is the replacement ratio of the unemployment insurance and $\theta_{i,\tau}$ is the i.i.d. mean-one white noise shock to the transitory component of the income conditional on staying employed. Notice that the process above also embodies the income process after retirement after $\tau=T$. The agent receives social security with replacement ratio $\mathbb{S}$ and proportional to her permanent income and aggregate wage rate. Therefore, the effective pension benefit received is $\mathbb{S}p_{i,\tau}W$. I assume that the permanent income component just follows the determinist path without additional stochastic shocks. 
 
 During work age of any individual $i$, the transition matrix between unemployment ($\nu_{i,\tau}=u$) and employment ($\nu_{i,\tau} = e$) is the following.
 
@@ -302,7 +301,7 @@ The estimates of subjective profile confirms the key finding we have detailed in
 \subsubsection{Other parameters}
 
 
-\textbf{Life-cycle} The model is set quarterly. The working age spans from 25 years old to 65 years old ($T=160$) and the agent dies with certainty at age of 90 $(L=260)$. The constant death probability before the terminal age is set to be $D=0.625\%$. 
+\textbf{Life-cycle} The model is set quarterly. The working age spans from 25 years old to 65 years old ($T=160$) and the agent dies with certainty at age of 85 $(L=240)$. The constant death probability before the terminal age is set to be $D=0.625\%$. 
 
 
 As to the deterministic income profile over the life-cycle $G_\tau$, I draw on an age polynomial regressions of the earning growth from SIPP, controlling
