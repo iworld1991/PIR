@@ -57,8 +57,8 @@ def y2q_interpolate(xs_y):
     return xs_q
 
 
-# + code_folding=[]
-age_profile_data ='SCF'
+# + code_folding=[2]
+age_profile_data ='SIPP'
 
 if age_profile_data=='SIPP':
     ## import age income profile 
@@ -72,8 +72,6 @@ if age_profile_data=='SIPP':
     ## growth rates since initial age over life cicle before retirement
     lc_G = lc_wages[1:]/lc_wages[:-1]
 
-    T = 40
-    L = 60
     ## growth rates after retirement
 
     lc_G_rt = np.ones(L-T)
@@ -81,6 +79,7 @@ if age_profile_data=='SIPP':
 
 
     lc_G_full = np.concatenate([lc_G,lc_G_rt])
+    assert len(lc_G_full) == L,'length of G needs to be equal to L'
     #lc_G_full = np.ones_like(lc_G_full)
 
     
@@ -168,7 +167,7 @@ SCE_est_y = pd.read_pickle('data/subjective_profile_est_y.pkl')
 SCE_est_q = SCE_est_q['baseline']
 SCE_est_y = SCE_est_y['baseline']
 
-# + code_folding=[]
+# + code_folding=[1]
 ## create a dictionary of parameters 
 life_cycle_paras_q = {'ρ': 2.0, 
                     'β': 0.98**(1/4), 

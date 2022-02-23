@@ -195,9 +195,10 @@
 		\begin{itemize}
 			\item a survey-informed \textcolor{red}{subjective} OLG / incomplete-market GE model 
 \begin{itemize}
-	\item Lower PR $\rightarrow$ lower savings
+	\item With heterogeneous perceived risks (PR)
+	\item Lower PR $\rightarrow$ lower savings + more wealth inequality 
 	\item State-dependence/extrapolation $\rightarrow$ higher savings
-	\item Heterogeneity in PR $\rightarrow$ wealth inequality 
+	\item Heterogeneity in PR $\rightarrow$ more wealth inequality 
 \end{itemize}
 		\end{itemize} 
 	\end{enumerate}
@@ -206,9 +207,8 @@
 
 \begin{frame}{Literature}
 	\begin{itemize}
-		\item income risks and partial insurance :{\scriptsize\cite{gottschalk1994growth}, \cite{carroll1997nature}, \cite{meghir2004income}, \cite{storesletten2004cyclical}, \cite{blundell_consumption_2008},
-		\cite{moffitt2002trends},  \cite{guvenen2014nature},  \cite{arellano2017earnings}, \cite{bloom2018great}}
-		\item subjective/probabilistic survey of beliefs: {\scriptsize\cite{manski_measuring_2004}, \cite{delavande2011measuring}, \cite{manski_survey_2018},  \cite{bertrand_people_2001}, \cite{armantier_overview_2017}}
+		\item income risks and partial insurance: {\scriptsize\cite{gottschalk1994growth}, \cite{carroll1997nature}, \cite{meghir2004income}, \cite{storesletten2004cyclical}, \cite{blundell_consumption_2008}, \cite{moffitt2002trends},  \cite{guvenen2014nature},  \cite{arellano2017earnings}, \cite{bloom2018great}}
+		\item subjective/probabilistic survey of beliefs: {\scriptsize\cite{manski_measuring_2004}, \cite{delavande2011measuring}, \cite{manski_survey_2018},  \cite{bertrand_people_2001}, \cite{armantier_overview_2017}} 
 		\item incomplete market macro: {\scriptsize\cite{bewley1976permanent}, 
 		 \cite{aiyagari1994uninsured},
 		\cite{huggett1996wealth}, \cite{krusell1998income}, \cite{heathcote2009quantitative},  \cite{carroll2017distribution}, \cite{krueger2016macroeconomics},  \cite{bayer2019precautionary}}
@@ -247,13 +247,13 @@
 				\Delta y_{i,c,t+1} & =\Delta z_{i,c,t+1} +\Delta e_{i,c,t+1} 
 			\end{split}
 		\end{equation*}
-		\item \textcolor{red}{To the agent: \textbf{expected volatility} under FIRE}
+		\item \textcolor{red}{To the agent: \textbf{conditional volatility} under FIRE}
 		\begin{equation*}
 			\begin{split}
 				Var^*_{i,c,t}(\Delta y_{i,c,t+1}) & =\sigma^2_{c,t+1|t}
 			\end{split}
 		\end{equation*}
-		\item \textcolor{blue}{To econometricians: \textbf{volatility} } 
+		\item \textcolor{blue}{To econometricians: \textbf{unconditional volatility} } 
 		\begin{equation*}
 			\begin{split}
 			Var^c(\Delta \hat e_{i,c,t+1})     = \hat\sigma^2_{c,t}+ \hat\sigma^2_{c,t+1} - 2Cov^c(\hat e_{i,c,t},\hat e_{i,c,t+1})
@@ -337,15 +337,15 @@
 	\item variable: wage/earning of household heads 
 	\item stay in the sample for 11+ years
 	\item CPI adjusted 
-	\item age 20-59 
+	\item age 25-65 
 \end{itemize}
-\item Income Panel: SIPP
+\item Income panel: SIPP
 \begin{itemize}
 	\item 2014M1-2019M12 (monthly)
 	\item earning from the primary job 
 	\item 900-2700 respondents 
 		\item CPI adjusted 
-	\item age 20-59
+	\item age 25-65 
 
 \end{itemize}
 \end{itemize}
@@ -706,9 +706,11 @@
 	\begin{figure}
 		\centering
 		\label{ts_var}
-		\includegraphics[width=\textwidth]{figures/tsMean3mvrvar_he.jpg}
+		\includegraphics[width=0.9\textwidth]{figures/tsMean3mvrvar_he.jpg}
 	\end{figure}
 	\quad  \hyperlink{appendix:tsMean3mvrexp_he}{\beamerbutton{expected growth}} 
+		\quad  \hyperlink{appendix:PR_macro_labor_market_correlation}{\beamerbutton{correlation}} 
+			\quad  \hyperlink{appendix:PR_state_labor_market}{\beamerbutton{state-level evidence}}  
 \end{frame}
 
 
@@ -723,85 +725,6 @@
 %		\includegraphics[width=\textwidth]{figures/tsMeanrvar_he.jpg}
 %	\end{figure}
 %\end{frame}
-
-
-
-\begin{frame}{Perceived risks and current labor market condition}
-	\begin{eqnarray*}
-		\underbrace{\overline{\text{risk}_{t}}}_{\text{average perceived risk}} = \alpha + \textcolor{red}{\beta} \underbrace{(log(\text{wage}_{t-k/12}) - log(\text{wage}_{t-(k-3)/12}))}  _{\text{wage growth}}  + \epsilon_{i,t}	 \\
-		\quad \forall k =0...4
-	\end{eqnarray*}
-	
-	\begin{table}
-		\centering
-		%\caption{Correlation between Perceived Income Risks and Stock Market Return}
-		\label{macro_corr_he}
-		\adjustbox{max height=0.5\textheight, max width=\textwidth}{ 
-		\begin{tabular}{lllll}
-				\hline 
-			& mean:var & mean:iqr & mean:rvar & mean:skew \\
-				\hline 
-			0 & -0.28**  & -0.42*** & -0.48***  & -0.02     \\
-			1 & -0.42*** & -0.53*** & -0.51***  & 0.12      \\
-			2 & -0.43*** & -0.48*** & -0.44***  & -0.01     \\
-			3 & -0.43*** & -0.48*** & -0.42***  & -0.1      \\
-			4 & -0.31*** & -0.41*** & -0.32***  & -0.21*   \\
-			\hline 
-		\end{tabular}
-		}
-	\end{table}
-\begin{itemize}
-	\item Counter-cyclical income risks: \cite{storesletten2004cyclical}, \cite{guvenen2014nature}, \cite{bayer2019precautionary}
-	%\item Counter-cyclical skewness: \cite{guvenen_empirical_2009}, \cite{guvenen_inferring_2014} 
-\end{itemize}
-\end{frame}
-
-
-
-\begin{frame}{Perceived risks and current labor market condition}
-	\begin{eqnarray*}
-		\underbrace{\overline{\text{risk}_{s,t}} }_{\text{median perceived risk in state $s$}}= r + \textcolor{red}{\psi} \underbrace{LM_{s,t}}_{\text{state labor market condition}}  + \eta_{s,t}
-	\end{eqnarray*}
-	\begin{table}
-		\centering
-		%\caption{Correlation between Perceived Income Risks and Stock Market Return}
-		\label{macro_corr_he_state}
-		\adjustbox{max height=0.5\textheight, max width=\textwidth}{ 
-			\begin{tabular}{lllll}
-				\hline 
-				& (1)                & (2)                & (3)               & (4)               \\
-				\hline 
-				& log(var) & log(risk) & log(iqr) & log(iqr) \\
-				\hline 
-				wage growth & -0.05***           &                    & -0.03***          &                   \\
-				
-				& (0.01)             &                    & (0.01)            &                   \\
-				unemp rate &                    & 0.04*              &                   & 0.04***           \\
-				&                    & (0.02)             &                   & (0.01)            \\
-				\hline 
-				Observations      & 3529               & 3529               & 3546              & 3546              \\
-				R-squared         & 0.023              & 0.020              & 0.025             & 0.028            \\
-				\hline 
-			\end{tabular}
-		}
-	\end{table}
-\end{frame}
-
-\subsection{Perceived unemployment risks}
-
-
-
-\begin{frame}{Perceived unemployment risk and realized job separation rate}
-	\begin{figure}
-		\centering
-		\label{ue_expectations}
-		\includegraphics[width=0.7\textwidth]{figures/seperation_rate_1y}
-	\end{figure}
-	\begin{itemize}
-	\item realized job separation rate is computed from CPS survey 
-	\end{itemize}
-\end{frame}
-
 
 
 
@@ -1384,6 +1307,8 @@ risk profile}
 	\end{itemize}
 \end{frame}
 
+
+
 \begin{frame}{Appendix: PR by age}
 	\begin{figure}[ht]
 		%\caption{Perceived Risk} 
@@ -1514,6 +1439,74 @@ risk profile}
 \end{frame}
 
 
+
+
+\begin{frame}{Appendix: Perceived risks and current labor market condition}
+		\label{appendix:PR_macro_labor_market_correlation}
+	\begin{eqnarray*}
+		\underbrace{\overline{\text{risk}_{t}}}_{\text{average perceived risk}} = \alpha + \textcolor{red}{\beta} \underbrace{(log(\text{wage}_{t-k/12}) - log(\text{wage}_{t-(k-3)/12}))}  _{\text{wage growth}}  + \epsilon_{i,t}	 \\
+		\quad \forall k =0...4
+	\end{eqnarray*}
+	
+	\begin{table}
+		\centering
+		%\caption{Correlation between Perceived Income Risks and Stock Market Return}
+		\label{macro_corr_he}
+		\adjustbox{max height=0.5\textheight, max width=\textwidth}{ 
+			\begin{tabular}{lllll}
+				\hline 
+				& mean:var & mean:iqr & mean:rvar & mean:skew \\
+				\hline 
+				0 & -0.28**  & -0.42*** & -0.48***  & -0.02     \\
+				1 & -0.42*** & -0.53*** & -0.51***  & 0.12      \\
+				2 & -0.43*** & -0.48*** & -0.44***  & -0.01     \\
+				3 & -0.43*** & -0.48*** & -0.42***  & -0.1      \\
+				4 & -0.31*** & -0.41*** & -0.32***  & -0.21*   \\
+				\hline 
+			\end{tabular}
+		}
+	\end{table}
+	\begin{itemize}
+		\item Counter-cyclical income risks: \cite{storesletten2004cyclical}, \cite{guvenen2014nature}, \cite{bayer2019precautionary}
+		%\item Counter-cyclical skewness: \cite{guvenen_empirical_2009}, \cite{guvenen_inferring_2014} 
+	\end{itemize}
+	\quad  \hyperlink{tsMean3mvrvar_he}{\beamerbutton{Back}} 
+\end{frame}
+
+
+
+\begin{frame}{Appendix: Perceived risks and current labor market condition}
+	\label{appendix:PR_state_labor_market}
+	\begin{eqnarray*}
+		\underbrace{\overline{\text{risk}_{s,t}} }_{\text{median perceived risk in state $s$}}= r + \textcolor{red}{\psi} \underbrace{LM_{s,t}}_{\text{state labor market condition}}  + \eta_{s,t}
+	\end{eqnarray*}
+	\begin{table}
+		\centering
+		%\caption{Correlation between Perceived Income Risks and Stock Market Return}
+		\label{macro_corr_he_state}
+		\adjustbox{max height=0.5\textheight, max width=\textwidth}{ 
+			\begin{tabular}{lllll}
+				\hline 
+				& (1)                & (2)                & (3)               & (4)               \\
+				\hline 
+				& log(var) & log(risk) & log(iqr) & log(iqr) \\
+				\hline 
+				wage growth & -0.05***           &                    & -0.03***          &                   \\
+				
+				& (0.01)             &                    & (0.01)            &                   \\
+				unemp rate &                    & 0.04*              &                   & 0.04***           \\
+				&                    & (0.02)             &                   & (0.01)            \\
+				\hline 
+				Observations      & 3529               & 3529               & 3546              & 3546              \\
+				R-squared         & 0.023              & 0.020              & 0.025             & 0.028            \\
+				\hline 
+			\end{tabular}
+		}
+	\end{table}
+	\quad  \hyperlink{tsMean3mvrvar_he}{\beamerbutton{Back}} 
+\end{frame}
+
+
 \begin{frame}{Appendix: by \textbf{5-yr of birth/age}}
 	\label{appendix:cohort_age_compare}
 	\begin{figure}[ht]
@@ -1569,6 +1562,22 @@ risk profile}
 \end{figure}
 	\hyperlink{monthly_decomposition_compare}{\beamerbutton{Back}} 
 \end{frame}
+
+
+
+% this goes back to main slides for longer presentation 
+%\subsection{Perceived unemployed risks}
+\begin{frame}{Perceived UE risk and realized job separation rate}
+	\begin{figure}
+		\centering
+		\label{ue_expectations}
+		\includegraphics[width=0.7\textwidth]{figures/seperation_rate_1y}
+	\end{figure}
+	\begin{itemize}
+		\item realized job separation rate is computed from CPS survey 
+	\end{itemize}
+\end{frame}
+
 
 \begin{frame}{Appendix: estimation of subjective risk profile}
 	\label{appendix:RegimeEstimationDetail}
