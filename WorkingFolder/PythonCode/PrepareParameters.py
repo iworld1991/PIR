@@ -254,14 +254,14 @@ life_cycle_paras_y
 # ### Production function parameters 
 
 production_paras_y={}
-production_paras['K2Y ratio'] = 3.0
-production_paras['W'] = 1.0
-production_paras['α'] = 0.33
-production_paras['δ'] = 0.025
+production_paras_y['K2Y ratio'] = 3.0
+production_paras_y['W'] = 1.0
+production_paras_y['α'] = 0.33
+production_paras_y['δ'] = 0.025
 
 ## quarterly paras 
 production_paras_q = copy(production_paras_y)
-production_paras_q['K2Y ratio'] = production_paras['K2Y ratio']*4
+production_paras_q['K2Y ratio'] = production_paras_q['K2Y ratio']*4
 
 # ### Export the parameters into a table used in the draft
 
@@ -302,13 +302,7 @@ life_cycle_paras_y_copy['b_init'] = round(life_cycle_paras_y_copy['b_init'],3)
 ## merge life-cycle and production paras into model paras
 
 model_paras = copy(life_cycle_paras_y_copy)
-model_paras.update(production_paras)
-
-# +
-## turn scalor to list 
-
-#for key in life_cycle_paras_y_copy.keys():
-#    life_cycle_paras_y_copy[key] = [life_cycle_paras_y_copy[key]]
+model_paras.update(production_paras_y)
 # -
 
 model_paras
@@ -379,19 +373,14 @@ model_paras_by_block_df.loc[('policy','λ_SS'),'source']='endogenously determine
 model_paras_by_block_df.loc['production','source']='standard assumption'
 model_paras_by_block_df.loc[('production','W'),'source']='target values in steady state'
 model_paras_by_block_df.loc[('production','K2Y ratio'),'source']='target values in steady state'
-# -
 
-
-parameter_list
-
-len(para_latex)
 
 # +
 ## for latex symbols 
 parameter_list = [para[1] for para in list(model_paras_by_block_df.index)]
 
-para_latex = ['$\\sigma_\psi$',
-              '$\\sigma_\theta$',
+para_latex = ['$\\sigma_\\psi$',
+              '$\\sigma_\\theta$',
               '$U2U$',
               '$E2E$',
               '$\\sigma_\\psi^{\\text{init}}$',
@@ -413,10 +402,12 @@ model_paras_by_block_df['parameter name']= para_latex
 
 model_paras_by_block_df = model_paras_by_block_df[['parameter name','values','source']]
 
-model_paras_by_block_df.reset_index(level=1, drop=True)
+model_paras_by_block_df=model_paras_by_block_df.reset_index(level=1, drop=True)
 # -
 
 ## export to excel 
 model_paras_by_block_df.to_excel('../Tables/calibration.xlsx')
+
+model_paras_by_block_df
 
 

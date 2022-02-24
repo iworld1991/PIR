@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  23 FEB 2022 21:41
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  23 FEB 2022 21:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1613,10 +1613,6 @@ Overfull \hbox (29.97414pt too wide) has occurred while \output is active
 [63
 
 ]
-Overfull \vbox (0.9178pt too high) detected at line 1634
- []
-
-
 Overfull \hbox (29.97414pt too wide) has occurred while \output is active
  [][]|  []\OT1/cmr/m/n/6 54/56|  
  []
@@ -1627,12 +1623,12 @@ Overfull \hbox (29.97414pt too wide) has occurred while \output is active
 <figures/lorenz_a_test.png, id=2121, 361.35pt x 361.35pt>
 File: figures/lorenz_a_test.png Graphic file (type png)
 <use figures/lorenz_a_test.png>
-Package pdftex.def Info: figures/lorenz_a_test.png  used on input line 1653.
+Package pdftex.def Info: figures/lorenz_a_test.png  used on input line 1655.
 (pdftex.def)             Requested size: 102.68962pt x 102.68808pt.
 <figures/life_cycle_a_test.png, id=2122, 722.7pt x 361.35pt>
 File: figures/life_cycle_a_test.png Graphic file (type png)
 <use figures/life_cycle_a_test.png>
-Package pdftex.def Info: figures/life_cycle_a_test.png  used on input line 1653
+Package pdftex.def Info: figures/life_cycle_a_test.png  used on input line 1655
 .
 (pdftex.def)             Requested size: 205.37926pt x 102.68808pt.
 
@@ -1696,11 +1692,11 @@ Overfull \hbox (29.97414pt too wide) has occurred while \output is active
 \tf@snm=\write9
 \openout9 = `PIR_slides.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1684.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1684.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1686.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1686.
  (./PIR_slides.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1684.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1684.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1686.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1686.
 
 Package rerunfilecheck Info: File `PIR_slides.out' has not changed.
 (rerunfilecheck)             Checksum: 499B4367668446B76779852D95F8E796;890.
@@ -1741,7 +1737,7 @@ mf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2020/texmf
 -dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2020/texmf-d
 ist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2020/texmf-di
 st/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on PIR_slides.pdf (72 pages, 3885131 bytes).
+Output written on PIR_slides.pdf (72 pages, 3885070 bytes).
 PDF statistics:
  2474 PDF objects out of 2487 (max. 8388607)
  2288 compressed objects within 23 object streams
