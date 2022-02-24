@@ -1,154 +1,188 @@
-**************************************************************
+*************************************************************
 *! SIPP data cleaning
 *! Last modified: Feb 2022 by Tao 
 **************************************************************
-
 global datafolder "/Users/Myworld/Dropbox/SIPP/"
 global scefolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/SurveyData/SCE/"
 global otherdatafolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/"
-global table_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/PSID/"
-global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/psid/"
+global table_folder "/Users/Myworld/Dropbox/PIRder/OtherData/sipp/"
+global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/sipp/"
 
-cd ${datafolder}
-
-capture log close
-clear all
-set more off
-
-***************
-** CPI data
-***************
-
-import delimited "${otherdatafolder}CPIAUCSL.csv"
-gen year_str = substr(date,1,4)
-destring year_str,force replace
-rename year_str year
-drop date 
-save "${otherdatafolder}cpiY.dta",replace 
-
-
-*************************
-** UE and recession data
-************************
 clear
-import delimited "${otherdatafolder}UNRATE.csv"
-
-gen year_str = substr(date,1,4)
-destring year_str,force replace
-rename year_str year
-drop date 
-save "${otherdatafolder}UNRATE.dta",replace 
+use "${datafolder}sipp.dta"
+describe
+count 
 
 
-****************
-** PSID data
-***************
-
-use "sipp.dta",clear 
+**************************
+** date and id ***********
+***************************
 
 
-merge m:1 year using "${otherdatafolder}cpiY.dta",keep(master match)
-drop _merge 
-rename cpiaucsl CPI
-
-merge m:1 year using "${otherdatafolder}UNRATE.dta", keep(master match) 
-drop _merge 
-rename unrate ue
-
-** Set the panel 
-xtset uniqueid year 
-
-*************************
-** drop variables
-***********************
-drop if wage_h == 9999999
-
-drop if laborinc_h == 9999999
-
-drop if sex_h ==0 
-
-drop if age_h ==999
-drop if occupation_h ==9999
-drop if rtoh ==98 | rtoh ==0
-drop if race_h == 9 | race_h ==0
+egen uniqueid=group(SSUID PNUM)
+*gen year= SPANEL+SWAVE-2 
 
 
-** fill education with past values 
+** year t panel data is for income in year t-1
+gen month = MONTHCODE
 
-replace edu_i = l1.edu_i if year==1969 & sex_h ==l1.sex_h & ///
-                            age_h ==l1.age_h+1 & race_h ==l1.race_h
-replace edu_i = l1.edu_i if year==1970 & sex_h ==l1.sex_h & ///
-                            age_h ==l1.age_h+1 & race_h ==l1.race_h	
-replace edu_i = l1.edu_i if year==1971 & sex_h ==l1.sex_h & ///
-                            age_h ==l1.age_h+1 & race_h ==l1.race_h	
-replace edu_i = l1.edu_i if year==1972 & sex_h ==l1.sex_h & ///
-                            age_h ==l1.age_h+1 & race_h ==l1.race_h	
-replace edu_i = l1.edu_i if year==1973 & sex_h ==l1.sex_h & ///
-                            age_h ==l1.age_h+1 & race_h ==l1.race_h	
-replace edu_i = l1.edu_i if year==1974 & sex_h ==l1.sex_h & ///
-                            age_h ==l1.age_h+1 & race_h ==l1.race_h	
-							
-drop if edu_i ==99 | edu_i==98 | edu_i ==0
+gen quarter = .
+replace quarter=1 if month==1 | month==2 | month ==3 
+replace quarter=2 if month==4 | month==5 | month ==6 
+replace quarter=3 if month==7 | month==8 | month ==9 
+replace quarter=4 if month==10 | month==11 | month ==12 
 
-drop if year<=1970  
+gen date_str=string(year)+"M"+string(month)
+gen date = monthly(date_str,"YM")
+format date %tm
+drop date_str
 
-** wage is a category variable before 1970
+table date
 
-***********************
-** drop observations 
-***********************
+xtset uniqueid date
+unique uniqueid
 
-* farm workers 
-drop if occupation_h>=600 & occupation<=613
-drop if occupation_h >=800 & occupation_h <=802
+by uniqueid: gen tenure = _N if TJB1_MSUM!=.
 
 ************************
-** education group
-**********************
+*** merge macro data **
+************************
 
-gen edu_i_g =.
-replace edu_i_g =1 if edu_i<12
-replace edu_i_g =2 if edu_i>=12 & edu_i<16
-replace edu_i_g = 3 if edu_i>=16 
+merge m:1 year month using "${otherdatafolder}InfM.dta",keep(master match)
+drop _merge 
 
+**************************
+***** Winsorization ******
+**************************
+
+gen wage = TJB1_MSUM/TJB1_MWKHRS
+** or divided by average nb of weeks of work TJB1_MWKHRS
+** use the primary job monthly earning for now  
+
+** nominal to real terms 
+gen wage_n = wage
+label var wage_n "nominal monthly wage rate of the primary job"
+
+replace wage = wage*100/CPIAU
+label var wage "real monthly wage rate of the primary job"
+
+egen wage_mean = mean(wage),by(uniqueid)
+label var wage_mean "average monthly real earning of the individual"
+drop if wage<0.1* wage_mean | wage>1.9*wage_mean
+
+
+foreach var in wage{
+egen `var'_p1 = pctile(`var'),p(1) by(date)
+egen `var'_p99 = pctile(`var'),p(99) by(date)
+replace `var'=. if `var'<`var'_p1 | `var'>=`var'_p99
+}
+
+
+**************************
+***** Validation ******
+**************************
+xtset uniqueid date
+
+drop if (ESEX!=l1.ESEX & ESEX!=.)| (ERACE!=l1.ERACE & ERACE!=.)
+gen AGE_df = TAGE-l1.TAGE
+drop if AGE_df >=2
+
+keep if tenure>=4
+
+** conditional on having no days off from the job 
+keep if EJB1_AWOP1 ==2
+
+** keep job that continues to interview year 
+
+gen same_job = .
+replace same_job=RJB1_CFLG if RJB1_CFLG !=.
+replace same_job=RJB1_CONTFLG if same_job==. & RJB1_CONTFLG!=.
+keep if same_job==1
+
+** type of employment arrangement 
+
+gen work_type = EJB1_JBORSE
+drop if work_type!=1
+** only focus on employed by someone else
+** already dropp self-employed and others from raw data
+
+** drop imputed values
+keep if EINTTYPE==1 | EINTTYPE==2 
+
+** first job industry code 
+destring TJB1_IND, force replace
+
+** drop some industries, i.e. government jobs
+
+drop if TJB1_IND>=9400
+
+table AJB1_MSUM
+**9 indicates allocation flags for the components
+
+/*
+******************************************************
+***** Quarterly                                     **
+***** Set on if we want to collapse data into quarterly 
+*******************************************************
+
+
+gen wageQ = wage+l1.wage+l2.wage
+replace wage =wageQ
+drop wageQ
+label var wage "real quarterly earning"
+** sum m-2 m-1 and m for quarterly wage 
+
+keep if month==3 | month==6 |month==9|month==12
+
+gen date_str=string(year)+"Q"+string(quarter)
+gen dateq = quarterly(date_str,"YQ")
+format dateq %tq
+drop date_str
+
+table dateq
+xtset uniqueid dateq
+*/
+
+
+
+
+**************************
+***** Summary stats ******
+**************************
+
+tabstat wage TPEARN TJB1_MSUM TJB1_MWKHRS, st(p5 p10 p25 p50 p75 p90 p95) 
+
+*******************************
+*** Other group variables ***
+*******************************
+
+gen age = TAGE
+gen gender = ESEX
+gen race = ERACE
+gen educ = .
+replace educ=1 if EEDUC<=38
+replace educ=2 if EEDUC>=39 & EEDUC<=42
+replace educ=3 if EEDUC>42
+
+**************************
+***** label variables ***
 *************************
-** some label values
-*************************
 
-label define race_h_lb 1 "white" 2 "black" 3 "american indian" ///
-                    4 "asian/pacific" 5 "latino" 6 "color no black/white" ///
-					7 "other"
-label values race_h race_h_lb
+label define race_lb 1 "white" 2 "black" 3 "asian" ///
+                    4 "residual"
+label values race race_lb
 
-label define sex_h_lb 1 "male" 2 "female"
-label values sex_h sex_h_lb
+label define gender_lb 1 "male" 2 "female"
+label values gender gender_lb
 
-label define edu_i_g_lb 1 "HS dropout" 2 "HS graduate" 3 "college graduates/above"
-label values edu_i_g edu_i_g_lb
+label define educ_lb 1 "HS dropout" 2 "HS graduate" 3 "college graduates/above"
+label values educ edu_lb
 
 
 ***********************
-** other filters ******
+** Create new variables
 ***********************
 
-by uniqueid: gen tenure = _N if wage_h!=.
-
-*drop latino family after 1990
-drop if race_h ==5 | race_h ==6
-
-* only household head 
-keep if (rtoh ==1 & year<=1982) | (rtoh ==10 & year>1982)
-* head is 1 before 1982 and 10 after 1982
-
-* age 
-drop if age_h <20 | age_h > 58 
-
-* stay in sample for at least 9 years
-keep if tenure >=15
-
-*******************
-** new variables
-*******************
 
 ** year of birth 
 
@@ -167,43 +201,75 @@ egen age_5yr = cut(age), ///
 	    50 55 60)
 label var age_5yr "5-year age"
 
-** save nominal wage
+** age square
 
-gen wage_h_n = wage_h
-label var wage_h_n "nominal wage"
+gen age2 = age^2
+label var age2 "age squared"
 
-** nominal to real terms 
-replace wage_h = wage_h*CPI/100
-label var wage_h "real wage"
+** age^3
+gen age3 = age^3
+label var age3 "age 3"
+** age^4
+gen age4 = age^4
+label var age4 "age 4"
 
-replace laborinc_h = laborinc_h*CPI/100
-label var laborinc_h "real labor income"
+** end/begining of year
+
+gen end_yr = cond(month==12,1,0)
+label var end_yr "december dummy"
+
+gen beg_yr = cond(month==1,1,0)
+label var beg_yr "january dummy"
 
 ** take the log
-gen lwage_h =log(wage_h)
-label var lwage_h "log wage"
-gen lwage_h_n = log(wage_h_n)
-label var lwage_h_n "log nominal wage"
-gen llbinc_h = log(laborinc_h)
-label var llbinc_h "log labor income"
+gen lwage_n = log(wage_n) 
+label var lwage_n "log nominal monthly earning"
 
-** age square
-gen age_h2 = age_h^2
-label var age_h2 "age squared"
+gen lwage =log(wage)
+label var lwage "log monthly earning"
 
 ** demean the data
-egen lwage_h_av = mean(lwage_h), by(year) 
-egen lwage_h_sd = sd(lwage_h), by(year)
+egen lwage_av = mean(lwage), by(date) 
+egen lwage_sd = sd(lwage), by(date)
 
-*egen laborinc_h_av = mean(llbinc_h), by(year) 
-*egen laborinc_h_sd = sd(llbinc_h), by(year)
 
+
+************************************
+*** Deterministic income component *
+***********************************
+
+reghdfe lwage end_yr beg_yr, a(i.race i.gender i.educ i.TJB1_IND) resid
+predict lwage_age_1st,residuals
+reg lwage_age_1st age age2 age3 age4
+predict lwage_age
+
+preserve 
+collapse (mean) lwage_age, by(age)
+gen wage_age = exp(lwage_age) 
+drop lwage_age 
+label var wage_age "average wage rate at age t (polynomial regression)"
+
+twoway (connected wage_age age) if age<=65, ///
+        xtitle("Age") ///
+        title("The deterministic earning profile over life cycle") 
+graph export "${graph_folder}/age_profile.png", as(png) replace 
+
+save "${otherdatafolder}age_profile.dta",replace 
+
+restore 
+
+
+*********************************
+*** Stochastic income component *
+*********************************
+
+***********************************************************************************
 ** mincer regressions 
-reghdfe lwage_h age_h age_h2, a(i.sex_h i.edu_i_g i.occupation_h) resid
-predict lwage_shk, residuals 
+reghdfe lwage age age2 end_yr beg_yr, a(i.race i.gender i.educ i.TJB1_IND) resid
+predict lwage_shk, residuals
+ 
 * including aggregate shock
-
-reghdfe lwage_h age_h age_h2, a(i.year i.edu_i_g i.sex_h i.occupation_h) resid
+reghdfe lwage age age2 end_yr beg_yr, a(i.date i.race i.gender i.educ i.TJB1_IND) resid
 predict lwage_id_shk, residuals
 
 gen lwage_ag_shk = lwage_shk- lwage_id_shk
@@ -211,77 +277,69 @@ gen lwage_ag_shk = lwage_shk- lwage_id_shk
 label var lwage_shk "log wage shock"
 label var lwage_id_shk "log wage idiosyncratic shock"
 label var lwage_ag_shk "log wage aggregate shock"
+*************************************************************************************
 
 ** first difference
-
-foreach var in lwage_h lwage_h_n lwage_shk lwage_id_shk lwage_ag_shk{
-gen `var'_gr = `var'- l1.`var' if uniqueid==l1.uniqueid ///
-                                   & sex_h ==l1.sex_h & ///
-								   age_h ==l1.age_h+1 & year==l.year+1
-replace `var'_gr = (`var'-l2.`var')/2 if year>=1999 ///
-                                   & `var'_gr ==. ///
-                                   & uniqueid==l2.uniqueid ///
-                                   & sex_h ==l2.sex_h & ///
-								   age_h ==l2.age_h+2 & year==l2.year+2
+foreach var in lwage lwage_n lwage_shk lwage_id_shk lwage_ag_shk{
+gen `var'_gr = `var'- l1.`var'
 }
-label var lwage_h_gr "log growth of wage"
-label var lwage_h_n_gr "log growth of nominal wage" 
+label var lwage_n_gr "log growth of nominal wage"
+label var lwage_gr "log growth of real wage"
 label var lwage_shk_gr "log growth of unexplained wage"
 label var lwage_id_shk_gr "log growth of idiosyncratic unexplained wage"
 label var lwage_ag_shk_gr "log growth of aggregate unexplained wage"
 
 
-foreach var in ue{
-gen ue_gr = ue-l2.ue
-}
-label var ue_gr "change in ue in 2 year"
+*foreach var in ue{
+*gen ue_gr = ue-l2.ue
+*}
+*label var ue_gr "change in ue in 2 year"
 
-** gross volatility 
-
-egen lwage_shk_gr_sd = sd(lwage_shk_gr), by(year)
+**  volatility 
+egen lwage_shk_gr_sd = sd(lwage_shk_gr), by(date)
 label var lwage_shk_gr_sd "standard deviation of log shocks"
-
-*egen laborinc_shk_gr_sd = sd(laborinc_shk_gr), by(year)
-*label var laborinc_shk_gr_sd "standard deviation of log labor income shocks"
 
 
 ***********************************************
 ** summary chart of unconditional wages ********
 ************************************************
-/*
+
+
+** histograms of wage distribution 
+hist  wage, title("distribution of real wage rate") 
+graph export "${graph_folder}/hist_wage.png", as(png) replace 
+
+
+
+** time series plots 
 preserve
 
-collapse (mean) lwage_h lwage_h_sd laborinc_h_av laborinc_h_sd, by(year) 
-
-** average log household income whole sample
-twoway  (connected laborinc_h_av year) if year<=1990, title("The mean of log real labor income")
-twoway  (connected laborinc_h_sd year)  if year<=1990, title("The std of log real labor income") 
-
+collapse (mean) lwage lwage_sd, by(date year month) 
 ** average log wage whole sample
-twoway  (connected lwage_h year) if lwage_h!=., title("The mean of log real wages") 
+twoway  (connected lwage date) if lwage!=., title("The mean of log real wages") 
 graph export "${graph_folder}/log_wage_av.png", as(png) replace 
 
 ** std log wage whole sample
-twoway  (connected lwage_h_sd year) if lwage_h_sd!=., title("The standard deviation of log real wages") 
+twoway  (connected lwage_sd date) if lwage_sd!=., title("The standard deviation of log real wages") 
 graph export "${graph_folder}/log_wage_sd.png", as(png) replace 
 restore 
-ddd
+
 
 preserve 
-collapse (mean) lwage_h lwage_h_sd lwage_h_av_educ=lwage_h (sd) lwage_h_sd_educ = lwage_h, by(year edu_i_g) 
+collapse (mean) lwage lwage_sd lwage_av_educ=lwage (sd) lwage_sd_educ = lwage, by(date year month educ) 
 
 * average log wage
-twoway  (connected lwage_h_av_educ year if lwage_h_av!=. & edu_i_g==1) ///
-        (connected lwage_h_av_educ year if lwage_h_av!=. & edu_i_g==2) ///
-		(connected lwage_h_av_educ year if lwage_h_av!=. & edu_i_g==3), ///
+twoway  (connected lwage_av_educ date if lwage_av!=. & educ==1) ///
+        (connected lwage_av_educ date if lwage_av!=. & educ==2) ///
+		(connected lwage_av_educ date if lwage_av!=. & educ==3), ///
         title("The mean of log real wages") ///
 		legend(label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
 graph export "${graph_folder}/log_wage_av_by_edu.png", as(png) replace 
 
 * standard deviation log wage
-twoway  (connected lwage_h_sd_educ year if lwage_h_sd_educ!=. & edu_i_g==1) ///
-        (connected lwage_h_sd_educ year if lwage_h_sd_educ!=. & edu_i_g==2) ///
-		(connected lwage_h_sd_educ year if lwage_h_sd_educ!=. & edu_i_g==3), ///
+twoway  (connected lwage_sd_educ date if lwage_sd_educ!=. & educ==1) ///
+        (connected lwage_sd_educ date if lwage_sd_educ!=. & educ==2) ///
+		(connected lwage_sd_educ date if lwage_sd_educ!=. & educ==3), ///
         title("The standard deviation of log real wages") ///
 		legend(label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
 graph export "${graph_folder}/log_wage_sd_by_edu.png", as(png) replace 
@@ -292,68 +350,111 @@ restore
 ** summary chart of conditional wages ********
 ************************************************
 
-
 preserve
 
-collapse (mean) lwage_shk_gr lwage_shk_gr_sd, by(year) 
+collapse (mean) lwage_shk_gr lwage_shk_gr_sd, by(year month date) 
 
-*twoway  (connected laborinc_shk_gr year) if year<=1990, title("The mean of log real labor incomes shocks") 
-*twoway  (connected laborinc_shk_gr_sd year) if year<=1990, title("The standard deviation of log real labor incomes shocks") 
+replace lwage_shk_gr=. if month==1
+replace lwage_shk_gr_sd=. if month==1
 
 ** average log wage shock whole sample
-twoway  (connected lwage_shk_gr year) if lwage_shk_gr!=., title("The mean of log real wage shocks") 
+twoway  (connected lwage_shk_gr date) if lwage_shk_gr!=., title("The mean of log real wage shocks") 
 graph export "${graph_folder}/log_wage_shk_gr.png", as(png) replace 
 
 ** std log wage whole sample
-twoway  (connected lwage_shk_gr_sd year) if lwage_shk_gr_sd!=., title("The standard deviation of log real wage shocks") 
+twoway  (connected lwage_shk_gr_sd date) if lwage_shk_gr_sd!=., title("The standard deviation of log real wage shocks") 
 graph export "${graph_folder}/log_wage_shk_gr_sd.png", as(png) replace
 restore 
 
 * education profile bar
 preserve 
-collapse (mean) lwage_shk_gr_av_edu=lwage_shk_gr (sd) lwage_shk_gr_sd_edu = lwage_shk_gr, by(edu_i_g) 
+collapse (mean) lwage_shk_gr_av_edu=lwage_shk_gr (sd) lwage_shk_gr_sd_edu = lwage_shk_gr, by(educ) 
 * average log wage
 
 * standard deviation log wage
-graph bar lwage_shk_gr_sd_edu, over(edu_i_g) ///
+graph bar lwage_shk_gr_sd_edu, over(educ) ///
                                ytitle("standard deviation of log wage shocks") ///
                                title("Gross volatility and education") 							   
 graph export "${graph_folder}/log_wage_shk_gr_sd_bar_by_edu.png", as(png) replace 
 restore 
 
-
 * education profile: time series 
 
 preserve 
-collapse (mean) lwage_shk_gr_av_edu=lwage_shk_gr (sd) lwage_shk_gr_sd_edu = lwage_shk_gr, by(year edu_i_g) 
-* average log wage
+collapse (mean) lwage_shk_gr_av_edu=lwage_shk_gr (sd) lwage_shk_gr_sd_edu = lwage_shk_gr, by(year month date educ) 
 
-twoway  (connected lwage_shk_gr_av_edu year if lwage_shk_gr_av_edu!=. & edu_i_g==1) ///
-        (connected lwage_shk_gr_av_edu year if lwage_shk_gr_av_edu!=. & edu_i_g==2) ///
-		(connected lwage_shk_gr_av_edu year if lwage_shk_gr_av_edu!=. & edu_i_g==3), ///
+replace lwage_shk_gr_av_edu=. if month==1
+replace lwage_shk_gr_sd_edu=. if month==1
+
+xtset educ date 
+
+egen avmv3 = filter(lwage_shk_gr_av_edu), coef(1 1 1) lags(-1/1) normalise 
+egen sdmv3 = filter(lwage_shk_gr_sd_edu), coef(1 1 1) lags(-1/1) normalise 
+
+* average log wage
+twoway  (connected avmv3 date if avmv3!=. & educ==1) ///
+        (connected avmv3 date if avmv3!=. & educ==2) ///
+		(connected avmv3 date if avmv3!=. & educ==3), ///
         title("The mean of log real wage shocks") ///
 		legend(label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
 graph export "${graph_folder}/log_wage_shk_gr_by_edu.png", as(png) replace 
 
 * standard deviation log wage
-
-twoway  (connected lwage_shk_gr_sd_edu year if lwage_shk_gr_sd_edu!=. & edu_i_g==1) ///
-        (connected lwage_shk_gr_sd_edu year if lwage_shk_gr_sd_edu!=. & edu_i_g==2) ///
-		(connected lwage_shk_gr_sd_edu year if lwage_shk_gr_sd_edu!=. & edu_i_g==3), ///
+twoway  (connected sdmv3 date if sdmv3!=. & educ==1) ///
+        (connected sdmv3 date if sdmv3!=. & educ==2) ///
+		(connected sdmv3 date if sdmv3!=. & educ==3), ///
         title("The standard deviation of log real wage shocks") ///
 		legend(label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
 graph export "${graph_folder}/log_wage_shk_gr_sd_by_edu.png", as(png) replace 
  
 restore 
-*/
+
+********************************************
+** Unconditional summary statistics *****
+*****************************************
+
+tabstat lwage_shk_gr, st(sd) by(educ)
+tabstat lwage_shk_gr, st(sd) by(age)
+tabstat lwage_shk_gr, st(sd) by(gender)
+
+********************************************
+** Prepare the matrix for GMM estimation
+*****************************************
+
+preserve 
+tsset uniqueid date 
+tsfill,full						
+replace year=year(dofm(date)) if year==.
+replace month=month(dofm(date)) if month==.
+replace lwage_id_shk_gr=. if month==1		    
+keep uniqueid year month lwage_id_shk_gr educ gender age_5yr
+gen date_temp = year*100+month
+drop if date_temp==.
+drop year month 
+reshape wide lwage_id_shk_gr, i(uniqueid educ gender age_5yr) j(date_temp)
+save "${datafolder}sipp_matrix.dta",replace 
+restore 
+
 
 
 *****************************************************************************
 **** comparison and perceptions and realizations for idiosyncratic shocks ***
 ****************************************************************************
 
+
+******
+* some renaming to be consistent with the codes for PSID
+
+gen age_h = age 
+gen sex_h = gender
+gen edu_i_g = educ
+gen lwage_h_gr = lwage_gr 
+gen lwage_h_n_gr = lwage_n_gr 
+
 ** notice here we use lwage_id_shk_gr !!
 
+
+/*
 ** byear_5yr and age
 
 preserve
@@ -644,7 +745,7 @@ merge 1:1 age using "${scefolder}incvar_by_age.dta",keep(master match)
 gen lincvar = sqrt(incvar)
 gen lrincvar = sqrt(rincvar)
 
-/*
+
 * growth 
 twoway (scatter lwage_shk_gr_av_age age_h) (lfit lwage_shk_gr_av_age age_h), ///
        title("Growth rates of log real wage and age") ///
@@ -670,7 +771,7 @@ twoway (scatter lwage_shk_sd_age age_h) (lfit lwage_shk_sd_age age_h), ///
        title("Growth rates of log real wage and age") ///
                 xtitle("age") 
 graph export "${graph_folder}/log_wage_shk_sd_by_age.png", as(png) replace 
-*/
+
 
 * standard deviation log wage and real risk perception 
 
@@ -712,7 +813,7 @@ twoway (scatter lrincvar lwage_shk_gr_sd_age, color(ltblue)) ///
 	   xtitle("Age-specific volatility") ///
 	   ytitle("Perceived risk") 
 graph export "${graph_folder}/real_realized_perceived_risks_by_age.png", as(png) replace 
-*/
+
 
 restore
 
@@ -776,7 +877,7 @@ graph export "${graph_folder}/real_realized_perceived_risks_by_age_edu.png", as(
 
 restore
 
-/*
+
 ** age/gender profile 
 
 ** scatter 
@@ -946,202 +1047,3 @@ graph export "${graph_folder}/log_wage_shk_gr_sd_by_sex.png", as(png) replace
 
 restore 
 */
-
-********************************************
-** Unconditional summary statistics *****
-*****************************************
-
-tabstat lwage_shk_gr, st(sd) by(edu_i_g)
-tabstat lwage_shk_gr, st(sd) by(age_h)
-tabstat lwage_shk_gr, st(sd) by(sex_h)
-
-********************************************
-** Prepare the matrix for GMM estimation
-*****************************************
-
-preserve 
-tsset uniqueid year 
-tsfill,full
-*replace lwage_shk_gr = f1.lwage_shk_gr if year>=1998 ///
-*                                       & f1.lwage_shk_gr !=. ///
-*									   & lwage_shk_gr ==. 									    
-keep uniqueid year lwage_id_shk_gr edu_i_g sex_h age_5yr
-*keep if year<=1997
-reshape wide lwage_id_shk_gr, i(uniqueid edu_i_g sex_h age_5yr) j(year)
-save "psid_matrix.dta",replace 
-restore 
-
-******************************
-** cohort-time-specific experience
-*********************************
-
-preserve 
-
-putexcel set "${table_folder}/psid_history_vol.xls", sheet("") replace
-putexcel A1=("year") B1=("cohort") C1=("av_shk_gr") D1=("var_shk") E1=("av_id_shk_gr") ///
-         F1=("var_id_shk") G1=("av_ag_shk_gr") H1=("var_ag_shk") I1 =("N") J1=("ue_av") K1=("ue_var") ///
-		 L1=("var_shk_gr") M1=("var_id_shk_gr") N1=("var_ag_shk_gr")
-local row = 2
-forvalues t =1973(1)2017{
-local l = `t'-1971
-forvalues i = 2(1)`l'{
-*quietly: reghdfe lwage_h edu_i age_h age_h2 if year <=`t'& year>=`t'-`i', a(year sex_h occupation_h) resid
-
-** shk
-summarize lwage_shk if year <=`t'& year>=`t'-`i'
-return list 
-local N = r(N)
-local var_shk = r(sd)^2
-disp `var_shk'
-summarize lwage_shk_gr if year <=`t'& year>=`t'-`i'
-return list 
-local av_shk_gr = r(mean)
-disp `av_shk_gr'
-local var_shk_gr = r(sd)^2
-disp `var_shk_gr'
-
-
-** id shk
-summarize lwage_id_shk if year <=`t'& year>=`t'-`i'
-return list 
-local var_id_shk = r(sd)^2
-disp `var_id_shk'
-summarize lwage_id_shk_gr if year <=`t'& year>=`t'-`i'
-return list 
-local av_id_shk_gr = r(mean)
-disp `av_id_shk_gr'
-local var_id_shk_gr = r(sd)^2
-disp `var_id_shk_gr'
-
-
-** ag shk
-summarize lwage_ag_shk if year <=`t'& year>=`t'-`i'
-return list 
-local var_ag_shk = r(sd)^2
-disp `var_ag_shk'
-summarize lwage_ag_shk_gr if year <=`t'& year>=`t'-`i'
-return list 
-local av_ag_shk_gr = r(mean)
-disp `av_ag_shk_gr'
-local var_ag_shk_gr = r(sd)^2
-disp `var_ag_shk_gr'
-
-** ag ue
-summarize ue if year <=`t'& year>=`t'-`i'
-return list 
-local ue_av = r(mean)
-disp `ue_av'
-local ue_var = r(sd)^2
-disp `ue_var'
-
-putexcel A`row'=("`t'")
-local c = `t'-`i'
-putexcel B`row'=("`c'")
-putexcel C`row'=("`av_shk_gr'")
-putexcel D`row'=("`var_shk'")
-putexcel E`row'=("`av_id_shk_gr'")
-putexcel F`row'=("`var_id_shk'")
-putexcel G`row'=("`av_ag_shk_gr'")
-putexcel H`row'=("`var_ag_shk'")
-putexcel I`row'=("`N'")
-putexcel J`row'=("`ue_av'")
-putexcel K`row'=("`ue_var'")
-putexcel L`row'=("`var_shk_gr'")
-putexcel M`row'=("`var_id_shk_gr'")
-putexcel N`row'=("`var_ag_shk_gr'")
-
-local ++row
-}
-}
-restore
-
-
-**** age-time-education 
-
-preserve 
-
-putexcel set "${table_folder}/psid_history_vol_edu.xls", sheet("") replace
-putexcel A1=("year") B1=("cohort") C1 =("edu") D1=("av_shk_gr") E1=("var_shk") F1=("av_id_shk_gr") ///
-         G1=("var_id_shk") H1=("av_ag_shk_gr") I1=("var_ag_shk") J1 =("N") K1=("ue_av") L1=("ue_var") ///
-		 M1=("var_shk_gr") N1=("var_id_shk_gr") O1=("var_ag_shk_gr")
-local row = 2
-forvalues ed = 1(1)3{
-forvalues t =1973(1)2017{
-local l = `t'-1971
-forvalues i = 2(1)`l'{
-*quietly: reghdfe lwage_h edu_i age_h age_h2 if year <=`t'& year>=`t'-`i', a(year sex_h occupation_h) resid
-
-** shk
-summarize lwage_shk if year <=`t'& year>=`t'-`i' & edu_i_g ==`ed'
-return list 
-local N = r(N)
-local var_shk = r(sd)^2
-disp `var_shk'
-summarize lwage_shk_gr if year <=`t'& year>=`t'-`i' & edu_i_g ==`ed'
-return list 
-local av_shk_gr = r(mean)
-disp `av_shk_gr'
-local var_shk_gr = r(sd)^2
-disp `var_shk_gr'
-
-
-** id shk
-summarize lwage_id_shk if year <=`t'& year>=`t'-`i' & edu_i_g ==`ed'
-return list 
-local var_id_shk = r(sd)^2
-disp `var_id_shk'
-summarize lwage_id_shk_gr if year <=`t'& year>=`t'-`i' & edu_i_g ==`ed'
-return list 
-local av_id_shk_gr = r(mean)
-disp `av_id_shk_gr'
-local var_id_shk_gr = r(sd)^2
-disp `var_id_shk_gr'
-
-** ag shk
-summarize lwage_ag_shk if year <=`t'& year>=`t'-`i'& edu_i_g ==`ed'
-return list 
-local var_ag_shk = r(sd)^2
-disp `var_ag_shk'
-summarize lwage_ag_shk_gr if year <=`t'& year>=`t'-`i'& edu_i_g ==`ed'
-return list 
-local av_ag_shk_gr = r(mean)
-disp `av_ag_shk_gr'
-local var_ag_shk_gr = r(sd)^2
-disp `var_ag_shk_gr'
-
-** ag ue
-summarize ue if year <=`t'& year>=`t'-`i' & edu_i_g ==`ed'
-return list 
-local ue_av = r(mean)
-disp `ue_av'
-local ue_var = r(sd)^2
-disp `ue_var'
-
-putexcel A`row'=("`t'")
-local c = `t'-`i'
-putexcel B`row'=("`c'")
-putexcel C`row'=("`ed'")
-putexcel D`row'=("`av_shk_gr'")
-putexcel E`row'=("`var_shk'")
-putexcel F`row'=("`av_id_shk_gr'")
-putexcel G`row'=("`var_id_shk'")
-putexcel H`row'=("`av_ag_shk_gr'")
-putexcel I`row'=("`var_ag_shk'")
-putexcel J`row'=("`N'")
-putexcel K`row'=("`ue_av'")
-putexcel L`row'=("`ue_var'")
-putexcel M`row'=("`var_shk_gr'")
-putexcel N`row'=("`var_id_shk_gr'")
-putexcel O`row'=("`var_ag_shk_gr'")
-
-local ++row
-}
-}
-}
-restore
-
-
-
-*/
-
-
