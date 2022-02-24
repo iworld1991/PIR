@@ -67,7 +67,7 @@ inf_paras['unemp_insurance'] = 0.0
 inf_paras['P'] = np.array([[0.9,0.1],[0.2,0.8]])
 
 grid_max = 5.0
-grid_size = 30
+grid_size = 50
 
 # + code_folding=[0]
 inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
@@ -107,8 +107,8 @@ inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
                     ## wether to have zero borrowing constraint 
                     borrowing_cstr = True,
                     ## a grids 
-                    grid_max = 20,
-                    grid_size = 200,
+                    grid_max = grid_max,
+                    grid_size = grid_size,
     )
 
 # + code_folding=[0, 9]

@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -109,7 +109,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[1, 6, 161]
+# + code_folding=[161]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -137,7 +137,7 @@ class LifeCycle:
                  T = 40,             ## work age, from 25 to 65 (including 65)
                  L = 60,             ## life length 85
                  G = np.ones(60),    ## growth factor list of permanent income 
-                 shock_draw_size = 8,
+                 shock_draw_size = 7,
                  grid_max = 5.0,
                  grid_size = 50,
                  seed = 456789,
@@ -193,16 +193,13 @@ class LifeCycle:
         ##################################################################
          ## discretized distributions 
         ##################################################################
-        n_shk_dist = lognorm(sigma_n,100000)
-        n_shk_dist.discretize(shock_draw_size)
+        n_shk_dist = lognorm(sigma_n,100000,shock_draw_size)
         self.n_shk_draws = np.log(n_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
         
-        eps_shk_dist = lognorm(sigma_eps,100000)
-        eps_shk_dist.discretize(shock_draw_size)
+        eps_shk_dist = lognorm(sigma_eps,100000,shock_draw_size)
         self.eps_shk_draws = np.log(n_shk_dist.X)
         
-        init_p_dist = lognorm(sigma_p_init,100000)
-        init_p_dist.discretize(shock_draw_size)
+        init_p_dist = lognorm(sigma_p_init,100000,shock_draw_size)
         self.init_p_draws = np.log(init_p_dist.X)
         
         ## draw shocks using monte-carlo for constant volatility scenario
@@ -216,18 +213,14 @@ class LifeCycle:
         sigma_eps_2mkv_r = sigma_eps_2mkv.reshape(n_mkv,-1)
         
 
-        sigma_n_2mkv_l = lognorm(sigma_n_2mkv[0],100000)
-        sigma_n_2mkv_l.discretize(shock_draw_size)
-        sigma_n_2mkv_h = lognorm(sigma_n_2mkv[1],100000)
-        sigma_n_2mkv_h.discretize(shock_draw_size)
+        sigma_n_2mkv_l = lognorm(sigma_n_2mkv[0],100000,shock_draw_size)
+        sigma_n_2mkv_h = lognorm(sigma_n_2mkv[1],100000,shock_draw_size)
         
         self.n_shk_mkv_draws = np.stack((np.log(sigma_n_2mkv_l.X),
                                          np.log(sigma_n_2mkv_h.X)))
         
-        sigma_eps_2mkv_l = lognorm(sigma_eps_2mkv[0],100000)
-        sigma_eps_2mkv_l.discretize(shock_draw_size)
-        sigma_eps_2mkv_h = lognorm(sigma_eps_2mkv[1],100000)
-        sigma_eps_2mkv_h.discretize(shock_draw_size)
+        sigma_eps_2mkv_l = lognorm(sigma_eps_2mkv[0],100000,shock_draw_size)
+        sigma_eps_2mkv_h = lognorm(sigma_eps_2mkv[1],100000,shock_draw_size)
         
         self.eps_shk_mkv_draws = np.stack((np.log(sigma_eps_2mkv_l.X),
                                          np.log(sigma_eps_2mkv_h.X)))
@@ -576,7 +569,7 @@ def extrapolate(theta,
     return x_sub
 
 
-# + code_folding=[]
+# + code_folding=[4]
 ## subjective agent
 ### transitory shock affects risk perceptions
 
@@ -882,7 +875,7 @@ def policyPF(β,
     
 """
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     lc = LifeCycle(sigma_n = sigma_n,
                    sigma_eps = sigma_eps,

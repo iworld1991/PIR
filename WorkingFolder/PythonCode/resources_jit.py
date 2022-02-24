@@ -40,21 +40,23 @@ from numba.experimental import jitclass
 
 # ## Jittable frozen distribution of log normal 
 
-# + code_folding=[11, 23, 29, 36, 80]
+# + code_folding=[24, 30, 37]
 MeanOneLogNormalPara=[
     ('sigma', float64),   
     ('mu',float64),
     ('sim_N', int64),             
     ('sim_draws', float64[:]),
     ('X',float64[:]),
-    ('pmf',float64[:])
+    ('pmf',float64[:]),
+    ('approx_N',int64)
 ]
 
 @jitclass(MeanOneLogNormalPara)
 class MeanOneLogNormal:
     def __init__(self,
                  sigma = 0.40,
-                 sim_N = 100000):
+                 sim_N = 100000,
+                 approx_N = 7):
 
         self.sigma = sigma ## underlying normal std
         self.sim_N = sim_N
@@ -62,6 +64,7 @@ class MeanOneLogNormal:
         self.sim_draws = np.random.lognormal(-sigma**2/2 , 
                                              sigma,
                                              sim_N)
+        self.approx_N = approx_N
         self.discretize()
         
     def pdf(self,
@@ -97,11 +100,11 @@ class MeanOneLogNormal:
             x = np.max(sim_draws_sort)
         return x 
         
-    def discretize(self,
-                  N = 7):
+    def discretize(self):
         """
         N equally probable values of the random variable
         """
+        N = self.approx_N
         probs_cutoffs = np.arange(N+1)/N        # Includes 0 and 1
         state_cutoffs = np.array([self.invcdf(prob_cutoff) for prob_cutoff in probs_cutoffs]) # State cutoff values, each bin
         bin_probs = np.empty(N,float64)
