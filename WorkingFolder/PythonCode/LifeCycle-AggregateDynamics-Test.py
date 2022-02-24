@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -20,6 +20,7 @@
 # - date: November 2021
 # - this is an companion notebook to the paper "Perceived income risks"
 
+# +
 import numpy as np
 import pandas as pd
 #from quantecon.optimize import brent_max, brentq
@@ -42,10 +43,12 @@ from scipy import sparse as sp
 import scipy.sparse.linalg
 import scipy.optimize as op
 from scipy import linalg as lg 
-from Utility import cal_ss_2markov,lorenz_curve
 from matplotlib import cm
 import joypy
 from copy import copy 
+
+from Utility import cal_ss_2markov,lorenz_curve
+
 
 # + code_folding=[]
 ## figure plotting configurations
@@ -301,13 +304,18 @@ for x,year in enumerate(years_left):
     axes[x].set_xlabel('asset')
     axes[0].set_ylabel('c')
     axes[x].set_title(r'c at $age={}$'.format(age))
-
-
 # -
 
 # ## Aggregate steady state distributions
 
-# + code_folding=[6, 101, 140, 163, 514, 528, 551, 573, 587, 593]
+from Utility import stationary_age_dist
+from Utility import unemp_insurance2tax
+from Utility import SS2tax
+from Utility import CDProduction  
+from PrepareParameters import production_paras 
+
+
+# + code_folding=[6, 101, 142, 493, 507, 530, 552, 566, 584]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -446,27 +454,6 @@ def jump_to_grid_fast(model,
 
     return probGrid.flatten()
 
-## get the stationary age distribution 
-@njit
-def stationary_age_dist(L,
-                        n,
-                       LivPrb):
-    """
-    stationary age distribution of the economy given 
-    T: nb of periods of life 
-    n: Population growth rate 
-    ProbLiv: survival probability 
-    """
-    cum = 0.0
-    for i in range(L):
-        cum = cum + LivPrb**i/(1+n)
-    sigma1 = 1/cum
-    
-    dist = np.empty(L)
-    
-    for i in range(L):
-        dist[i] = sigma1*LivPrb**i/(1+n)
-    return dist 
 
 ## compute the list of transition matrix from age t to t+1 for all age 
 
@@ -950,7 +937,7 @@ def calc_ergodic_dist(transition_matrix = None):
 """
 
 
-# + code_folding=[0, 5, 17, 113, 280, 301, 341, 356, 386]
+# + code_folding=[0, 17, 113, 280, 301, 341, 356, 386]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1374,7 +1361,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## testing of the household  class 
 
 HH = HH_OLG_Markov(model=lc_mkv)
@@ -1424,7 +1411,7 @@ print('aggregate savings under stationary distribution:', str(HH.A))
 share_agents_cp,share_cp = HH.Lorenz(variable='c')
 share_agents_ap,share_ap = HH.Lorenz(variable='a')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
@@ -1507,7 +1494,7 @@ A_life = HH.A_life
 C_life = HH.C_life
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -1587,128 +1574,13 @@ if joy == True:
     
 else:
     pass
+
+
 # -
 
 # ### General Equilibrium 
 
-# + code_folding=[0, 12, 37, 40]
-economy_data = [
-    ('Z', float64),            
-    ('K', float64),             
-    ('L',float64),              
-    ('α',float64),           
-    ('δ',float64)
-]
-
-#@jitclass(economy_data)
-class CDProduction:
-    ## An economy class that saves market and production parameters 
-    
-    def __init__(self,
-             Z = 1.00,     
-             K = 1.00, 
-             L = 1.00,
-             α = 0.33, 
-             δ = 0.025,     
-             ):  
-        self.Z = Z
-        self.K = K
-        self.L = L
-        self.α = α
-        self.δ = δ
-        
-    def KY(self):
-        return (self.K/self.Y())
-    
-    def Y(self):
-        return self.Z*self.K**self.α*self.L**(1-self.α)
-    
-    def YL(self):
-        return self.Z*(1-self.α)*(self.K/self.L)**self.α
-    
-    def YK(self):
-        return self.Z*self.α*(self.L/self.K)**(1-self.α)
-    
-    def R(self):
-        return 1+self.YK()-self.δ
-    
-    def normlize_Z(self,
-                  target_KY = 3.0,
-                  target_W = 1.0,
-                  N_ss = 0.9):
-        from scipy.optimize import fsolve
-
-
-        KY_ratio_target = 3
-        W_target = 1.0
-        print('target KY',KY_ratio_target)
-        print('steady state emp pop',N_ss)
-
-        def distance(ZK):
-            self.N = N_ss
-            self.Z,self.K = ZK
-            distance1 = self.KY()- KY_ratio_target
-            distance2 = self.YL()- W_target 
-            return [distance1,distance2]
-
-        Z_root,K_root = fsolve(distance,
-                               [0.7,0.5])
-
-        print('Normalized Z',Z_root)
-        print('Normalized K',K_root)
-
-        self.Z,self.K = Z_root,K_root
-
-        W_fake = self.YL()
-        KY_fake = self.KY()
-        R_fake = self.R()
-
-        print('W',W_fake)
-        print('KY',KY_fake)
-        print('R',R_fake)
-
-
-# + code_folding=[0, 21]
-def unemp_insurance2tax(μ,
-                        ue_fraction):
-    """
-    input
-    =====
-    μ: replcament ratio
-    ue_fraction: fraction of the working population that is unemployed 
-    output
-    ======
-    tax rate: labor income tax rate that balances government budget paying for uemp insurance 
-    
-    under balanced government budget, what is the tax rate on income corresponds to the ue benefit μ
-    (1-ue_fraction)x tax + ue_fraction x mu x tax = ue_fraction x mu 
-    --> tax = (ue_fraction x mu)/(1-ue_fraction)+ue_fraction x mu
-    """
-    num = (ue_fraction*μ)
-    dem = (1-ue_fraction)+(ue_fraction*μ)
-    return num/dem
-
-## needs to test this function 
-
-def SS2tax(SS, ## social security /pension replacement ratio 
-           T,  ## retirement years
-           age_dist,  ## age distribution in the economy 
-           G,         ## permanent growth fractor lists over cycle
-           emp_fraction):  ## fraction of employment in work age population 
-    pic_share = np.cumprod(G)  ## generational permanent income share 
-    pic_age_share = np.multiply(pic_share,
-                               age_dist)  ## generational permanent income share weighted by population weights
-    
-    dependence_ratio = np.sum(pic_age_share[T:])/np.sum(pic_age_share[:T-1]*emp_fraction)
-    ## old dependence ratio 
-    
-    λ_SS = SS*dependence_ratio 
-    ## social security tax rate on labor income of employed 
-    
-    return λ_SS
-
-
-# + code_folding=[0, 5, 26]
+# + code_folding=[158, 170]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1727,9 +1599,7 @@ class Market_OLG_mkv:
         T =  self.model.T
         L_ss = np.sum(age_dist[:T-1])*ss_dstn[1] ## employment fraction for working age population
         self.households.emp_ss = L_ss
-        production.normlize_Z(target_KY = 3.0,
-                              target_W = 1.0,
-                               N_ss = L_ss)
+        production.normlize_Z(N_ss = L_ss)
         self.production = production   ## Produciton function 
 
 
@@ -1938,7 +1808,10 @@ class Market_OLG_mkv:
 # + code_folding=[0]
 ## initialize a market and solve the equilibrium 
 
-production = CDProduction() 
+production = CDProduction(α = production_paras['α'],
+                          δ = production_paras['δ'],
+                          target_KY = production_paras['K2Y ratio'],
+                         target_W = production_paras['W']) 
 
 market_OLG_mkv = Market_OLG_mkv(households = HH,
                                 production = production)

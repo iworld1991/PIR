@@ -58,7 +58,7 @@ def y2q_interpolate(xs_y):
 
 
 # + code_folding=[2]
-age_profile_data ='SIPP'
+age_profile_data ='SCF'
 
 if age_profile_data=='SIPP':
     ## import age income profile 
@@ -169,7 +169,7 @@ SCE_est_y = SCE_est_y['baseline']
 
 # + code_folding=[1]
 ## create a dictionary of parameters 
-life_cycle_paras_q = {'ρ': 2.0, 
+life_cycle_paras_q = {'ρ': 1.0, 
                     'β': 0.98**(1/4), 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
@@ -209,8 +209,9 @@ life_cycle_paras_q = {'ρ': 2.0,
 
 life_cycle_paras_q
 
+# + code_folding=[1]
 ## create a dictionary of parameters 
-life_cycle_paras_y = {'ρ': 2.0, 
+life_cycle_paras_y = {'ρ': 1.5, 
                     'β': 0.98, 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
@@ -246,13 +247,22 @@ life_cycle_paras_y = {'ρ': 2.0,
                     'E_2mkv':np.array([SCE_est_y.loc['$\tilde E^l$'],
                                       SCE_est_y.loc['$\tilde E^h$']])
                 }
+# -
 
 life_cycle_paras_y
 
-# +
-#with open("parameters.txt", "wb") as fp:
-#    pickle.dump(life_cycle_paras, fp)
-# -
+# ### Production function parameters 
+
+production_paras_y={}
+production_paras['K2Y ratio'] = 3.0
+production_paras['W'] = 1.0
+production_paras['α'] = 0.33
+production_paras['δ'] = 0.025
+
+## quarterly paras 
+production_paras_q = copy(production_paras_y)
+production_paras_q['K2Y ratio'] = production_paras['K2Y ratio']*4
+
 # ### Export the parameters into a table used in the draft
 
 
@@ -270,6 +280,7 @@ del life_cycle_paras_y_copy['U']
 del life_cycle_paras_y_copy['κ']  
 del life_cycle_paras_y_copy['q']  
 del life_cycle_paras_y_copy['p']  
+del life_cycle_paras_y_copy['transfer']  
 
 
 ## rewrite some parameters' names
@@ -280,12 +291,18 @@ life_cycle_paras_y_copy['E2E'] = life_cycle_paras_y['P'][1,1]
 ## rename some 
 life_cycle_paras_y_copy['1-D'] =  life_cycle_paras_y_copy.pop('LivPrb')
 life_cycle_paras_y_copy['μ'] =  life_cycle_paras_y_copy.pop('unemp_insurance')
-
+life_cycle_paras_y_copy['b_init'] =  life_cycle_paras_y_copy.pop('init_b')
 
 ## rounding 
 life_cycle_paras_y_copy['1-D'] = round(life_cycle_paras_y_copy['1-D'],3)
 life_cycle_paras_y_copy['σ_ψ_init'] = round(life_cycle_paras_y_copy['σ_ψ_init'],3)
-life_cycle_paras_y_copy['init_b'] = round(life_cycle_paras_y_copy['init_b'],3)
+life_cycle_paras_y_copy['b_init'] = round(life_cycle_paras_y_copy['b_init'],3)
+
+# +
+## merge life-cycle and production paras into model paras
+
+model_paras = copy(life_cycle_paras_y_copy)
+model_paras.update(production_paras)
 
 # +
 ## turn scalor to list 
@@ -294,14 +311,14 @@ life_cycle_paras_y_copy['init_b'] = round(life_cycle_paras_y_copy['init_b'],3)
 #    life_cycle_paras_y_copy[key] = [life_cycle_paras_y_copy[key]]
 # -
 
-life_cycle_paras_y_copy
+model_paras
 
-# +
+# + code_folding=[2, 16, 27]
 # making blocks 
 
 blocknames =['risk',
             'initial condition',
-            'life-cycle',
+            'life cycle',
             'preference',
             'policy',
             'production']
@@ -310,39 +327,96 @@ prefernece = ['ρ','β']
 lifecycle = ['T','L','1-D']
 risk  = ['σ_ψ','σ_θ','U2U','E2E']
 initial = ['σ_ψ_init','init_b','bequest_ratio']
-policy = ['μ','λ','λ_SS','transfer']
+policy = ['μ','λ','λ_SS']
+production=['K2Y ratio','W','α','δ']
 
 block_all= [risk,
             initial,
             lifecycle,
             prefernece,
-            policy]
+            policy,
+           production]
 
 ## create multiple layer dictionary 
 
-life_cycle_paras_y_copy_ml = {}
+model_paras_by_block = {}
 
 for i,block in enumerate(block_all):
-    life_cycle_paras_y_copy_ml[blocknames[i]] =  {k: v for k, v 
-                                               in life_cycle_paras_y_copy.items() 
+    model_paras_by_block[blocknames[i]] =  {k: v for k, v 
+                                               in model_paras.items() 
                                                if k in block}
 # -
 
-life_cycle_paras_y_copy_ml
-
-life_cycle_paras_y_copy_df = pd.DataFrame.from_dict({(i,j): life_cycle_paras_y_copy_ml[i][j] 
-                           for i in life_cycle_paras_y_copy_ml.keys() 
-                           for j in life_cycle_paras_y_copy_ml[i].keys()},
-                       orient='index')
+model_paras_by_block
 
 # +
-## add another column 
+model_paras_by_block_df = pd.DataFrame.from_dict({(i,j): model_paras_by_block[i][j] 
+                           for i in model_paras_by_block.keys() 
+                           for j in model_paras_by_block[i].keys()},
+                       orient='index')
 
-life_cycle_paras_y_copy_df.columns =['values']
+model_paras_by_block_df.columns =['values']
+Mindex = pd.MultiIndex.from_tuples(list(model_paras_by_block_df.index), names=["block", "parameter"])
+model_paras_by_block_df.index = Mindex
 # -
 
-life_cycle_paras_y_copy_df
+model_paras_by_block_df['source']=''
 
-life_cycle_paras_y_copy_df.to_excel('../Tables/calibration.xlsx')
+model_paras_by_block_df
+
+# +
+## add source of the parameters 
+
+model_paras_by_block_df.loc['risk','source']='Median estimates from the literature'
+model_paras_by_block_df.loc['initial condition','source']='Estimated for age 25 in the 2016 SCF'
+model_paras_by_block_df.loc[('initial condition','bequest_ratio'),'source']='assumption'
+model_paras_by_block_df.loc['life cycle','source']='standard assumption'
+model_paras_by_block_df.loc['preference','source']='standard assumption'
+model_paras_by_block_df.loc['policy','source']='standard assumption'
+model_paras_by_block_df.loc[('policy','λ'),'source']='endogenously determined'
+model_paras_by_block_df.loc[('policy','λ_SS'),'source']='endogenously determined'
+
+model_paras_by_block_df.loc['production','source']='standard assumption'
+model_paras_by_block_df.loc[('production','W'),'source']='target values in steady state'
+model_paras_by_block_df.loc[('production','K2Y ratio'),'source']='target values in steady state'
+# -
+
+
+parameter_list
+
+len(para_latex)
+
+# +
+## for latex symbols 
+parameter_list = [para[1] for para in list(model_paras_by_block_df.index)]
+
+para_latex = ['$\\sigma_\psi$',
+              '$\\sigma_\theta$',
+              '$U2U$',
+              '$E2E$',
+              '$\\sigma_\\psi^{\\text{init}}$',
+              'bequest ratio',
+              '$T$',
+              '$L$',
+              '$1-D$',
+              '$\\rho$',
+              '$\\beta$',
+             '$\\lambda$',
+             '$\\lambda_{SS}$',
+             '$\\mu$',
+             '$W$',
+             'K2Y ratio',
+             '$\\alpha$',
+             '$\\delta$']
+
+model_paras_by_block_df['parameter name']= para_latex
+
+model_paras_by_block_df = model_paras_by_block_df[['parameter name','values','source']]
+
+model_paras_by_block_df.reset_index(level=1, drop=True)
+# -
+
+## export to excel 
+model_paras_by_block_df.to_excel('../Tables/calibration.xlsx')
 
 

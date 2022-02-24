@@ -8,6 +8,7 @@
 \usepackage{caption}
 %\usepackage{subcaption}
 \usepackage{natbib}
+\usepackage{multirow}
 \usepackage{adjustbox}
 \usepackage{subcaption}
 \usepackage{hyperref}
@@ -247,19 +248,22 @@
 				\Delta y_{i,c,t+1} & =\Delta z_{i,c,t+1} +\Delta e_{i,c,t+1} 
 			\end{split}
 		\end{equation*}
-		\item \textcolor{red}{To the agent: \textbf{conditional volatility} under FIRE}
+		\item \textcolor{blue}{To the agent: \textbf{conditional} variance under FIRE}
 		\begin{equation*}
 			\begin{split}
 				Var^*_{i,c,t}(\Delta y_{i,c,t+1}) & =\sigma^2_{c,t+1|t}
 			\end{split}
 		\end{equation*}
-		\item \textcolor{blue}{To econometricians: \textbf{unconditional volatility} } 
+	% what we survey in the data is the conditional variance of the income  given information at time t. we assume agents have perfect information and correctly specify the model.  The information also  involves time -series nature of the shock also. 
+		\item \textcolor{red}{To econometricians: \textbf{approximated unconditional} variance} 
 		\begin{equation*}
 			\begin{split}
 			Var^c(\Delta \hat e_{i,c,t+1})     = \hat\sigma^2_{c,t}+ \hat\sigma^2_{c,t+1} - 2Cov^c(\hat e_{i,c,t},\hat e_{i,c,t+1})
 			%Var^c(\hat e_{i,c,t+1})
 			\end{split}
 		\end{equation*}
+	% when econometricians try to approximate, they first need to make sure predictable component is perfectly the same as the agents. given that, you want to further decompose this to refelct the exact time series nature of e. 
+	
 %	\item \textcolor{blue}{To econometricians: \textbf{inequality} } 
 %		\begin{equation*}
 %		\begin{split}
@@ -1601,31 +1605,34 @@ risk profile}
 		\centering
 			\caption{Model parameters}
 			\label{tab:calibration}
-					\begin{adjustbox}{width={0.5\textwidth}}
-			\begin{tabular}{ll}
-				\hline 
-				(`risk', $\sigma_\psi$)                        & 0.15  \\
-				(`risk', $\sigma_\theta$)                        & 0.1   \\
-				(`risk', $U2U$)                         & 0.18  \\
-			(`risk', $E2E$)                         & 0.96  \\
-			(`initial condition', $\sigma_\psi^{\text{init}}$)     & 0.629 \\
-		(`initial condition', $b^{\text{init}}$)        & 0.554 \\
-	(`initial condition', `bequest ratio') & 0     \\
-	(`life-cycle', $T$)                     & 40    \\
-	(`life-cycle', $L$)                     & 60    \\
-	(`life-cycle', $1-D$)                   & 0.994 \\
-	(`preference', $\rho$)                     & 2     \\
-	(`preference', $\beta$)                     & 0.98  \\
-	(`policy', $\lambda$)                         & 0     \\
-	(`policy', $\lambda_{SS}$)                     & 0     \\
-	(`policy', `transfer')                  & 0     \\
-	(`policy', $\mu$)                         & 0.15 \\
-				\hline 
-			\end{tabular}
+					\begin{adjustbox}{width={0.8\textwidth}}
+		\begin{tabular}{@{}llll@{}}
+\hline 
+			block                              & parameter name              & values & source                                                                  \\ \hline 
+			\multirow{4}{*}{risk}              & $\sigma_\psi$               & 0.15   & Median estimates from the literature  \\
+			& $\sigma_	heta$              & 0.1    & Median estimates from the literature  \\
+			& $U2U$                       & 0.18   & Median estimates from the literature \\
+			& $E2E$                       & 0.96   & Median estimates from the literature  \\
+			\multirow{2}{*}{initial condition} & $\sigma_\psi^{\text{init}}$ & 0.629  & Estimated for age 25 in the 2016 SCF)                                   \\
+			& bequest ratio               & 0      & assumption                                                              \\
+			\multirow{3}{*}{life cycle}        & $T$                         & 40     & standard assumption                                                     \\
+			& $L$                         & 60     & standard assumption                                                     \\
+			& $1-D$                       & 0.994  & standard assumption                                                     \\
+			\multirow{2}{*}{preference}        & $\rho$                      & 1.5    & standard assumption                                                     \\
+			& $\beta$                     & 0.98   & standard assumption                                                     \\
+			\multirow{3}{*}{policy}            & $\lambda$                   & 0      & endogenously determined                                                 \\
+			& $\lambda_{SS}$              & 0      & endogenously determined                                                 \\
+			& $\mu$                       & 0.15   & standard assumption                                                     \\
+			\multirow{4}{*}{production}        & $W$                         & 1      & target values in steady state                                           \\
+			& K2Y ratio                   & 3      & target values in steady state                                           \\
+			& $\alpha$                    & 0.33   & standard assumption                                                     \\
+			& $\delta$                    & 0.025  & standard assumption                                                     \\ \hline 
+		\end{tabular}
 		\end{adjustbox}
 	\end{table}
 	\hyperlink{objectivemodelresults}{\beamerbutton{Back}} 
 \end{frame}
+
 
 
 \begin{frame}{Appendix: distribution in the partial equilibrium}

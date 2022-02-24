@@ -288,5 +288,136 @@ def mkv2_Y2Q(q,
 
 
 # -
+# ## Tools for the economy and market 
 
 
+# + code_folding=[31]
+class CDProduction:
+    ## An economy class that saves market and production parameters 
+    
+    def __init__(self,
+             Z = 1.00,     
+             K = 1.00, 
+             L = 1.00,
+             α = 0.33, 
+             δ = 0.025,  
+             target_KY = 3.0,
+             target_W = 1.0):  
+        self.Z = Z
+        self.K = K
+        self.L = L
+        self.α = α
+        self.δ = δ
+        self.target_KY = target_KY
+        self.target_W = target_W
+        
+    def KY(self):
+        return (self.K/self.Y())
+    
+    def Y(self):
+        return self.Z*self.K**self.α*self.L**(1-self.α)
+    
+    def YL(self):
+        return self.Z*(1-self.α)*(self.K/self.L)**self.α
+    
+    def YK(self):
+        return self.Z*self.α*(self.L/self.K)**(1-self.α)
+    
+    def R(self):
+        return 1+self.YK()-self.δ
+    
+    def normlize_Z(self,
+                  N_ss = 1.0):
+        from scipy.optimize import fsolve
+        
+        target_KY = self.target_KY
+        target_W = self.target_W
+
+        print('target KY',target_KY)
+        print('target W',target_W)
+        print('steady state emp pop',N_ss)
+
+        def distance(ZK):
+            self.N = N_ss
+            self.Z,self.K = ZK
+            distance1 = self.KY()- target_KY
+            distance2 = self.YL()- target_W 
+            return [distance1,distance2]
+
+        Z_root,K_root = fsolve(distance,
+                               [0.7,0.5])
+
+        print('Normalized Z',Z_root)
+        print('Normalized K',K_root)
+
+        self.Z,self.K = Z_root,K_root
+
+        W_fake = self.YL()
+        KY_fake = self.KY()
+        R_fake = self.R()
+
+        print('W',W_fake)
+        print('KY',KY_fake)
+        print('R',R_fake)
+
+
+# + code_folding=[2, 22, 43]
+## get the stationary age distribution 
+@njit
+def stationary_age_dist(L,
+                        n,
+                       LivPrb):
+    """
+    stationary age distribution of the economy given 
+    T: nb of periods of life 
+    n: Population growth rate 
+    ProbLiv: survival probability 
+    """
+    cum = 0.0
+    for i in range(L):
+        cum = cum + LivPrb**i/(1+n)
+    sigma1 = 1/cum
+    
+    dist = np.empty(L)
+    
+    for i in range(L):
+        dist[i] = sigma1*LivPrb**i/(1+n)
+    return dist 
+
+def unemp_insurance2tax(μ,
+                        ue_fraction):
+    """
+    input
+    =====
+    μ: replcament ratio
+    ue_fraction: fraction of the working population that is unemployed 
+    output
+    ======
+    tax rate: labor income tax rate that balances government budget paying for uemp insurance 
+    
+    under balanced government budget, what is the tax rate on income corresponds to the ue benefit μ
+    (1-ue_fraction)x tax + ue_fraction x mu x tax = ue_fraction x mu 
+    --> tax = (ue_fraction x mu)/(1-ue_fraction)+ue_fraction x mu
+    """
+    num = (ue_fraction*μ)
+    dem = (1-ue_fraction)+(ue_fraction*μ)
+    return num/dem
+
+## needs to test this function 
+
+def SS2tax(SS, ## social security /pension replacement ratio 
+           T,  ## retirement years
+           age_dist,  ## age distribution in the economy 
+           G,         ## permanent growth fractor lists over cycle
+           emp_fraction):  ## fraction of employment in work age population 
+    pic_share = np.cumprod(G)  ## generational permanent income share 
+    pic_age_share = np.multiply(pic_share,
+                               age_dist)  ## generational permanent income share weighted by population weights
+    
+    dependence_ratio = np.sum(pic_age_share[T:])/np.sum(pic_age_share[:T-1]*emp_fraction)
+    ## old dependence ratio 
+    
+    λ_SS = SS*dependence_ratio 
+    ## social security tax rate on labor income of employed 
+    
+    return λ_SS
