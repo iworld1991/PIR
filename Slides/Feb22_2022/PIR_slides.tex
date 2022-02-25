@@ -221,109 +221,6 @@
 \end{frame}
 
 
-\section{Theoretical framework}
-
-\begin{frame}{Log income process}
-	\begin{equation*}
-		\begin{split}
-			\underbrace{y_{i,c,t}}_{\text{idiosyncratic log earning}} = \underbrace{z_{i,c,t}}_{\text{predictable component}}  + \underbrace{e_{i,c,t}}_{\text{stochastic component}}
-		\end{split} 
-	\end{equation*}
-	
-	\begin{itemize}
-		\item individual \(i\) at time \(t\) 
-		\item group $c$: share income process/risks $\sigma^2_{c,t}$
-		\begin{itemize}
-			\item i.e. education/year of birth/gender/age
-		\end{itemize}
-		\item $e_{i,c,t}$: to be specified later
-	\end{itemize}
-\end{frame}
-
-\begin{frame}{Perceived risks (PR)}
-	\begin{itemize}
-		\item Income growth 
-		\begin{equation*}
-			\begin{split}
-				\Delta y_{i,c,t+1} & =\Delta z_{i,c,t+1} +\Delta e_{i,c,t+1} 
-			\end{split}
-		\end{equation*}
-		\item \textcolor{blue}{To the agent: \textbf{conditional} variance under FIRE}
-		\begin{equation*}
-			\begin{split}
-				Var^*_{i,c,t}(\Delta y_{i,c,t+1}) & =\sigma^2_{c,t+1|t}
-			\end{split}
-		\end{equation*}
-	% what we survey in the data is the conditional variance of the income  given information at time t. we assume agents have perfect information and correctly specify the model.  The information also  involves time -series nature of the shock also. 
-		\item \textcolor{red}{To econometricians: \textbf{approximated unconditional} variance} 
-		\begin{equation*}
-			\begin{split}
-			Var^c(\Delta \hat e_{i,c,t+1})     = \hat\sigma^2_{c,t}+ \hat\sigma^2_{c,t+1} - 2Cov^c(\hat e_{i,c,t},\hat e_{i,c,t+1})
-			%Var^c(\hat e_{i,c,t+1})
-			\end{split}
-		\end{equation*}
-	% when econometricians try to approximate, they first need to make sure predictable component is perfectly the same as the agents. given that, you want to further decompose this to refelct the exact time series nature of e. 
-	
-%	\item \textcolor{blue}{To econometricians: \textbf{inequality} } 
-%		\begin{equation*}
-%		\begin{split}
-%		Var^c( \hat e_{i,c,t+1}) = \sigma^2_{c,t+1}
-%		\end{split}
-%	\end{equation*}
-	\end{itemize}	
-%% therefore, I can examine how gross volatility estimated for each cohort is positively correlated with perceived risk from the data. 
-%% nice things about using gross volatility 
-%% not sensitive the stochastic nature of e
-%% not sensitive to the frequency of the data from PSID being annual or biennial 
-\end{frame}
-
-\begin{comment}
-\begin{frame}{Predictions from FIRE}
-
-	\begin{itemize}
-		\item  PR equal within groups with identical  risks 
-		\begin{itemize}
-			\item \textcolor{blue}{Question}: do similar people perceive similar degree of risks?
-		\end{itemize}
-		\item PR $\uparrow$ with income volatility
-		\begin{itemize}
-			\item \textcolor{blue}{Question}: do groups with higher volatility/inequality perceive higher risks?
-			%\item the correlation depends on the time series nature of $e_{i,c,t}$ and $\sigma^2_{c}$
-		\end{itemize}
-		% $$Cov(Var^c(\hat e_{i,c,t}),Var^*_{i,c,t}(\Delta y_{i,c,t+1}))\approx 1$$
-		\item PR independent from the income realization under state-independent risks
-		\begin{itemize}
-			\item \textcolor{blue}{Question} correlated with past/recent outcomes?
-			%\item unless $\sigma^2_{e}$ is state dependent 
-		\end{itemize} 
-	\end{itemize} 
-\end{frame}
-
-\begin{frame}{Robustness to alternative considerations}
-	
-	\begin{itemize}
-		\item superior information/unobserved heterogeneity
-		    \begin{itemize}
-			\item higher income volatility/inequality due to omitted variable
-		    \end{itemize}
-		\item measurement error in PR
-		\begin{itemize}
-			\item lower correlation but still positive
-		\end{itemize}
-		\item time aggregation
-	\begin{itemize}
-		\item higher frequency of income than observed series 
-		%\item it matters once we assume time series property of $e$
-	\end{itemize}
-		\item time-varying/stochastic risks 
-		\begin{itemize}
-			\item a concern if realizations and perceptions not overlapping in time
-			\item time-invariant risks for now: $\sigma^2_{c,t}=\sigma^2_{c} \quad \forall t$
-		\end{itemize}
-	\end{itemize} 
-\end{frame}
-\end{comment}
-
 \section{Empirical evidence}
 
 \begin{frame}{Data and sample}
@@ -371,7 +268,8 @@
 		\item  Measurement of PR: 
 		\begin{itemize}
 			%\item expected growth, $\text{exp}_{i,t} = E_{i,t} (\Delta Y_{i,t+12})$
-			\item variance: \textcolor{blue}{$\overline {Var}_{i,t}(\Delta y_{i,t+1})$} 
+			\item variance: \textcolor{blue}{$\overline {Var}_{i,t}(\Delta y_{i,t+1})$}  
+			\item implied from the density density forecast
 			% \item iqr: $\overline {iqr}_{i,t}(\Delta y_{i,t+12})$ 
 			%\item skewness: $\overline {Skew}_{i,t}(\Delta y_{i,t+1})$
 		\end{itemize}
@@ -523,6 +421,110 @@
 	\end{itemize}
 \end{frame}
 
+\end{comment}
+
+
+\section{Theoretical framework}
+
+\begin{frame}{Log income process}
+	\begin{equation*}
+		\begin{split}
+			\underbrace{y_{i,c,t}}_{\text{idiosyncratic log earning}} = \underbrace{z_{i,c,t}}_{\text{predictable component}}  + \underbrace{e_{i,c,t}}_{\text{stochastic component}}
+		\end{split} 
+	\end{equation*}
+	
+	\begin{itemize}
+		\item individual \(i\) at time \(t\) 
+		\item group $c$: share income process/risks $\sigma^2_{c,t}$
+		\begin{itemize}
+			\item i.e. education/year of birth/gender/age
+		\end{itemize}
+		\item $e_{i,c,t}$: to be specified later
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Perceived risks (PR)}
+	\begin{itemize}
+		\item Income growth 
+		\begin{equation*}
+			\begin{split}
+				\Delta y_{i,c,t+1} & =\Delta z_{i,c,t+1} +\Delta e_{i,c,t+1} 
+			\end{split}
+		\end{equation*}
+		\item \textcolor{blue}{To the agent: \textbf{conditional} variance under FIRE}
+		\begin{equation*}
+			\begin{split}
+				Var^*_{i,c,t}(\Delta y_{i,c,t+1}) & =\sigma^2_{c,t+1|t}
+			\end{split}
+		\end{equation*}
+		% what we survey in the data is the conditional variance of the income  given information at time t. we assume agents have perfect information and correctly specify the model.  The information also  involves time -series nature of the shock also. 
+		\item \textcolor{red}{To econometricians: \textbf{approximated unconditional} variance} 
+		\begin{equation*}
+			\begin{split}
+				Var^c(\Delta \hat e_{i,c,t+1})     = \hat\sigma^2_{c,t}+ \hat\sigma^2_{c,t+1} - 2Cov^c(\hat e_{i,c,t},\hat e_{i,c,t+1})
+				%Var^c(\hat e_{i,c,t+1})
+			\end{split}
+		\end{equation*}
+		% when econometricians try to approximate, they first need to make sure predictable component is perfectly the same as the agents. given that, you want to further decompose this to refelct the exact time series nature of e. 
+		
+		%	\item \textcolor{blue}{To econometricians: \textbf{inequality} } 
+		%		\begin{equation*}
+			%		\begin{split}
+				%		Var^c( \hat e_{i,c,t+1}) = \sigma^2_{c,t+1}
+				%		\end{split}
+			%	\end{equation*}
+	\end{itemize}	
+	%% therefore, I can examine how gross volatility estimated for each cohort is positively correlated with perceived risk from the data. 
+	%% nice things about using gross volatility 
+	%% not sensitive the stochastic nature of e
+	%% not sensitive to the frequency of the data from PSID being annual or biennial 
+\end{frame}
+
+\begin{comment}
+	\begin{frame}{Predictions from FIRE}
+		
+		\begin{itemize}
+			\item  PR equal within groups with identical  risks 
+			\begin{itemize}
+				\item \textcolor{blue}{Question}: do similar people perceive similar degree of risks?
+			\end{itemize}
+			\item PR $\uparrow$ with income volatility
+			\begin{itemize}
+				\item \textcolor{blue}{Question}: do groups with higher volatility/inequality perceive higher risks?
+				%\item the correlation depends on the time series nature of $e_{i,c,t}$ and $\sigma^2_{c}$
+			\end{itemize}
+			% $$Cov(Var^c(\hat e_{i,c,t}),Var^*_{i,c,t}(\Delta y_{i,c,t+1}))\approx 1$$
+			\item PR independent from the income realization under state-independent risks
+			\begin{itemize}
+				\item \textcolor{blue}{Question} correlated with past/recent outcomes?
+				%\item unless $\sigma^2_{e}$ is state dependent 
+			\end{itemize} 
+		\end{itemize} 
+	\end{frame}
+	
+	\begin{frame}{Robustness to alternative considerations}
+		
+		\begin{itemize}
+			\item superior information/unobserved heterogeneity
+			\begin{itemize}
+				\item higher income volatility/inequality due to omitted variable
+			\end{itemize}
+			\item measurement error in PR
+			\begin{itemize}
+				\item lower correlation but still positive
+			\end{itemize}
+			\item time aggregation
+			\begin{itemize}
+				\item higher frequency of income than observed series 
+				%\item it matters once we assume time series property of $e$
+			\end{itemize}
+			\item time-varying/stochastic risks 
+			\begin{itemize}
+				\item a concern if realizations and perceptions not overlapping in time
+				\item time-invariant risks for now: $\sigma^2_{c,t}=\sigma^2_{c} \quad \forall t$
+			\end{itemize}
+		\end{itemize} 
+	\end{frame}
 \end{comment}
 
 

@@ -340,7 +340,7 @@ plt.legend(loc=1)
 llh,filter1,pr1,pdf = mkv2.log_likelihood(fake_data_list,
                                           para_fake)
 
-# + code_folding=[0, 19]
+# + code_folding=[19]
 ## plot the simulated data 
 if len(fake_data_list)==1:
     random_id = 0
@@ -375,7 +375,7 @@ ax2.plot(filter1[random_id][:-1],
 ax.legend(loc=1)
 ax2.legend(loc=2)
 
-# + code_folding=[0, 2]
+# + code_folding=[2]
 ## try estimation
 
 obj = lambda para: -mkv2.log_likelihood(fake_data_list,
@@ -398,7 +398,7 @@ bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub),(None,None),(None,None),)
 
 result = minimize(obj,
                     x0 = guess,
-                    method='SLSQP',   #SLSQP
+                    method='trust-constr',   #SLSQP
                     bounds = bounds,
                     options={'disp': False,
                             }
@@ -474,7 +474,7 @@ import numpy as np
 pd.options.display.float_format = '{:,.3f}'.format
 
 
-# + code_folding=[0, 14, 28, 38]
+# + code_folding=[14, 28]
 ## import data 
 dataset = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 
@@ -549,12 +549,12 @@ SCEM['E2E_prob'] = 1- SCEM['UE_s']*(1-SCEM['UE_f'])   ## 1- prob(loses the job a
 ## trucate 0 and 1s for probs 
 SCEM['U2U_prob_truc'] = SCEM['U2U_prob']
 SCEM['U2U_prob_truc'] = SCEM['U2U_prob_truc'].mask(SCEM['U2U_prob_truc']>=1.0,0.99)
-SCEM['U2U_prob_truc'] = SCEM['U2U_prob_truc'].mask(SCEM['U2U_prob_truc']<=0.0,0.001)
+SCEM['U2U_prob_truc'] = SCEM['U2U_prob_truc'].mask(SCEM['U2U_prob_truc']<=0.0,0.01)
 
 
 SCEM['E2E_prob_truc'] = SCEM['E2E_prob']
 SCEM['E2E_prob_truc'] = SCEM['E2E_prob_truc'].mask(SCEM['E2E_prob_truc']>=1.0,0.99)
-SCEM['E2E_prob_truc'] = SCEM['E2E_prob_truc'].mask(SCEM['E2E_prob_truc']<=0.0,0.001)
+SCEM['E2E_prob_truc'] = SCEM['E2E_prob_truc'].mask(SCEM['E2E_prob_truc']<=0.0,0.01)
 
 
 ### transform 0-1 prob to a R 
@@ -568,12 +568,14 @@ SCEM['E2E_prob_e'] =  SCEM['E2E_prob_truc'].apply(prob_inv_func)
 ## filter by basic/necessary criteria  
 print('nb of observations before:',str(len(SCEM)))
 SCEM =SCEM[SCEM['tenure']>=3]
+SCEM = SCEM[SCEM['fulltime']==1]
+SCEM = SCEM[SCEM['selfemp']==1]  ## working for someone 
 SCEM =SCEM[(SCEM['age']<=65) & (SCEM['age']>=25) ]
 SCEM =SCEM[SCEM['nlit']>=2.0]
 #SCEM =SCEM[SCEM['educ']>=2]
 print('nb of observations after dropping low numeracy/low education sample:',str(len(SCEM)))
 
-# + code_folding=[0, 6]
+# + code_folding=[6]
 ## first step regression
 
 vars_list = ['lrincvar',
@@ -599,18 +601,19 @@ for var in vars_list:
 print('unconditional correlation')
 SCEM[vars_list].corr()
 
-## correlation 
-print('residual correlation')
-SCEM_sub[vars_rd_list].corr()
-
 # + code_folding=[]
 ## convert the panel data of rincvar into a list of time series sequence
 vars_rd_list = ['lrincvar_rd',
                 'U2U_prob_e_rd',
                 'E2E_prob_e_rd']  
+# -
 
 
-# + code_folding=[0]
+## correlation 
+print('residual correlation')
+SCEM[vars_rd_list].corr()
+
+# + code_folding=[]
 ## convert it to a list of arrays storing all time series data for each individual
 
 SCEM_sub = SCEM[['userid']+vars_rd_list].dropna(how='any')
@@ -656,7 +659,7 @@ SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
                                                 para)[0]   ## only the first output
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## impose some bounds for some parameters with sensible priors
 
 ## the size of the shock cannot exceed the sample variation
@@ -682,8 +685,8 @@ guess = np.array([0.2,0.4,-0.5,0.1,0.4,
 
 
 bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),
-         (None,None),(0.0,None),(-1,sigma_inv_ub1),(None,None),(None,None),
-         (None,None),(None,0.0),(-1,sigma_inv_ub2),(None,None),(None,None),)
+         (None,None),(0.0,None),(-3,sigma_inv_ub1),(None,None),(None,None),
+         (None,None),(None,0.0),(-3,sigma_inv_ub2),(None,None),(None,None),)
 
 #bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_inv_lb,None),(p_inv_lb,None),
 #         (None,None),(0.0,None),(-2,sigma_inv_ub1),(None,None),(None,None),
@@ -692,8 +695,8 @@ bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),
 
 result = minimize(SCE_obj,
                   x0 = guess,
-                  method='SLSQP',   #SLSQP
-                  bounds = bounds,
+                  method='Nelder-Mead',   #SLSQP
+                  #bounds = bounds,
                   options={'disp': True,
                             'maxiter':20000}
                    )

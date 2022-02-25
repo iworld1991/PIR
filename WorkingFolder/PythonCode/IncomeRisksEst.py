@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.6.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -347,7 +347,7 @@ with open("parameters.txt", "wb") as fp:
 ## export to stata
 est_df.to_stata('../OtherData/sipp/sipp_history_vol_decomposed.dta')
 
-# + {"code_folding": [0]}
+# + {"code_folding": []}
 ## estimation for sub-group
 
 for sample in sub_samples:
