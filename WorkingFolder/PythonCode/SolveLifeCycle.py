@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -109,7 +109,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[1, 155]
+# + code_folding=[]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -196,7 +196,7 @@ class LifeCycle:
         n_shk_dist = lognorm(sigma_n,100000,shock_draw_size)
         self.n_shk_draws = np.log(n_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
         eps_shk_dist = lognorm(sigma_eps,100000,shock_draw_size)
-        self.eps_shk_draws = np.log(n_shk_dist.X)
+        self.eps_shk_draws = np.log(eps_shk_dist.X)
         
         init_p_dist = lognorm(sigma_p_init,100000,shock_draw_size)
         self.init_p_draws = np.log(init_p_dist.X)
@@ -265,20 +265,20 @@ class LifeCycle:
     def V(self,m):
         return None
 
-    def Y(self, z, u_shk):
+    def Y(self, z, lu_shk):
         #from the transitory/ma shock and ue realization  to the income factor
         if self.ue_markov ==False:
             ## z state continuously loading to inome
             ## u_shk here represents the cumulated MA shock, for instance, for ma(1), u_shk = phi eps_(t-1) + eps_t
             ## income 
-            return np.exp(u_shk + (z * self.b_y))
+            return np.exp(lu_shk + (z * self.b_y))
         elif self.ue_markov ==True:
             assert len(self.P)==2,"unemployment/employment markov has to be 2 state markov"
-            return (z==0)*(self.unemp_insurance) + (z==1)*np.exp(u_shk)
+            return (z==0)*(self.unemp_insurance) + (z==1)*np.exp(lu_shk)
 
-    def Γ(self,n_shk):
+    def Γ(self,ln_shk):
         ## from the permanent shock to the income factor
-        return np.exp(n_shk)
+        return np.exp(ln_shk)
 
 
 # + code_folding=[]
@@ -1850,7 +1850,7 @@ if __name__ == "__main__":
 # -
 # ## Infinite horizon problem
 
-# + code_folding=[0, 5]
+# + code_folding=[5]
 if __name__ == "__main__":
 
 
@@ -1909,7 +1909,7 @@ if __name__ == "__main__":
 
     ## plot c func 
 
-    eps_ls = [1,10,20]
+    eps_ls = [0,1]
 
     as_inf_star = as_inf_stars[0]
     σs_inf_star = σs_inf_stars[0]
@@ -1932,7 +1932,7 @@ if __name__ == "__main__":
 #
 #
 
-# + code_folding=[0, 5]
+# + code_folding=[5]
 if __name__ == "__main__":
 
 
@@ -1991,7 +1991,7 @@ if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
 
-    eps_ls = [10]
+    eps_ls = [0]
 
     as_imp_star = as_imp_stars[0]
     σs_imp_star = σs_imp_stars[0]
