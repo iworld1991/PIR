@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -105,13 +105,13 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
 LivPrb = 0.99
 unemp_insurance = 0.15
-sigma_n = np.sqrt(0.01) # permanent 
+sigma_psi = np.sqrt(0.01) # permanent 
 sigma_eps = np.sqrt(0.04) # transitory 
 sigma_p_init = np.sqrt(0.03)
 init_b = 0.0
@@ -159,7 +159,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[7, 62]
+# + code_folding=[7]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -184,7 +184,7 @@ if calibrated_model == True:
                        U = lc_paras['U'], ## transitory ue risk
                     unemp_insurance = lc_paras['unemp_insurance'],
                     pension = lc_paras['pension'], ## pension
-                    sigma_n = lc_paras['σ_ψ'], # permanent 
+                    sigma_psi = lc_paras['σ_ψ'], # permanent 
                     sigma_eps = lc_paras['σ_θ'], # transitory 
                     P = lc_paras['P'],   ## transitory probability of markov state z
                     z_val = lc_paras['z_val'], ## markov state from low to high  
@@ -194,7 +194,7 @@ if calibrated_model == True:
                     sigma_p_init = lc_paras['σ_ψ_init'],
                     init_b = lc_paras['init_b'],
                     ## subjective risk prifile 
-                    sigma_n_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                    sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
                     sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
                     λ = lc_paras['λ'],  ## tax rate
                     λ_SS = lc_paras['λ_SS'], ## social tax rate
@@ -222,7 +222,7 @@ if calibrated_model == True:
 
 else:
     ## only for testing 
-    lc_mkv = LifeCycle(sigma_n = sigma_n,
+    lc_mkv = LifeCycle(sigma_psi = sigma_psi,
                        sigma_eps = sigma_eps,
                        U=U,
                        LivPrb = LivPrb,
@@ -312,10 +312,10 @@ from Utility import stationary_age_dist
 from Utility import unemp_insurance2tax
 from Utility import SS2tax
 from Utility import CDProduction  
-from PrepareParameters import production_paras 
+from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[6, 101, 142, 493, 507, 530, 552, 566, 584]
+# + code_folding=[6, 101, 506, 529, 551, 565, 583]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -475,7 +475,7 @@ def calc_transition_matrix(model,
         
         Parameters
         ----------
-            # as_star: array, sized of T x n_a x n_eps x n_z, asset grid 
+            # as_star: array, sized of T x n_a x n_eps x n_z, wealth grid 
             # σs_star: array, sized of T x n_a x n_eps x n_z, consumption values at the grid
             # dist_mGrid_list, list, sized of 1, list of m grid sized of n_m
             # dist_pGrid_list, list, sized of T, list of permanent income grid for each age, sized of n_p
@@ -509,7 +509,6 @@ def calc_transition_matrix(model,
         aPol_Grid_u_list = [] # List of asset policy grids for each period in T_cycle
         
         
-
         tran_matrix_e_list = [] # List of transition matrices
         tran_matrix_u_list = [] # List of transition matrices
 
@@ -575,13 +574,13 @@ def calc_transition_matrix(model,
             bNext_e = model.R*aNext_e
 
 
-            #Obtain shocks and shock probabilities from income distribution this period
-            size_shk_probs  = model.shock_draw_size**2
+            #Obtain shocks and shock probabilities from income distribution in this period
+            size_shk_probs  = len(model.eps_shk_draws)*len(model.psi_shk_draws)
             shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
             tran_shks = np.exp(np.repeat(model.eps_shk_draws,
-                                  model.shock_draw_size))
-            perm_shks = np.exp(np.repeat(model.n_shk_draws,
-                                  model.shock_draw_size))
+                                  len(model.psi_shk_draws)))
+            perm_shks = np.exp(np.repeat(model.psi_shk_draws,
+                                  len(model.eps_shk_draws)))
             
             ## This is for the fast method 
             shk_prbs_ntrl =  np.multiply(shk_prbs,perm_shks)
@@ -595,7 +594,7 @@ def calc_transition_matrix(model,
 
             
             if fast==True:  
-
+                print('warning: the fast method is not fully developed yet!!!')
             
                 # Generate Transition Matrix for u2u
                 TranMatrix_uu = np.zeros((len(this_dist_mGrid),
@@ -612,7 +611,7 @@ def calc_transition_matrix(model,
                     # Compute next period's market resources given todays bank balances bnext[i]
                     TranMatrix_uu[:,i] = jump_to_grid_fast(model,
                                                            mNext_ij,
-                                                           shk_prbs,
+                                                           shk_prbs_ntrl,
                                                            this_dist_mGrid) 
 
                 # Generate Transition Matrix for u2e
@@ -630,7 +629,7 @@ def calc_transition_matrix(model,
                     # Compute next period's market resources given todays bank balances bnext[i]
                     TranMatrix_ue[:,i] = jump_to_grid_fast(model,
                                                             mNext_ij,
-                                                            shk_prbs,
+                                                            shk_prbs_ntrl,
                                                             this_dist_mGrid) 
                 
 
@@ -648,7 +647,7 @@ def calc_transition_matrix(model,
                         mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+model.pension/perm_shks_none
                     TranMatrix_ee[:,i] = jump_to_grid_fast(model,
                                                           mNext_ij,
-                                                          shk_prbs,
+                                                          shk_prbs_ntrl,
                                                           this_dist_mGrid)
 
                 # Generate Transition Matrix for e2u 
@@ -664,8 +663,8 @@ def calc_transition_matrix(model,
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
                         mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+ model.pension/perm_shks_none
                     TranMatrix_eu[:,i] = jump_to_grid_fast(model,
-                                                            mNext_ij, 
-                                                            shk_prbs,
+                                                           mNext_ij, 
+                                                           shk_prbs_ntrl,
                                                             this_dist_mGrid) 
 
 
@@ -827,14 +826,14 @@ def initial_distribution_u(model,
                          dist_mGrid, ## new, array, grid of m for distribution 
                          dist_pGrid,  ## new, array, grid of p for distribution 
                         ):
-    size_shk_probs  = model.shock_draw_size**2
+    size_shk_probs  = len(model.eps_shk_draws)*len(model.psi_shk_draws)
     λ = model.λ
     init_b = model.init_b
     shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
     ue_insurance = np.repeat(np.ones_like(model.eps_shk_draws),
-                          model.shock_draw_size)*model.unemp_insurance  
+                          len(model.init_p_draws))*model.unemp_insurance  
     init_p_draws = np.exp(np.repeat(model.init_p_draws,
-                          model.shock_draw_size))
+                          len(model.eps_shk_draws)))
     
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid(model,
@@ -850,15 +849,15 @@ def initial_distribution_e(model,
                          dist_mGrid, ## new, array, grid of m for distribution 
                          dist_pGrid,  ## new, array, grid of p for distribution 
                         ):
-    size_shk_probs  = model.shock_draw_size**2
+    size_shk_probs  = len(model.eps_shk_draws)*len(model.psi_shk_draws)
     λ = model.λ
     λ_SS = model.λ_SS
     init_b = model.init_b
     shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
     tran_shks = np.exp(np.repeat(model.eps_shk_draws,
-                          model.shock_draw_size))
+                          len(model.init_p_draws)))
     init_p_draws = np.exp(np.repeat(model.init_p_draws,
-                          model.shock_draw_size))
+                          len(model.eps_shk_draws)))
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid(model,
                               (1-λ)*(1-λ_SS)*tran_shks+init_b/init_p_draws+model.transfer, ## initial transitory risks and accidental bequest transfer
@@ -1028,8 +1027,8 @@ class HH_OLG_Markov:
 
                 for i in range(model.L):
                     #Dist_pGrid is taken to cover most of the ergodic distribution
-                    if model.sigma_n!=0.0:
-                        std_p = model.sigma_n
+                    if model.sigma_psi!=0.0:
+                        std_p = model.sigma_psi
                     else:
                         std_p = 1e-2
                     max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
@@ -1580,7 +1579,7 @@ else:
 
 # ### General Equilibrium 
 
-# + code_folding=[158, 170]
+# + code_folding=[0, 158, 170]
 class Market_OLG_mkv:
     """
     A class of the market

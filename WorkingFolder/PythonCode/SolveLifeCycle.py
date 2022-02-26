@@ -67,7 +67,7 @@ plt.rc('font',size=11)
 
 # ## The Model Class and Solver
 
-# + code_folding=[0]
+# + code_folding=[]
 lc_data = [
     ('ρ', float64),              # utility parameter CRRA
     ('β', float64),              # discount factor
@@ -75,25 +75,25 @@ lc_data = [
     ('W',float64),               # Wage rate
     ('P', float64[:, :]),        # transition probs for z_t, a persistent (macro) state  x
     ('z_val', float64[:]),       # values of z, grid values for the continous (macro) persistent state    x
-    ('sigma_n', float64),        # permanent shock volatility              x
+    ('sigma_psi', float64),        # permanent shock volatility              x
     ('x',float64),               # MA(1) coefficient, or essentially the autocorrelation coef of non-persmanent income
     ('sigma_eps', float64),      # transitory shock volatility
     ('borrowing_cstr',boolean),  ## artifitial borrowing constraint, natural borrowing constraint if False
     ('U',float64),               # the probability of being unemployed    * 
     ('LivPrb',float64),         # the probability of being alive next period 
     ('b_y', float64),            # loading of macro state to income        x 
-    ('sigma_n_2mkv',float64[:]), # markov permanent risks, only 2 for now
+    ('sigma_psi_2mkv',float64[:]), # markov permanent risks, only 2 for now
     ('sigma_eps_2mkv',float64[:]), # markov transtory risk, only 2 for now
     ('s_grid', float64[:]),      # Grid over savings
     ('eps_grid', float64[:]),    # Grid over savings
-    ('n_shk_draws', float64[:]), ## Draws of permanent income shock 
+    ('psi_shk_draws', float64[:]), ## Draws of permanent income shock 
     ('eps_shk_draws', float64[:]), # Draws of MA/transitory income shocks 
     ('T',int64),                 # years of work                          *   
     ('L',int64),                 # years of life                          * 
     ('G',float64[:]),            # growth rate of permanent income    *
     ('theta',float64),           ## extrapolation parameter 
     ('shock_draw_size',int64),    ## nb of points drawn for shocks 
-    ('n_shk_mkv_draws',float64[:,:]),  ## 2-state markov on permanent risks 
+    ('psi_shk_mkv_draws',float64[:,:]),  ## 2-state markov on permanent risks 
     ('eps_shk_mkv_draws',float64[:,:]), ## 2-state markov on transitory risks
     ('unemp_insurance',float64),   ## Unemployment insurance replacement ratio 
     ('pension',float64),           ## pension payment to permanent income ratio
@@ -123,14 +123,14 @@ class LifeCycle:
                               [0.2,0.8]]),   ## transitory probability of markov state z
                  z_val = np.array([0.0,
                                    1.0]), ## markov state from low to high  
-                 sigma_n = 0.10,     ## size of permanent income shocks
+                 sigma_psi = 0.10,     ## size of permanent income shocks
                  sigma_eps = 0.10,   ## size of transitory income risks
                  x = 0.0,            ## MA(1) coefficient of non-permanent inocme shocks
                  borrowing_cstr = True,  ## artificial zero borrowing constraint 
                  U = 0.0,   ## unemployment risk probability (0-1)
                  LivPrb = 0.995,       ## living probability 
                  b_y = 0.0,          ## loading of markov state on income  
-                 sigma_n_2mkv = np.array([0.05,0.2]),  ## permanent risks in 2 markov states
+                 sigma_psi_2mkv = np.array([0.05,0.2]),  ## permanent risks in 2 markov states
                  sigma_eps_2mkv = np.array([0.08,0.12]),  ## transitory risks in 2 markov states
                  R = 1.02,           ## interest factor 
                  W = 1.0,            ## Wage rate
@@ -160,13 +160,13 @@ class LifeCycle:
         self.W = W
         n_z = len(z_val)
         self.P, self.z_val = P, z_val
-        n_mkv = len(sigma_n_2mkv)
+        n_mkv = len(sigma_psi_2mkv)
         assert n_z == n_mkv, "the number of markov states for income and for risks should be equal"
         self.T,self.L = T,L
         self.G = G
-        self.sigma_n = sigma_n
-        self.x = x
+        self.sigma_psi = sigma_psi
         self.sigma_eps = sigma_eps
+        self.x = x
         self.sigma_p_init = sigma_p_init
         self.init_b = init_b
         self.borrowing_cstr = borrowing_cstr
@@ -175,7 +175,7 @@ class LifeCycle:
         self.λ_SS= λ
         self.transfer = transfer 
         self.bequest_ratio = bequest_ratio 
-        self.sigma_n_2mkv = sigma_n_2mkv
+        self.sigma_psi_2mkv = sigma_psi_2mkv
         self.sigma_eps_2mkv = sigma_eps_2mkv
         self.LivPrb = LivPrb 
         self.unemp_insurance = unemp_insurance
@@ -193,8 +193,8 @@ class LifeCycle:
         ##################################################################
          ## discretized distributions 
         ##################################################################
-        n_shk_dist = lognorm(sigma_n,100000,shock_draw_size)
-        self.n_shk_draws = np.log(n_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
+        psi_shk_dist = lognorm(sigma_psi,100000,shock_draw_size)
+        self.psi_shk_draws = np.log(psi_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
         eps_shk_dist = lognorm(sigma_eps,100000,shock_draw_size)
         self.eps_shk_draws = np.log(eps_shk_dist.X)
         
@@ -202,21 +202,21 @@ class LifeCycle:
         self.init_p_draws = np.log(init_p_dist.X)
         
         ## draw shocks using monte-carlo for constant volatility scenario
-        #self.n_shk_draws = sigma_n*np.random.randn(shock_draw_size)-sigma_n**2/2
+        #self.psi_shk_draws = sigma_psi*np.random.randn(shock_draw_size)-sigma_n**2/2
         #self.eps_shk_draws = sigma_eps*np.random.randn(shock_draw_size)-sigma_eps**2/2
         #self.init_p_draws = sigma_p_init*np.random.randn(shock_draw_size)-sigma_p_init**2/2
         
         
         ## draw shocks for stochastic volatility scenario
-        sigma_n_2mkv_r = sigma_n_2mkv.reshape(n_mkv,-1)
+        sigma_psi_2mkv_r = sigma_psi_2mkv.reshape(n_mkv,-1)
         sigma_eps_2mkv_r = sigma_eps_2mkv.reshape(n_mkv,-1)
         
 
-        sigma_n_2mkv_l = lognorm(sigma_n_2mkv[0],100000,shock_draw_size)
-        sigma_n_2mkv_h = lognorm(sigma_n_2mkv[1],100000,shock_draw_size)
+        sigma_psi_2mkv_l = lognorm(sigma_psi_2mkv[0],100000,shock_draw_size)
+        sigma_psi_2mkv_h = lognorm(sigma_psi_2mkv[1],100000,shock_draw_size)
         
-        self.n_shk_mkv_draws = np.stack((np.log(sigma_n_2mkv_l.X),
-                                         np.log(sigma_n_2mkv_h.X)))
+        self.psi_shk_mkv_draws = np.stack((np.log(sigma_psi_2mkv_l.X),
+                                         np.log(sigma_psi_2mkv_h.X)))
         
         sigma_eps_2mkv_l = lognorm(sigma_eps_2mkv[0],100000,shock_draw_size)
         sigma_eps_2mkv_h = lognorm(sigma_eps_2mkv[1],100000,shock_draw_size)
@@ -224,7 +224,7 @@ class LifeCycle:
         self.eps_shk_mkv_draws = np.stack((np.log(sigma_eps_2mkv_l.X),
                                          np.log(sigma_eps_2mkv_h.X)))
                 
-        #self.n_shk_mkv_draws = sigma_n_2mkv_r*np.random.randn(shock_draw_size)-sigma_n_2mkv_r**2/2
+        #self.psi_shk_mkv_draws = sigma_psi_2mkv_r*np.random.randn(shock_draw_size)-sigma_psi_2mkv_r**2/2
         #self.eps_shk_mkv_draws = sigma_eps_2mkv_r*np.random.randn(shock_draw_size)-sigma_eps_2mkv_r**2/2
 
         
@@ -265,23 +265,23 @@ class LifeCycle:
     def V(self,m):
         return None
 
-    def Y(self, z, lu_shk):
+    def Y(self, z, u_shk):
         #from the transitory/ma shock and ue realization  to the income factor
         if self.ue_markov ==False:
             ## z state continuously loading to inome
             ## u_shk here represents the cumulated MA shock, for instance, for ma(1), u_shk = phi eps_(t-1) + eps_t
             ## income 
-            return np.exp(lu_shk + (z * self.b_y))
+            return np.exp(u_shk + (z * self.b_y))
         elif self.ue_markov ==True:
             assert len(self.P)==2,"unemployment/employment markov has to be 2 state markov"
-            return (z==0)*(self.unemp_insurance) + (z==1)*np.exp(lu_shk)
+            return (z==0)*(self.unemp_insurance) + (z==1)*np.exp(u_shk)
 
-    def Γ(self,ln_shk):
+    def Γ(self,psi_shk):
         ## from the permanent shock to the income factor
-        return np.exp(ln_shk)
+        return np.exp(psi_shk)
 
 
-# + code_folding=[]
+# + code_folding=[5]
 ## this function takes the consumption values at different grids of state 
 ###   variables from period t+1, and model class 
 ### and generates the consumption values at t 
@@ -308,7 +308,7 @@ def EGM(aϵ_in,
     W = lc.W
     z_val = lc.z_val
     s_grid,eps_grid = lc.s_grid,lc.eps_grid
-    n_shk_draws, eps_shk_draws= lc.n_shk_draws, lc.eps_shk_draws
+    psi_shk_draws, eps_shk_draws= lc.psi_shk_draws, lc.eps_shk_draws
     borrowing_cstr = lc.borrowing_cstr 
     ue_prob = lc.U  ## uemp prob
     LivProb = lc.LivPrb  ## live probabilituy 
@@ -351,9 +351,9 @@ def EGM(aϵ_in,
                 for z_hat in range(n):
                     z_val_hat = z_val[z_hat]
                     for eps_shk in eps_shk_draws:
-                        for n_shk in n_shk_draws:
+                        for psi_shk in psi_shk_draws:
                             ## for employed next period 
-                            Γ_hat = Γ(n_shk) 
+                            Γ_hat = Γ(psi_shk) 
                             u_shk = x*eps+eps_shk
                             age = age_id + 1
                             if age <=lc.T-1:   #till say 39, because consumption policy for t=40 changes   
@@ -380,7 +380,7 @@ def EGM(aϵ_in,
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
                                 Ez += LivProb*utility * P[z, z_hat]
                             
-                Ez = Ez / (len(n_shk_draws)*len(eps_shk_draws))
+                Ez = Ez / (len(psi_shk_draws)*len(eps_shk_draws))
                 ## the last step depends on if adjustment is fully flexible
                 if adjust_prob ==1.0:
                     σ_out[i, j, z] =  u_prime_inv(β * R* Ez)
@@ -405,14 +405,14 @@ def EGM(aϵ_in,
             #    aϵ_out[0,j,z] = min(0.0,-unemp_insurance/R)
             else:
                 σ_out[0,j,z] = 0.0
-                self_min_a = - np.exp(np.min(eps_grid))*G/R
+                self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
                 self_min_a = min(self_min_a,-unemp_insurance/R)
                 aϵ_out[0,j,z] = self_min_a
 
     return aϵ_out, σ_out
 
 
-# + code_folding=[0, 4]
+# + code_folding=[4, 62]
 ## the operator under markov stochastic risks 
 ## now the permanent and transitory risks are different between a good macro and bad macro state 
 
@@ -438,13 +438,13 @@ def EGM_sv(aϵ_in,
     R, ρ, P, β = lc.R, lc.ρ, lc.P, lc.β
     z_val = lc.z_val
     s_grid,eps_grid = lc.s_grid,lc.eps_grid
-    n_shk_draws, eps_shk_draws= lc.n_shk_draws, lc.eps_shk_draws
+    psi_shk_draws, eps_shk_draws= lc.psi_shk_draws, lc.eps_shk_draws
     borrowing_cstr = lc.borrowing_cstr
     ue_prob = lc.U  ## uemp prob
     unemp_insurance = lc.unemp_insurance
     LivProb = lc.LivPrb  ## live probabilituy
     ue_markov = lc.ue_markov
-    n_shk_mkv_draws, eps_shk_mkv_draws = lc.n_shk_mkv_draws, lc.eps_shk_mkv_draws 
+    psi_shk_mkv_draws, eps_shk_mkv_draws = lc.psi_shk_mkv_draws, lc.eps_shk_mkv_draws 
     adjust_prob = lc.adjust_prob  ## exogenous adjustment probability 
     Y = lc.Y
     ####################
@@ -482,11 +482,11 @@ def EGM_sv(aϵ_in,
                 Ez = 0.0
                 for z_hat in range(n):
                     z_val_hat = z_val[z_hat]
-                    n_shk_draws = n_shk_mkv_draws[z_hat,:]
+                    psi_shk_draws = psi_shk_mkv_draws[z_hat,:]
                     eps_shk_draws = eps_shk_mkv_draws[z_hat,:]
                     for eps_shk in eps_shk_draws:
-                        for n_shk in n_shk_draws:
-                            Γ_hat = Γ(n_shk) 
+                        for psi_shk in psi_shk_draws:
+                            Γ_hat = Γ(psi_shk) 
                             u_shk = x*eps+eps_shk
                             age = age_id + 1
                             if age<=lc.T-1:
@@ -511,7 +511,7 @@ def EGM_sv(aϵ_in,
                                 c_hat = σ(R/(G*Γ_hat) * s + (Y_R+transfer)/(G*Γ_hat),eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
                                 Ez += LivProb*utility * P[z, z_hat]
-                Ez = Ez / (len(n_shk_draws)*len(eps_shk_draws))
+                Ez = Ez / (len(psi_shk_draws)*len(eps_shk_draws))
                 ## the last step depends on if adjustment is fully flexible
                 if adjust_prob ==1.0:
                     σ_out[i, j, z] =  u_prime_inv(β * R* Ez)
@@ -538,7 +538,9 @@ def EGM_sv(aϵ_in,
             else:
                 if age <=T-1:
                     σ_out[0,j,z] = 0.0
-                    self_min_a = - np.exp(np.min(eps_grid))*G/R
+                   
+                    self_min_a = - np.exp(np.min(eps_shk_mkv_draws))*G/R 
+                    ## the lowest among 2 markv states
                     self_min_a = min(self_min_a,-unemp_insurance/R)
                     aϵ_out[0,j,z] = self_min_a
                 else:
@@ -570,7 +572,7 @@ def extrapolate(theta,
     return x_sub
 
 
-# + code_folding=[4]
+# + code_folding=[]
 ## subjective agent
 ### transitory shock affects risk perceptions
 
@@ -597,7 +599,7 @@ def EGM_br(aϵ_in,
     R, ρ, P, β = lc.R, lc.ρ, lc.P, lc.β
     z_val = lc.z_val
     s_grid,eps_grid = lc.s_grid,lc.eps_grid
-    n_shk_draws, eps_shk_draws= lc.n_shk_draws, lc.eps_shk_draws
+    psi_shk_draws, eps_shk_draws= lc.psi_shk_draws, lc.eps_shk_draws
     borrowing_cstr = lc.borrowing_cstr
     ue_prob = lc.U  ## uemp prob
     unemp_insurance = lc.unemp_insurance
@@ -645,8 +647,11 @@ def EGM_br(aϵ_in,
             #                   lc.x,
             #                   eps-eps_mean) ## sj: subjective 
             sigma_eps_sj = 0.05*np.sqrt((eps-eps_mean)**2)+0.95*lc.sigma_eps
-            np.random.seed(166789)
-            eps_shk_draws_sj = sigma_eps_sj*np.random.randn(lc.shock_draw_size)-sigma_eps_sj**2/2
+            
+            eps_shk_dist_sj= lognorm(sigma_eps_sj,100000,len(eps_shk_draws))
+            eps_shk_draws_sj = np.log(eps_shk_dist_sj.X)
+            #np.random.seed(166789)
+            #eps_shk_draws_sj = sigma_eps_sj*np.random.randn(lc.shock_draw_size)-sigma_eps_sj**2/2
             #############################################################
             for z in range(n):
                 # Compute expectation
@@ -656,8 +661,8 @@ def EGM_br(aϵ_in,
                     ################################
                     for eps_shk in eps_shk_draws_sj:
                         ############################
-                        for n_shk in n_shk_draws:
-                            Γ_hat = Γ(n_shk) 
+                        for psi_shk in psi_shk_draws:
+                            Γ_hat = Γ(psi_shk) 
                             ###############
                             u_shk = x*eps+eps_shk
                             ####################
@@ -685,7 +690,7 @@ def EGM_br(aϵ_in,
                                 c_hat = σ(R/(G*Γ_hat) * s + (Y_R+transfer)/(G*Γ_hat),eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
                                 Ez += LivProb*utility * P[z, z_hat]
-                Ez = Ez / (len(n_shk_draws)*len(eps_shk_draws_sj))
+                Ez = Ez / (len(psi_shk_draws)*len(eps_shk_draws_sj))
                 ## the last step depends on if adjustment is fully flexible
                 if adjust_prob ==1.0:
                     σ_out[i, j, z] =  u_prime_inv(β * R* Ez)
@@ -711,7 +716,7 @@ def EGM_br(aϵ_in,
             else:
                 if age <=T-1:
                     σ_out[0,j,z] = 0.0
-                    self_min_a = - np.exp(np.min(eps_grid))*G/R
+                    self_min_a = - np.exp(np.min(eps_shk_draws_sj))*G/R
                     self_min_a = min(self_min_a,-unemp_insurance/R)
                     aϵ_out[0,j,z] = self_min_a
                 else:
@@ -813,7 +818,7 @@ if __name__ == "__main__":
     U = 0.2 ## transitory ue risk
     U0 = 0.0 ## transitory ue risk
     unemp_insurance = 0.15
-    sigma_n = 0.1 # permanent 
+    sigma_psi = 0.1 # permanent 
     sigma_eps = 0.0 # transitory 
 
 
@@ -878,7 +883,7 @@ def policyPF(β,
 
 # + code_folding=[]
 if __name__ == "__main__":
-    lc = LifeCycle(sigma_n = sigma_n,
+    lc = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
                    U=U,
                    ρ=ρ,
@@ -1089,7 +1094,7 @@ if __name__ == "__main__":
 # + code_folding=[4]
 if __name__ == "__main__":
     ## initialize another 
-    lc_ar = LifeCycle(sigma_n=sigma_n,
+    lc_ar = LifeCycle(sigma_psi=sigma_psi,
                      sigma_eps = sigma_eps,
                      U=U0,
                      ρ=ρ,
@@ -1209,12 +1214,12 @@ if __name__ == "__main__":
     prob_h = P[0,1]
 
     ## keep average risks the same 
-    sigma_n_l = 0.01*sigma_n
-    sigma_n_h = np.sqrt((sigma_n**2 - prob_l*sigma_n_l**2)/prob_h)
+    sigma_psi_l = 0.01*sigma_psi
+    sigma_psi_h = np.sqrt((sigma_psi**2 - prob_l*sigma_psi_l**2)/prob_h)
 
     sigma_eps_l = 0.1*sigma_eps
     sigma_eps_h = np.sqrt((sigma_eps**2 - prob_l*sigma_eps_l**2)/prob_h)
-    sigma_n_2mkv = np.array([sigma_n_l,sigma_n_h]) 
+    sigma_psi_2mkv = np.array([sigma_psi_l,sigma_psi_h]) 
     sigma_eps_2mkv = np.array([sigma_eps_l,sigma_eps_h]) 
 
 
@@ -1224,24 +1229,24 @@ if __name__ == "__main__":
 
 if __name__ == "__main__":
     ## compute steady state 
-    av_sigma_n = np.sqrt(np.dot(P[0,:],sigma_n_2mkv**2))
+    av_sigma_psi = np.sqrt(np.dot(P[0,:],sigma_psi_2mkv**2))
     av_sigma_eps = np.sqrt(np.dot(P[0,:],sigma_eps_2mkv**2))
     print('steady state is '+str(ss_P))
     print('transitory probability is '+str(P[0,:]))
-    print('average permanent risk is '+str(av_sigma_n)+' compared to objective model '+str(sigma_n))
+    print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(sigma_psi))
     print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(sigma_eps))
 
 if __name__ == "__main__":
 
-    print('permanent risk state is '+str(sigma_n_2mkv))
+    print('permanent risk state is '+str(sigma_psi_2mkv))
     print('transitory risk state is '+str(sigma_eps_2mkv))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## another model instance 
 
-    lc_sv = LifeCycle(sigma_n = sigma_n,
+    lc_sv = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
                    U=U,
                    ρ=ρ,
@@ -1251,7 +1256,7 @@ if __name__ == "__main__":
                    G=G,
                    β=β,
                    x=x,
-                   sigma_n_2mkv = sigma_n_2mkv,
+                   sigma_psi_2mkv = sigma_psi_2mkv,
                    sigma_eps_2mkv = sigma_eps_2mkv,
                    borrowing_cstr = borrowing_cstr,
                    b_y=b_y)
@@ -1437,12 +1442,12 @@ if __name__ == "__main__":
     #                    (0.05, 0.95)])   # markov transition matricies 
 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
     ## initialize another 
-    lc_uemkv = LifeCycle(sigma_n=sigma_n,
+    lc_uemkv = LifeCycle(sigma_psi=sigma_psi,
                          sigma_eps = sigma_eps,
                          U=U0,
                          ρ=ρ,
@@ -1540,7 +1545,7 @@ if __name__ == "__main__":
 # - unemployed perceive higher risks
 #
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1549,14 +1554,14 @@ if __name__ == "__main__":
     prob_l_cr = P_uemkv[0,1]
 
     ## keep average risks the same 
-    sigma_n_l_cr = 0.1*sigma_n
-    sigma_n_h_cr = np.sqrt((sigma_n**2 - prob_l_cr*sigma_n_l_cr**2)/prob_h_cr)
+    sigma_psi_l_cr = 0.1*sigma_psi
+    sigma_psi_h_cr = np.sqrt((sigma_psi**2 - prob_l_cr*sigma_psi_l_cr**2)/prob_h_cr)
 
     sigma_eps_l_cr = 0.1*sigma_eps
     sigma_eps_h_cr = np.sqrt((sigma_eps**2 - prob_l_cr*sigma_eps_l_cr**2)/prob_h_cr)
 
     ### notice here I put high risk at the first!!!
-    sigma_n_2mkv_cr= np.array([sigma_n_h_cr,sigma_n_l_cr**2])
+    sigma_psi_2mkv_cr= np.array([sigma_psi_h_cr,sigma_psi_l_cr**2])
     sigma_eps_2mkv_cr = np.array([sigma_eps_h_cr,sigma_eps_l_cr**2])
 
     ## again, zero loading from z
@@ -1566,20 +1571,20 @@ if __name__ == "__main__":
 
 if __name__ == "__main__":
     ## compute steady state 
-    av_sigma_n_cr = np.sqrt(np.dot(P_uemkv[0,:],sigma_n_2mkv_cr**2))
+    av_sigma_psi_cr = np.sqrt(np.dot(P_uemkv[0,:],sigma_psi_2mkv_cr**2))
     av_sigma_eps_cr = np.sqrt(np.dot(P_uemkv[0,:],sigma_eps_2mkv_cr**2))
     print('steady state is '+str(ss_P_cr))
     print('transitory probability is '+str(P_uemkv[0,:]))
 
-    print('average permanent risk is '+str(av_sigma_n_cr)+' compared to objective model '+str(sigma_n))
+    print('average permanent risk is '+str(av_sigma_psi_cr)+' compared to objective model '+str(sigma_n))
     print('average transitory risk is '+str(av_sigma_eps_cr)+' compared to objective model '+str(sigma_eps))
 
-# + code_folding=[4]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
     ## model instance 
-    lc_cr= LifeCycle(sigma_n = sigma_n,
+    lc_cr= LifeCycle(sigma_psi = sigma_psi,
                      sigma_eps = sigma_eps,
                      U=U0,
                      ρ=ρ,
@@ -1589,7 +1594,7 @@ if __name__ == "__main__":
                      L=L,
                      G=G,
                      β=β,
-                     sigma_n_2mkv = sigma_n_2mkv_cr,   # different 
+                     sigma_psi_2mkv = sigma_psi_2mkv_cr,   # different 
                      sigma_eps_2mkv = sigma_eps_2mkv_cr,  # different 
                      shock_draw_size = 30,
                      borrowing_cstr = borrowing_cstr,
@@ -1597,7 +1602,7 @@ if __name__ == "__main__":
                      b_y = b_y,
                      ue_markov = True)
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1764,7 +1769,7 @@ if __name__ == "__main__":
 
 # ### Subjective perceptions 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1816,7 +1821,7 @@ if __name__ == "__main__":
         axes[0].set_ylabel('c')
         axes[x].set_title(r'subjective c at $age={}$'.format(age))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1850,13 +1855,13 @@ if __name__ == "__main__":
 # -
 # ## Infinite horizon problem
 
-# + code_folding=[5]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
     ## intialize a model instance
 
-    inf_liv = LifeCycle(sigma_n=sigma_n,
+    inf_liv = LifeCycle(sigma_psi=sigma_psi,
                        sigma_eps = sigma_eps,
                        U=U,
                        ρ=ρ,
@@ -1938,7 +1943,7 @@ if __name__ == "__main__":
 
     ## intialize a model instance
 
-    imp_adjust = LifeCycle(sigma_n=sigma_n,
+    imp_adjust = LifeCycle(sigma_psi=sigma_psi,
                        sigma_eps = sigma_eps,
                        U=U,
                        ρ=ρ,
