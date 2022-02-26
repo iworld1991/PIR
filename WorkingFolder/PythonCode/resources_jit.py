@@ -40,7 +40,7 @@ from numba.experimental import jitclass
 
 # ## Jittable frozen distribution of log normal 
 
-# + code_folding=[24, 30, 37]
+# + code_folding=[59]
 MeanOneLogNormalPara=[
     ('sigma', float64),   
     ('mu',float64),
@@ -104,23 +104,27 @@ class MeanOneLogNormal:
         """
         N equally probable values of the random variable
         """
-        N = self.approx_N
-        probs_cutoffs = np.arange(N+1)/N        # Includes 0 and 1
-        state_cutoffs = np.array([self.invcdf(prob_cutoff) for prob_cutoff in probs_cutoffs]) # State cutoff values, each bin
-        bin_probs = np.empty(N,float64)
-        
-        # Find the E[X|bin] values:
-        #F = lambda x: x*self.pdf(x)
-        Ebins = np.empty(N,float64)
-        
-        for i, (x0, x1) in enumerate(zip(state_cutoffs[:-1], state_cutoffs[1:])):
-            bin_probs[i] = self.cdf(x1) - self.cdf(x0) ## pdf between x0 and x1 
-            cond_mean = self.integrate_by_sum(x0, x1)
-            #cond_mean, err = quad(F, x0, x1)
-            Ebins[i]=cond_mean/bin_probs[i] 
+        if self.sigma!=0.0:
+            N = self.approx_N
+            probs_cutoffs = np.arange(N+1)/N        # Includes 0 and 1
+            state_cutoffs = np.array([self.invcdf(prob_cutoff) for prob_cutoff in probs_cutoffs]) # State cutoff values, each bin
+            bin_probs = np.empty(N,float64)
 
-        self.X = Ebins
-        self.pmf = bin_probs
+            # Find the E[X|bin] values:
+            #F = lambda x: x*self.pdf(x)
+            Ebins = np.empty(N,float64)
+
+            for i, (x0, x1) in enumerate(zip(state_cutoffs[:-1], state_cutoffs[1:])):
+                bin_probs[i] = self.cdf(x1) - self.cdf(x0) ## pdf between x0 and x1 
+                cond_mean = self.integrate_by_sum(x0, x1)
+                #cond_mean, err = quad(F, x0, x1)
+                Ebins[i]=cond_mean/bin_probs[i] 
+
+            self.X = Ebins
+            self.pmf = bin_probs
+        else:
+            self.X = np.array([1.0])
+            self.pmf = np.array([1.0])
         #return self.X,self.pmf
 
     def integrate_by_sum(self,

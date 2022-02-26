@@ -109,7 +109,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[161]
+# + code_folding=[1, 155]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -195,7 +195,6 @@ class LifeCycle:
         ##################################################################
         n_shk_dist = lognorm(sigma_n,100000,shock_draw_size)
         self.n_shk_draws = np.log(n_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
-        
         eps_shk_dist = lognorm(sigma_eps,100000,shock_draw_size)
         self.eps_shk_draws = np.log(n_shk_dist.X)
         
@@ -230,10 +229,12 @@ class LifeCycle:
 
         
         ## ma(1) shock grid 
-        lb_sigma_ϵ = -sigma_eps**2/2-2*sigma_eps
-        ub_sigma_ϵ = -sigma_eps**2/2+2*sigma_eps
-        self.eps_grid = np.linspace(lb_sigma_ϵ,ub_sigma_ϵ,grid_size)
-        
+        if sigma_eps!=0.0:
+            lb_sigma_ϵ = -sigma_eps**2/2-2*sigma_eps
+            ub_sigma_ϵ = -sigma_eps**2/2+2*sigma_eps
+            self.eps_grid = np.linspace(lb_sigma_ϵ,ub_sigma_ϵ,grid_size)
+        else:
+            self.eps_grid = np.array([0.0,0.001])  ## make two points for the c function to be saved correctly  
         ## saving grid
         self.s_grid = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size))
        
@@ -280,7 +281,7 @@ class LifeCycle:
         return np.exp(n_shk)
 
 
-# + code_folding=[5]
+# + code_folding=[]
 ## this function takes the consumption values at different grids of state 
 ###   variables from period t+1, and model class 
 ### and generates the consumption values at t 
@@ -813,7 +814,7 @@ if __name__ == "__main__":
     U0 = 0.0 ## transitory ue risk
     unemp_insurance = 0.15
     sigma_n = 0.1 # permanent 
-    sigma_eps = 0.1 # transitory 
+    sigma_eps = 0.0 # transitory 
 
 
     #λ = 0.0  ## tax rate
@@ -916,12 +917,12 @@ if __name__ == "__main__":
 if __name__ == "__main__":
 
     plt.title('Consumption in the last period')
-    plt.plot(a_init[:,1,1],
-             σ_init[:,1,1])
+    plt.plot(a_init[:,0,1],
+             σ_init[:,0,1])
 
 # ### Without MA idiosyncratic income shock 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -956,7 +957,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    eps_ls = [1,10,20]
+    eps_ls = [0,1]
 
     as_star = as_stars[0]
     σs_star =σs_stars[0]
@@ -1030,15 +1031,15 @@ ax.set_title('consumption at a certain age')
 """
 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## plot 3d functions over life cycle 
 
     ages = np.array(range(as_star.shape[0]))
-    asset = as_star[0,:,10,0]
+    asset = as_star[0,:,0,0]
     xx, yy = np.meshgrid(ages, asset)
-    c_stars = σs_star[:,:,10,0].T
+    c_stars = σs_star[:,:,0,0].T
 
     fig = plt.figure(figsize=(6,6))
     ax = fig.add_subplot(111, 
@@ -1305,7 +1306,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    eps_id = 20
+    eps_id = 0
 
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
@@ -1336,7 +1337,7 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1346,7 +1347,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    eps_ls = [10]
+    eps_ls = [0]
 
     fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
@@ -1497,7 +1498,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1507,7 +1508,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    eps_id = 20
+    eps_id = 0
 
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
@@ -1638,7 +1639,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1648,7 +1649,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    eps_id = 20
+    eps_id = 0
 
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
@@ -1676,7 +1677,7 @@ if __name__ == "__main__":
 
 # ### Objective and subject state-dependent profile
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## compare subjective and objective models 
@@ -1686,7 +1687,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    eps_ls = [20]
+    eps_ls = [0]
 
     fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
@@ -1784,7 +1785,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1792,7 +1793,7 @@ if __name__ == "__main__":
     years_left = [1,3,5,6]
     n_sub = len(years_left)
 
-    eps_ls = [20]
+    eps_ls = [0]
 
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
