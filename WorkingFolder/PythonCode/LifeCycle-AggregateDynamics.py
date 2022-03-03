@@ -78,7 +78,7 @@ lc_paras_q = copy(lc_paras_Q)
 #lc_paras_y['P'] =np.array([[0.01,0.99],[0.01,0.99]])
 lc_paras_y['unemp_insurance'] = 0.0 
 lc_paras_y['init_b'] = 0.0 
-lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
+#lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
 
 print(lc_paras_y)
 
@@ -314,8 +314,19 @@ from Utility import SS2tax
 from Utility import CDProduction  
 from PrepareParameters import production_paras_y as production_paras
 
+# +
+import numpy as np
+x = np.array([1,2])
+y = np.array([2,3])
 
-# + code_folding=[6, 101, 142, 492, 507, 543, 579, 593, 611]
+xy = np.array([num1*num2 for num1 in x for num2 in y])
+# -
+
+z = np.sort(xy)
+z
+
+
+# + code_folding=[6, 101, 142, 492, 506, 545, 567, 581, 599]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -836,17 +847,20 @@ def initial_distribution_u(model,
             ]
         )
     )
-    init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
-    shk_prbs = np.repeat(
-        init_p_plus_shk_probs,
-        len(model.eps_shk_draws)
-    )*1/len(model.eps_shk_draws)
+    #init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
+    #shk_prbs2 = np.repeat(
+    #    init_p_plus_shk_probs,
+    #    len(model.eps_shk_draws)
+    #)*1/len(model.eps_shk_draws)
     
+    #size_shk_probs  = len(model.eps_shk_draws)*len(model.psi_shk_draws)
+    #shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
+
     λ = model.λ
     init_b = model.init_b
     ue_insurance = np.repeat(np.ones_like(model.eps_shk_draws),
-                          len(init_p_plus_shk_probs))*model.unemp_insurance  
-    init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
+                          len(model.init_p_draws))*model.unemp_insurance  
+    init_p_draws = np.exp(np.repeat(model.init_p_draws,
                           len(model.eps_shk_draws)))
     
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
@@ -863,28 +877,14 @@ def initial_distribution_e(model,
                          dist_mGrid, ## new, array, grid of m for distribution 
                          dist_pGrid,  ## new, array, grid of p for distribution 
                         ):
-    ## get the distribution of p after shocks 
-    init_p_plus_shk_draws = np.sort(
-        np.array(
-            [np.exp(init_p) * np.exp(psi_shk) 
-             for init_p in model.init_p_draws 
-             for psi_shk in model.psi_shk_draws
-            ]
-        )
-    )
-    init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
-    shk_prbs = np.repeat(
-        init_p_plus_shk_probs,
-        len(model.eps_shk_draws)
-    )*1/len(model.eps_shk_draws)
-    
+    size_shk_probs  = len(model.eps_shk_draws)*len(model.psi_shk_draws)
     λ = model.λ
     λ_SS = model.λ_SS
     init_b = model.init_b
-    
+    shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
     tran_shks = np.exp(np.repeat(model.eps_shk_draws,
-                          len(init_p_plus_shk_probs)))
-    init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
+                          len(model.init_p_draws)))
+    init_p_draws = np.exp(np.repeat(model.init_p_draws,
                           len(model.eps_shk_draws)))
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid(model,
@@ -1521,7 +1521,7 @@ A_life = HH.A_life
 C_life = HH.C_life
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -1539,7 +1539,7 @@ ax.vlines(lc_mkv.T+25,
           color='k',
           label='retirement'
          )
-ax.set_ylim([-0.1,3.0])
+ax.set_ylim([-1.0,1.2])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])

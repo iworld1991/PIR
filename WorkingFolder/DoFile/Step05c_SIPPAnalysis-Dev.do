@@ -51,20 +51,65 @@ by uniqueid: gen tenure = _N if TJB1_MSUM!=.
 merge m:1 year month using "${otherdatafolder}InfM.dta",keep(master match)
 drop _merge 
 
-**************************
-***** Winsorization ******
-**************************
 
+*******************************
+***** Creating variables ******
+*******************************
+sort uniqueid date 
+
+/*
+** yearly 
+ 
+gen ntot_earning_jb1 = TJB1_MSUM
+label var ntot_earning_jb1 "nominal total monthly earning"
+
+gen ntot_earning_jb1_y = l11.ntot_earning_jb1+ l10.ntot_earning_jb1+ ///
+                        l9.ntot_earning_jb1+l8.ntot_earning_jb1+l7.ntot_earning_jb1 + ///
+						l6.ntot_earning_jb1+ l5.ntot_earning_jb1 +l4.ntot_earning_jb1 + ///
+						l3.ntot_earning_jb1+ l2.ntot_earning_jb1+l1.ntot_earning_jb1+ntot_earning_jb1
+						
+label var ntot_earning_jb1 "nominal total monthly earning"
+
+gen rtot_earning_jb1 = TJB1_MSUM*100/CPIAU
+label var rtot_earning_jb1 "real total monthly earning"
+
+gen rtot_earning_jb1_y = l11.rtot_earning_jb1+ l10.rtot_earning_jb1+ ///
+                        l9.rtot_earning_jb1+l8.rtot_earning_jb1+l7.rtot_earning_jb1 + ///
+						l6.rtot_earning_jb1+ l5.rtot_earning_jb +l4.rtot_earning_jb1 + ///
+						l3.rtot_earning_jb1+ l2.rtot_earning_jb1+l1.rtot_earning_jb1+rtot_earning_jb1
+						
+label var rtot_earning_jb1_y "yearly real total earning from primary job"
+
+gen tot_hours_jb1 = TJB1_MWKHRS
+
+gen tot_hours_jb1_y = l11.tot_hours_jb1+ l10.tot_hours_jb1+ ///
+                        l9.tot_hours_jb1+l8.tot_hours_jb1+l7.tot_hours_jb1 + ///
+						l6.tot_hours_jb1+ l5.tot_hours_jb1 +l4.tot_hours_jb1 + ///
+						l3.tot_hours_jb1+ l2.tot_hours_jb1+l1.tot_hours_jb1+tot_hours_jb1
+label var tot_hours_jb1_y "yearly total hours of working for primary job"
+
+gen wage_Y =  rtot_earning_jb1_y/tot_hours_jb1_y				
+label var wage_Y "real yearly wage rate of primary job"
+
+gen wage_n_Y = ntot_earning_jb1_y/tot_hours_jb1_y				
+label var wage_n_Y "nominal yearly wage rate of primary job"
+*/
+				
+** monthly 
 gen wage = TJB1_MSUM/TJB1_MWKHRS
 ** or divided by average nb of weeks of work TJB1_MWKHRS
 ** use the primary job monthly earning for now  
-
 ** nominal to real terms 
 gen wage_n = wage
 label var wage_n "nominal monthly wage rate of the primary job"
 
 replace wage = wage*100/CPIAU
 label var wage "real monthly wage rate of the primary job"
+
+
+**************************
+***** Winsorization ******
+**************************
 
 egen wage_mean = mean(wage),by(uniqueid)
 label var wage_mean "average monthly real earning of the individual"
@@ -150,7 +195,7 @@ xtset uniqueid dateq
 ***** Summary stats ******
 **************************
 
-tabstat wage TPEARN TJB1_MSUM TJB1_MWKHRS, st(p5 p10 p25 p50 p75 p90 p95) 
+tabstat wage wage_n TPEARN TJB1_MSUM TJB1_MWKHRS, st(p5 p10 p25 p50 p75 p90 p95) 
 
 *******************************
 *** Other group variables ***
@@ -223,16 +268,22 @@ label var beg_yr "january dummy"
 
 ** take the log
 gen lwage_n = log(wage_n) 
-label var lwage_n "log nominal monthly earning"
+label var lwage_n "log nominal monthly wage rate"
 
 gen lwage =log(wage)
-label var lwage "log monthly earning"
+label var lwage "log real monthly wage rate"
+
+/*
+gen lwage_n_Y = log(wage_n_Y)
+label var lwage_n_Y "log nomimal yearly wage rate"
+
+gen lwage_Y = log(wage_Y)
+label var lwage_Y "log real yearly wage rate"
+*/
 
 ** demean the data
 egen lwage_av = mean(lwage), by(date) 
 egen lwage_sd = sd(lwage), by(date)
-
-
 
 ************************************
 *** Deterministic income component *
@@ -265,6 +316,7 @@ restore
 
 ***********************************************************************************
 ** mincer regressions 
+** monthly 
 reghdfe lwage age age2 end_yr beg_yr, a(i.race i.gender i.educ i.TJB1_IND) resid
 predict lwage_shk, residuals
  
@@ -277,9 +329,16 @@ gen lwage_ag_shk = lwage_shk- lwage_id_shk
 label var lwage_shk "log wage shock"
 label var lwage_id_shk "log wage idiosyncratic shock"
 label var lwage_ag_shk "log wage aggregate shock"
+
+/*
+** yearly 
+reghdfe lwage_Y age age2 end_yr beg_yr, a(i.year i.race i.gender i.educ i.TJB1_IND) resid
+predict lwage_Y_id_shk, residuals
+label var lwage_Y_id_shk "log wage idiosyncratic shock"
+*/
 *************************************************************************************
 
-** first difference
+** first difference for monthly 
 foreach var in lwage lwage_n lwage_shk lwage_id_shk lwage_ag_shk{
 gen `var'_gr = `var'- l1.`var'
 }
@@ -288,6 +347,15 @@ label var lwage_gr "log growth of real wage"
 label var lwage_shk_gr "log growth of unexplained wage"
 label var lwage_id_shk_gr "log growth of idiosyncratic unexplained wage"
 label var lwage_ag_shk_gr "log growth of aggregate unexplained wage"
+
+
+** first difference for monthly 
+foreach var in lwage lwage_n lwage_id_shk{
+gen `var'_Y_gr = `var'- l12.`var'
+}
+label var lwage_Y_gr "log yearly growth of nominal wage"
+label var lwage_n_Y_gr "log yearly growth of real wage"
+label var lwage_id_shk_Y_gr "log yearly growth of idiosyncratic unexplained wage"
 
 
 *foreach var in ue{
@@ -299,21 +367,21 @@ label var lwage_ag_shk_gr "log growth of aggregate unexplained wage"
 egen lwage_shk_gr_sd = sd(lwage_shk_gr), by(date)
 label var lwage_shk_gr_sd "standard deviation of log shocks"
 
-
 ***********************************************
 ** summary chart of unconditional wages ********
 ************************************************
-
 
 ** histograms of wage distribution 
 hist  wage, title("distribution of real wage rate") 
 graph export "${graph_folder}/hist_wage.png", as(png) replace 
 
-
+/*
+hist  wage_Y, title("distribution of real wage rate (yearly)") 
+graph export "${graph_folder}/hist_wage_Y.png", as(png) replace 
+*/
 
 ** time series plots 
 preserve
-
 collapse (mean) lwage lwage_sd, by(date year month) 
 ** average log wage whole sample
 twoway  (connected lwage date) if lwage!=., title("The mean of log real wages") 
@@ -448,11 +516,10 @@ restore
 gen age_h = age 
 gen sex_h = gender
 gen edu_i_g = educ
-gen lwage_h_gr = lwage_gr 
-gen lwage_h_n_gr = lwage_n_gr 
+gen lwage_h_gr = lwage_Y_gr 
+gen lwage_h_n_gr = lwage_n_Y_gr 
 
 ** notice here we use lwage_id_shk_gr !!
-
 
 /*
 ** byear_5yr and age
@@ -460,8 +527,8 @@ gen lwage_h_n_gr = lwage_n_gr
 preserve
 * average log wage
 collapse (count) ct = lwage_shk_gr ///
-         (mean) lwage_shk_gr_av_byear= lwage_id_shk_gr ///
-         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_gr ///
+         (mean) lwage_shk_gr_av_byear= lwage_id_shk_Y_gr ///
+         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_Y_gr ///
 		 (mean) lwage_shk_av_byear= lwage_id_shk ///
          (sd) lwage_shk_sd_byear = lwage_id_shk, by(byear_5yr age_h)
 gen age = age_h
@@ -511,8 +578,8 @@ restore
 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_byear= lwage_id_shk_gr ///
-         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_gr ///
+collapse (mean) lwage_shk_gr_av_byear= lwage_id_shk_Y_gr ///
+         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_Y_gr ///
 		 (mean) lwage_shk_av_byear= lwage_id_shk ///
          (sd) lwage_shk_sd_byear = lwage_id_shk, by(byear sex_h)
 
@@ -563,8 +630,8 @@ restore
 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_byear= lwage_id_shk_gr ///
-         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_gr ///
+collapse (mean) lwage_shk_gr_av_byear= lwage_id_shk_Y_gr ///
+         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_Y_gr ///
 		 (mean) lwage_shk_av_byear= lwage_id_shk ///
          (sd) lwage_shk_sd_byear = lwage_id_shk, by(byear) 
 
@@ -628,8 +695,8 @@ restore
 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_byear_edu = lwage_id_shk_gr ///
-         (sd) lwage_shk_gr_sd_byear_edu = lwage_id_shk_gr ///
+collapse (mean) lwage_shk_gr_av_byear_edu = lwage_id_shk_Y_gr ///
+         (sd) lwage_shk_gr_sd_byear_edu = lwage_id_shk_Y_gr ///
 		 (mean) lwage_shk_av_byear_edu = lwage_id_shk ///
          (sd) lwage_shk_sd_byear_edu = lwage_id_shk, by(byear_5yr edu_i_g) 
 
@@ -681,8 +748,8 @@ restore
 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_byear_5yr_edu = lwage_id_shk_gr ///
-         (sd) lwage_shk_gr_sd_byear_5yr_edu = lwage_id_shk_gr ///
+collapse (mean) lwage_shk_gr_av_byear_5yr_edu = lwage_id_shk_Y_gr ///
+         (sd) lwage_shk_gr_sd_byear_5yr_edu = lwage_id_shk_Y_gr ///
 		 (mean) lwage_shk_av_byear_5yr_edu = lwage_id_shk ///
          (sd) lwage_shk_sd_byear_5yr_edu = lwage_id_shk, by(byear_5yr edu_i_g sex_h)
 		 
@@ -735,8 +802,8 @@ restore
 ** age profile 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_age = lwage_id_shk_gr ///
-         (sd)   lwage_shk_gr_sd_age = lwage_id_shk_gr ///
+collapse (mean) lwage_shk_gr_av_age = lwage_id_shk_Y_gr ///
+         (sd)   lwage_shk_gr_sd_age = lwage_id_shk_Y_gr ///
 		 (mean)	lwage_shk_av_age = lwage_id_shk ///
 		 (sd)    lwage_shk_sd_age = lwage_id_shk, by(age_h) 
 
@@ -822,8 +889,8 @@ restore
 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_age_edu = lwage_id_shk_gr ///
-         (sd) lwage_shk_gr_sd_age_edu = lwage_id_shk_gr ///
+collapse (mean) lwage_shk_gr_av_age_edu = lwage_id_shk_Y_gr ///
+         (sd) lwage_shk_gr_sd_age_edu = lwage_id_shk_Y_gr ///
 		 (mean) lwage_shk_av_age_edu = lwage_id_shk ///
          (sd) lwage_shk_sd_age_edu = lwage_id_shk, by(age_h edu_i_g) 
 
@@ -882,8 +949,8 @@ restore
 
 ** scatter 
 preserve 
-collapse (mean) lwage_shk_gr_av_age_sex = lwage_id_shk_gr ///
-         (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_gr ///
+collapse (mean) lwage_shk_gr_av_age_sex = lwage_id_shk_Y_gr ///
+         (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_Y_gr ///
 		 (mean) lwage_shk_av_age_sex = lwage_id_shk ///
          (sd) lwage_shk_sd_age_sex = lwage_id_shk, by(age_h sex_h) 
 gen age = age_h
@@ -931,8 +998,8 @@ restore
 preserve 
 collapse  (mean) lwage_h_gr_av_age_sex = lwage_h_gr ///
           (mean) lwage_h_n_gr_av_age_sex = lwage_h_n_gr ///
-          (mean) lwage_shk_gr_av_age_sex = lwage_id_shk_gr ///
-         (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_gr ///
+          (mean) lwage_shk_gr_av_age_sex = lwage_id_shk_Y_gr ///
+         (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_Y_gr ///
 		 (mean) lwage_shk_av_age_sex = lwage_id_shk ///
          (sd) lwage_shk_sd_age_sex = lwage_id_shk, by(age_h sex_h edu_i_g) 
 gen age = age_h
@@ -1022,6 +1089,7 @@ twoway (scatter lwage_shk_sd_age_sex age_h, color(ltblue)) ///
 graph export "${graph_folder}/real_log_wage_shk_by_age_edu_gender_compare.png", as(png) replace 
 
 restore
+
 
 /*
 ** time series 
