@@ -75,7 +75,7 @@ lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
 ## make some modifications 
-#lc_paras_y['P'] =np.array([[0.01,0.99],[0.01,0.99]])
+lc_paras_y['P'] =np.array([[0.01,0.99],[0.01,0.99]])
 lc_paras_y['unemp_insurance'] = 0.0 
 lc_paras_y['init_b'] = 0.0 
 #lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
@@ -159,7 +159,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[7]
+# + code_folding=[]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -248,27 +248,27 @@ else:
                       )
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## solve the model 
 
 
 ## terminal period solutions 
-k = len(lc_mkv.s_grid)
+k = len(lc_mkv.a_grid)
 k2 =len(lc_mkv.eps_grid)
 n = len(lc_mkv.P)
 
 σ_init_mkv = np.empty((k,k2,n))
-a_init_mkv = np.empty((k,k2,n))
+m_init_mkv = np.empty((k,k2,n))
 
 # terminal solution c = m 
 for z in range(n):
     for j in range(k2):
-        a_init_mkv[:,j,z] = 2*lc_mkv.s_grid
-        σ_init_mkv[:,j,z] = a_init_mkv[:,j,z] 
+        m_init_mkv[:,j,z] = 2*lc_mkv.a_grid
+        σ_init_mkv[:,j,z] = m_init_mkv[:,j,z] 
 
 ## solve the model 
-as_star_mkv, σs_star_mkv = solve_model_backward_iter(lc_mkv,
-                                                 a_init_mkv,
+ms_star_mkv, σs_star_mkv = solve_model_backward_iter(lc_mkv,
+                                                 m_init_mkv,
                                                  σ_init_mkv)
 
 
@@ -287,8 +287,8 @@ for x,year in enumerate(years_left):
     age = lc_mkv.L-year
     i = lc_mkv.L -age
     for y,eps in enumerate(eps_ls):
-        m_plt_u,c_plt_u = as_star_mkv[i,:,y,0],σs_star_mkv[i,:,y,0]
-        m_plt_e, c_plt_e = as_star_mkv[i,:,y,1],σs_star_mkv[i,:,y,1]
+        m_plt_u,c_plt_u = ms_star_mkv[i,:,y,0],σs_star_mkv[i,:,y,0]
+        m_plt_e, c_plt_e = ms_star_mkv[i,:,y,1],σs_star_mkv[i,:,y,1]
         axes[x].plot(m_plt_u,
                      c_plt_u,
                      '--',
@@ -314,19 +314,8 @@ from Utility import SS2tax
 from Utility import CDProduction  
 from PrepareParameters import production_paras_y as production_paras
 
-# +
-import numpy as np
-x = np.array([1,2])
-y = np.array([2,3])
 
-xy = np.array([num1*num2 for num1 in x for num2 in y])
-# -
-
-z = np.sort(xy)
-z
-
-
-# + code_folding=[6, 101, 142, 492, 506, 545, 567, 581, 599]
+# + code_folding=[6, 101, 142, 492, 507, 543, 579, 593, 611]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -470,7 +459,7 @@ def jump_to_grid_fast(model,
 
 @njit
 def calc_transition_matrix(model, 
-                           as_star, ## new,  life cycle age x asset x tran shock x z state grid 
+                           ms_star, ## new,  life cycle age x asset x tran shock x z state grid 
                            σs_star, ## new, life cycle consumptiona t age  x asset x tran shock x z state grid 
                            dist_mGrid_list, ## new, list, grid of m for distribution 
                            dist_pGrid_list,  ## new, list, grid of p for distribution 
@@ -486,7 +475,7 @@ def calc_transition_matrix(model,
         
         Parameters
         ----------
-            # as_star: array, sized of T x n_a x n_eps x n_z, wealth grid 
+            # ms_star: array, sized of T x n_a x n_eps x n_z, wealth grid 
             # σs_star: array, sized of T x n_a x n_eps x n_z, consumption values at the grid
             # dist_mGrid_list, list, sized of 1, list of m grid sized of n_m
             # dist_pGrid_list, list, sized of T, list of permanent income grid for each age, sized of n_p
@@ -546,14 +535,14 @@ def calc_transition_matrix(model,
             fix_epsGrid = 1.0
             
             for m_id,m in enumerate(this_dist_mGrid):
-                this_Cnow_u = mlinterp((as_star[year_left,:,0,0],   
+                this_Cnow_u = mlinterp((ms_star[year_left,:,0,0],   
                                         model.eps_grid),
                                        σs_star[year_left,:,:,0],
                                        (m,fix_epsGrid))
                 Cnow_u[m_id] = this_Cnow_u
                 
                 #Cnow_u_list.append(this_Cnow_u)
-                this_Cnow_e = mlinterp((as_star[year_left,:,0,1],
+                this_Cnow_e = mlinterp((ms_star[year_left,:,0,1],
                                         model.eps_grid),
                                        σs_star[year_left,:,:,1],
                                        (m,fix_epsGrid))
@@ -847,20 +836,17 @@ def initial_distribution_u(model,
             ]
         )
     )
-    #init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
-    #shk_prbs2 = np.repeat(
-    #    init_p_plus_shk_probs,
-    #    len(model.eps_shk_draws)
-    #)*1/len(model.eps_shk_draws)
+    init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
+    shk_prbs = np.repeat(
+        init_p_plus_shk_probs,
+        len(model.eps_shk_draws)
+    )*1/len(model.eps_shk_draws)
     
-    #size_shk_probs  = len(model.eps_shk_draws)*len(model.psi_shk_draws)
-    #shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
-
     λ = model.λ
     init_b = model.init_b
     ue_insurance = np.repeat(np.ones_like(model.eps_shk_draws),
-                          len(model.init_p_draws))*model.unemp_insurance  
-    init_p_draws = np.exp(np.repeat(model.init_p_draws,
+                          len(init_p_plus_shk_probs))*model.unemp_insurance  
+    init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
                           len(model.eps_shk_draws)))
     
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
@@ -877,14 +863,28 @@ def initial_distribution_e(model,
                          dist_mGrid, ## new, array, grid of m for distribution 
                          dist_pGrid,  ## new, array, grid of p for distribution 
                         ):
-    size_shk_probs  = len(model.eps_shk_draws)*len(model.psi_shk_draws)
+    ## get the distribution of p after shocks 
+    init_p_plus_shk_draws = np.sort(
+        np.array(
+            [np.exp(init_p) * np.exp(psi_shk) 
+             for init_p in model.init_p_draws 
+             for psi_shk in model.psi_shk_draws
+            ]
+        )
+    )
+    init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
+    shk_prbs = np.repeat(
+        init_p_plus_shk_probs,
+        len(model.eps_shk_draws)
+    )*1/len(model.eps_shk_draws)
+    
     λ = model.λ
     λ_SS = model.λ_SS
     init_b = model.init_b
-    shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
+    
     tran_shks = np.exp(np.repeat(model.eps_shk_draws,
-                          len(model.init_p_draws)))
-    init_p_draws = np.exp(np.repeat(model.init_p_draws,
+                          len(init_p_plus_shk_probs)))
+    init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
                           len(model.eps_shk_draws)))
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid(model,
@@ -964,7 +964,7 @@ def calc_ergodic_dist(transition_matrix = None):
 """
 
 
-# + code_folding=[0, 17, 113, 280, 301, 341, 356, 386]
+# + code_folding=[113, 356, 386]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1030,8 +1030,8 @@ class HH_OLG_Markov:
             
             ## m distribution grid 
             if dist_mGrid == None:
-                aXtra_Grid = make_grid_exp_mult(ming = model.s_grid[0], 
-                                                maxg = model.s_grid[-1], 
+                aXtra_Grid = make_grid_exp_mult(ming = model.a_grid[0], 
+                                                maxg = model.a_grid[-1], 
                                                 ng = num_pointsM, 
                                                 timestonest = 3) #Generate Market resources grid given density and number of points
 
@@ -1079,7 +1079,7 @@ class HH_OLG_Markov:
     ## get the distributions of each age by iterating forward over life cycle 
 
     def ComputeSSDist(self,
-              as_star = None,
+              ms_star = None,
               σs_star = None,
               m_dist_grid_list = None,
               p_dist_grid_list = None):
@@ -1096,7 +1096,7 @@ class HH_OLG_Markov:
         ## get the embedded list sized n_z x T x n_m x n_p
 
         tran_matrix_lists,c_PolGrid_list,a_PolGrid_list = calc_transition_matrix(model,
-                                                                                 as_star, ## 
+                                                                                 ms_star, ## 
                                                                                  σs_star,
                                                                                  m_dist_grid_list,
                                                                                  p_dist_grid_list,
@@ -1388,7 +1388,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## testing of the household  class 
 
 HH = HH_OLG_Markov(model=lc_mkv)
@@ -1406,7 +1406,7 @@ n_p = 40
 
 HH.define_distribution_grid(num_pointsM = n_m, 
                             num_pointsP = n_p)
-HH.ComputeSSDist(as_star = as_star_mkv,
+HH.ComputeSSDist(ms_star = ms_star_mkv,
                   σs_star = σs_star_mkv)
 
 
@@ -1480,7 +1480,7 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 plt.savefig('../Graphs/model/lorenz_a_test.png')
 
-# + code_folding=[0]
+# + code_folding=[]
 ## Wealth distribution 
 
 ap_grid_dist = HH.ap_grid_dist
@@ -1493,6 +1493,8 @@ fig, ax = plt.subplots(figsize=(6,4))
 ax.set_title('Wealth distribution')
 ax.plot(np.log(ap_grid_dist+0.0000000001), 
          ap_pdfs_dist)
+ax.set_xlim(-30,10)
+
 ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_a_test.png')
@@ -1503,6 +1505,7 @@ ax.plot(np.log(cp_grid_dist),
          cp_pdfs_dist)
 ax.set_xlabel(r'$c$')
 ax.set_ylabel(r'$prob(a)$')
+ax.set_xlim(-15,10)
 fig.savefig('../Graphs/model/distribution_c_test.png')
 # -
 
@@ -1539,7 +1542,7 @@ ax.vlines(lc_mkv.T+25,
           color='k',
           label='retirement'
          )
-ax.set_ylim([-1.0,1.2])
+#ax.set_ylim([-0.1,3.0])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
@@ -1577,7 +1580,7 @@ cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
 ap_range = list(ap_pdfs_life.index)
 cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[1, 2, 11, 21]
+# + code_folding=[2, 11, 21]
 joy = False
 if joy == True:
     fig, axes = joypy.joyplot(ap_pdfs_life, 
@@ -1607,7 +1610,7 @@ else:
 
 # ### General Equilibrium 
 
-# + code_folding=[0, 158, 170]
+# + code_folding=[0, 5, 24, 158, 170]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1694,22 +1697,22 @@ class Market_OLG_mkv:
         ################################
 
         ## terminal period solution
-        k = len(model.s_grid)
+        k = len(model.a_grid)
         k2 =len(model.eps_grid)
         n = len(model.P)
 
         σ_init = np.empty((k,k2,n))
-        a_init = np.empty((k,k2,n))
+        m_init = np.empty((k,k2,n))
 
         # terminal solution c = m 
         for z in range(n):
             for j in range(k2):
-                a_init[:,j,z] = 2*model.s_grid
-                σ_init[:,j,z] = a_init[:,j,z] 
+                m_init[:,j,z] = 2*model.a_grid
+                σ_init[:,j,z] = m_init[:,j,z] 
 
         ## solve the model 
-        as_star, σs_star = solve_model_backward_iter(model,
-                                                     a_init,
+        ms_star, σs_star = solve_model_backward_iter(model,
+                                                     m_init,
                                                      σ_init)
 
         ################################
@@ -1727,7 +1730,7 @@ class Market_OLG_mkv:
         n_p = 50
         households.define_distribution_grid(num_pointsM = n_m, 
                                             num_pointsP = n_p)
-        households.ComputeSSDist(as_star = as_star,
+        households.ComputeSSDist(ms_star = ms_star,
                                  σs_star = σs_star)
 
         households.Aggregate()
@@ -1807,21 +1810,21 @@ class Market_OLG_mkv:
         n = len(model.P)
 
         σ_init = np.empty((k,k2,n))
-        a_init = np.empty((k,k2,n))
+        m_init = np.empty((k,k2,n))
 
         # terminal solution c = m 
         for z in range(n):
             for j in range(k2):
-                a_init[:,j,z] = 2*model.s_grid
-                σ_init[:,j,z] = a_init[:,j,z] 
+                m_init[:,j,z] = 2*model.s_grid
+                σ_init[:,j,z] = m_init[:,j,z] 
 
-        as_star, σs_star = solve_model_backward_iter(model,
-                                                     a_init,
+        ms_star, σs_star = solve_model_backward_iter(model,
+                                                     m_init,
                                                      σ_init)
 
         households.define_distribution_grid(num_pointsM = 40, 
                                             num_pointsP = 50)
-        households.ComputeSSDist(as_star = as_star,
+        households.ComputeSSDist(ms_star = ms_star,
                                  σs_star = σs_star)
 
         ## operation for the StE, such as aggregation

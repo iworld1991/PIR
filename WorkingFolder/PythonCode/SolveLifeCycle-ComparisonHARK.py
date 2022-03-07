@@ -69,11 +69,11 @@ inf_paras['P'] = np.array([[0.9,0.1],[0.2,0.8]])
 grid_max = 5.0
 grid_size = 50
 
-# + code_folding=[0]
+# + code_folding=[]
 inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
                     unemp_insurance = inf_paras['unemp_insurance'],
                     pension = inf_paras['pension'], ## pension
-                    sigma_n = inf_paras['σ_ψ'], # permanent 
+                    sigma_psi = inf_paras['σ_ψ'], # permanent 
                     sigma_eps = inf_paras['σ_θ'], # transitory 
                     P = inf_paras['P'],   ## transitory probability of markov state z
                     z_val = inf_paras['z_val'], ## markov state from low to high  
@@ -83,7 +83,7 @@ inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
                     sigma_p_init = inf_paras['σ_ψ_init'],
                     init_b = inf_paras['init_b'],
                     ## subjective risk prifile 
-                    sigma_n_2mkv = inf_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                    sigma_psi_2mkv = inf_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
                     sigma_eps_2mkv = inf_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
                     λ = inf_paras['λ'],  ## tax rate
                     λ_SS = inf_paras['λ_SS'], ## social tax rate
