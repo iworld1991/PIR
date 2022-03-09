@@ -38,7 +38,7 @@ import statsmodels.api as sm
 from Utility import mkv2_M2Q, mkv2_Q2Y, mkv2_Y2M, mkv2_Y2Q
 
 
-# + code_folding=[0, 15, 47, 62, 69, 78, 82, 104, 124, 132]
+# + code_folding=[0, 47, 62, 69, 78, 82, 104, 124, 132]
 class Markov2Switching:
     """
     A class that stores primitives for the Markov Regime Switching Model
@@ -250,7 +250,7 @@ class Markov2Switching:
         return llh_tot,update1_list,prdict1_list,f1_list
 
 
-# + code_folding=[1]
+# + code_folding=[]
 ## create the model 
 mkv2 = Markov2Switching(AR=0,
                         nb_var=1)
@@ -646,7 +646,7 @@ axes[2].plot(SCE_list[random_id][2,:],
 axes[2].legend(loc=1)
 fig.savefig('../Graphs/sce/markov_example.png')
 
-# + code_folding=[0, 1]
+# + code_folding=[]
 ## create the model 
 SCE_mkv2 = Markov2Switching(AR=0,
                             paras = np.array([0.1,0.1,0.1,0.7,0.7,

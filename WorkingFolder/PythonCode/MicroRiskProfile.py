@@ -649,8 +649,6 @@ for var in vars_log:
 
 SCEM.columns
 
-
-
 # + {"code_folding": []}
 ## full-table for risks  
 

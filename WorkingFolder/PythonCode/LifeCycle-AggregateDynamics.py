@@ -14,18 +14,16 @@
 #     name: python3
 # ---
 
-# ## Aggregate dynamics in a life-cycle economy under idiosyncratic risks
+# ## Aggregate dynamics, stationary distribution and GE of a life-cycle economy
 #
 # - author: Tao Wang
 # - date: November 2021
-# - this is an companion notebook to the paper "Perceived income risks"
+# - this is a companion notebook to the paper "Perceived income risks"
 
 # +
 import numpy as np
 import pandas as pd
-#from quantecon.optimize import brent_max, brentq
 from interpolation import interp, mlinterp
-#from scipy import interpolate
 import numba as nb
 from numba import jit, njit, float64, int64, boolean
 from numba.typed import List
@@ -58,6 +56,9 @@ mp.rc('ytick', labelsize=14)
 
 fontsize = 14
 legendsize = 12
+
+plt.style.use('seaborn')
+
 # -
 
 # ### The Life-cycle Model Class and Its Solver
@@ -74,11 +75,13 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
+# +
 ## make some modifications 
-lc_paras_y['P'] =np.array([[0.01,0.99],[0.01,0.99]])
-lc_paras_y['unemp_insurance'] = 0.0 
-lc_paras_y['init_b'] = 0.0 
+#lc_paras_y['P'] =np.array([[0.0,1.0],[0.0,1.0]])
+#lc_paras_y['unemp_insurance'] = 0.0 
+#lc_paras_y['init_b'] = 0.0 
 #lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
+# -
 
 print(lc_paras_y)
 
@@ -159,7 +162,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[]
+# + code_folding=[0, 7, 60]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -248,7 +251,7 @@ else:
                       )
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## solve the model 
 
 
@@ -286,9 +289,9 @@ fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 for x,year in enumerate(years_left):
     age = lc_mkv.L-year
     i = lc_mkv.L -age
-    for y,eps in enumerate(eps_ls):
-        m_plt_u,c_plt_u = ms_star_mkv[i,:,y,0],σs_star_mkv[i,:,y,0]
-        m_plt_e, c_plt_e = ms_star_mkv[i,:,y,1],σs_star_mkv[i,:,y,1]
+    for eps in eps_ls:
+        m_plt_u,c_plt_u = ms_star_mkv[i,:,eps,0],σs_star_mkv[i,:,eps,0]
+        m_plt_e, c_plt_e = ms_star_mkv[i,:,eps,1],σs_star_mkv[i,:,eps,1]
         axes[x].plot(m_plt_u,
                      c_plt_u,
                      '--',
@@ -315,7 +318,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[6, 101, 142, 492, 507, 543, 579, 593, 611]
+# + code_folding=[6, 101, 142, 471, 486, 522, 550, 558, 572, 590]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -551,10 +554,7 @@ def calc_transition_matrix(model,
                 
             
             ## more generally, depending on the nb of markov states 
-            
-            #Cnow_e = self.solution[k].cFunc[0](dist_mGrid)  #Consumption policy grid in period k
-            #Cnow_u = self.solution[k].cFunc[1](dist_mGrid) 
-
+        
 
             cPol_Grid_u_list.append(Cnow_u)  # List of consumption policy grids for each age
             cPol_Grid_e_list.append(Cnow_e)  # List of consumption policy grids for each age
@@ -565,11 +565,6 @@ def calc_transition_matrix(model,
             aPol_Grid_u_list.append(aNext_u) # Add to list
             aPol_Grid_e_list.append(aNext_e) # Add to list
 
-
-            #if finite_horizon==True:
-            #    bNext_u = model.R[k][0]*aNext_u # we chose the index zero because it both agents face the same interest rate
-            #    bNext_e = model.R[k][0]*aNext_e
-            #else:
             bNext_u = model.R*aNext_u
             bNext_e = model.R*aNext_e
 
@@ -603,11 +598,11 @@ def calc_transition_matrix(model,
                     if k <=model.T-1:
                         ## work age 
                         perm_shks_G = perm_shks*G[k+1]
-                        mNext_ij = bNext_u[i]/perm_shks_G +model.transfer/perm_shks_G+(1-λ)*unemp_insurance 
+                        mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+(1-λ)*unemp_insurance 
                     else:
                         ## retirement 
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
-                        mNext_ij = bNext_u[i]/perm_shks_none +model.transfer/perm_shks_none+model.pension/perm_shks_none
+                        mNext_ij = bNext_u[i]/perm_shks_none +model.transfer+model.pension
                     # Compute next period's market resources given todays bank balances bnext[i]
                     TranMatrix_uu[:,i] = jump_to_grid_fast(model,
                                                            mNext_ij,
@@ -621,11 +616,11 @@ def calc_transition_matrix(model,
                     if k <=model.T-1:
                         ## work age 
                         perm_shks_G = perm_shks*G[k+1]
-                        mNext_ij = bNext_u[i]/perm_shks_G +model.transfer/perm_shks_G+ (1-λ)*tran_shks  
+                        mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*tran_shks  
                     else:
                         ## retirement 
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
-                        mNext_ij = bNext_u[i]/perm_shks_none +model.transfer/perm_shks_none+model.pension/perm_shks_none
+                        mNext_ij = bNext_u[i]/perm_shks_none +model.transfer+model.pension
                     # Compute next period's market resources given todays bank balances bnext[i]
                     TranMatrix_ue[:,i] = jump_to_grid_fast(model,
                                                             mNext_ij,
@@ -640,11 +635,11 @@ def calc_transition_matrix(model,
                     if k <=model.T-1:
                         ## work age 
                         perm_shks_G = perm_shks*G[k+1]
-                        mNext_ij = bNext_e[i]/perm_shks_G +model.transfer/perm_shks_G+ (1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
+                        mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+ (1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
                     else:
                         ## retirement 
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
-                        mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+model.pension/perm_shks_none
+                        mNext_ij = bNext_e[i]/perm_shks_none +model.transfer+model.pension
                     TranMatrix_ee[:,i] = jump_to_grid_fast(model,
                                                           mNext_ij,
                                                           shk_prbs_ntrl,
@@ -657,18 +652,18 @@ def calc_transition_matrix(model,
                     if k <=model.T-1:
                         ## work age 
                         perm_shks_G = perm_shks*G[k+1]
-                        mNext_ij = bNext_e[i]/perm_shks_G +model.transfer/perm_shks_G+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
+                        mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
                     else:
                         ## retirement
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
-                        mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+ model.pension/perm_shks_none
+                        mNext_ij = bNext_e[i]/perm_shks_none +model.transfer+ model.pension
                     TranMatrix_eu[:,i] = jump_to_grid_fast(model,
                                                            mNext_ij, 
                                                            shk_prbs_ntrl,
                                                             this_dist_mGrid) 
 
 
-            else:  ## slow method  (Markov implemented)
+            else:  ## slow method  (2-state Markov implemented)
 
 
                 # Generate Transition Matrix for u2u 
@@ -681,11 +676,11 @@ def calc_transition_matrix(model,
                         if k <=model.T-1:
                             perm_shks_G = perm_shks* G[k+1]
                             ## work age 
-                            mNext_ij = bNext_u[i]/perm_shks_G +model.transfer/perm_shks_G+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
+                            mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
                         else:
                             perm_shks_none = np.ones_like(perm_shks)*G[k+1]
                             ## retirement
-                            mNext_ij = bNext_u[i]/perm_shks_none +model.transfer/perm_shks_none+ model.pension/perm_shks_none
+                            mNext_ij = bNext_u[i]/perm_shks_none +model.transfer+ model.pension
 
                         TranMatrix_uu[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
                                                                                  mNext_ij,
@@ -708,11 +703,11 @@ def calc_transition_matrix(model,
                         if k <=model.T-1:
                             ## work age 
                             perm_shks_G = perm_shks* G[k+1]
-                            mNext_ij = bNext_u[i]/perm_shks_G +model.transfer/perm_shks_G+ (1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
+                            mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
                         else:
                             ## retirement
                             perm_shks_none = np.ones_like(perm_shks)*G[k+1]
-                            mNext_ij = bNext_u[i]/perm_shks_none +model.transfer/perm_shks_none+ model.pension/perm_shks_none
+                            mNext_ij = bNext_u[i]/perm_shks_none +model.transfer+ model.pension
                         TranMatrix_ue[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
                                                                                mNext_ij, 
                                                                                pNext_ij, 
@@ -731,11 +726,11 @@ def calc_transition_matrix(model,
                         if k <=model.T-1:
                             ## work age 
                             perm_shks_G = perm_shks* G[k+1]
-                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer/perm_shks_G+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
+                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
                         else:
                             ## retirement
                             perm_shks_none = np.ones_like(perm_shks)*G[k+1]
-                            mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+ model.pension/perm_shks_none
+                            mNext_ij = bNext_e[i]/perm_shks_none +model.transfer+ model.pension
                         TranMatrix_eu[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
                                                                                    mNext_ij, 
                                                                                    pNext_ij, 
@@ -752,11 +747,11 @@ def calc_transition_matrix(model,
                         pNext_ij = this_dist_pGrid[j]*perm_shks*G[k+1] # Computes next period's permanent income level by applying permanent income shock
                         if k <=model.T-1:
                             perm_shks_G = perm_shks*G[k+1]
-                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer/perm_shks_G+(1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
+                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+(1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
                         else:
                             ## retirement
                             perm_shks_none = np.ones_like(perm_shks)*G[k+1]
-                            mNext_ij = bNext_e[i]/perm_shks_none +model.transfer/perm_shks_none+model.pension/perm_shks_none
+                            mNext_ij = bNext_e[i]/perm_shks_none +model.transfer+model.pension
                         TranMatrix_ee[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
                                                                                mNext_ij, 
                                                                                pNext_ij, 
@@ -777,19 +772,6 @@ def calc_transition_matrix(model,
             tran_matrix_u_list.append( tran_matrix_u ) #This is the transition for someone who's state today is unemployed
             tran_matrix_e_list.append( tran_matrix_e )
             
-            
-            # fraction of people who are in different markov states 
-            #prb_emp = dstn_0[0] 
-            #prb_unemp = 1 - prb_emp 
-
-            #prb_emp_list.append(prb_emp)
-            #prb_unemp_list.append(prb_unemp)
-                            
-            #tran_matrix_combined =  prb_unemp * tran_matrix_u + prb_emp * tran_matrix_e # This is the transition matrix for the whole economy
-            #tran_matrix_list.append(tran_matrix_combined)
-                
-            ## move markov state to the next period
-            #dstn_0 = np.dot(dstn_0,markov_array2)
                 
         tran_matrix_list = List([tran_matrix_u_list,
                                  tran_matrix_e_list])
@@ -964,7 +946,7 @@ def calc_ergodic_dist(transition_matrix = None):
 """
 
 
-# + code_folding=[113, 356, 386]
+# + code_folding=[5, 17, 113, 280, 301, 341, 386]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1524,7 +1506,7 @@ A_life = HH.A_life
 C_life = HH.C_life
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -1537,12 +1519,12 @@ ax.plot(age_lc[1:],
        label='model')
 
 ax.vlines(lc_mkv.T+25,
-          -1.5,
-          1.2,
+          np.min(np.log(A_life)),
+          np.max(np.log(A_life)),
           color='k',
           label='retirement'
          )
-#ax.set_ylim([-0.1,3.0])
+#ax.set_ylim([-5.0,2.0])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
@@ -1580,7 +1562,7 @@ cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
 ap_range = list(ap_pdfs_life.index)
 cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[2, 11, 21]
+# + code_folding=[1, 2, 11, 21]
 joy = False
 if joy == True:
     fig, axes = joypy.joyplot(ap_pdfs_life, 
@@ -1805,7 +1787,7 @@ class Market_OLG_mkv:
         ## solve the model again 
 
         ## terminal period solution
-        k = len(model.s_grid)
+        k = len(model.a_grid)
         k2 =len(model.eps_grid)
         n = len(model.P)
 
@@ -1815,7 +1797,7 @@ class Market_OLG_mkv:
         # terminal solution c = m 
         for z in range(n):
             for j in range(k2):
-                m_init[:,j,z] = 2*model.s_grid
+                m_init[:,j,z] = 2*model.a_grid
                 σ_init[:,j,z] = m_init[:,j,z] 
 
         ms_star, σs_star = solve_model_backward_iter(model,
@@ -1858,20 +1840,21 @@ market_OLG_mkv.get_equilibrium_dist()
 age_lc = SCF_profile.index
 
 fig, ax = plt.subplots(figsize=(10,5))
-plt.title('Life cycle profile of wealth and consumption')
+plt.title('Life cycle profile of wealth')
 ax.plot(age_lc[:-2],
         np.log(market_OLG_mkv.households.A_life)[:-1],
        'r-o',
        label='model')
 
-ax.vlines(lc_mkv.T+25,
-          np.min(np.log(A_life)),
-          np.max(np.log(A_life)),
-          color='b',
-          label='retirement')
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
+ax2.vlines(lc_mkv.T+25,
+          10.5,
+          15,
+          color='k',
+          label='retirement')
+
 ax2.bar(age_lc,
         np.log(SCF_profile['mv_wealth']),
        #'k--',
@@ -1928,4 +1911,7 @@ ax.set_xlim((-20,20))
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_c_eq.png')
 # -
+
+
+
 

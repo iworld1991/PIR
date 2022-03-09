@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -57,8 +57,12 @@ def y2q_interpolate(xs_y):
     return xs_q
 
 
-# + code_folding=[2]
-age_profile_data ='SCF'
+# -
+
+age_profile = pd.read_stata('../OtherData/age_profile.dta')  
+
+# + code_folding=[]
+age_profile_data ='SIPP'
 
 if age_profile_data=='SIPP':
     ## import age income profile 
@@ -75,7 +79,7 @@ if age_profile_data=='SIPP':
     ## growth rates after retirement
 
     lc_G_rt = np.ones(L-T)
-    lc_G_rt[0] = 0.6
+    lc_G_rt[0] = 1/np.cumprod(lc_G)[-1]
 
 
     lc_G_full = np.concatenate([lc_G,lc_G_rt])
@@ -103,6 +107,10 @@ elif age_profile_data=='SCF':
     lc_G_q_full = y2q_interpolate(lc_G_full)
 
 # -
+
+if __name__ == "__main__":
+    plt.title('life-cycle profile')
+    plt.plot(np.cumprod(lc_G_full))
 
 # ### Income risk estimates 
 
@@ -167,7 +175,7 @@ SCE_est_y = pd.read_pickle('data/subjective_profile_est_y.pkl')
 SCE_est_q = SCE_est_q['baseline']
 SCE_est_y = SCE_est_y['baseline']
 
-# + code_folding=[1]
+# + code_folding=[]
 ## create a dictionary of parameters 
 life_cycle_paras_q = {'ρ': 1.0, 
                     'β': 0.98**(1/4), 
@@ -184,7 +192,7 @@ life_cycle_paras_q = {'ρ': 1.0,
                     'L': L_q, 
                     'G':lc_G_q_full, 
                     'unemp_insurance': 0.15, 
-                    'pension': 1.0, 
+                    'pension': 0.65, 
                     'σ_ψ_init': σ_ψ_init_SCF, 
                     'init_b': b_q_SCF, 
                     'λ': 0.0, 
@@ -209,9 +217,9 @@ life_cycle_paras_q = {'ρ': 1.0,
 
 life_cycle_paras_q
 
-# + code_folding=[1]
+# + code_folding=[]
 ## create a dictionary of parameters 
-life_cycle_paras_y = {'ρ': 1.5, 
+life_cycle_paras_y = {'ρ': 1.0, 
                     'β': 0.98, 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
@@ -226,7 +234,7 @@ life_cycle_paras_y = {'ρ': 1.5,
                     'L': L, 
                     'G':lc_G_full, 
                     'unemp_insurance': 0.15, 
-                    'pension': 1.0, 
+                    'pension': 0.65, 
                     'σ_ψ_init': σ_ψ_init_SCF, 
                     'init_b': b_SCF, 
                     'λ': 0.0, 
@@ -307,7 +315,7 @@ model_paras.update(production_paras_y)
 
 model_paras
 
-# + code_folding=[2, 16, 27]
+# + code_folding=[]
 # making blocks 
 
 blocknames =['risk',
@@ -321,7 +329,7 @@ prefernece = ['ρ','β']
 lifecycle = ['T','L','1-D']
 risk  = ['σ_ψ','σ_θ','U2U','E2E']
 initial = ['σ_ψ_init','init_b','bequest_ratio']
-policy = ['μ','λ','λ_SS']
+policy = ['μ','pension','λ','λ_SS']
 production=['K2Y ratio','W','α','δ']
 
 block_all= [risk,
@@ -366,7 +374,7 @@ model_paras_by_block_df.loc['initial condition','source']='Estimated for age 25 
 model_paras_by_block_df.loc[('initial condition','bequest_ratio'),'source']='assumption'
 model_paras_by_block_df.loc['life cycle','source']='standard assumption'
 model_paras_by_block_df.loc['preference','source']='standard assumption'
-model_paras_by_block_df.loc['policy','source']='standard assumption'
+model_paras_by_block_df.loc['policy','source']='U.S. average'
 model_paras_by_block_df.loc[('policy','λ'),'source']='endogenously determined'
 model_paras_by_block_df.loc[('policy','λ_SS'),'source']='endogenously determined'
 
@@ -390,6 +398,7 @@ para_latex = ['$\\sigma_\\psi$',
               '$1-D$',
               '$\\rho$',
               '$\\beta$',
+              '$\\mathbb{S}$',
              '$\\lambda$',
              '$\\lambda_{SS}$',
              '$\\mu$',
@@ -409,5 +418,3 @@ model_paras_by_block_df=model_paras_by_block_df.reset_index(level=1, drop=True)
 model_paras_by_block_df.to_excel('../Tables/calibration.xlsx')
 
 model_paras_by_block_df
-
-

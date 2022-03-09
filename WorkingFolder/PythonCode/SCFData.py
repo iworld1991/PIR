@@ -109,8 +109,23 @@ df2016 = df2016[df2016['norminc']>0]
 df2016['lincome'] = np.log(df2016['income'])
 df2016['lnorminc'] = np.log(df2016['norminc'])
 df2016['w2income']=df2016['networth']/ df2016['norminc']
-# -
 
+# +
+## age polynomials regressions 
+
+df2016['age2'] = df2016['age']**2 
+df2016['age3'] = df2016['age']**3
+df2016['age4'] = df2016['age']**4
+
+import statsmodels.api as sm 
+import statsmodels.formula.api as smf
+
+model = smf.ols(formula = 'lnorminc~ age+age2+age3+age4',
+                data = df2016)
+results = model.fit()
+df2016['lnorminc_pr'] = results.predict()
+
+# -
 # ### Life-cycle wealth and income profile 
 
 import joypy

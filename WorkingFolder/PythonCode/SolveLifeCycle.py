@@ -14,13 +14,13 @@
 #     name: python3
 # ---
 
-# ## A life-cycle consumption  problem nder objective/subjective risk perceptions
+# ## A life-cycle consumption  model under objective/subjective risk perceptions
 #
 # - author: Tao Wang
 # - date: Feb 2022
 # - this is a companion notebook to the paper "Perceived income risks"
 
-# - This notebook builds on a standard life-cycle consumption model under an incomplete market and extends it to allow subjective belief formation about income risks
+# - This notebook builds on a standard life-cycle consumption model with uninsured income risks and extends it to allow subjective beliefs about income risks
 #   - Preference/income process
 #
 #       - CRRA utility 
@@ -46,7 +46,6 @@ import quantecon as qe
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from time import time
-#from HARK.utilities import make_grid_exp_mult
 from scipy import sparse as sp
 import scipy.sparse.linalg
 from scipy import linalg as lg 
@@ -69,43 +68,45 @@ plt.rc('font',size=11)
 
 # + code_folding=[]
 lc_data = [
+    ## model paras
     ('ρ', float64),              # utility parameter CRRA
     ('β', float64),              # discount factor
-    ('R',float64),               # Nominal interest rate factor 
+    ('R',float64),               # Real interest rate factor 
     ('W',float64),               # Wage rate
     ('P', float64[:, :]),        # transition probs for z_t, a persistent (macro) state  x
     ('z_val', float64[:]),       # values of z, grid values for the continous (macro) persistent state    x
-    ('sigma_psi', float64),        # permanent shock volatility              x
-    ('x',float64),               # MA(1) coefficient, or essentially the autocorrelation coef of non-persmanent income
+    ('sigma_psi', float64),      # permanent shock volatility              x
     ('sigma_eps', float64),      # transitory shock volatility
-    ('borrowing_cstr',boolean),  ## artifitial borrowing constraint, natural borrowing constraint if False
-    ('U',float64),               # the probability of being unemployed    * 
-    ('LivPrb',float64),         # the probability of being alive next period 
+    ('x',float64),               # MA(1) coefficient, or essentially the autocorrelation coef of non-permanent income
     ('b_y', float64),            # loading of macro state to income        x 
+    ('borrowing_cstr',boolean),  ## artifitial borrowing constraint if True, natural borrowing constraint if False
+    ('U',float64),               # the i.i.d. probability of being unemployed    * 
     ('sigma_psi_2mkv',float64[:]), # markov permanent risks, only 2 for now
     ('sigma_eps_2mkv',float64[:]), # markov transtory risk, only 2 for now
-    ('a_grid', float64[:]),      # Grid over savings
-    ('eps_grid', float64[:]),    # Grid over savings
-    ('psi_shk_draws', float64[:]), ## Draws of permanent income shock 
-    ('eps_shk_draws', float64[:]), # Draws of MA/transitory income shocks 
+    ('init_b', float64),              ## Initial endowment (possibly from accidental bequests) 
+    ('sigma_p_init',float64),         ## standard devaition of initial income
     ('T',int64),                 # years of work                          *   
     ('L',int64),                 # years of life                          * 
     ('G',float64[:]),            # growth rate of permanent income    *
-    ('theta',float64),           ## extrapolation parameter 
-    ('shock_draw_size',int64),    ## nb of points drawn for shocks 
-    ('psi_shk_mkv_draws',float64[:,:]),  ## 2-state markov on permanent risks 
-    ('eps_shk_mkv_draws',float64[:,:]), ## 2-state markov on transitory risks
+    ('LivPrb',float64),         # the probability of being alive next period 
     ('unemp_insurance',float64),   ## Unemployment insurance replacement ratio 
     ('pension',float64),           ## pension payment to permanent income ratio
     ('ue_markov', boolean),        ## True if 2-state emp/uemp markov 
     ('adjust_prob',float64),        ## the exogenous probability of being able to adjust consumption plan 
-    ('sigma_p_init',float64),         ## standard devaition of initial income
-    ('init_p_draws', float64[:]),     ## Draws of initial permanent income 
-    ('init_b', float64),              ## Initial endowment (possibly from accidental bequests) 
     ('λ', float64),                   ## Income tax rate
     ('λ_SS',float64),                 ## Social security tax 
     ('transfer', float64),            ## Transfer/current permanent income ratio
-    ('bequest_ratio',float64)         ## zero: bequest thrown to the ocea; one: fully given to newborns
+    ('bequest_ratio',float64),         ## zero: bequest thrown to the ocea; one: fully given to newborns
+    ('theta',float64),           ## extrapolation paramete
+    ## computational paras
+    ('a_grid', float64[:]),      # Exogenous grid over savings
+    ('eps_grid', float64[:]),    # Exogenous grid over transitory income shocks (for ma only)
+    ('psi_shk_draws', float64[:]), ## Draws of permanent income shock 
+    ('eps_shk_draws', float64[:]), # Draws of MA/transitory income shocks 
+    ('shock_draw_size',int64),    ## nb of points drawn for shocks 
+    ('psi_shk_mkv_draws',float64[:,:]),  ## 2-state markov on permanent risks 
+    ('eps_shk_mkv_draws',float64[:,:]), ## 2-state markov on transitory risks
+    ('init_p_draws', float64[:])     ## Draws of initial permanent income
 ]
 
 
@@ -140,7 +141,6 @@ class LifeCycle:
                  shock_draw_size = 7,
                  grid_max = 5.0,
                  grid_size = 50,
-                 seed = 456789,
                  theta = 2,               ## assymetric extrapolative parameter
                  unemp_insurance = 0.15,   #  unemp_insurance = 0.0,   
                  pension = 1.0,           
@@ -152,8 +152,6 @@ class LifeCycle:
                  λ_SS = 0.1,
                  transfer = 0.0,
                  bequest_ratio = 0.0):  
-
-        np.random.seed(seed)  # arbitrary seed
         
         self.ρ, self.β = ρ, β
         self.R = R 
@@ -188,11 +186,12 @@ class LifeCycle:
         
         self.shock_draw_size = shock_draw_size
         
-        ## these codes use equalprob discretized distributions at the cost of not being jittable 
-        
         ##################################################################
          ## discretized distributions 
         ##################################################################
+        
+        ## these codes use equiprobable discretized distributions at the cost of not being jittable 
+        
         psi_shk_dist = lognorm(sigma_psi,100000,shock_draw_size)
         self.psi_shk_draws = np.log(psi_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
         eps_shk_dist = lognorm(sigma_eps,100000,shock_draw_size)
@@ -201,17 +200,10 @@ class LifeCycle:
         init_p_dist = lognorm(sigma_p_init,100000,shock_draw_size)
         self.init_p_draws = np.log(init_p_dist.X)
         
-        ## draw shocks using monte-carlo for constant volatility scenario
-        #self.psi_shk_draws = sigma_psi*np.random.randn(shock_draw_size)-sigma_n**2/2
-        #self.eps_shk_draws = sigma_eps*np.random.randn(shock_draw_size)-sigma_eps**2/2
-        #self.init_p_draws = sigma_p_init*np.random.randn(shock_draw_size)-sigma_p_init**2/2
-        
-        
-        ## draw shocks for stochastic volatility scenario
+        ## draw shocks for various markov state of volatility 
         sigma_psi_2mkv_r = sigma_psi_2mkv.reshape(n_mkv,-1)
         sigma_eps_2mkv_r = sigma_eps_2mkv.reshape(n_mkv,-1)
         
-
         sigma_psi_2mkv_l = lognorm(sigma_psi_2mkv[0],100000,shock_draw_size)
         sigma_psi_2mkv_h = lognorm(sigma_psi_2mkv[1],100000,shock_draw_size)
         
@@ -223,10 +215,10 @@ class LifeCycle:
         
         self.eps_shk_mkv_draws = np.stack((np.log(sigma_eps_2mkv_l.X),
                                          np.log(sigma_eps_2mkv_h.X)))
-                
-        #self.psi_shk_mkv_draws = sigma_psi_2mkv_r*np.random.randn(shock_draw_size)-sigma_psi_2mkv_r**2/2
-        #self.eps_shk_mkv_draws = sigma_eps_2mkv_r*np.random.randn(shock_draw_size)-sigma_eps_2mkv_r**2/2
-
+        
+        
+        ## saving a grid
+        self.a_grid = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size))
         
         ## ma(1) shock grid 
         if sigma_eps!=0.0:
@@ -235,14 +227,12 @@ class LifeCycle:
             self.eps_grid = np.linspace(lb_sigma_ϵ,ub_sigma_ϵ,grid_size)
         else:
             self.eps_grid = np.array([0.0,0.001])  ## make two points for the c function to be saved correctly  
-        ## saving a grid
-        self.a_grid = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size))
-       
-       
+
+    
         ## extrapolaton coefficient, i.e. higher theta, higher asymmetric response
         self.theta = theta
         
-        # Test stability 
+        # Test stability (not needed if it is life-cycle)
         ## this is for infinite horizon problem 
         #assert β * R < 1, "Stability condition failed."
 
@@ -253,11 +243,11 @@ class LifeCycle:
         elif self.ρ==1:
             return np.log(c)
     
-    # Marginal utility
+    # marginal utility
     def u_prime(self, c):
         return c**(-self.ρ)
 
-    # Inverse of marginal utility
+    # inverse of marginal utility
     def u_prime_inv(self, c):
         return c**(-1/self.ρ)
     
@@ -265,6 +255,8 @@ class LifeCycle:
     def V(self,m):
         return None
 
+    ## a function for the transitory/persistent income component
+    ### the fork depending on if discrete-markov bool is on/off
     def Y(self, z, u_shk):
         #from the transitory/ma shock and ue realization  to the income factor
         if self.ue_markov ==False:
@@ -273,24 +265,27 @@ class LifeCycle:
             ## income 
             return np.exp(u_shk + (z * self.b_y))
         elif self.ue_markov ==True:
+            ## ump if z ==0 and emp if z==1
             assert len(self.P)==2,"unemployment/employment markov has to be 2 state markov"
             return (z==0)*(self.unemp_insurance) + (z==1)*np.exp(u_shk)
-
+        
+    # a function from the log permanent shock to the income factor
     def Γ(self,psi_shk):
-        ## from the permanent shock to the income factor
         return np.exp(psi_shk)
 
 
-# + code_folding=[5]
-## this function takes the consumption values at different grids of state 
-###   variables from period t+1, and model class 
-### and generates the consumption values at t 
+# + code_folding=[]
+## This function takes the consumption values at different 
+## grids of state variables variables from period t+1, and 
+## the model class, then generates the consumption values at t.
+## It depends on the age t since the income is different before 
+## after the retirement. 
 
 @njit
 def EGM(mϵ_in,
         σ_in,
-        age_id, ## the period id for which the c policy is computed, first period age_id=0, last period age_id=L-1, retirement after age_id=T-1
-      lc):
+        age_id, ## the period id for which the c policy is computed, the first period age_id=0, last period age_id=L-1, retirement after age_id=T-1
+        lc):
     """
     The Coleman--Reffett operator for the life-cycle consumption problem,
     using the endogenous grid method.
@@ -299,7 +294,7 @@ def EGM(mϵ_in,
         * σ_in is a n1 x n2 x n3 dimension consumption policy 
           * n1 = dim(s), n2 = dim(eps), n3 = dim(z)
         * mϵ_in is the same sized grid points of the three state variable 
-        * mϵ_in[:,j,z] is the vector of asset grids corresponding to j-th grid of eps and z-th grid of z 
+        * mϵ_in[:,j,z] is the vector of wealth grids corresponding to j-th grid of eps and z-th grid of z 
         * σ_in[i,j,z] is consumption at aϵ_in[i,j,z]
     """    
     # Simplify names
@@ -333,16 +328,16 @@ def EGM(mϵ_in,
     
     n = len(P)
 
-    # Create consumption function by linear interpolation
+    # Create consumption functions by linear interpolation
     ########################################################
     σ = lambda m,ϵ,z: mlinterp((mϵ_in[:,0,z],eps_grid),σ_in[:,:,z], (m,ϵ)) 
     ########## need to replace with multiinterp 
 
     # Allocate memory
-    σ_out = np.empty_like(σ_in)  ## grid_size_s X grid_size_ϵ X grid_size_z
+    σ_out = np.empty_like(σ_in)  ## grid_size_a X grid_size_ϵ X grid_size_z
 
     # Obtain c_i at each a_i, z, store in σ_out[i, z], computing
-    # the expectation term by computed by averaging discretized equally probable points of the distributions
+    # the expectation term by computed by averaging over discretized equally probable points of the distributions
     for i, a in enumerate(a_grid):
         for j, eps in enumerate(eps_grid):
             for z in range(n):
@@ -359,12 +354,12 @@ def EGM(mϵ_in,
                             if age <=lc.T-1:   #till say 39, because consumption policy for t=40 changes   
                                 ## work 
                                 Y_hat = (1-λ)*(1-λ_SS)*Y(z_val_hat,u_shk) ## conditional on being employed 
-                                c_hat = σ(R/(G*Γ_hat) * a + Y_hat+transfer/(G*Γ_hat),eps_shk,z_hat)
+                                c_hat = σ(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
 
                                 ## for unemployed next period
                                 Y_hat_u = (1-λ)*unemp_insurance
-                                c_hat_u = σ(R/(G*Γ_hat) * a + Y_hat_u+transfer/(G*Γ_hat),eps_shk,z_hat)
+                                c_hat_u = σ(R/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
                                 utility_u = (G*Γ_hat)**(1-ρ)*u_prime(c_hat_u)
                             
                                 Ez += LivProb*((1-ue_prob)*utility * P[z, z_hat]+
@@ -376,7 +371,7 @@ def EGM(mϵ_in,
                                 ## no income shcoks affecting individuals 
                                 Γ_hat = 1.0 
                                 eps_shk = 0.0
-                                c_hat = σ(R/(G*Γ_hat) * a + (Y_R+transfer)/(G*Γ_hat),eps_shk,z_hat)
+                                c_hat = σ(R/(G*Γ_hat) * a + (Y_R+transfer),eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
                                 Ez += LivProb*utility * P[z, z_hat]
                             
@@ -412,15 +407,16 @@ def EGM(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[4]
+# + code_folding=[]
 ## the operator under markov stochastic risks 
-## now the permanent and transitory risks are different between a good macro and bad macro state 
+## now the permanent and transitory risks are 
+## different between markov states. 
 
 @njit
 def EGM_sv(mϵ_in, 
-         σ_in, 
-         age_id,
-         lc):
+           σ_in, 
+           age_id,
+           lc):
     """
     The Coleman--Reffett operator for the life-cycle consumption problem,
     using the endogenous grid method.
@@ -474,13 +470,13 @@ def EGM_sv(mϵ_in,
     σ_out = np.empty_like(σ_in)  ## grid_size_s X grid_size_ϵ X grid_size_z
 
     # Obtain c_i at each s_i, z, store in σ_out[i, z], computing
-    # the expectation term by Monte Carlo
+    # the expectation term by averaging over different equally probable distrete points of shocks
     for i, a in enumerate(a_grid):
         for j, eps in enumerate(eps_grid):
             for z in range(n):
                 # Compute expectation
                 Ez = 0.0
-                for z_hat in range(n):
+                for z_hat in range(n):  
                     z_val_hat = z_val[z_hat]
                     psi_shk_draws = psi_shk_mkv_draws[z_hat,:]
                     eps_shk_draws = eps_shk_mkv_draws[z_hat,:]
@@ -492,12 +488,12 @@ def EGM_sv(mϵ_in,
                             if age<=lc.T-1:
                                 # work  
                                 Y_hat = (1-λ)*Y(z_val_hat,u_shk) ## conditional on being employed 
-                                c_hat = σ(R/(G*Γ_hat) * a + Y_hat+transfer/(G*Γ_hat),eps_shk,z_hat)
+                                c_hat = σ(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
 
                                 ## for unemployed next period
                                 Y_hat_u = (1-λ)*unemp_insurance
-                                c_hat_u = σ(R/(G*Γ_hat) * a + Y_hat_u+transfer/(G*Γ_hat),eps_shk,z_hat)
+                                c_hat_u = σ(R/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
                                 utility_u = (G*Γ_hat)**(1-ρ)*u_prime(c_hat_u)
                                 Ez += LivProb*((1-ue_prob)*utility * P[z, z_hat]+
                                                ue_prob*utility_u* P[z, z_hat]
@@ -508,7 +504,7 @@ def EGM_sv(mϵ_in,
                                 ## no income shcoks affecting individuals 
                                 Γ_hat = 1.0 
                                 eps_shk = 0.0
-                                c_hat = σ(R/(G*Γ_hat) * a + (Y_R+transfer)/(G*Γ_hat),eps_shk,z_hat)
+                                c_hat = σ(R/(G*Γ_hat) * a + (Y_R+transfer),eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
                                 Ez += LivProb*utility * P[z, z_hat]
                 Ez = Ez / (len(psi_shk_draws)*len(eps_shk_draws))
@@ -572,7 +568,7 @@ def extrapolate(theta,
     return x_sub
 
 
-# + code_folding=[4]
+# + code_folding=[]
 ## subjective agent
 ### transitory shock affects risk perceptions
 
@@ -670,12 +666,12 @@ def EGM_br(mϵ_in,
                             if age <=lc.T-1:
                                 # work  
                                 Y_hat = (1-λ)*Y(z_val_hat,u_shk) ## conditional on being employed 
-                                c_hat = σ(R/(G*Γ_hat) * a + Y_hat+transfer/(G*Γ_hat),eps_shk,z_hat)
+                                c_hat = σ(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
 
                                 ## for unemployed next period
                                 Y_hat_u = (1-λ)*unemp_insurance
-                                c_hat_u = σ(R/(G*Γ_hat) * a + Y_hat_u+transfer/(G*Γ_hat) ,eps_shk,z_hat)
+                                c_hat_u = σ(R/(G*Γ_hat) * a + Y_hat_u+transfer ,eps_shk,z_hat)
                                 utility_u = (G*Γ_hat)**(1-ρ)*u_prime(c_hat_u)
                                 Ez += LivProb*((1-ue_prob)*utility * P[z, z_hat]+
                                                ue_prob*utility_u* P[z, z_hat]
@@ -687,7 +683,7 @@ def EGM_br(mϵ_in,
                                 ## no income shcoks affecting individuals 
                                 Γ_hat = 1.0 
                                 eps_shk = 0.0
-                                c_hat = σ(R/(G*Γ_hat) * a + (Y_R+transfer)/(G*Γ_hat),eps_shk,z_hat)
+                                c_hat = σ(R/(G*Γ_hat) * a + (Y_R+transfer),eps_shk,z_hat)
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
                                 Ez += LivProb*utility * P[z, z_hat]
                 Ez = Ez / (len(psi_shk_draws)*len(eps_shk_draws_sj))
@@ -727,7 +723,7 @@ def EGM_br(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[1]
+# + code_folding=[]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
                               mϵ_vec,        # Initial condition for assets and MA shocks
@@ -1020,7 +1016,7 @@ plt.ylabel('ma income shock')
 
 ## the size of consumption function is  T x nb_a x nb_eps x nb_z 
 if __name__ == "__main__":
-    σs_star.shape
+    print(σs_star.shape)
 
 # + code_folding=[]
 """
@@ -1645,7 +1641,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0, 13]
 if __name__ == "__main__":
 
 
@@ -1683,7 +1679,7 @@ if __name__ == "__main__":
 
 # ### Objective and subject state-dependent profile
 
-# + code_folding=[]
+# + code_folding=[0, 13]
 if __name__ == "__main__":
 
     ## compare subjective and objective models 
@@ -1770,7 +1766,7 @@ if __name__ == "__main__":
 
 # ### Subjective perceptions 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
