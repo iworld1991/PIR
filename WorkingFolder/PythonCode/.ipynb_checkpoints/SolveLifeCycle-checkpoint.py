@@ -101,8 +101,8 @@ lc_data = [
     ## computational paras
     ('a_grid', float64[:]),      # Exogenous grid over savings
     ('eps_grid', float64[:]),    # Exogenous grid over transitory income shocks (for ma only)
-    ('psi_shk_draws', float64[:]), ## draws of permanent income shock 
-    ('eps_shk_draws', float64[:]), # draws of MA/transitory income shocks 
+    ('psi_shk_draws', float64[:]), ## Draws of permanent income shock 
+    ('eps_shk_draws', float64[:]), # Draws of MA/transitory income shocks 
     ('shock_draw_size',int64),    ## nb of points drawn for shocks 
     ('psi_shk_mkv_draws',float64[:,:]),  ## 2-state markov on permanent risks 
     ('eps_shk_mkv_draws',float64[:,:]), ## 2-state markov on transitory risks
@@ -111,12 +111,10 @@ lc_data = [
     ('sigma_psi_true', float64),      # true permanent shock volatility              
     ('sigma_eps_true', float64),      # ture transitory shock volatility
     ('subjective',boolean),  ## belief is not necessarily equal to true 
-    ('psi_shk_true_draws',float64[:]), ## draws of true permanent income shock 
-    ('eps_shk_true_draws',float64[:]) ## draws of true transitory income shock 
 ]
 
 
-# + code_folding=[]
+# + code_folding=[1]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -218,17 +216,6 @@ class LifeCycle:
         self.psi_shk_draws = np.log(psi_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
         eps_shk_dist = lognorm(sigma_eps,100000,shock_draw_size)
         self.eps_shk_draws = np.log(eps_shk_dist.X)
-        
-        ## the draws used for simulation in household block 
-        if self.subjective==False:
-            self.psi_shk_true_draws =  self.psi_shk_draws
-            self.eps_shk_true_draws =  self.eps_shk_draws
-        else:
-            psi_shk_true_dist = lognorm(sigma_psi_true,100000,shock_draw_size)
-            eps_shk_true_dist = lognorm(sigma_eps_true,100000,shock_draw_size)
-            self.psi_shk_true_draws =  np.log(psi_shk_true_dist.X)
-            self.eps_shk_true_draws =  np.log(eps_shk_true_dist.X)
-            
         
         init_p_dist = lognorm(sigma_p_init,100000,shock_draw_size)
         self.init_p_draws = np.log(init_p_dist.X)

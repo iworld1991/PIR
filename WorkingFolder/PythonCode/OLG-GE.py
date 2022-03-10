@@ -20,7 +20,6 @@
 # - date: November 2021
 # - this is a companion notebook to the paper "Perceived income risks"
 
-# +
 import numpy as np
 import pandas as pd
 from interpolation import interp, mlinterp
@@ -43,8 +42,7 @@ import scipy.optimize as op
 from scipy import linalg as lg 
 from matplotlib import cm
 import joypy
-from copy import copy 
-
+from copy import copy,deepcopy
 from Utility import cal_ss_2markov,lorenz_curve
 
 
@@ -108,7 +106,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -162,7 +160,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 7, 60]
+# + code_folding=[0, 7, 20, 67, 69]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -189,6 +187,8 @@ if calibrated_model == True:
                     pension = lc_paras['pension'], ## pension
                     sigma_psi = lc_paras['σ_ψ'], # permanent 
                     sigma_eps = lc_paras['σ_θ'], # transitory 
+                    sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
+                    sigma_eps_true = lc_paras['σ_θ'], ## true transitory
                     P = lc_paras['P'],   ## transitory probability of markov state z
                     z_val = lc_paras['z_val'], ## markov state from low to high  
                     x = 0.0,           ## MA(1) coefficient of non-permanent inocme shocks
@@ -208,19 +208,24 @@ if calibrated_model == True:
                     T = lc_paras['T'],
                     L = lc_paras['L'],
                     G = lc_paras['G'],
-                    #YPath = np.cumprod(G),
                     ## other parameters 
                     ρ = lc_paras['ρ'],     ## relative risk aversion  
-                    β = lc_paras['β'],    ## discount factor
+                    β = lc_paras['β'],     ## discount factor
                     R = lc_paras['R'],           ## interest factor 
                     W = lc_paras['W'],            ## Wage rate
-                    ## subjective models 
+                    ## extrapolation (not used in this paper)
                     theta = 0.0, ## extrapolation parameter 
                     ## no persistent state
                     b_y = 0.0,
                     ## wether to have zero borrowing constraint 
                     borrowing_cstr = True
     )
+    
+    ## for the subjective model, only change the belief 
+    #lc_mkv_sub = deepcopy(lc_mkv)
+    #lc_mkv_sub.subjective = True
+    #lc_mkv.sigma_psi = lc_paras['σ_ψ_sub']
+    #lc_mkv.sigma_eps = lc_paras['σ_ψ_sub']
 
 
 else:
@@ -318,7 +323,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[6, 101, 142, 471, 486, 522, 550, 558, 572, 590]
+# + code_folding=[6, 101, 142, 482, 489, 518, 525, 554, 568]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -514,7 +519,22 @@ def calc_transition_matrix(model,
         
         tran_matrix_e_list = [] # List of transition matrices
         tran_matrix_u_list = [] # List of transition matrices
+        
 
+        #Obtain shocks and shock probabilities from income distribution in this period
+        size_shk_probs  = len(model.eps_shk_true_draws)*len(model.psi_shk_true_draws)
+        shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
+        tran_shks = np.exp(np.repeat(model.eps_shk_true_draws,
+                              len(model.psi_shk_true_draws)))
+        perm_shks = np.exp(np.repeat(model.psi_shk_true_draws,
+                              len(model.eps_shk_true_draws)))
+
+        ## This is for the fast method 
+        shk_prbs_ntrl =  np.multiply(shk_prbs,perm_shks)
+        ## not used yet 
+                        
+        
+                        
         for k in range(model.L): ## loop over agents at different ages, k
             
             age_id = k
@@ -567,25 +587,6 @@ def calc_transition_matrix(model,
 
             bNext_u = model.R*aNext_u
             bNext_e = model.R*aNext_e
-
-
-            #Obtain shocks and shock probabilities from income distribution in this period
-            size_shk_probs  = len(model.eps_shk_draws)*len(model.psi_shk_draws)
-            shk_prbs = np.ones(size_shk_probs)*1/size_shk_probs
-            tran_shks = np.exp(np.repeat(model.eps_shk_draws,
-                                  len(model.psi_shk_draws)))
-            perm_shks = np.exp(np.repeat(model.psi_shk_draws,
-                                  len(model.eps_shk_draws)))
-            
-            ## This is for the fast method 
-            shk_prbs_ntrl =  np.multiply(shk_prbs,perm_shks)
-            ## not used yet 
-                        
-            #shk_prbs = shk_dstn[k][0].pmf  #Probability of shocks this period , 
-            ## I choose the index zero, because we really only use the employe dshock distribution, the unemployed is already implemented automatically
-            #tran_shks = shk_dstn[k][0].X[1] #Transitory shocks this period
-            #perm_shks = shk_dstn[k][0].X[0] #Permanent shocks this period
-            #LivPrb = self.LivPrb[k][0] # Update probability of staying alive this period
 
             
             if fast==True:  
@@ -946,7 +947,7 @@ def calc_ergodic_dist(transition_matrix = None):
 """
 
 
-# + code_folding=[5, 17, 113, 280, 301, 341, 386]
+# + code_folding=[0, 5, 17, 113, 280, 301, 341, 386]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1506,7 +1507,7 @@ A_life = HH.A_life
 C_life = HH.C_life
 
 
-# + code_folding=[]
+# + code_folding=[0, 11]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -1911,7 +1912,4 @@ ax.set_xlim((-20,20))
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_c_eq.png')
 # -
-
-
-
 

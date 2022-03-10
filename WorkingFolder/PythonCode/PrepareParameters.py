@@ -169,6 +169,20 @@ b_q_SCF = b_SCF*4  ## quarterly
 
 # ### subjective profile estiamtion 
 
+# +
+## subjective constant profile 
+
+sigma_eps_sub = np.sqrt(1/(1+kappa_sipp**2)*0.04**2) ## 0.04 is an upper bound for the average PR in standard deviation from SCE 
+sigma_psi_sub = sigma_eps_sub*kappa_sipp
+
+if __name__ == "__main__":    
+    print('perceived transitory PR:',sigma_eps_sub)
+    print('perceived permanent PR:',sigma_psi_sub)
+
+# +
+## subjective markov profile 
+
+
 ## import subjective profile estimation results 
 SCE_est_q = pd.read_pickle('data/subjective_profile_est_q.pkl')
 SCE_est_y = pd.read_pickle('data/subjective_profile_est_y.pkl')
@@ -200,8 +214,9 @@ life_cycle_paras_q = {'ρ': 1.0,
                     'transfer': 0.0, 
                     'bequest_ratio': 0.0,
                     'κ':kappa_sipp,
-                    
-                    ## subjective profile
+                     ## subjective profile
+                    'σ_ψ_sub':sigma_psi_sub**2*4/11,
+                    'σ_θ_sub':sigma_eps_sub**2*4,
                     'q':SCE_est_q.loc['$q$'],
                     'p':SCE_est_q.loc['$p$'],
                     'σ_ψ_2mkv':np.array([SCE_est_q.loc['$\tilde\sigma^l_\psi$'],
@@ -242,8 +257,9 @@ life_cycle_paras_y = {'ρ': 1.0,
                     'transfer': 0.0, 
                     'bequest_ratio': 0.0,
                     'κ':kappa_sipp,
-                    
                     ## subjective profile
+                    'σ_ψ_sub':sigma_psi_sub,
+                    'σ_θ_sub':sigma_eps_sub,
                     'q':SCE_est_y.loc['$q$'],
                     'p':SCE_est_y.loc['$p$'],
                     'σ_ψ_2mkv':np.array([SCE_est_y.loc['$\tilde\sigma^l_\psi$'],
@@ -323,7 +339,8 @@ blocknames =['risk',
             'life cycle',
             'preference',
             'policy',
-            'production']
+            'production',
+            'subjective']
 
 prefernece = ['ρ','β']
 lifecycle = ['T','L','1-D']
@@ -331,13 +348,15 @@ risk  = ['σ_ψ','σ_θ','U2U','E2E']
 initial = ['σ_ψ_init','init_b','bequest_ratio']
 policy = ['μ','pension','λ','λ_SS']
 production=['K2Y ratio','W','α','δ']
+subjective= ['σ_ψ_sub','σ_θ_sub']
 
 block_all= [risk,
             initial,
             lifecycle,
             prefernece,
             policy,
-           production]
+           production,
+           subjective]
 
 ## create multiple layer dictionary 
 
@@ -381,6 +400,7 @@ model_paras_by_block_df.loc[('policy','λ_SS'),'source']='endogenously determine
 model_paras_by_block_df.loc['production','source']='standard assumption'
 model_paras_by_block_df.loc[('production','W'),'source']='target values in steady state'
 model_paras_by_block_df.loc[('production','K2Y ratio'),'source']='target values in steady state'
+model_paras_by_block_df.loc['subjective','source']='estimated from SCE'
 
 
 # +
@@ -405,7 +425,9 @@ para_latex = ['$\\sigma_\\psi$',
              '$W$',
              'K2Y ratio',
              '$\\alpha$',
-             '$\\delta$']
+             '$\\delta$',
+              '$\\sigma_\\psi^{\\text{sub}}$',
+             '$\\sigma_\\theta^{\\text{sub}}$']
 
 model_paras_by_block_df['parameter name']= para_latex
 

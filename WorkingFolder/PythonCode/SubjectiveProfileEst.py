@@ -81,7 +81,7 @@ class Markov2Switching:
         if AR==0:
             self.ϕ1s =np.zeros(self.nb_var)
         elif AR==1:
-            self.ϕ1s = paras[:,5]
+            self.ϕ1s = self.paras[:,5]
         self.state_dependence = state_dependence
         self.AR = AR 
     
@@ -474,7 +474,7 @@ import numpy as np
 pd.options.display.float_format = '{:,.3f}'.format
 
 
-# + code_folding=[14, 28]
+# + code_folding=[0, 14, 28]
 ## import data 
 dataset = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 
@@ -647,12 +647,31 @@ axes[2].legend(loc=1)
 fig.savefig('../Graphs/sce/markov_example.png')
 
 # + code_folding=[]
-## create the model 
-SCE_mkv2 = Markov2Switching(AR=0,
-                            paras = np.array([0.1,0.1,0.1,0.7,0.7,
-                                             0.1,0.1,0.1,0.7,0.7,
-                                             0.1,-0.1,0.1,0.7,0.7,]),
-                           nb_var = 3)
+## initialize the model based on the SCE  
+
+AR = 1
+nb_var = 3
+
+if AR ==0:
+    if nb_var==3:
+        paras_init = np.array([0.1,0.1,0.1,0.7,0.7,
+                               0.1,0.1,0.1,0.7,0.7,
+                               0.1,-0.1,0.1,0.7,0.7])
+    elif nb_var ==1:
+        paras_init = np.array([0.1,0.1,0.1,0.7,0.7])
+
+elif AR==1:
+    if nb_var==3:
+        paras_init= np.array([0.1,0.1,0.1,0.7,0.7,0.8,
+                              0.1,0.1,0.1,0.7,0.7,0.8,
+                              0.1,-0.1,0.1,0.7,0.7,0.9])
+    elif nb_var==1:
+        paras_init= np.array([0.1,0.1,0.1,0.7,0.7,0.8])
+    
+    
+SCE_mkv2 = Markov2Switching(AR=AR,
+                            paras = paras_init,
+                            nb_var = nb_var)
 
 ## objective func
 SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
@@ -679,9 +698,9 @@ p_lb = 0.5 ## persistent
 p_inv_lb = SCE_mkv2.prob_func_inv(p_lb)
 
 ## estimation 
-guess = np.array([0.2,0.4,-0.5,0.1,0.4,
-                0.2,0.4,-2,0.1,0.4,
-                0.2,-0.1,-2,0.1,0.4])
+guess = np.array([0.2,0.4,-0.5,0.1,0.4,0.8,
+                0.2,0.4,-2,0.1,0.4,0.8,
+                0.2,-0.1,-2,0.1,0.4,0.8])
 
 
 bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),
@@ -723,7 +742,7 @@ kappa_sipp = np.median(kappas_sipp.dropna())
 kappa = kappa_sipp ## ratio of permanent and transitory risks 
 
 
-# + code_folding=[0, 8, 75]
+# + code_folding=[8, 75]
 ## create a dictionary for storing QUARTERLY parameters 
 
 model_para_q_est = {}
