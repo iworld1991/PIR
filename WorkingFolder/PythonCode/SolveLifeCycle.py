@@ -207,31 +207,8 @@ class LifeCycle:
         ## shocks 
         
         self.shock_draw_size = shock_draw_size
+        self.prepare_shocks()
         
-        ##################################################################
-         ## discretized distributions 
-        ##################################################################
-        
-        ## these codes use equiprobable discretized distributions at the cost of not being jittable 
-        
-        psi_shk_dist = lognorm(sigma_psi,100000,shock_draw_size)
-        self.psi_shk_draws = np.log(psi_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
-        eps_shk_dist = lognorm(sigma_eps,100000,shock_draw_size)
-        self.eps_shk_draws = np.log(eps_shk_dist.X)
-        
-        ## the draws used for simulation in household block 
-        if self.subjective==False:
-            self.psi_shk_true_draws =  self.psi_shk_draws
-            self.eps_shk_true_draws =  self.eps_shk_draws
-        else:
-            psi_shk_true_dist = lognorm(sigma_psi_true,100000,shock_draw_size)
-            eps_shk_true_dist = lognorm(sigma_eps_true,100000,shock_draw_size)
-            self.psi_shk_true_draws =  np.log(psi_shk_true_dist.X)
-            self.eps_shk_true_draws =  np.log(eps_shk_true_dist.X)
-            
-        
-        init_p_dist = lognorm(sigma_p_init,100000,shock_draw_size)
-        self.init_p_draws = np.log(init_p_dist.X)
         
         ## draw shocks for various markov state of volatility 
         sigma_psi_2mkv_r = sigma_psi_2mkv.reshape(n_mkv,-1)
@@ -305,6 +282,39 @@ class LifeCycle:
     # a function from the log permanent shock to the income factor
     def Γ(self,psi_shk):
         return np.exp(psi_shk)
+    
+    
+    def prepare_shocks(self):
+        subjective = self.subjective
+        shock_draw_size = self.shock_draw_size
+        sigma_psi = self.sigma_psi
+        sigma_eps = self.sigma_eps
+        sigma_psi_true = self.sigma_psi_true
+        sigma_eps_true = self.sigma_eps_true
+        sigma_p_init = self.sigma_p_init
+        
+        ##################################################################
+         ## discretized distributions 
+        ##################################################################
+                
+        psi_shk_dist = lognorm(sigma_psi,100000,shock_draw_size)
+        self.psi_shk_draws = np.log(psi_shk_dist.X)  ## discretized is lognormal variable itself, we work with the log of it
+        eps_shk_dist = lognorm(sigma_eps,100000,shock_draw_size)
+        self.eps_shk_draws = np.log(eps_shk_dist.X)
+        
+        ## the draws used for simulation in household block 
+        if subjective==False:
+            self.psi_shk_true_draws =  self.psi_shk_draws
+            self.eps_shk_true_draws =  self.eps_shk_draws
+        else:
+            psi_shk_true_dist = lognorm(sigma_psi_true,100000,shock_draw_size)
+            eps_shk_true_dist = lognorm(sigma_eps_true,100000,shock_draw_size)
+            self.psi_shk_true_draws =  np.log(psi_shk_true_dist.X)
+            self.eps_shk_true_draws =  np.log(eps_shk_true_dist.X)
+            
+        
+        init_p_dist = lognorm(sigma_p_init,100000,shock_draw_size)
+        self.init_p_draws = np.log(init_p_dist.X)
 
 
 # + code_folding=[]
@@ -970,6 +980,8 @@ if __name__ == "__main__":
     σs_stars = []
     for i,sigma_psi in enumerate(sigma_psi_ls):
         lc.sigma_psi = sigma_psi
+        print(lc.psi_shk_draws)
+        lc.prepare_shocks()
         as_star, σs_star = solve_model_backward_iter(lc,
                                                      m_init,
                                                      σ_init)
