@@ -956,7 +956,7 @@ if __name__ == "__main__":
 
 # ### Without MA idiosyncratic income shock 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -965,11 +965,11 @@ if __name__ == "__main__":
 
     t_start = time()
 
-    x_ls = [0.0]
+    sigma_psi_ls = [0.03,0.3]
     ms_stars =[]
     σs_stars = []
-    for i,x in enumerate(x_ls):
-        lc.x = x
+    for i,sigma_psi in enumerate(sigma_psi_ls):
+        lc.sigma_psi = sigma_psi
         as_star, σs_star = solve_model_backward_iter(lc,
                                                      m_init,
                                                      σ_init)
@@ -991,7 +991,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    eps_ls = [0] ## the first eps grid 
+    eps_fix = 0 ## the first eps grid 
 
     ms_star = ms_stars[0]
     σs_star = σs_stars[0]
@@ -1001,11 +1001,11 @@ if __name__ == "__main__":
     for x,year in enumerate(years_left):
         age = lc.L-year
         i = lc.L-age
-        for eps in eps_ls:
-            m_plt,c_plt = ms_star[i,:,eps,0],σs_star[i,:,eps,0]
+        for k,sigma_psi in enumerate(sigma_psi_ls):
+            m_plt,c_plt = ms_stars[k][i,:,eps_fix,0],σs_stars[k][i,:,eps_fix,0]
             axes[x].plot(m_plt,
                          c_plt,
-                         label = str(round(lc.eps_grid[eps],2)),
+                         label = r'$\sigma_\psi=$'+str(sigma_psi),
                          lw=3,
                         )
         axes[x].legend()

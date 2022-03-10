@@ -160,7 +160,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 7, 20, 67, 69]
+# + code_folding=[7, 20, 62, 106, 108]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -222,10 +222,49 @@ if calibrated_model == True:
     )
     
     ## for the subjective model, only change the belief 
-    #lc_mkv_sub = deepcopy(lc_mkv)
-    #lc_mkv_sub.subjective = True
-    #lc_mkv.sigma_psi = lc_paras['σ_ψ_sub']
-    #lc_mkv.sigma_eps = lc_paras['σ_ψ_sub']
+
+    lc_mkv_sub = LifeCycle(shock_draw_size=8,
+                        U = lc_paras['U'], ## transitory ue risk
+                        unemp_insurance = lc_paras['unemp_insurance'],
+                        pension = lc_paras['pension'], ## pension
+                        ################################
+                        subjective = True,
+                        sigma_psi = lc_paras['σ_ψ_sub'], # perceived permanent 
+                        sigma_eps = lc_paras['σ_θ_sub'], # perceived transitory 
+                        ############################################
+                        sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
+                        sigma_eps_true = lc_paras['σ_θ'], ## true transitory
+                        P = lc_paras['P'],   ## transitory probability of markov state z
+                        z_val = lc_paras['z_val'], ## markov state from low to high  
+                        x = 0.0,           ## MA(1) coefficient of non-permanent inocme shocks
+                        ue_markov = True,   
+                        adjust_prob = 1.0,
+                        sigma_p_init = lc_paras['σ_ψ_init'],
+                        init_b = lc_paras['init_b'],
+                        ## subjective risk prifile 
+                        sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                        sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+                        λ = lc_paras['λ'],  ## tax rate
+                        λ_SS = lc_paras['λ_SS'], ## social tax rate
+                        transfer = lc_paras['transfer'],  ## transfer 
+                        bequest_ratio = lc_paras['bequest_ratio'],
+                        LivPrb = lc_paras['LivPrb'],       ## living probability 
+                        ## life cycle 
+                        T = lc_paras['T'],
+                        L = lc_paras['L'],
+                        G = lc_paras['G'],
+                        ## other parameters 
+                        ρ = lc_paras['ρ'],     ## relative risk aversion  
+                        β = lc_paras['β'],     ## discount factor
+                        R = lc_paras['R'],           ## interest factor 
+                        W = lc_paras['W'],            ## Wage rate
+                        ## extrapolation (not used in this paper)
+                        theta = 0.0, ## extrapolation parameter 
+                        ## no persistent state
+                        b_y = 0.0,
+                        ## wether to have zero borrowing constraint 
+                        borrowing_cstr = True
+                        )
 
 
 else:
@@ -256,9 +295,8 @@ else:
                       )
 
 
-# + code_folding=[0]
-## solve the model 
-
+# + code_folding=[]
+## solve various models
 
 ## terminal period solutions 
 k = len(lc_mkv.a_grid)
@@ -274,39 +312,54 @@ for z in range(n):
         m_init_mkv[:,j,z] = 2*lc_mkv.a_grid
         σ_init_mkv[:,j,z] = m_init_mkv[:,j,z] 
 
-## solve the model 
+## solve the objective model 
 ms_star_mkv, σs_star_mkv = solve_model_backward_iter(lc_mkv,
                                                  m_init_mkv,
                                                  σ_init_mkv)
 
+## solve the subjective model 
+ms_star_mkv_sub,σs_star_mkv_sub = solve_model_backward_iter(lc_mkv_sub,
+                                                             m_init_mkv,
+                                                             σ_init_mkv)
 
-# + code_folding=[]
-## compare two markov states good versus bad 
 
+# + code_folding=[0, 9]
+## compare two markov states employed versus unemployed 
 
 years_left = [0,20,21,59]
 n_sub = len(years_left)
 
-eps_ls = [10]
+eps_fix = 0
 
 fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
 for x,year in enumerate(years_left):
     age = lc_mkv.L-year
     i = lc_mkv.L -age
-    for eps in eps_ls:
-        m_plt_u,c_plt_u = ms_star_mkv[i,:,eps,0],σs_star_mkv[i,:,eps,0]
-        m_plt_e, c_plt_e = ms_star_mkv[i,:,eps,1],σs_star_mkv[i,:,eps,1]
-        axes[x].plot(m_plt_u,
-                     c_plt_u,
-                     '--',
-                     label ='unemployed',
-                     lw=3)
-        axes[x].plot(m_plt_e,
-                     c_plt_e,
-                     '-.',
-                     label ='employed',
-                     lw=3)
+    m_plt_u,c_plt_u = ms_star_mkv[i,:,eps_fix,0],σs_star_mkv[i,:,eps_fix,0]
+    m_plt_e, c_plt_e = ms_star_mkv[i,:,eps_fix,1],σs_star_mkv[i,:,eps_fix,1]
+    m_plt_u_sub,c_plt_u_sub = ms_star_mkv_sub[i,:,eps_fix,0],σs_star_mkv_sub[i,:,eps_fix,0]
+    m_plt_e_sub, c_plt_e_sub = ms_star_mkv_sub[i,:,eps_fix,1],σs_star_mkv_sub[i,:,eps_fix,1]
+    axes[x].plot(m_plt_u,
+                 c_plt_u,
+                 '--',
+                 label ='objective:unemployed',
+                 lw=3)
+    #axes[x].plot(m_plt_e,
+    #             c_plt_e,
+    #             '-.',
+    #             label ='objective:employed',
+    #             lw=3)
+    axes[x].plot(m_plt_u_sub,
+                 c_plt_u_sub,
+                 '.',
+                 label ='subjective:unemployed',
+                 lw=3)
+    #axes[x].plot(m_plt_e_sub,
+    #             c_plt_e_sub,
+    #             '-.',
+    #             label ='subjective:employed',
+    #             lw=3)
     axes[x].legend()
     axes[x].set_xlim((0.0,3.0))
     axes[x].set_xlabel('asset')
@@ -317,13 +370,15 @@ for x,year in enumerate(years_left):
 # ## Aggregate steady state distributions
 
 from Utility import stationary_age_dist
-from Utility import unemp_insurance2tax
+## a function that computes social security tax rate balances gov budget for pension
+from Utility import unemp_insurance2tax  
+## a function that computes tax rate balances gov budget for ue insurance
 from Utility import SS2tax
 from Utility import CDProduction  
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[6, 101, 142, 482, 489, 518, 525, 554, 568]
+# + code_folding=[6, 101, 142, 467, 482, 489, 518, 525, 554, 568]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1372,14 +1427,13 @@ class HH_OLG_Markov:
 
 
 # + code_folding=[]
-## testing of the household  class 
+## testing of the household class 
 
 HH = HH_OLG_Markov(model=lc_mkv)
 
 ## Markov transition matrix 
 
 print("markov state transition matrix: \n",lc_mkv.P)
-
 print('steady state of markov state:\n',HH.ss_dstn)
 
 
@@ -1441,7 +1495,7 @@ SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
 
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(5,5))
@@ -1507,7 +1561,7 @@ A_life = HH.A_life
 C_life = HH.C_life
 
 
-# + code_folding=[0, 11]
+# + code_folding=[11]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -1818,7 +1872,7 @@ class Market_OLG_mkv:
         self.households = households
 
 
-# + code_folding=[0]
+# + code_folding=[0, 2]
 ## initialize a market and solve the equilibrium 
 
 production = CDProduction(α = production_paras['α'],
@@ -1873,7 +1927,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_eq.png')
 
-# + code_folding=[0]
+# + code_folding=[]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_ap, share_ap = market_OLG_mkv.households.Lorenz(variable='a')
@@ -1912,4 +1966,169 @@ ax.set_xlim((-20,20))
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_c_eq.png')
 # -
+# ## Compare between the objective and subjective model 
+
+# + code_folding=[0]
+## create a new subjective household block 
+
+HH_sub = HH_OLG_Markov(model=lc_mkv_sub)
+
+HH_sub.define_distribution_grid(num_pointsM = n_m, 
+                            num_pointsP = n_p)
+HH_sub.ComputeSSDist(ms_star = ms_star_mkv_sub,
+                      σs_star = σs_star_mkv_sub)
+
+
+HH_sub.Aggregate()
+print('aggregate consumption under stationary distribution:', str(HH.C))
+print('aggregate savings under stationary distribution:', str(HH.A))
+
+share_agents_cp_sub,share_cp_sub = HH_sub.Lorenz(variable='c')
+share_agents_ap_sub,share_ap_sub = HH_sub.Lorenz(variable='a')
+
+## Lorenz curve of steady state wealth distribution
+
+fig, ax = plt.subplots(figsize=(5,5))
+ax.plot(share_agents_cp_sub,share_cp_sub, 'r--',label='Lorenz curve of consumption')
+ax.plot(share_agents_cp_sub,share_agents_cp_sub, 'k-',label='equality curve')
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+plt.savefig('../Graphs/model/lorenz_c_sub_test.png')
+
+## Lorenz curve of steady state wealth distribution
+
+fig, ax = plt.subplots(figsize=(5,5))
+ax.plot(share_agents_ap,share_ap, 'r--',label='Lorenz curve of wealth: objective model')
+ax.plot(share_agents_ap_sub,share_ap_sub, 'g-',label='Lorenz curve of wealth: subjective model')
+ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve of wealth: SCF')
+ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+plt.savefig('../Graphs/model/lorenz_a_sub_test.png')
+
+## life cycle 
+
+HH_sub.AggregatebyAge()
+
+A_life_sub = HH_sub.A_life
+C_life_sub = HH_sub.C_life
+
+
+age_lc = SCF_profile.index
+
+fig, ax = plt.subplots(figsize=(10,5))
+plt.title('Life cycle profile of wealth')
+ax.plot(age_lc[1:],
+       np.log(A_life),
+       'r-o',
+       label='objective model')
+
+ax.plot(age_lc[1:],
+       np.log(A_life_sub),
+       'g-o',
+       label='subjective model')
+
+ax.vlines(lc_mkv.T+25,
+          np.min(np.log(A_life)),
+          np.max(np.log(A_life)),
+          color='k',
+          label='retirement'
+         )
+#ax.set_ylim([-5.0,2.0])
+
+ax2 = ax.twinx()
+ax2.set_ylim([10.5,15])
+ax2.bar(age_lc[1:],
+        np.log(SCF_profile['mv_wealth'][1:]),
+       label='SCF (RHS)')
+
+#ax2.plot(age,
+#        C_life,
+#        'b--',
+#        label='consumption (RHS)')
+
+ax.set_xlabel('Age')
+ax.set_ylabel('Log wealth in model')
+ax2.set_ylabel('Log wealth SCF')
+ax.legend(loc=1)
+ax2.legend(loc=2)
+fig.savefig('../Graphs/model/life_cycle_a_sub_test.png')
+
+
+## general equilibrium 
+
+
+market_OLG_mkv_sub = Market_OLG_mkv(households = HH_sub,
+                                    production = production)
+
+market_OLG_mkv_sub.get_equilibrium_k()
+market_OLG_mkv_sub.get_equilibrium_dist()
+
+
+
+## plot life cycle profile
+
+age_lc = SCF_profile.index
+
+fig, ax = plt.subplots(figsize=(10,5))
+plt.title('Life cycle profile of wealth')
+ax.plot(age_lc[:-2],
+        np.log(market_OLG_mkv.households.A_life)[:-1],
+       'r-o',
+       label='objective model')
+
+ax.plot(age_lc[:-2],
+        np.log(market_OLG_mkv_sub.households.A_life)[:-1],
+       'g-o',
+       label='subjective model')
+
+
+ax2 = ax.twinx()
+ax2.set_ylim([10.5,15])
+ax2.vlines(lc_mkv.T+25,
+          10.5,
+          15,
+          color='k',
+          label='retirement')
+
+ax2.bar(age_lc,
+        np.log(SCF_profile['mv_wealth']),
+       #'k--',
+       label='SCF (RHS)')
+
+#ax2.plot(age,
+#        C_life,
+#        'b--',
+#        label='consumption (RHS)')
+
+ax.set_xlabel('Age')
+ax.set_ylabel('Log wealth')
+ax2.set_ylabel('Log wealth SCF')
+ax.legend(loc=1)
+ax2.legend(loc=2)
+fig.savefig('../Graphs/model/life_cycle_a_sub_eq.png')
+
+#######################################
+## lorenz curve 
+###################################
+
+## compute things needed for lorenz curve plot of asset accumulation 
+
+share_agents_ap_sub, share_ap_sub = market_OLG_mkv_sub.households.Lorenz(variable='a')
+
+## Lorenz curve of steady state wealth distribution
+
+fig, ax = plt.subplots(figsize=(5,5))
+ax.plot(share_agents_ap,share_cp, 'r--',label='Lorenz curve of level of wealth: objective model')
+ax.plot(share_agents_ap_sub,share_ap_sub, 'r--',label='Lorenz curve of level of wealth: objective model')
+
+ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve from SCF')
+ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+fig.savefig('../Graphs/model/lorenz_curve_a_sub_eq.png')
+
 
