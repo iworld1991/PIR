@@ -160,7 +160,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[7, 20, 62, 106, 108]
+# + code_folding=[]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -181,8 +181,7 @@ if calibrated_model == True:
 
 
     ## initialize the model with calibrated parameters 
-    lc_mkv = LifeCycle(shock_draw_size=8,
-                       U = lc_paras['U'], ## transitory ue risk
+    lc_mkv = LifeCycle(U = lc_paras['U'], ## transitory ue risk
                     unemp_insurance = lc_paras['unemp_insurance'],
                     pension = lc_paras['pension'], ## pension
                     sigma_psi = lc_paras['σ_ψ'], # permanent 
@@ -220,17 +219,18 @@ if calibrated_model == True:
                     ## wether to have zero borrowing constraint 
                     borrowing_cstr = True
     )
-    
+    print(lc_mkv.psi_shk_draws)
+    print(lc_mkv.eps_shk_draws)
+
     ## for the subjective model, only change the belief 
 
-    lc_mkv_sub = LifeCycle(shock_draw_size=8,
-                        U = lc_paras['U'], ## transitory ue risk
+    lc_mkv_sub = LifeCycle(U = lc_paras['U'], ## transitory ue risk
                         unemp_insurance = lc_paras['unemp_insurance'],
                         pension = lc_paras['pension'], ## pension
                         ################################
                         subjective = True,
-                        sigma_psi = lc_paras['σ_ψ_sub'], # perceived permanent 
-                        sigma_eps = lc_paras['σ_θ_sub'], # perceived transitory 
+                        sigma_psi = 0.01 #lc_paras['σ_ψ_sub'], # perceived permanent 
+                        sigma_eps = 0.01 #lc_paras['σ_θ_sub'], # perceived transitory 
                         ############################################
                         sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
                         sigma_eps_true = lc_paras['σ_θ'], ## true transitory
@@ -265,6 +265,10 @@ if calibrated_model == True:
                         ## wether to have zero borrowing constraint 
                         borrowing_cstr = True
                         )
+    
+    print(lc_mkv_sub.psi_shk_draws)
+    print(lc_mkv_sub.eps_shk_draws)
+
 
 
 else:
@@ -323,10 +327,10 @@ ms_star_mkv_sub,σs_star_mkv_sub = solve_model_backward_iter(lc_mkv_sub,
                                                              σ_init_mkv)
 
 
-# + code_folding=[0, 9]
+# + code_folding=[]
 ## compare two markov states employed versus unemployed 
 
-years_left = [0,20,21,59]
+years_left = [0,30,40,55]
 n_sub = len(years_left)
 
 eps_fix = 0
@@ -352,7 +356,7 @@ for x,year in enumerate(years_left):
     #             lw=3)
     axes[x].plot(m_plt_u_sub,
                  c_plt_u_sub,
-                 '.',
+                 '-',
                  label ='subjective:unemployed',
                  lw=3)
     #axes[x].plot(m_plt_e_sub,
@@ -1968,7 +1972,7 @@ fig.savefig('../Graphs/model/distribution_c_eq.png')
 # -
 # ## Compare between the objective and subjective model 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## create a new subjective household block 
 
 HH_sub = HH_OLG_Markov(model=lc_mkv_sub)
@@ -1980,8 +1984,8 @@ HH_sub.ComputeSSDist(ms_star = ms_star_mkv_sub,
 
 
 HH_sub.Aggregate()
-print('aggregate consumption under stationary distribution:', str(HH.C))
-print('aggregate savings under stationary distribution:', str(HH.A))
+print('aggregate consumption under stationary distribution:', str(HH_sub.C))
+print('aggregate savings under stationary distribution:', str(HH_sub.A))
 
 share_agents_cp_sub,share_cp_sub = HH_sub.Lorenz(variable='c')
 share_agents_ap_sub,share_ap_sub = HH_sub.Lorenz(variable='a')
@@ -2036,7 +2040,7 @@ ax.vlines(lc_mkv.T+25,
           color='k',
           label='retirement'
          )
-#ax.set_ylim([-5.0,2.0])
+ax.set_ylim([-5.0,2.0])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
@@ -2122,7 +2126,7 @@ share_agents_ap_sub, share_ap_sub = market_OLG_mkv_sub.households.Lorenz(variabl
 
 fig, ax = plt.subplots(figsize=(5,5))
 ax.plot(share_agents_ap,share_cp, 'r--',label='Lorenz curve of level of wealth: objective model')
-ax.plot(share_agents_ap_sub,share_ap_sub, 'r--',label='Lorenz curve of level of wealth: objective model')
+ax.plot(share_agents_ap_sub,share_ap_sub, 'g--',label='Lorenz curve of level of wealth: subjective model')
 
 ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve from SCF')
 ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
@@ -2130,5 +2134,8 @@ ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
 fig.savefig('../Graphs/model/lorenz_curve_a_sub_eq.png')
+
+
+# -
 
 
