@@ -54,7 +54,7 @@ MeanOneLogNormalPara=[
 @jitclass(MeanOneLogNormalPara)
 class MeanOneLogNormal:
     def __init__(self,
-                 sigma = 0.40,
+                 sigma = 0.2,
                  sim_N = 100000,
                  approx_N = 7):
 
@@ -160,7 +160,7 @@ class MeanOneLogNormal:
 if __name__ == "__main__":
     
     sigma = 0.1
-    N = 7
+    N = 20
 
     # new model 
     ln = MeanOneLogNormal(sigma=sigma)
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     print(ln.X)
 
 
-# + code_folding=[0]
+# + code_folding=[]
 def plot(ln, x0, x1, gridsize=100):
     """
     Plot the discrete approximation against the actual distribution.
@@ -305,7 +305,7 @@ class DiscreteApproximation(object):
 #
 # Now we use simple inheritance to create a mean-one lognormal instance quickly and easily.
 
-# + code_folding=[]
+# + code_folding=[0]
 class DiscreteApproximationToMeanOneLogNormal(DiscreteApproximation):
     """
     Extension of the DiscreteApproximation class, which creates a mean-one 

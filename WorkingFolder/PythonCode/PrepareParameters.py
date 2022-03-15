@@ -191,7 +191,7 @@ SCE_est_y = SCE_est_y['baseline']
 
 # + code_folding=[]
 ## create a dictionary of parameters 
-life_cycle_paras_q = {'ρ': 1.0, 
+life_cycle_paras_q = {'ρ': 2.0, 
                     'β': 0.98**(1/4), 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
@@ -234,7 +234,7 @@ life_cycle_paras_q
 
 # + code_folding=[]
 ## create a dictionary of parameters 
-life_cycle_paras_y = {'ρ': 1.0, 
+life_cycle_paras_y = {'ρ': 2.0, 
                     'β': 0.98, 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 

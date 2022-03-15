@@ -62,6 +62,10 @@ mp.rc('ytick', labelsize=11)
 
 mp.rc('legend',fontsize=11)
 plt.rc('font',size=11) 
+
+plt.style.use('seaborn')
+
+
 # -
 
 # ## The Model Class and Solver
@@ -116,7 +120,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[150, 163, 167]
+# + code_folding=[1, 6, 134, 151]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -148,14 +152,14 @@ class LifeCycle:
                  grid_max = 5.0,
                  grid_size = 50,
                  theta = 2,               ## assymetric extrapolative parameter
-                 unemp_insurance = 0.15,   #  unemp_insurance = 0.0,   
+                 unemp_insurance = 0.0,   #  unemp_insurance = 0.0,   
                  pension = 1.0,           
                  ue_markov = False,    
                  adjust_prob = 1.0,
                  sigma_p_init = 0.01,
                  init_b = 0.0,
-                 λ = 0.10,
-                 λ_SS = 0.1,
+                 λ = 0.0,
+                 λ_SS = 0.0,
                  transfer = 0.0,
                  bequest_ratio = 0.0,
                  sigma_psi_true = 0.10,     ## true size of permanent income shocks
@@ -167,7 +171,7 @@ class LifeCycle:
         n_z = len(z_val)
         self.P, self.z_val = P, z_val
         n_mkv = len(sigma_psi_2mkv)
-        assert n_z == n_mkv, "the number of markov states for income and for risks should be equal"
+        #assert n_z == n_mkv, "the number of markov states for income and for risks should be equal"
         self.T,self.L = T,L
         self.G = G
         self.subjective =subjective 
@@ -175,6 +179,7 @@ class LifeCycle:
         ###################################################
         ## fork depending on subjective or objective model ##
         #####################################################
+
         self.sigma_psi = sigma_psi
         self.sigma_eps = sigma_eps
             
@@ -183,8 +188,8 @@ class LifeCycle:
             self.sigma_eps_true = self.sigma_eps
         else:
             print('remidner: needs to give true risk parameters: sigma_psi_true & sigma_eps_true!')
-            self.sigma_psi_true = self.sigma_psi_true
-            self.sigma_eps_true = self.sigma_eps_true
+            self.sigma_psi_true = sigma_psi_true
+            self.sigma_eps_true = sigma_eps_true
             
         self.x = x
         self.sigma_p_init = sigma_p_init
@@ -208,24 +213,7 @@ class LifeCycle:
         
         self.shock_draw_size = shock_draw_size
         self.prepare_shocks()
-        
-        
-        ## draw shocks for various markov state of volatility 
-        sigma_psi_2mkv_r = sigma_psi_2mkv.reshape(n_mkv,-1)
-        sigma_eps_2mkv_r = sigma_eps_2mkv.reshape(n_mkv,-1)
-        
-        sigma_psi_2mkv_l = lognorm(sigma_psi_2mkv[0],100000,shock_draw_size)
-        sigma_psi_2mkv_h = lognorm(sigma_psi_2mkv[1],100000,shock_draw_size)
-        
-        self.psi_shk_mkv_draws = np.stack((np.log(sigma_psi_2mkv_l.X),
-                                         np.log(sigma_psi_2mkv_h.X)))
-        
-        sigma_eps_2mkv_l = lognorm(sigma_eps_2mkv[0],100000,shock_draw_size)
-        sigma_eps_2mkv_h = lognorm(sigma_eps_2mkv[1],100000,shock_draw_size)
-        
-        self.eps_shk_mkv_draws = np.stack((np.log(sigma_eps_2mkv_l.X),
-                                         np.log(sigma_eps_2mkv_h.X)))
-        
+            
         
         ## saving a grid
         self.a_grid = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size))
@@ -292,6 +280,8 @@ class LifeCycle:
         sigma_psi_true = self.sigma_psi_true
         sigma_eps_true = self.sigma_eps_true
         sigma_p_init = self.sigma_p_init
+        sigma_psi_2mkv = self.sigma_psi_2mkv
+        sigma_eps_2mkv = self.sigma_eps_2mkv
         
         ##################################################################
          ## discretized distributions 
@@ -315,6 +305,36 @@ class LifeCycle:
         
         init_p_dist = lognorm(sigma_p_init,100000,shock_draw_size)
         self.init_p_draws = np.log(init_p_dist.X)
+        
+        ## draw shocks for various markov state of volatility 
+        #sigma_psi_2mkv_r = sigma_psi_2mkv.reshape(n_mkv,-1)
+        #sigma_eps_2mkv_r = sigma_eps_2mkv.reshape(n_mkv,-1)
+        
+        sigma_psi_2mkv_l = lognorm(sigma_psi_2mkv[0],100000,shock_draw_size)
+        sigma_psi_2mkv_h = lognorm(sigma_psi_2mkv[1],100000,shock_draw_size)
+        
+        self.psi_shk_mkv_draws = np.stack((np.log(sigma_psi_2mkv_l.X),
+                                         np.log(sigma_psi_2mkv_h.X)))
+        
+        sigma_eps_2mkv_l = lognorm(sigma_eps_2mkv[0],100000,shock_draw_size)
+        sigma_eps_2mkv_h = lognorm(sigma_eps_2mkv[1],100000,shock_draw_size)
+        
+        self.eps_shk_mkv_draws = np.stack((np.log(sigma_eps_2mkv_l.X),
+                                         np.log(sigma_eps_2mkv_h.X)))
+        
+        
+    def terminal_solution(self):
+        k = len(self.a_grid)
+        k2 =len(self.eps_grid)
+        n = len(self.P)
+        σ_init = np.empty((k,k2,n))
+        m_init = np.empty((k,k2,n))
+
+        for z in range(n):
+            for j in range(k2):
+                m_init[:,j,z] = self.a_grid
+                σ_init[:,j,z] = m_init[:,j,z]
+        return m_init,σ_init
 
 
 # + code_folding=[7]
@@ -450,7 +470,7 @@ def EGM(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[]
+# + code_folding=[5]
 ## the operator under markov stochastic risks 
 ## now the permanent and transitory risks are 
 ## different between markov states. 
@@ -843,11 +863,51 @@ def solve_model_iter(model,        # Class with model information
     return me_vec, σ_vec
 
 
+# + code_folding=[]
+# a function to compare two solutions 
+
+def compare_2solutions(ms_stars,
+                      σs_stars):
+    """
+    input
+    ======
+    ms_stars: list of m grids
+    σs_stars: list of c policies 
+    
+    output
+    ======
+    diff12: difference between solution 1 and solution 2 (1 minus 2)
+    
+    """
+    if len(σs_stars)!=2 or len(σs_stars)!=2:
+        print('only the first two solutions are compared!')
+    m_star1, σ_star1 =ms_stars[0],σs_stars[0]
+    m_star2, σ_star2 =ms_stars[1],σs_stars[1]
+
+    ## get the interpolated c funcs
+    c_stars1 = np.empty_like(σ_star1)
+    c_stars2 = np.empty_like(σ_star2)
+    n_age,n_m,n_eps,n_z = c_stars1.shape
+    
+    m_grid = np.linspace(0.0,5.0,n_m)
+    
+    for i in range(n_age):
+        for j in range(n_eps):
+            for k in range(n_z):
+                c_func1 = lambda m: interp(m_star1[i,:,j,k],σ_star1[i,:,j,k],m)
+                c_stars1[i,:,j,k] = c_func1(m_grid)
+                c_func2 = lambda m: interp(m_star2[i,:,j,k],σ_star2[i,:,j,k],m)
+                c_stars2[i,:,j,k] = c_func2(m_grid)
+        
+    diff12 = c_stars1-c_stars2
+    return diff12 
+
+
 # -
 
 # ## Initialize the model
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -893,7 +953,7 @@ if __name__ == "__main__":
     ## wether to have zero borrowing constraint 
     borrowing_cstr = True
 
-# + code_folding=[1]
+# + code_folding=[0]
 ## a deterministic income profile 
 if __name__ == "__main__":
 
@@ -921,7 +981,7 @@ def policyPF(β,
     
 """
 
-# + code_folding=[1]
+# + code_folding=[]
 if __name__ == "__main__":
     lc = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
@@ -939,28 +999,15 @@ if __name__ == "__main__":
                    )
 
 
-# + code_folding=[]
+# +
 # Initial the end-of-period consumption policy of σ = consume all assets
 
 if __name__ == "__main__":
 
     ## initial consumption functions 
-
-    k = len(lc.a_grid)
-    k2 =len(lc.eps_grid)
-
-    n = len(lc.P)
-    σ_init = np.empty((k,k2,n))
-    m_init = np.empty((k,k2,n))
-
-    for z in range(n):
-        for j in range(k2):
-            m_init[:,j,z] = lc.a_grid
-            σ_init[:,j,z] = m_init[:,j,z]
-
-# + code_folding=[]
-if __name__ == "__main__":
-
+    
+    m_init,σ_init = lc.terminal_solution()
+    
     plt.title('Consumption in the last period')
     plt.plot(m_init[:,0,1],
              σ_init[:,0,1])
@@ -968,19 +1015,27 @@ if __name__ == "__main__":
 
 # ### Different permanent/transitory risk (no MA)
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     t_start = time()
 
-    sigma_psi_ls = [0.03,0.1]
+    sigma_psi_ls = [0.03,0.2]
+    sigma_eps_ls = [0.03,0.2]
+    
     ms_stars =[]
     σs_stars = []
     for i,sigma_psi in enumerate(sigma_psi_ls):
         lc.sigma_psi = sigma_psi
+        lc.sigma_eps = sigma_eps_ls[i]
         ### this line is very important!!!!
         #### need to regenerate shock draws for new sigmas
         lc.prepare_shocks()
+        
+        ## terminal solution
+        m_init,σ_init = lc.terminal_solution()
+        
+        ## solve backward
         ms_star, σs_star = solve_model_backward_iter(lc,
                                                      m_init,
                                                      σ_init)
@@ -992,7 +1047,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1075,7 +1130,7 @@ ax.set_title('consumption at a certain age')
 """
 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## plot 3d functions over life cycle 
@@ -1083,7 +1138,7 @@ if __name__ == "__main__":
     ages = np.array(range(ms_star.shape[0]))
     asset = ms_star[0,:,0,0]
     xx, yy = np.meshgrid(ages, asset)
-    c_stars = σs_star[:,:,0,0].T
+    c_stars = np.flip(σs_star[:,:,0,0],axis=0).T
 
     fig = plt.figure(figsize=(6,6))
     ax = fig.add_subplot(111, 
@@ -1091,15 +1146,14 @@ if __name__ == "__main__":
     dem3d = ax.plot_surface(xx,
                             yy,
                             c_stars,
-                            rstride=1, 
-                            cstride=1,
-                            cmap='viridis', 
-                            edgecolor='none'
+                            cmap="viridis"
                            )
-    ax.set_title('consumption over the life cycle')
-    ax.set_xlabel('years left')
+    ax.set_xlim(60,0)
+    ax.set_title('Consumption over the life cycle')
+    ax.set_xlabel('age')
+    #ax.grid(False)
     ax.set_ylabel('wealth')
-    ax.view_init(30, 30)
+    ax.view_init(15, 30)
 
 # + code_folding=[]
 """
@@ -1145,7 +1199,7 @@ if __name__ == "__main__":
                      b_y=0.5)
 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1157,7 +1211,7 @@ if __name__ == "__main__":
     
     P_ls = [P]
     
-    ms_stars_ar=[]
+    ms_stars_ar = []
     σs_stars_ar = []
 
     for i, P in enumerate(P_ls):
@@ -1167,19 +1221,10 @@ if __name__ == "__main__":
         lc_ar.P = P
         ## no need to reinitialize the model because P is only used in solving stage
 
-        ## initial guess
-        k = len(lc_ar.a_grid)
-        k2 =len(lc_ar.eps_grid)
-        n = len(lc_ar.P)
+        ## terminal solution
+        m_init_ar,σ_init_ar = lc_ar.terminal_solution()
 
-        σ_init_ar = np.empty((k,k2,n))
-        m_init_ar = np.empty((k,k2,n))
-
-        for z in range(n):
-            for j in range(k2):
-                σ_init_ar[:,j,z] = 2*lc_ar.a_grid
-                m_init_ar[:,j,z] = 2*lc_ar.a_grid
-
+    
         ## solve the model 
         ms_star_ar, σs_star_ar = solve_model_backward_iter(lc_ar,
                                                          m_init_ar,
@@ -1192,7 +1237,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1232,7 +1277,7 @@ if __name__ == "__main__":
 
 # ### State-dependent risks 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## transition matrix between low and high risk state
@@ -1272,7 +1317,7 @@ if __name__ == "__main__":
     print('permanent risk state is '+str(sigma_psi_2mkv))
     print('transitory risk state is '+str(sigma_eps_2mkv))
 
-# + code_folding=[]
+# + code_folding=[4]
 if __name__ == "__main__":
 
     ## another model instance 
@@ -1293,7 +1338,7 @@ if __name__ == "__main__":
                    b_y=b_y)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## solve the model for different transition matricies 
@@ -1309,18 +1354,8 @@ if __name__ == "__main__":
         ## feed the model with a markov matrix of macro state 
         lc_sv.P = P
 
-        ## initial guess
-        k = len(lc_sv.a_grid)
-        k2 =len(lc_sv.eps_grid)
-        n = len(lc_sv.P)
-
-        σ_init_sv = np.empty((k,k2,n))
-        m_init_sv = np.empty((k,k2,n))
-
-        for z in range(n):
-            for j in range(k2):
-                σ_init_sv[:,j,z] = 2*lc_sv.a_grid
-                m_init_sv[:,j,z] = 2*lc_sv.a_grid
+        ## terminal solution       
+        m_init_sv,σ_init_sv = lc_sv.terminal_solution()
 
         ## solve the model 
         ms_star_sv, σs_star_sv = solve_model_backward_iter(lc_sv,
@@ -1373,7 +1408,7 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1458,7 +1493,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent unemployment state
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1473,7 +1508,7 @@ if __name__ == "__main__":
     #                    (0.05, 0.95)])   # markov transition matricies 
 
 
-# + code_folding=[4]
+# + code_folding=[3]
 if __name__ == "__main__":
 
     ## initialize another 
@@ -1492,7 +1527,7 @@ if __name__ == "__main__":
                          unemp_insurance = 0.3,
                          ue_markov = True)
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## solve the model for different transition matricies of UE markov
@@ -1507,19 +1542,8 @@ if __name__ == "__main__":
         ## feed the model with a markov matrix of macro state 
         lc_uemkv.P = P
 
-        ## initial guess
-        k = len(lc_uemkv.a_grid)
-        k2 =len(lc_uemkv.eps_grid)
-        n = len(lc_uemkv.P)
-
-        σ_init_uemkv = np.empty((k,k2,n))
-        m_init_uemkv = np.empty((k,k2,n))
-
-        for z in range(n):
-            for j in range(k2):
-                m_init_uemkv[:,j,z] = 2*lc_uemkv.a_grid
-                σ_init_uemkv[:,j,z] = m_init_uemkv[:,j,z]
-
+        ## terminal solution
+        m_init_uemkv,σ_init_uemkv=lc_uemkv.terminal_solution()
 
         ## solve the model 
         ms_star_uemkv, σs_star_uemkv = solve_model_backward_iter(lc_uemkv,
@@ -1533,7 +1557,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1575,7 +1599,7 @@ if __name__ == "__main__":
 # - unemployed perceive higher risks
 #
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1597,8 +1621,7 @@ if __name__ == "__main__":
     ## again, zero loading from z
     b_y = 0.0
 
-# +
-
+# + code_folding=[0]
 if __name__ == "__main__":
     ## compute steady state 
     av_sigma_psi_cr = np.sqrt(np.dot(P_uemkv[0,:],sigma_psi_2mkv_cr**2))
@@ -1650,17 +1673,7 @@ if __name__ == "__main__":
         lc_cr.P = P
 
         ## initial guess
-        k = len(lc_cr.a_grid)
-        k2 =len(lc_cr.eps_grid)
-        n = len(lc_cr.P)
-
-        σ_init_cr = np.empty((k,k2,n))
-        m_init_cr = np.empty((k,k2,n))
-
-        for z in range(n):
-            for j in range(k2):
-                σ_init_cr[:,j,z] = 2*lc_cr.a_grid
-                m_init_cr[:,j,z] = 2*lc_cr.a_grid
+        m_init_cr,σ_init_cr =lc_cr.terminal_solution()
 
         ## solve the model 
         ms_star_cr, σs_star_cr = solve_model_backward_iter(lc_cr,
@@ -1799,7 +1812,7 @@ if __name__ == "__main__":
 
 # ### Subjective perceptions 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1885,7 +1898,7 @@ if __name__ == "__main__":
 # -
 # ## Infinite horizon problem
 
-# + code_folding=[0, 28, 39]
+# + code_folding=[0, 30]
 if __name__ == "__main__":
 
 
@@ -1905,19 +1918,10 @@ if __name__ == "__main__":
                        b_y=b_y)
 
 
-    ## initial consumption functions 
+    ## initial guess of consumption functions 
 
-    k = len(inf_liv.a_grid)
-    k2 =len(inf_liv.eps_grid)
-
-    n = len(inf_liv.P)
-    σ_init = np.empty((k,k2,n))
-    m_init = np.empty((k,k2,n))
-
-    for z in range(n):
-        for j in range(k2):
-            m_init[:,j,z] = inf_liv.a_grid
-            σ_init[:,j,z] = 0.1*m_init[:,j,z]
+    m_init,σ_init = inf_liv.terminal_solution()
+   
 
     t_start = time()
 
@@ -1989,21 +1993,9 @@ if __name__ == "__main__":
                        adjust_prob = 0.6)
 
     ## initial consumption functions 
-
-    k = len(imp_adjust.a_grid)
-    k2 =len(imp_adjust.eps_grid)
-
-    n = len(imp_adjust.P)
-    σ_init = np.empty((k,k2,n))
-    m_init = np.empty((k,k2,n))
-
-    for z in range(n):
-        for j in range(k2):
-            m_init[:,j,z] = imp_adjust.a_grid
-            σ_init[:,j,z] = 0.1*m_init[:,j,z]  ## c !=m because of infinite horizon
+    m_init,σ_init = imp_adjust.terminal_solution()
 
     t_start = time()
-
 
     x_ls = [0.0]
     ms_imp_stars =[]

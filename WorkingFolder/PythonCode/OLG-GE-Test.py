@@ -106,7 +106,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -160,7 +160,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[123]
+# + code_folding=[126]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -201,14 +201,17 @@ if calibrated_model == True:
         ## income risks 
                    x = 0.0,
                    b_y= 0.0,
-                   sigma_psi = lc_paras['σ_ψ'],
-                   sigma_eps = lc_paras['σ_θ'],
+                   sigma_psi = lc_paras['σ_ψ_sub'],
+                   sigma_eps = lc_paras['σ_θ_sub'],
+                   subjective = True,
                    ue_markov = True,
                    P = lc_paras['P'],
                    U = lc_paras['U'],
                    z_val = lc_paras['z_val'], ## markov state from low to high 
                    sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
                    sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+                   sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
+                   sigma_eps_true = lc_paras['σ_θ'], ## true transitory
         
         ## initial conditions 
                     sigma_p_init = lc_paras['σ_ψ_init'],
@@ -259,8 +262,8 @@ if calibrated_model == True:
                    z_val = lc_paras['z_val'], ## markov state from low to high
                    sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
                    sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                   sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
-                   sigma_eps_true = lc_paras['σ_θ'], ## true transitory
+                   sigma_psi_true = 2*lc_paras['σ_ψ'], ## true permanent
+                   sigma_eps_true = 2*lc_paras['σ_θ'], ## true transitory
         
         ## initial conditions 
                     sigma_p_init = lc_paras['σ_ψ_init'],

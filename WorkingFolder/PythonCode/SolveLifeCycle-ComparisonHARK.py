@@ -69,7 +69,7 @@ inf_paras['P'] = np.array([[0.9,0.1],[0.2,0.8]])
 grid_max = 5.0
 grid_size = 50
 
-# + code_folding=[]
+# + code_folding=[0]
 inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
                     unemp_insurance = inf_paras['unemp_insurance'],
                     pension = inf_paras['pension'], ## pension
@@ -194,7 +194,7 @@ hark_mkv.PermGroFac = [
 ]
 hark_mkv.LivPrb = [hark_mkv.LivPrb * np.ones(2)]
 
-# + code_folding=[3]
+# + code_folding=[]
 # Replace the default (lognormal) income distribution with a custom one
 employed_income_dist = DiscreteDistribution(np.ones(1), [np.ones(1), np.ones(1)])  # Definitely get income
 unemployed_income_dist = DiscreteDistribution(np.ones(1), [np.ones(1), np.zeros(1)]) # Definitely don't
@@ -236,6 +236,106 @@ plt.plot(m_plt_e,c_e_HARK,'b--',label='emp:HARK')
 plt.plot(m_plt_e,c_plt_e,'go',label='emp:PIR')
 plt.legend(loc=0)
 # -
+# ### Comparing consumption policies under different risks 
+
+# + code_folding=[]
+sigma_eps_ls = [0.01,0.05,0.1,0.2]
+sigma_psi_ls = [0.01,0.05,0.1,0.2]
+
+cFunc_list = []
+for i,sigma_eps in enumerate(sigma_eps_ls):
+    hark_mkv_para['TranShkStd'] = [sigma_eps]
+    print(hark_mkv_para['TranShkStd'])
+    hark_mkv_para['PermShkStd'] = [sigma_psi_ls[i]]
+    print(hark_mkv_para['PermShkStd'])
+    hark_mkv = MarkovConsumerType(**hark_mkv_para)
+    hark_mkv.cycles = 0
+    hark_mkv.vFuncBool = False  # for easy toggling here
+    # Interest factor, permanent growth rates, and survival probabilities are constant arrays
+    hark_mkv.assign_parameters(Rfree = np.array(2 * [hark_mkv.Rfree]))
+    hark_mkv.PermGroFac = [
+        np.array(2 * hark_mkv.PermGroFac)
+    ]
+    hark_mkv.LivPrb = [hark_mkv.LivPrb * np.ones(2)]
+    # Replace the default (lognormal) income distribution with a custom one
+    employed_income_dist = DiscreteDistribution(np.ones(1), [np.ones(1), np.ones(1)])  # Definitely get income
+    unemployed_income_dist = DiscreteDistribution(np.ones(1), [np.ones(1), np.zeros(1)]) # Definitely don't
+    hark_mkv.IncShkDstn = [
+        [
+            unemployed_income_dist,
+            employed_income_dist
+        ]
+    ]
+    ## solve the model 
+
+    start_time = time()
+    hark_mkv.solve()
+    end_time = time()
+    print(
+        "Solving a Markov consumer with serially correlated unemployment took "
+        + str(end_time - start_time)
+        + " seconds."
+    )
+    
+    #print("Consumption functions for each discrete state:")
+    #plot_funcs(hark_mkv.solution[0].cFunc, 0, 20)
+    cFunc_list.append(hark_mkv.solution[0].cFunc)
+    
+m_values = np.linspace(0.0,20.0,200)
+
+for i,sigma_eps in enumerate(sigma_eps_ls):
+    plt.plot(m_values,
+             cFunc_list[i][0](m_values),
+            label=r'$\sigma^\theta.{}$'.format(sigma_eps))
+plt.legend(loc=1)
+
+# + code_folding=[]
+## for life cycle models 
+import HARK.ConsumptionSaving.ConsIndShockModel as HARK_model         # The consumption-saving micro model
+
+sigma_eps_ls = [0.01,0.05,0.1,0.2]
+sigma_psi_ls = [0.01,0.05,0.1,0.2]
+
+cFunc_list = []
+
+for i,sigma_eps in enumerate(sigma_eps_ls):
+    init_life_cycle_new = copy(init_lifecycle)
+    lc_paras = copy(life_cycle_paras_y)
+    #years_retire = lc_paras['L']- lc_paras['T']
+    #init_life_cycle_new['T_cycle'] = lc_paras['L']-1   ## minus 1 because T_cycle is nb periods in a life cycle - 1 in HARK
+    #init_life_cycle_new['T_retire'] = lc_paras['T']-1
+    #init_life_cycle_new['LivPrb'] = [lc_paras['LivPrb']]*init_life_cycle_new['T_cycle']
+    #init_life_cycle_new['PermGroFac'] = lc_paras['G']
+    init_life_cycle_new['PermShkStd'] = [sigma_psi_ls[i]]*init_life_cycle_new['T_cycle']
+    init_life_cycle_new['TranShkStd'] = [sigma_eps]*init_life_cycle_new['T_cycle']
+
+    LifeCyclePop = HARK_model.IndShockConsumerType(**init_life_cycle_new)
+    LifeCyclePop.cycles = 1
+    LifeCyclePop.vFuncBool = False  # for easy toggling here
+    
+    ## solve the model 
+
+    start_time = time()
+    LifeCyclePop.solve()                            # Obtain consumption rules by age 
+    LifeCyclePop.unpack('cFunc')                      # Expose the consumption rules
+    end_time = time()
+    print(
+        "Solving a Markov consumer with serially correlated unemployment took "
+        + str(end_time - start_time)
+        + " seconds."
+    )
+    
+    cFunc_list.append(LifeCyclePop.solution[50].cFunc)
+    
+m_values = np.linspace(0.0,3.0,200)
+
+for i,sigma_eps in enumerate(sigma_eps_ls):
+    plt.plot(m_values,
+             cFunc_list[i](m_values),
+            label=r'$\sigma^\theta=.{}$'.format(sigma_eps))
+plt.legend(loc=1)
+# -
+
 # ## Wealth distribution over life cycle 
 
 # + code_folding=[]
