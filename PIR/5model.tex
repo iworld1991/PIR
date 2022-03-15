@@ -301,29 +301,28 @@ The estimates of subjective profile confirms the key finding we have detailed in
 \subsubsection{Other parameters}
 
 
-\textbf{Life-cycle} The model is set quarterly. The working age spans from 25 years old to 65 years old ($T=160$) and the agent dies with certainty at age of 85 $(L=240)$. The constant death probability before the terminal age is set to be $D=0.625\%$. 
+\textbf{Life-cycle} The model is set at yearly frequency. The working age spans from 25 years old to 65 years old ($T=40$) and the agent dies with certainty at age of 85 $(L=60)$. The constant death probability before the terminal age is set to be $D=0.625\%$. 
 
 
-As to the deterministic income profile over the life-cycle $G_\tau$, I draw on an age polynomial regressions of the earning growth from SIPP, controlling
-for other observable demographic variables such as education, gender, occupation, and time-fixed effects, etc. This produces very similar estimation results to that in \cite{gourinchas2002consumption}, \cite{cagetti2003wealth} and \cite{kaplan2014model}. I linearly interpolate the age-specific growth rates into quarterly frequency. The estimated income profile is plotted in Appendix \ref{fig:life-cycle-determinstic}. 
+As to the deterministic permanent income profile over the life-cycle, $G_\tau$, I draw on an age polynomial regressions of the earning growth from SIPP for workers aged between 25-65, controlling
+for other observable demographic variables such as education, gender, occupation, and time fixed effects, etc. This produces very similar estimation results to that in \cite{gourinchas2002consumption}, \cite{cagetti2003wealth} and \cite{kaplan2014model}. The estimated income profile is plotted in Appendix \ref{fig:life-cycle-determinstic}. For the retirement phase, I assume a one-time drop of $20\%$ in permanent income in the age of $66$, i.e. $G_{41}=0.8$, and then the permanent income stays flat till death. This produces an average expected growth rate of permanent income over the entire life-cycle exactly equal to one. This serves as a normalization. Note that although alternative assumptions, such as a more smooth decline of income after retirement, do change the wealth distribution across generations among the retired, but they do not change the consumption/saving decisions as such a profile is entirely deterministic. 
 
-\textbf{Initial conditions} Assumptions about cross-sectional distribution of the initial permanent productivity and liquid asset holdings matter for the subsequent wealthy inequality. I set the standard deviation of the log-normally distributed initial permanent individual productivity $p_{i,\tau}$ to be $0.6$ to match the earning heterogeneity in ``usual income'' (approximated permanent income) at age 25 from the SCF. Initial liquid assets holdings at $\tau=0$ is assumed to have a standard-deviation of $0.50$. %% need some reference on this 
+\textbf{Initial conditions} Assumptions about cross-sectional distribution of the initial permanent productivity and liquid asset holdings matter for the subsequent wealthy inequality. I set the standard deviation of the log-normally distributed initial permanent individual productivity $p_{i,\tau}$ to be $0.6$ to match the earning heterogeneity in ``usual income'' (approximated permanent income) at age 25 from the SCF. Initial liquid assets holdings at $\tau=0$ is assumed to have a cross-sectional standard-deviation of $0.50$. %% need some reference on this 
 
 \textbf{Income risks} Given the critical importance of the income risks assumption in my model, In addition to my estimates from SIPP, as reported in Table \ref{risk_compare}, I thoroughly survey the parameters used in the existing incomplete market macro literature, as summarized in Table \ref{tab:risks_literature} in the Appendix. For comparison, I convert all risks into the annual frequency (although the model is set quarterly). Whenever group-specific risks are assumed, i.e. depending on the education and age, I summarize it as a range. Also, for those models which assume a persistent instead of permanent income risk component, I treat their assumed size of the persistent risks as a lower bound for the permanent risk. (One can think of the permanent income shock as a limiting case of AR(1) shock, with the persistence parameter infinitely close to 1. The effective income risks increase with the persistence of the shock.)  For models with income risks dependent on aggregate business cycles a la \cite{krusell1998income}, I compute the steady-state size of idiosyncratic risks using the transition probabilities of the aggregate economy used in the paper.  
 
-Despite the disagreements in these estimates or model inputs, the earning risks used in these models are constantly larger than those perceived reported in the survey. Meanwhile, the perceived risk of unemployment is higher in the survey than in these models and the perceived employment probability is lower in the survey than in these models. I use the median values of each parameter in the literature as the objective income risks profile $\Gamma$. In particular, in our baseline calculation, I set $\sigma^2_\psi = 0.15^2*4/11 \approx 0.008$ and $\sigma^2_\theta = 0.1^2*4=0.04$. The quarterly probability of staying on unemployment is $\mho = 0.18$ and that of staying employed $E = 0.96$, as used in \cite{krueger2016macroeconomics}. 
+Despite the disagreements in these estimates or model inputs, the earning risks used in these models are constantly larger than those perceived reported in the survey. Meanwhile, the perceived risk of unemployment is higher in the survey than in these models and the perceived employment probability is lower in the survey than in these models. I use the median values of each parameter in the literature as the objective income risks profile $\Gamma$. In particular, in our baseline calculation, I set $\sigma_\psi = 0.15$ and $\sigma_\theta = 0.10$. The yearly probability of staying on unemployment is $\mho = 0.18$ and that of staying employed $E = 0.96$, as used in \cite{krueger2016macroeconomics}. 
 
-\textbf{Technology} 
+\textbf{Technology} % steady state output to capital ratio % steady state effective interest rate 
+The annual depreciation rate is set to be $\delta =2.5\%$. The capital share takes a standard value of $\alpha = 0.36$, for the U.S. economy. Without aggregate shocks, $Z$ is simply a normalizer. Therefore, I set its value such that the aggregate wage rate $W$ is equal to one under a capital/output ratio $K/Y= 3$ at the steady-state level of employment in the model. 
 
-% steady state output to capital ratio 
-% steady state effective interest rate 
+\textbf{Government policies} Unemployment insurance replacement ratio is set to be $\mu=0.15$, as the same as \cite{krueger2016macroeconomics}.  
+The pension income relative to the permanent income is assumed to be $\mathbb{S}=60\%$. This, plus the $ 20\%$ drop in permanent income, gives an effective deterministic income drop of $48\%$ from the working-age to retirement, which corresponds to an empirical replacement ratio estimated for the U.S. economy. The corresponding tax rates financing the unemployment insurance and social security is determined in the equilibrium within the model. 
 
-The quarterly depreciation rate is set to be $\delta =0.625\%$, corresponding to a commonly used annual depreciation rate of $2.5\%$. The capital share takes a standard value of $\alpha = 0.36$, for the U.S. economy. Without aggregate shocks, $Z$ is simply a normalizer. Therefore, I calibrate its value to be $0.91$ such that the aggregate wage rate $W$ is one at and the effective real annual interest rate is $8\%$ under an annual capital/output ratio of 3 at the steady employment level $N=0.9$. 
+\textbf{Preference} The discount factor is set to be $\beta=0.98$, the average value estimated in the models with heterogeneous time preferences such as \cite{carroll2017distribution},\cite{krueger2016macroeconomics}. The coefficient of relative risk aversion $\rho=2.0$, which is common in this literature. 
 
-\textbf{Government policies} Unemployment insurance replacement ratio is $\mu=0.15$. 
-% social security replacement ratio
-% corresponding to a ss tax rate of in steady state 
+For a summary of the parameters used in this calibration, See Table \ref{tab:calibration}. 
 
-
-\textbf{Preference} The discount factor is set to be $\beta=0.98^{0.25}$. The coefficient of relative risk aversion $\rho=1$. 
-
+\begin{center}
+[FIGURE \ref{tab:calibration} HERE]
+\end{center}
