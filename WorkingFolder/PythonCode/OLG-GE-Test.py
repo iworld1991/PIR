@@ -106,7 +106,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -201,8 +201,8 @@ if calibrated_model == True:
         ## income risks 
                    x = 0.0,
                    b_y= 0.0,
-                   sigma_psi = lc_paras['σ_ψ_sub'],
-                   sigma_eps = lc_paras['σ_θ_sub'],
+                   sigma_psi = lc_paras['σ_ψ'],
+                   sigma_eps = lc_paras['σ_θ'],
                    subjective = True,
                    ue_markov = True,
                    P = lc_paras['P'],
@@ -262,8 +262,8 @@ if calibrated_model == True:
                    z_val = lc_paras['z_val'], ## markov state from low to high
                    sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
                    sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                   sigma_psi_true = 2*lc_paras['σ_ψ'], ## true permanent
-                   sigma_eps_true = 2*lc_paras['σ_θ'], ## true transitory
+                   sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
+                   sigma_eps_true = lc_paras['σ_θ'], ## true transitory
         
         ## initial conditions 
                     sigma_p_init = lc_paras['σ_ψ_init'],
@@ -343,7 +343,7 @@ else:
                       )
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## solve various models
 
 models = [lc_mkv,lc_mkv_sub]
@@ -389,12 +389,12 @@ plt.hist(ojb_minus_sub.flatten(),
 plt.title('Consumption in subjective model minus objective model')
 print('should be NEGATIVE!!!!!')
 
-# +
+# + code_folding=[0]
 ## compare solutions 
 
 m_grid = np.linspace(0.0,10.0,200)
 ## plot c func at different age /asset grid
-years_left = [0,1,30,40]
+years_left = [0,21,40,59]
 
 n_sub = len(years_left)
 

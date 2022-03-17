@@ -74,7 +74,7 @@ from SolveLifeCycle import LifeCycle, EGM, solve_model_backward_iter,compare_2so
 
 # ## Initialize the model
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## parameters 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
 # ### Consumption  the last period 
 
-# + code_folding=[]
+# + code_folding=[0, 1]
 if __name__ == "__main__":
     lc = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
@@ -178,9 +178,9 @@ if __name__ == "__main__":
     lc_paras_y = copy(lc_paras_Y)
     lc_paras = lc_paras_y
 
-# + code_folding=[]
+# + code_folding=[1, 45]
 if __name__ == "__main__":
-       lc_obj = LifeCycle(
+    lc_obj = LifeCycle(
         ## primitives
                    ρ = lc_paras['ρ'],     ## relative risk aversion  
                    β = lc_paras['β'],     ## discount factor
@@ -224,7 +224,6 @@ if __name__ == "__main__":
                    shock_draw_size = 10.0,
                    grid_max = 10
                    )
-        
     lc_sub = LifeCycle(
         ## primitives
                    ρ = lc_paras['ρ'],     ## relative risk aversion  
@@ -276,8 +275,7 @@ if __name__ == "__main__":
     model_names = ['subjective','objective']
 
 
-# -
-
+# + code_folding=[0]
 if __name__ == "__main__":
     
     t_start = time()
@@ -315,7 +313,7 @@ if __name__ == "__main__":
 
     m_grid = np.linspace(0.0,10.0,200)
     ## plot c func at different age /asset grid
-    years_left = [0,1,30,40]
+    years_left = [1,21,30,59]
 
     n_sub = len(years_left)
 
@@ -332,10 +330,10 @@ if __name__ == "__main__":
             axes[x].plot(m_grid,
                          c_func(m_grid),
                          label = model_name,
-                         lw=3
+                         lw = 3
                         )
         axes[x].legend()
-        axes[x].set_xlim(0.0,np.max(m_plt))
+        axes[x].set_xlim(0.0,np.max(m_grid))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -386,7 +384,7 @@ plt.hist(sub_minus_obj.flatten(),
 plt.title('Consumption in low PR model minus in high PR')
 print('should be positive')
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     m_grid = np.linspace(0.0,10.0,200)
@@ -412,7 +410,7 @@ if __name__ == "__main__":
                          lw=3
                         )
         axes[x].legend()
-        axes[x].set_xlim(0.0,np.max(m_plt))
+        axes[x].set_xlim(0.0,np.max(m_grid))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -513,163 +511,3 @@ if __name__ == "__main__":
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
-# -
-
-# ### Different permanent/transitory risk (no MA)
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-    t_start = time()
-
-    sigma_psi_ls = [0.03,0.2]
-    ms_stars =[]
-    σs_stars = []
-    for i,sigma_psi in enumerate(sigma_psi_ls):
-        lc.sigma_psi = sigma_psi
-        #lc.U=U0
-        #lc.ue_markov=True
-        #lc.P=np.array([[0.18,0.82],[0.04,0.96]])
-        ### this line is very important!!!!
-        #### need to regenerate shock draws for new sigmas
-        lc.prepare_shocks()
-        
-        ## terminal solution
-        m_init,σ_init = model.terminal_solution()
-        
-        ms_star, σs_star = solve_model_backward_iter(lc,
-                                                     m_init,
-                                                     σ_init)
-        ms_stars.append(ms_star)
-        σs_stars.append(σs_star)
-
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-   
-    ## plot c func at different age /asset grid
-    years_left = [0,1,30,40]
-
-    n_sub = len(years_left)
-
-    eps_fix = 0 ## the first eps grid 
-
-    fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
-
-    for x,year in enumerate(years_left):
-        age = lc.L-year
-        i = lc.L-age
-        for k,sigma_psi in enumerate(sigma_psi_ls):
-            m_plt,c_plt = ms_stars[k][i,:,eps_fix,0],σs_stars[k][i,:,eps_fix,0]
-            axes[x].plot(m_plt,
-                         c_plt,
-                         label = r'$\sigma_\psi=$'+str(sigma_psi),
-                         lw=3,
-                        )
-        axes[x].legend()
-        axes[x].set_xlim(0.0,np.max(m_plt))
-        axes[x].set_xlabel('asset')
-        axes[0].set_ylabel('c')
-        axes[x].set_title(r'$age={}$'.format(age))
-
-# + code_folding=[]
-## interpolate consumption function on continuous s/eps grid 
-
-#ms_list = []
-
-#for i in range(lc.L):
-#    this_σ= policyfuncMA(lc,
-#                         ms_star[i,:,:,0],
-#                         σs_star[i,:,:,0])
-#    ms_list.append(this_σ)
-
-
-# + code_folding=[]
-"""
-## plot contour for policy function 
-
-m_grid = np.linspace(0.00001,5,20)
-eps_grid = lc.eps_grid
-mm,epss = np.meshgrid(m_grid,
-                      eps_grid)
-
-σ_this = σs_list[3]
-c_stars = σ_this(m_grid,
-                 eps_grid)
-
-cp = plt.contourf(mm,epss,
-                  c_stars)
-plt.title(r'$c$')
-plt.xlabel('wealth')
-plt.ylabel('ma income shock')
-"""
-# -
-
-## the size of consumption function is  T x nb_a x nb_eps x nb_z 
-if __name__ == "__main__":
-    print(σs_star.shape)
-
-# + code_folding=[]
-"""
-## plot 3d consumption function 
-#age,asset,inc_shk =σs_star[:,:,:,0]
-
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(mm, epss, c_stars, zdir='z', c= 'red')
-ax.set_xlabel('wealth')
-ax.set_ylabel('inc shock')
-ax.set_title('consumption at a certain age')
-"""
-
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-    ## plot 3d functions over life cycle 
-
-    ages = np.array(range(ms_star.shape[0]))
-    asset = ms_star[0,:,0,0]
-    xx, yy = np.meshgrid(ages, asset)
-    c_stars = np.flip(σs_star[:,:,0,0],axis=0).T
-
-    fig = plt.figure(figsize=(6,6))
-    ax = fig.add_subplot(111, 
-                         projection='3d')
-    dem3d = ax.plot_surface(xx,
-                            yy,
-                            c_stars,
-                            cmap="viridis"
-                           )
-    ax.set_xlim(60,0)
-    ax.set_title('Consumption over the life cycle')
-    ax.set_xlabel('age')
-    #ax.grid(False)
-    ax.set_ylabel('wealth')
-    ax.view_init(15, 30)
-
-# + code_folding=[]
-"""
-if __name__ == "__main__":
-    at_age = 4
-    at_asset_id = 20
-
-    for i,psi in enumerate(sigma_psi_ls):
-        this_σs_star = σs_stars[i]
-        plt.plot(lc.eps_grid,
-                 this_σs_star[lc.L-at_age,
-                              at_asset_id,:,0],
-                 '-.',
-                 label = r'$\sigma_\psi={}$'.format(psi),
-                 lw=3)
-    plt.legend(loc=0)
-    plt.xlabel(r'$\epsilon$')
-    plt.ylabel(r'$c(m,\epsilon,age)$')
-    plt.title(r'work age$={}$'.format(at_age))
-    
-"""
