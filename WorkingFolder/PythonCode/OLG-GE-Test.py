@@ -17,7 +17,6 @@
 # ## Aggregate dynamics, stationary distribution and GE of a life-cycle economy
 #
 # - author: Tao Wang
-# - date: November 2021
 # - this is a companion notebook to the paper "Perceived income risks"
 
 import numpy as np
@@ -160,7 +159,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[126]
+# + code_folding=[0, 7]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -203,7 +202,7 @@ if calibrated_model == True:
                    b_y= 0.0,
                    sigma_psi = lc_paras['σ_ψ'],
                    sigma_eps = lc_paras['σ_θ'],
-                   subjective = True,
+                   #subjective = True,
                    ue_markov = True,
                    P = lc_paras['P'],
                    U = lc_paras['U'],
@@ -233,6 +232,8 @@ if calibrated_model == True:
     print(lc_mkv.psi_shk_true_draws)
     print(lc_mkv.eps_shk_true_draws)
 
+    
+    
     ## for the subjective model, only change the belief 
 
     lc_mkv_sub = LifeCycle(
@@ -255,7 +256,7 @@ if calibrated_model == True:
                    b_y= 0.0,
                    sigma_psi = lc_paras['σ_ψ_sub'],
                    sigma_eps = lc_paras['σ_θ_sub'],
-                   subjective =True,
+                   subjective = True,
                    ue_markov = True,
                    P = lc_paras['P'],
                    U = lc_paras['U'],
@@ -285,6 +286,60 @@ if calibrated_model == True:
     print(lc_mkv_sub.eps_shk_draws)
     print(lc_mkv_sub.psi_shk_true_draws)
     print(lc_mkv_sub.eps_shk_true_draws)
+    
+    
+     ## for the subjective model, only change the belief 
+
+    lc_mkv_sub_true = LifeCycle(
+        ## primitives
+                   ρ = lc_paras['ρ'],     ## relative risk aversion  
+                   β = lc_paras['β'],     ## discount factor
+                   borrowing_cstr = borrowing_cstr,
+                   adjust_prob = 1.0,
+        ## prices 
+                   R = lc_paras['R'],           ## interest factor
+                   W = lc_paras['W'],            ## Wage rate
+        ## life cycle 
+                   T = lc_paras['T'],
+                   L = lc_paras['L'],
+                   G = lc_paras['G'],
+                   LivPrb = lc_paras['LivPrb'],       ## living probability 
+        
+        ## income risks 
+                   x = 0.0,
+                   b_y= 0.0,
+                   sigma_psi = lc_paras['σ_ψ_sub'],
+                   sigma_eps = lc_paras['σ_θ_sub'],
+                   subjective = False,
+                   ue_markov = True,
+                   P = lc_paras['P'],
+                   U = lc_paras['U'],
+                   z_val = lc_paras['z_val'], ## markov state from low to high
+                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+                   sigma_psi_true = lc_paras['σ_ψ_sub'], ## true permanent
+                   sigma_eps_true = lc_paras['σ_θ_sub'], ## true transitory
+        
+        ## initial conditions 
+                    sigma_p_init = lc_paras['σ_ψ_init'],
+                    init_b = lc_paras['init_b'],
+
+        ## policy 
+                   unemp_insurance = lc_paras['unemp_insurance'],
+                   pension = lc_paras['pension'], ## pension
+                   λ = lc_paras['λ'],  ## tax rate
+                   λ_SS = lc_paras['λ_SS'], ## social tax rate
+                   transfer = lc_paras['transfer'],  ## transfer 
+                   bequest_ratio = lc_paras['bequest_ratio'],
+        ## solutions 
+                  shock_draw_size =  10.0,
+                  grid_max = 10
+                   )
+    
+    print(lc_mkv_sub_true.psi_shk_draws)
+    print(lc_mkv_sub_true.eps_shk_draws)
+    print(lc_mkv_sub_true.psi_shk_true_draws)
+    print(lc_mkv_sub_true.eps_shk_true_draws)
 
 
 else:
@@ -346,8 +401,8 @@ else:
 # + code_folding=[0]
 ## solve various models
 
-models = [lc_mkv,lc_mkv_sub]
-model_names=['objective','subjective']
+models = [lc_mkv,lc_mkv_sub,lc_mkv_sub_true]
+model_names=['objective','subjective','subjective_true']
 
 ms_stars = []
 σs_stars = []
@@ -381,12 +436,12 @@ ms_star_mkv_sub,σs_star_mkv_sub = ms_stars[1],σs_stars[1]
 # +
 ## compare different models 
 
-ojb_minus_sub = compare_2solutions(ms_stars,
-                                   σs_stars)
+ojb_minus_sub = compare_2solutions(ms_stars[0:2],
+                                   σs_stars[0:2])
 
 plt.hist(ojb_minus_sub.flatten(),
          bins=50)
-plt.title('Consumption in subjective model minus objective model')
+plt.title('Consumption in objective model minus subjective model')
 print('should be NEGATIVE!!!!!')
 
 # + code_folding=[0]
@@ -426,7 +481,8 @@ for x,year in enumerate(years_left):
     axes[0].set_ylabel('c')
     axes[x].set_title(r'$age={}$'.format(age))
 
-# + code_folding=[0]
+# + code_folding=[]
+"""
 ## 3d graph 
 
 ms_star_mkv_u_2d,cs_star_mkv_u_2d = ms_star_mkv[:,:,eps_fix,0],σs_star_mkv[:,:,eps_fix,0]
@@ -495,6 +551,7 @@ ax2.set_xlabel('age')
 #ax.grid(False)
 ax2.set_ylabel('wealth')
 ax2.view_init(10, 20)
+"""
 # -
 
 # ## Aggregate steady state distributions
@@ -508,7 +565,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[6, 101, 142, 467, 482, 489, 518, 525, 554, 568, 586]
+# + code_folding=[0, 6, 101, 142, 467, 482, 489, 518, 525, 554, 568, 586]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1557,227 +1614,6 @@ class HH_OLG_Markov:
 
 
 # + code_folding=[0]
-## testing of the household class 
-
-HH = HH_OLG_Markov(model=lc_mkv)
-
-## Markov transition matrix 
-
-print("markov state transition matrix: \n",lc_mkv.P)
-print('steady state of markov state:\n',HH.ss_dstn)
-
-
-## computing transition matrix 
-n_m = 30
-n_p = 40
-
-HH.define_distribution_grid(num_pointsM = n_m, 
-                            num_pointsP = n_p)
-HH.ComputeSSDist(ms_star = ms_star_mkv,
-                  σs_star = σs_star_mkv)
-
-
-# + code_folding=[]
-## plot the initial distribution in the first period of life 
-
-plt.title('Initial distributions over m and p given u')
-plt.spy(HH.initial_dist_u.reshape(n_m,-1),
-       markersize = 2)
-plt.xlabel('p')
-plt.ylabel('m')
-
-# + code_folding=[]
-## plot the initial distribution in the first period of life 
-
-plt.title('Initial distributions over m and p given e')
-plt.spy(HH.initial_dist_e.reshape(n_m,-1),
-       markersize = 2)
-plt.xlabel('p')
-plt.ylabel('m')
-# -
-
-HH.Aggregate()
-print('aggregate consumption under stationary distribution:', str(HH.C))
-print('aggregate savings under stationary distribution:', str(HH.A))
-
-# ### Stationary wealth/consumption distribution
-
-share_agents_cp,share_cp = HH.Lorenz(variable='c')
-share_agents_ap,share_ap = HH.Lorenz(variable='a')
-
-# + code_folding=[0]
-## get the wealth distribution from SCF (net worth)
-
-SCF2016 = pd.read_stata('rscfp2016.dta')
-SCF2016 = SCF2016.drop_duplicates(subset=['yy1'])
-
-SCF_wealth, SCF_weights = np.array(SCF2016['networth']), np.array(SCF2016['wgt'])
-
-## get the lorenz curve weights from SCF 
-SCF_wealth_sort_id = SCF_wealth.argsort()
-SCF_wealth_sort = SCF_wealth[SCF_wealth_sort_id]
-SCF_weights_sort = SCF_weights[SCF_wealth_sort_id]
-SCF_weights_sort_norm = SCF_weights_sort/SCF_weights_sort.sum()
-
-SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
-                                                 SCF_weights_sort_norm,
-                                                 nb_share_grid = 200)
-
-
-
-# + code_folding=[]
-## Lorenz curve of steady state wealth distribution
-
-fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(share_agents_cp,share_cp, 'r--',label='Lorenz curve of consumption')
-ax.plot(share_agents_cp,share_agents_cp, 'k-',label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
-plt.savefig('../Graphs/model/lorenz_c_test.png')
-
-## Lorenz curve of steady state wealth distribution
-
-fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(share_agents_ap,share_ap, 'r--',label='Lorenz curve of wealth: model')
-ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve of wealth: SCF')
-ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
-plt.savefig('../Graphs/model/lorenz_a_test.png')
-
-# + code_folding=[]
-## Wealth distribution 
-
-ap_grid_dist = HH.ap_grid_dist
-ap_pdfs_dist = HH.ap_pdfs_dist
-cp_grid_dist = HH.cp_grid_dist
-cp_pdfs_dist = HH.cp_pdfs_dist
-
-
-fig, ax = plt.subplots(figsize=(6,4))
-ax.set_title('Wealth distribution')
-ax.plot(np.log(ap_grid_dist+0.0000000001), 
-         ap_pdfs_dist)
-ax.set_xlim(-30,10)
-
-ax.set_xlabel(r'$a$')
-ax.set_ylabel(r'$prob(a)$')
-fig.savefig('../Graphs/model/distribution_a_test.png')
-
-fig, ax = plt.subplots(figsize=(6,4))
-ax.set_title('Consumption distribution')
-ax.plot(np.log(cp_grid_dist), 
-         cp_pdfs_dist)
-ax.set_xlabel(r'$c$')
-ax.set_ylabel(r'$prob(a)$')
-ax.set_xlim(-15,10)
-fig.savefig('../Graphs/model/distribution_c_test.png')
-# -
-
-# ### Life-cycle profile and wealth distribution
-
-# +
-import pandas as pd
-SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
-
-SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
-
-# + code_folding=[]
-HH.AggregatebyAge()
-
-A_life = HH.A_life
-C_life = HH.C_life
-
-
-# + code_folding=[11]
-## plot life cycle profile
-
-age_lc = SCF_profile.index
-
-fig, ax = plt.subplots(figsize=(10,5))
-plt.title('Life cycle profile of wealth')
-ax.plot(age_lc[1:],
-       np.log(A_life),
-       'r-o',
-       label='model')
-
-ax.vlines(lc_mkv.T+25,
-          np.min(np.log(A_life)),
-          np.max(np.log(A_life)),
-          color='k',
-          label='retirement'
-         )
-#ax.set_ylim([-2.0,2.0])
-
-ax2 = ax.twinx()
-ax2.set_ylim([10.5,15])
-ax2.bar(age_lc[1:],
-        np.log(SCF_profile['mv_wealth'][1:]),
-       label='SCF (RHS)')
-
-#ax2.plot(age,
-#        C_life,
-#        'b--',
-#        label='consumption (RHS)')
-
-ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth in model')
-ax2.set_ylabel('Log wealth SCF')
-ax.legend(loc=1)
-ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_test.png')
-
-# + code_folding=[0]
-## get the within-age distribution 
-
-HH.get_lifecycle_dist()
-
-ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
-cp_grid_dist_life,cp_pdfs_dist_life = HH.cp_grid_dist_life,HH.cp_pdfs_dist_life
-
-# + code_folding=[0]
-## create the dataframe to plot distributions over the life cycle 
-ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
-cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
-
-#ap_pdfs_life.index = np.log(ap_grid_dist_life[0]+1e-4)
-
-ap_range = list(ap_pdfs_life.index)
-cp_range = list(cp_pdfs_life.index)
-
-# + code_folding=[1, 2, 11, 21]
-joy = False
-if joy == True:
-    fig, axes = joypy.joyplot(ap_pdfs_life, 
-                              kind="values", 
-                              x_range=ap_range,
-                              figsize=(6,10),
-                              title="Wealth distribution over life cycle",
-                             colormap=cm.winter)
-    fig.savefig('../Graphs/model/life_cycle_distribution_a_test.png')
-    #axes[-1].set_xticks(a_values);
-
-    fig, axes = joypy.joyplot(cp_pdfs_life, 
-                              kind="values", 
-                              x_range=cp_range,
-                              figsize=(6,10),
-                              title="Consumption distribution over life cycle",
-                             colormap=cm.winter)
-    fig.savefig('../Graphs/model/life_cycle_distribution_c_test.png')
-
-    #axes[-1].set_xticks(a_values);
-    
-else:
-    pass
-
-
-# -
-
-# ### General Equilibrium 
-
-# + code_folding=[0, 5, 24, 159]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1979,14 +1815,523 @@ class Market_OLG_mkv:
         
         self.households = households
 
-
-# + code_folding=[0, 2]
-## initialize a market and solve the equilibrium 
-
+# + code_folding=[0, 1]
+## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
                           target_KY = production_paras['K2Y ratio'],
                          target_W = production_paras['W']) 
+
+## nb of grids used for transition matrix  
+n_m = 30
+n_p = 40
+
+# -
+
+# ## compare different models 
+
+# + code_folding=[0]
+def solve_models(model_list,
+                   model_names_list,
+                   ms_star_list,
+                   σs_star_list):
+    
+    ## create lists to save results 
+    C_list = []
+    A_list = []
+    C_ge_list = []
+    A_ge_list = []
+    
+    
+    ### life cycle 
+    A_life_list = []
+    C_life_list = []
+    A_life_ge_list = []
+    C_life_ge_list = []
+    
+    ## for lorenz curves 
+    share_agents_cp_list =[]
+    share_cp_list = []    
+    share_agents_ap_list =[]
+    share_ap_list = []   
+    
+    share_agents_cp_ge_list =[]
+    share_cp_ge_list = []    
+    share_agents_ap_ge_list =[]
+    share_ap_ge_list = []  
+    
+    
+    ## distribution 
+    ap_grid_dist_ge_list = []
+    ap_pdfs_dist_ge_list = []
+    
+    ## loop over different models 
+    for k, model in enumerate(model_list):
+        HH_this = HH_OLG_Markov(model = model)
+        HH_this.define_distribution_grid(num_pointsM = n_m, 
+                            num_pointsP = n_p)
+        HH_this.ComputeSSDist(ms_star = ms_star_list[k],
+                              σs_star = σs_star_list[k])
+        HH_this.Aggregate()
+        C_list.append(HH_this.C)
+        A_list.append(HH_this.A)
+        print('aggregate consumption under stationary distribution:', str(HH_this.C))
+        print('aggregate savings under stationary distribution:', str(HH_this.A))
+        
+        share_agents_cp_this,share_cp_this = HH_this.Lorenz(variable='c')
+        share_agents_ap_this,share_ap_this = HH_this.Lorenz(variable='a')
+        share_agents_cp_list.append(share_agents_cp_this)
+        share_cp_list.append(share_cp_this)
+        share_agents_ap_list.append(share_agents_ap_this)
+        share_ap_list.append(share_ap_this)
+        
+        
+        ## life cycle 
+
+        HH_this.AggregatebyAge()
+
+        A_life_this = HH_this.A_life
+        C_life_this = HH_this.C_life
+        A_life_list.append(A_life_this)
+        C_life_list.append(C_life_this)
+        
+        
+        ## general equilibrium 
+
+        market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
+                                            production = production)
+
+        market_OLG_mkv_this.get_equilibrium_k()
+        market_OLG_mkv_this.get_equilibrium_dist()
+        
+        ## aggregate 
+        A_ge_list.append(market_OLG_mkv_this.households.A)
+        C_ge_list.append(market_OLG_mkv_this.households.C)
+        
+        ## life cycle 
+        A_life_ge_list.append(market_OLG_mkv_this.households.A_life)
+        C_life_ge_list.append(market_OLG_mkv_this.households.C_life)
+        
+        ## lorenz 
+        share_agents_ap_ge_this, share_ap_ge_this = market_OLG_mkv_this.households.Lorenz(variable='a')
+        share_agents_ap_ge_list.append(share_agents_ap_ge_this)
+        share_ap_ge_list.append(share_ap_ge_this)
+        share_agents_cp_ge_this, share_cp_ge_this = market_OLG_mkv_this.households.Lorenz(variable='c')
+        share_agents_cp_ge_list.append(share_agents_cp_ge_this)
+        share_cp_ge_list.append(share_cp_ge_this)
+        
+        ## distribution 
+        ap_grid_dist_ge_list.append(market_OLG_mkv_this.households.ap_grid_dist)
+        ap_pdfs_dist_ge_list.append(market_OLG_mkv_this.households.ap_pdfs_dist)  
+        
+    return {'C_pe':C_list,
+           'A_pe':A_list,
+            'A_life_pe':A_life_list,
+            'C_life_pe':C_life_list,
+            'share_agents_cp_pe':share_agents_cp_list,
+            'share_cp_pe':share_cp_list,    
+            'share_agents_ap_pe':share_agents_ap_list,
+            'share_ap_pe':share_ap_list,
+            'C_ge':C_ge_list,
+            'A_ge':A_ge_list,
+            'A_life_ge':A_life_ge_list,
+            'C_life_ge':C_life_ge_list,
+            'share_agents_cp_ge':share_agents_cp_ge_list,
+            'share_cp_ge':share_cp_ge_list,    
+            'share_agents_ap_ge':share_agents_ap_ge_list,
+            'share_ap_ge':share_ap_ge_list,
+            'ap_grid_dist_ge':ap_grid_dist_ge_list,
+            'ap_pdfs_dist_ge':ap_pdfs_dist_ge_list
+           }
+        
+
+# + code_folding=[0]
+model_results = solve_models(models,
+                               model_names,
+                               ms_stars,
+                               σs_stars)
+
+# +
+## get list of model outputs from the results dictionary 
+
+## PE 
+share_agents_ap_pe_list,share_ap_pe_list = model_results['share_agents_ap_pe'],model_results['share_ap_pe']
+
+A_life_list =  model_results['A_life_pe']
+C_life_list =  model_results['C_life_pe']
+
+## GE
+share_agents_ap_ge_list,share_cp_ge_list = model_results['share_agents_ap_ge'],model_results['share_ap_ge']
+
+A_life_ge_list =  model_results['A_life_ge']
+C_life_ge_list =  model_results['C_life_ge']
+
+ap_grid_dist_ge_list, ap_pdfs_dist_ge_list = model_results['ap_grid_dist_ge'],model_results['ap_pdfs_dist_ge']
+
+# + code_folding=[]
+## get the wealth distribution from SCF (net worth)
+
+SCF2016 = pd.read_stata('rscfp2016.dta')
+SCF2016 = SCF2016.drop_duplicates(subset=['yy1'])
+
+SCF_wealth, SCF_weights = np.array(SCF2016['networth']), np.array(SCF2016['wgt'])
+
+## get the lorenz curve weights from SCF 
+SCF_wealth_sort_id = SCF_wealth.argsort()
+SCF_wealth_sort = SCF_wealth[SCF_wealth_sort_id]
+SCF_weights_sort = SCF_weights[SCF_wealth_sort_id]
+SCF_weights_sort_norm = SCF_weights_sort/SCF_weights_sort.sum()
+
+SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
+                                                 SCF_weights_sort_norm,
+                                                 nb_share_grid = 200)
+
+
+import pandas as pd
+SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
+
+SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
+
+# + code_folding=[]
+## plot results from different models 
+
+line_patterns =['g-v',
+                'r-.',
+                'b--']
+
+## Lorenz curve of steady state wealth distribution
+
+fig, ax = plt.subplots(figsize=(5,5))
+for k,model in enumerate(models):
+    ax.plot(share_agents_ap_pe_list[k],
+            share_ap_pe_list[k], 
+            line_patterns[k],
+            label = model_names[k])
+ax.plot(SCF_share_agents_ap,
+        SCF_share_ap, 'k-.',label='SCF')
+ax.plot(share_agents_ap_pe_list[k],
+        share_agents_ap_pe_list[k], 'k-',label='equality curve')
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+plt.savefig('../Graphs/model/lorenz_a_compare_pe.png')
+
+
+## life cycle 
+
+age_lc = SCF_profile.index
+
+fig, ax = plt.subplots(figsize=(10,5))
+plt.title('Life cycle profile of wealth')
+
+for k,model in enumerate(models):
+    ax.plot(age_lc[1:],
+           np.log(A_life_list[k]),
+           line_patterns[k],
+           label=model_names[k])
+    
+ax.vlines(lc_mkv.T+25,
+          np.min(np.log(A_life_list[k])),
+          np.max(np.log(A_life_list[k])),
+          color='k',
+          label='retirement'
+         )
+ax.set_ylim([-2.0,3.0])
+
+ax2 = ax.twinx()
+ax2.set_ylim([10.5,15])
+ax2.bar(age_lc[1:],
+        np.log(SCF_profile['mv_wealth'][1:]),
+       label='SCF (RHS)')
+
+#ax2.plot(age,
+#        C_life,
+#        'b--',
+#        label='consumption (RHS)')
+
+ax.set_xlabel('Age')
+ax.set_ylabel('Log wealth in model')
+ax2.set_ylabel('Log wealth SCF')
+ax.legend(loc=1)
+ax2.legend(loc=2)
+fig.savefig('../Graphs/model/life_cycle_a_compare_pe.png')
+
+
+## lorenz curve in ge
+
+fig, ax = plt.subplots(figsize=(5,5))
+for k,model in enumerate(models):
+    ax.plot(share_agents_ap_ge_list[k],
+            share_cp_ge_list[k], 
+            line_patterns[k],
+            label = model_names[k])
+    
+ax.plot(SCF_share_agents_ap,
+        SCF_share_ap, 'k-.',label='SCF')
+ax.plot(share_agents_ap_ge_list[k],
+        share_agents_ap_ge_list[k], 'k-',label='equality curve')
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+fig.savefig('../Graphs/model/lorenz_curve_a_compare_ge.png')
+
+
+## life cycle profile in ge
+
+fig, ax = plt.subplots(figsize=(10,5))
+plt.title('Life cycle profile of wealth')
+
+for k, model in enumerate(models):
+    ax.plot(age_lc[:-2],
+            np.log(A_life_ge_list[k])[:-1],
+            line_patterns[k],
+           label = model_names[k])
+ax.vlines(lc_mkv.T+25,
+          np.min(np.log(A_life_ge_list[k])[:-1]),
+          np.max(np.log(A_life_ge_list[k])[:-1]),
+          color='k',
+          label='retirement')
+
+
+ax2 = ax.twinx()
+ax2.set_ylim([10.5,15])
+
+ax2.bar(age_lc,
+        np.log(SCF_profile['mv_wealth']),
+       #'k--',
+       label='SCF (RHS)')
+
+#ax2.plot(age,
+#        C_life,
+#        'b--',
+#        label='consumption (RHS)')
+
+ax.set_xlabel('Age')
+ax.set_ylabel('Log wealth')
+ax2.set_ylabel('Log wealth SCF')
+ax.legend(loc=1)
+ax2.legend(loc=2)
+fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
+
+
+
+## wealth distributions in ge
+
+fig, ax = plt.subplots(figsize=(6,4))
+ax.set_title('Wealth distribution')
+for k, model in enumerate(models):
+    ax.plot(np.log(ap_grid_dist_ge_list[k]+0.0000000001),
+            ap_pdfs_dist_ge_list[k],
+            label=model_names[k])
+ax.set_xlim((-8,8))
+ax.set_xlabel(r'$a$')
+ax.legend(loc=0)
+ax.set_ylabel(r'$prob(a)$')
+
+fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
+
+# -
+
+# ## Analysis of the baseline model 
+
+# + code_folding=[]
+## testing of the household class 
+
+HH = HH_OLG_Markov(model=lc_mkv)
+
+## Markov transition matrix 
+
+print("markov state transition matrix: \n",lc_mkv.P)
+print('steady state of markov state:\n',HH.ss_dstn)
+
+HH.define_distribution_grid(num_pointsM = n_m, 
+                            num_pointsP = n_p)
+HH.ComputeSSDist(ms_star = ms_star_mkv,
+                  σs_star = σs_star_mkv)
+
+
+# + code_folding=[]
+## plot the initial distribution in the first period of life 
+
+plt.title('Initial distributions over m and p given u')
+plt.spy(HH.initial_dist_u.reshape(n_m,-1),
+       markersize = 2)
+plt.xlabel('p')
+plt.ylabel('m')
+
+# + code_folding=[]
+## plot the initial distribution in the first period of life 
+
+plt.title('Initial distributions over m and p given e')
+plt.spy(HH.initial_dist_e.reshape(n_m,-1),
+       markersize = 2)
+plt.xlabel('p')
+plt.ylabel('m')
+# -
+
+HH.Aggregate()
+print('aggregate consumption under stationary distribution:', str(HH.C))
+print('aggregate savings under stationary distribution:', str(HH.A))
+
+# ### Stationary wealth/consumption distribution
+
+share_agents_cp,share_cp = HH.Lorenz(variable='c')
+share_agents_ap,share_ap = HH.Lorenz(variable='a')
+
+# + code_folding=[]
+
+
+
+# + code_folding=[]
+## Lorenz curve of steady state wealth distribution
+
+fig, ax = plt.subplots(figsize=(5,5))
+ax.plot(share_agents_cp,share_cp, 'r--',label='Lorenz curve of consumption')
+ax.plot(share_agents_cp,share_agents_cp, 'k-',label='equality curve')
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+plt.savefig('../Graphs/model/lorenz_c_test.png')
+
+## Lorenz curve of steady state wealth distribution
+
+fig, ax = plt.subplots(figsize=(5,5))
+ax.plot(share_agents_ap,share_ap, 'r--',label='Lorenz curve of wealth: model')
+ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve of wealth: SCF')
+ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+plt.savefig('../Graphs/model/lorenz_a_test.png')
+
+# + code_folding=[0]
+## Wealth distribution 
+
+ap_grid_dist = HH.ap_grid_dist
+ap_pdfs_dist = HH.ap_pdfs_dist
+cp_grid_dist = HH.cp_grid_dist
+cp_pdfs_dist = HH.cp_pdfs_dist
+
+
+fig, ax = plt.subplots(figsize=(6,4))
+ax.set_title('Wealth distribution')
+ax.plot(np.log(ap_grid_dist+0.0000000001), 
+         ap_pdfs_dist)
+ax.set_xlim(-30,10)
+
+ax.set_xlabel(r'$a$')
+ax.set_ylabel(r'$prob(a)$')
+fig.savefig('../Graphs/model/distribution_a_test.png')
+
+fig, ax = plt.subplots(figsize=(6,4))
+ax.set_title('Consumption distribution')
+ax.plot(np.log(cp_grid_dist), 
+         cp_pdfs_dist)
+ax.set_xlabel(r'$c$')
+ax.set_ylabel(r'$prob(a)$')
+ax.set_xlim(-15,10)
+fig.savefig('../Graphs/model/distribution_c_test.png')
+# -
+
+# ### Life-cycle profile and wealth distribution
+
+
+
+# + code_folding=[]
+HH.AggregatebyAge()
+
+A_life = HH.A_life
+C_life = HH.C_life
+
+
+# + code_folding=[11]
+## plot life cycle profile
+
+age_lc = SCF_profile.index
+
+fig, ax = plt.subplots(figsize=(10,5))
+plt.title('Life cycle profile of wealth')
+ax.plot(age_lc[1:],
+       np.log(A_life),
+       'r-o',
+       label='model')
+
+ax.vlines(lc_mkv.T+25,
+          np.min(np.log(A_life)),
+          np.max(np.log(A_life)),
+          color='k',
+          label='retirement'
+         )
+#ax.set_ylim([-2.0,2.0])
+
+ax2 = ax.twinx()
+ax2.set_ylim([10.5,15])
+ax2.bar(age_lc[1:],
+        np.log(SCF_profile['mv_wealth'][1:]),
+       label='SCF (RHS)')
+
+#ax2.plot(age,
+#        C_life,
+#        'b--',
+#        label='consumption (RHS)')
+
+ax.set_xlabel('Age')
+ax.set_ylabel('Log wealth in model')
+ax2.set_ylabel('Log wealth SCF')
+ax.legend(loc=1)
+ax2.legend(loc=2)
+fig.savefig('../Graphs/model/life_cycle_a_test.png')
+
+# + code_folding=[0]
+## get the within-age distribution 
+
+HH.get_lifecycle_dist()
+
+ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
+cp_grid_dist_life,cp_pdfs_dist_life = HH.cp_grid_dist_life,HH.cp_pdfs_dist_life
+
+# + code_folding=[0]
+## create the dataframe to plot distributions over the life cycle 
+ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
+cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
+
+#ap_pdfs_life.index = np.log(ap_grid_dist_life[0]+1e-4)
+
+ap_range = list(ap_pdfs_life.index)
+cp_range = list(cp_pdfs_life.index)
+
+# + code_folding=[1, 2, 11, 21]
+joy = False
+if joy == True:
+    fig, axes = joypy.joyplot(ap_pdfs_life, 
+                              kind="values", 
+                              x_range=ap_range,
+                              figsize=(6,10),
+                              title="Wealth distribution over life cycle",
+                             colormap=cm.winter)
+    fig.savefig('../Graphs/model/life_cycle_distribution_a_test.png')
+    #axes[-1].set_xticks(a_values);
+
+    fig, axes = joypy.joyplot(cp_pdfs_life, 
+                              kind="values", 
+                              x_range=cp_range,
+                              figsize=(6,10),
+                              title="Consumption distribution over life cycle",
+                             colormap=cm.winter)
+    fig.savefig('../Graphs/model/life_cycle_distribution_c_test.png')
+
+    #axes[-1].set_xticks(a_values);
+    
+else:
+    pass
+# -
+
+# ### General Equilibrium 
+
+# + code_folding=[]
+## initialize a market and solve the equilibrium 
+
+
 
 market_OLG_mkv = Market_OLG_mkv(households = HH,
                                 production = production)
@@ -2035,7 +2380,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_eq.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_ap, share_ap = market_OLG_mkv.households.Lorenz(variable='a')
@@ -2074,7 +2419,16 @@ ax.set_xlim((-20,20))
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_c_eq.png')
 # -
-# ## Compare between the objective and subjective model 
+# ## Compare different models
+
+# + code_folding=[0]
+
+# -
+
+model_results = compare_models(models[0:1],
+                               model_names[0:1],
+                               ms_stars[0:1],
+                               σs_stars[0:1])
 
 # + code_folding=[]
 ## create a new subjective household block 
@@ -2144,7 +2498,7 @@ ax.vlines(lc_mkv.T+25,
           color='k',
           label='retirement'
          )
-#ax.set_ylim([-5.0,2.0])
+ax.set_ylim([-2.0,3.0])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
@@ -2240,6 +2594,22 @@ plt.ylim([0,1])
 fig.savefig('../Graphs/model/lorenz_curve_a_sub_eq.png')
 
 
-# -
+# +
+## wealth distributions 
+
+fig, ax = plt.subplots(figsize=(6,4))
+ax.set_title('Wealth distribution')
+ax.plot(np.log(market_OLG_mkv.households.ap_grid_dist+0.0000000001), 
+         market_OLG_mkv.households.ap_pdfs_dist,
+       label='objective')
+ax.plot(np.log(market_OLG_mkv_sub.households.ap_grid_dist+0.0000000001), 
+         market_OLG_mkv_sub.households.ap_pdfs_dist,
+       label='subjective')
+ax.set_xlim((-8,8))
+ax.set_xlabel(r'$a$')
+ax.legend(loc=0)
+ax.set_ylabel(r'$prob(a)$')
+
+fig.savefig('../Graphs/model/distribution_a_sub_eq.png')
 
 
