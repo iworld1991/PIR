@@ -288,6 +288,21 @@ def mkv2_Y2Q(q,
 
 
 # -
+# ## Tools for model comparisons
+
+def mean_preserving_spread(mean,
+                           probs,
+                           l2mean_ratio):
+    """
+    this function generates a 2-sized array of a mean-preserving spread (low and high) to themean 
+    """
+    prob_l,prob_h = probs 
+    val_l = l2mean_ratio*mean
+    val_h = (mean - prob_l*val_l)/prob_h
+    arrays = np.array([val_l,val_h])
+    return arrays
+
+
 # ## Tools for the economy and market 
 
 

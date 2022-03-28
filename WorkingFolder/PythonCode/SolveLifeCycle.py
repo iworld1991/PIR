@@ -50,7 +50,7 @@ from scipy import sparse as sp
 import scipy.sparse.linalg
 from scipy import linalg as lg 
 from numba.typed import List
-from Utility import cal_ss_2markov
+from Utility import cal_ss_2markov,mean_preserving_spread
 
 from resources_jit import MeanOneLogNormal as lognorm
 
@@ -863,7 +863,7 @@ def solve_model_iter(model,        # Class with model information
     return me_vec, σ_vec
 
 
-# + code_folding=[]
+# + code_folding=[2]
 # a function to compare two solutions 
 
 def compare_2solutions(ms_stars,
@@ -1013,7 +1013,46 @@ if __name__ == "__main__":
              σ_init[:,0,1])
 # -
 
+if __name__ == "__main__":
+
+    t_start = time()
+
+  
+    
+    ### this line is very important!!!!
+    #### need to regenerate shock draws for new sigmas
+    lc.prepare_shocks()
+
+    ## terminal solution
+    m_init,σ_init = lc.terminal_solution()
+
+    ## solve backward
+    ms_star, σs_star = solve_model_backward_iter(lc,
+                                                 m_init,
+                                                 σ_init)
+
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
+
 # ### Different permanent/transitory risk (no MA)
+
+if __name__ == "__main__":
+    lc_basic = LifeCycle(sigma_psi = sigma_psi,
+                   sigma_eps = sigma_eps,
+                   U=U,
+                   ρ=ρ,
+                   R=R,
+                   T=T,
+                   L=L,
+                   G=G,
+                   β=β,
+                   x=x,
+                   borrowing_cstr = borrowing_cstr,
+                   b_y= b_y,
+                   unemp_insurance = unemp_insurance,
+                   )
 
 # + code_folding=[]
 if __name__ == "__main__":
@@ -1026,17 +1065,17 @@ if __name__ == "__main__":
     ms_stars =[]
     σs_stars = []
     for i,sigma_psi in enumerate(sigma_psi_ls):
-        lc.sigma_psi = sigma_psi
-        lc.sigma_eps = sigma_eps_ls[i]
+        lc_basic.sigma_psi = sigma_psi
+        lc_basic.sigma_eps = sigma_eps_ls[i]
         ### this line is very important!!!!
         #### need to regenerate shock draws for new sigmas
-        lc.prepare_shocks()
+        lc_basic.prepare_shocks()
         
         ## terminal solution
-        m_init,σ_init = lc.terminal_solution()
+        m_init,σ_init = lc_basic.terminal_solution()
         
         ## solve backward
-        ms_star, σs_star = solve_model_backward_iter(lc,
+        ms_star, σs_star = solve_model_backward_iter(lc_basic,
                                                      m_init,
                                                      σ_init)
         ms_stars.append(ms_star)
@@ -1057,9 +1096,6 @@ if __name__ == "__main__":
     n_sub = len(years_left)
 
     eps_fix = 0 ## the first eps grid 
-
-    ms_star = ms_stars[0]
-    σs_star = σs_stars[0]
 
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
@@ -1182,7 +1218,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent state: good versus bad 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     ## initialize another 
     lc_ar = LifeCycle(sigma_psi=sigma_psi,
@@ -1237,7 +1273,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1277,7 +1313,7 @@ if __name__ == "__main__":
 
 # ### State-dependent risks 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## transition matrix between low and high risk state
@@ -1290,14 +1326,22 @@ if __name__ == "__main__":
     prob_h = P[0,1]
 
     ## keep average risks the same 
-    sigma_psi_l = 0.01*sigma_psi
-    sigma_psi_h = np.sqrt((sigma_psi**2 - prob_l*sigma_psi_l**2)/prob_h)
-
-    sigma_eps_l = 0.1*sigma_eps
-    sigma_eps_h = np.sqrt((sigma_eps**2 - prob_l*sigma_eps_l**2)/prob_h)
-    sigma_psi_2mkv = np.array([sigma_psi_l,sigma_psi_h]) 
-    sigma_eps_2mkv = np.array([sigma_eps_l,sigma_eps_h]) 
-
+     
+    sigma_psi_2mkv = np.sqrt(
+        mean_preserving_spread(
+            mean = lc.sigma_psi**2,
+            probs = np.array([prob_l,prob_h]),
+            l2mean_ratio = 0.1)
+    )
+    
+    
+    
+    sigma_eps_2mkv = np.sqrt(
+        mean_preserving_spread(
+            mean = lc.sigma_eps**2,
+            probs = np.array([prob_l,prob_h]),
+            l2mean_ratio = 0.1)
+    )
 
     b_y = 0.0  ## set the macro state loading to be zero, i.e. only risks differ across two states
 # -
@@ -1309,15 +1353,15 @@ if __name__ == "__main__":
     av_sigma_eps = np.sqrt(np.dot(P[0,:],sigma_eps_2mkv**2))
     print('steady state is '+str(ss_P))
     print('transitory probability is '+str(P[0,:]))
-    print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(sigma_psi))
-    print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(sigma_eps))
+    print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(lc.sigma_psi))
+    print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(lc.sigma_eps))
 
 if __name__ == "__main__":
 
     print('permanent risk state is '+str(sigma_psi_2mkv))
     print('transitory risk state is '+str(sigma_eps_2mkv))
 
-# + code_folding=[4]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## another model instance 
@@ -1338,7 +1382,7 @@ if __name__ == "__main__":
                    b_y=b_y)
 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## solve the model for different transition matricies 
@@ -1369,7 +1413,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     ## compare two markov states low versus high risk 
 
@@ -1408,7 +1452,7 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1508,7 +1552,7 @@ if __name__ == "__main__":
     #                    (0.05, 0.95)])   # markov transition matricies 
 
 
-# + code_folding=[3]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## initialize another 
@@ -1543,7 +1587,7 @@ if __name__ == "__main__":
         lc_uemkv.P = P
 
         ## terminal solution
-        m_init_uemkv,σ_init_uemkv=lc_uemkv.terminal_solution()
+        m_init_uemkv,σ_init_uemkv = lc_uemkv.terminal_solution()
 
         ## solve the model 
         ms_star_uemkv, σs_star_uemkv = solve_model_backward_iter(lc_uemkv,
@@ -1557,7 +1601,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1599,7 +1643,7 @@ if __name__ == "__main__":
 # - unemployed perceive higher risks
 #
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1608,20 +1652,28 @@ if __name__ == "__main__":
     prob_l_cr = P_uemkv[0,1]
 
     ## keep average risks the same 
-    sigma_psi_l_cr = 0.1*sigma_psi
-    sigma_psi_h_cr = np.sqrt((sigma_psi**2 - prob_l_cr*sigma_psi_l_cr**2)/prob_h_cr)
-
-    sigma_eps_l_cr = 0.1*sigma_eps
-    sigma_eps_h_cr = np.sqrt((sigma_eps**2 - prob_l_cr*sigma_eps_l_cr**2)/prob_h_cr)
-
     ### notice here I put high risk at the first!!!
-    sigma_psi_2mkv_cr= np.array([sigma_psi_h_cr,sigma_psi_l_cr**2])
-    sigma_eps_2mkv_cr = np.array([sigma_eps_h_cr,sigma_eps_l_cr**2])
+    sigma_psi_2mkv_cr = np.sqrt(mean_preserving_spread(mean = lc_uemkv.sigma_psi**2,
+                                                      probs = np.array([prob_l_cr,prob_h_cr]),
+                                                      l2mean_ratio = 0.1)
+                               )
+    ### notice here I put high risk at the first!!!
+    sigma_psi_2mkv_cr = np.flip(sigma_psi_2mkv_cr)
+    ### notice here I put high risk at the first!!!
+    
+    sigma_eps_2mkv_cr = np.sqrt(mean_preserving_spread(mean = lc_uemkv.sigma_eps**2,
+                                                      probs = np.array([prob_l_cr,prob_h_cr]),
+                                                      l2mean_ratio = 0.1)
+                               )
+    ### notice here I put high risk at the first!!!
+    sigma_eps_2mkv_cr = np.flip(sigma_eps_2mkv_cr)
+   ### notice here I put high risk at the first!!!
+
 
     ## again, zero loading from z
     b_y = 0.0
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     ## compute steady state 
     av_sigma_psi_cr = np.sqrt(np.dot(P_uemkv[0,:],sigma_psi_2mkv_cr**2))
@@ -1629,8 +1681,8 @@ if __name__ == "__main__":
     print('steady state is '+str(ss_P_cr))
     print('transitory probability is '+str(P_uemkv[0,:]))
 
-    print('average permanent risk is '+str(av_sigma_psi_cr)+' compared to objective model '+str(sigma_psi))
-    print('average transitory risk is '+str(av_sigma_eps_cr)+' compared to objective model '+str(sigma_eps))
+    print('average permanent risk is '+str(av_sigma_psi_cr)+' compared to objective model '+str(lc_uemkv.sigma_psi))
+    print('average transitory risk is '+str(av_sigma_eps_cr)+' compared to objective model '+str(lc_uemkv.sigma_eps))
 
 # + code_folding=[]
 if __name__ == "__main__":
@@ -1679,7 +1731,7 @@ if __name__ == "__main__":
         ms_star_cr, σs_star_cr = solve_model_backward_iter(lc_cr,
                                                            m_init_cr,
                                                            σ_init_cr,
-                                                           sv= True)
+                                                           sv = True)
         ms_stars_cr.append(ms_star_cr)
         σs_stars_cr.append(σs_star_cr)
 
@@ -1687,7 +1739,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0, 13]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1711,12 +1763,12 @@ if __name__ == "__main__":
                      c_plt_l,
                      '--',
                      label ='une+ high risk',
-                     lw=3)
+                     lw = 3)
         axes[x].plot(m_plt_h, ## 1 indicates the high risk state 
                      c_plt_h,
                      '-.',
                      label ='emp+ low risk',
-                     lw=3)
+                     lw = 3)
         axes[x].legend()
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
@@ -1725,7 +1777,7 @@ if __name__ == "__main__":
 
 # ### Objective and subject state-dependent profile
 
-# + code_folding=[13]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## compare subjective and objective models 

@@ -43,6 +43,7 @@ from matplotlib import cm
 import joypy
 from copy import copy,deepcopy
 from Utility import cal_ss_2markov,lorenz_curve
+from Utility import mean_preserving_spread
 
 
 # + code_folding=[]
@@ -58,7 +59,7 @@ plt.style.use('seaborn')
 
 # -
 
-# ### The Life-cycle Model Class and Its Solver
+# ### The Life-cycle Model Class and the Solver
 
 # + code_folding=[]
 from SolveLifeCycle import LifeCycle, EGM, solve_model_backward_iter,compare_2solutions
@@ -74,7 +75,11 @@ lc_paras_q = copy(lc_paras_Q)
 
 # +
 ## make some modifications 
-#lc_paras_y['P'] =np.array([[0.0,1.0],[0.0,1.0]])
+#lc_paras_y['P'] = np.array([[0.2,0.8],[0.2,0.8]])
+#lc_paras_y['σ_ψ_2mkv'] = np.flip(lc_paras_y['σ_ψ_2mkv'])
+#lc_paras_y['σ_θ_2mkv'] = np.flip(lc_paras_y['σ_θ_2mkv'])
+#lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],lc_paras_y['P'][0,:],0.2)))
+#lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],lc_paras_y['P'][0,:],0.2)))
 #lc_paras_y['unemp_insurance'] = 0.0 
 #lc_paras_y['init_b'] = 0.0 
 #lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
@@ -95,7 +100,7 @@ plt.xlabel('Age')
 plt.ylabel(r'$\hat Y$')
 
 
-# + code_folding=[]
+# + code_folding=[2]
 #this is a fake life cycle income function 
 
 def fake_life_cycle(L):
@@ -105,7 +110,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -129,7 +134,6 @@ GNeg= 0.99*np.ones(L-TGPos)
 #YPath = np.cumprod(G)
 G = fake_life_cycle(L)
 YPath = np.cumprod(G)
-
 
 ## other parameters 
 ρ = 1
@@ -159,7 +163,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 7]
+# + code_folding=[20, 76, 130, 231, 256, 284, 311]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -227,10 +231,10 @@ if calibrated_model == True:
                    shock_draw_size = 10.0,
                    grid_max = 10
                    )
-    print(lc_mkv.psi_shk_draws)
-    print(lc_mkv.eps_shk_draws)
-    print(lc_mkv.psi_shk_true_draws)
-    print(lc_mkv.eps_shk_true_draws)
+    #print(lc_mkv.psi_shk_draws)
+    #print(lc_mkv.eps_shk_draws)
+    #print(lc_mkv.psi_shk_true_draws)
+    #print(lc_mkv.eps_shk_true_draws)
 
     
     
@@ -282,10 +286,10 @@ if calibrated_model == True:
                   grid_max = 10
                    )
     
-    print(lc_mkv_sub.psi_shk_draws)
-    print(lc_mkv_sub.eps_shk_draws)
-    print(lc_mkv_sub.psi_shk_true_draws)
-    print(lc_mkv_sub.eps_shk_true_draws)
+    #print(lc_mkv_sub.psi_shk_draws)
+    #print(lc_mkv_sub.eps_shk_draws)
+    #print(lc_mkv_sub.psi_shk_true_draws)
+    #print(lc_mkv_sub.eps_shk_true_draws)
     
     
      ## for the subjective model, only change the belief 
@@ -336,10 +340,57 @@ if calibrated_model == True:
                   grid_max = 10
                    )
     
-    print(lc_mkv_sub_true.psi_shk_draws)
-    print(lc_mkv_sub_true.eps_shk_draws)
-    print(lc_mkv_sub_true.psi_shk_true_draws)
-    print(lc_mkv_sub_true.eps_shk_true_draws)
+    #print(lc_mkv_sub_true.psi_shk_draws)
+    #print(lc_mkv_sub_true.eps_shk_draws)
+    #print(lc_mkv_sub_true.psi_shk_true_draws)
+    #print(lc_mkv_sub_true.eps_shk_true_draws)
+    
+    
+    lc_mkv_sub_cr = LifeCycle(
+        ## primitives
+                   ρ = lc_paras['ρ'],     ## relative risk aversion  
+                   β = lc_paras['β'],     ## discount factor
+                   borrowing_cstr = borrowing_cstr,
+                   adjust_prob = 1.0,
+        ## prices 
+                   R = lc_paras['R'],           ## interest factor
+                   W = lc_paras['W'],            ## Wage rate
+        ## life cycle 
+                   T = lc_paras['T'],
+                   L = lc_paras['L'],
+                   G = lc_paras['G'],
+                   LivPrb = lc_paras['LivPrb'],       ## living probability 
+        
+        ## income risks 
+                   x = 0.0,
+                   b_y = 0.0,
+                   sigma_psi = lc_paras['σ_ψ_sub'],
+                   sigma_eps = lc_paras['σ_θ_sub'],
+                   subjective = True,
+                   ue_markov = True,
+                   P = lc_paras['P'],
+                   U = lc_paras['U'],
+                   z_val = lc_paras['z_val'], ## markov state from low to high
+                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+                   sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
+                   sigma_eps_true = lc_paras['σ_θ'], ## true transitory
+        
+        ## initial conditions 
+                    sigma_p_init = lc_paras['σ_ψ_init'],
+                    init_b = lc_paras['init_b'],
+
+        ## policy 
+                   unemp_insurance = lc_paras['unemp_insurance'],
+                   pension = lc_paras['pension'], ## pension
+                   λ = lc_paras['λ'],  ## tax rate
+                   λ_SS = lc_paras['λ_SS'], ## social tax rate
+                   transfer = lc_paras['transfer'],  ## transfer 
+                   bequest_ratio = lc_paras['bequest_ratio'],
+        ## solutions 
+                  shock_draw_size =  10.0,
+                  grid_max = 10
+                  )
 
 
 else:
@@ -396,13 +447,79 @@ else:
                        transfer = transfer,
                        bequest_ratio = bequest_ratio
                       )
+    
+    lc_mkv_sub_true = LifeCycle(sigma_psi = 0.1*sigma_psi, ##  0.1 is arbitrary but just to make the PR lower
+                       sigma_eps = 0.1*sigma_eps,
+                       subjective =True,
+                       sigma_psi_true = 0.1*sigma_psi,
+                       sigma_eps_true = 0.1*sigma_eps,
+                       U=U,
+                       LivPrb = LivPrb,
+                       ρ=ρ,
+                       R=R,
+                       W=W,
+                       G=G,
+                       T=T,
+                       L=L,
+                       β=β,
+                       x=x,  ## shut down ma(1)
+                       theta=theta,
+                       borrowing_cstr = borrowing_cstr,
+                       b_y = b_y, ## set the macro state loading to be zero, it does not matter for ue_markov
+                       unemp_insurance = unemp_insurance, 
+                       pension = pension,
+                       ue_markov = ue_markov,
+                       sigma_p_init =sigma_p_init,
+                       init_b = init_b,
+                       λ = λ,
+                       transfer = transfer,
+                       bequest_ratio = bequest_ratio
+                      )
+    lc_mkv_sub_cr = LifeCycle(sigma_psi = 0.1*sigma_psi, ##  0.1 is arbitrary but just to make the PR lower
+                       sigma_eps = 0.1*sigma_eps,
+                       subjective =True,
+                       sigma_psi_true = sigma_psi,
+                       sigma_eps_true = sigma_eps,
+                       U=U,
+                       LivPrb = LivPrb,
+                       ρ=ρ,
+                       R=R,
+                       W=W,
+                       G=G,
+                       T=T,
+                       L=L,
+                       β=β,
+                       x=x,  ## shut down ma(1)
+                       theta=theta,
+                       borrowing_cstr = borrowing_cstr,
+                       b_y = b_y, ## set the macro state loading to be zero, it does not matter for ue_markov
+                       unemp_insurance = unemp_insurance, 
+                       pension = pension,
+                       ue_markov = ue_markov,
+                       sigma_p_init =sigma_p_init,
+                       init_b = init_b,
+                       λ = λ,
+                       transfer = transfer,
+                       bequest_ratio = bequest_ratio
+                      )
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## solve various models
 
-models = [lc_mkv,lc_mkv_sub,lc_mkv_sub_true]
-model_names=['objective','subjective','subjective_true']
+models = [lc_mkv,
+          lc_mkv_sub,
+          lc_mkv_sub_true,
+          lc_mkv_sub_cr]
+specs = ['ob',
+         'sub',
+         'sub_true',
+         'cr']
+
+model_names=['objective',
+             'subjective',
+             'subjective_true',
+             'subective_sv']
 
 ms_stars = []
 σs_stars = []
@@ -413,9 +530,15 @@ for i, model in enumerate(models):
     m_init,σ_init = model.terminal_solution()
 
     ## solve backward
-    ms_star, σs_star = solve_model_backward_iter(model,
-                                                 m_init,
-                                                 σ_init)
+    if specs[i]!='cr':
+        ms_star, σs_star = solve_model_backward_iter(model,
+                                                     m_init,
+                                                     σ_init)
+    else:
+        ms_star, σs_star = solve_model_backward_iter(model,
+                                                     m_init,
+                                                     σ_init,
+                                                     sv = True)
     ms_stars.append(ms_star)
     σs_stars.append(σs_star)
 
@@ -425,7 +548,7 @@ print("Time taken, in seconds: "+ str(t_finish - t_start))
 
 
 
-# +
+# + code_folding=[0]
 ## be careful with the order 
 ## get the solution for the objective model 
 ms_star_mkv, σs_star_mkv = ms_stars[0],σs_stars[0]
@@ -433,7 +556,7 @@ ms_star_mkv, σs_star_mkv = ms_stars[0],σs_stars[0]
 ## get the solution for the subjective model 
 ms_star_mkv_sub,σs_star_mkv_sub = ms_stars[1],σs_stars[1]
 
-# +
+# + code_folding=[0]
 ## compare different models 
 
 ojb_minus_sub = compare_2solutions(ms_stars[0:2],
@@ -444,7 +567,7 @@ plt.hist(ojb_minus_sub.flatten(),
 plt.title('Consumption in objective model minus subjective model')
 print('should be NEGATIVE!!!!!')
 
-# + code_folding=[0]
+# + code_folding=[0, 12]
 ## compare solutions 
 
 m_grid = np.linspace(0.0,10.0,200)
@@ -465,16 +588,16 @@ for x,year in enumerate(years_left):
         m_plt_e,c_plt_e = ms_stars[k][i,:,eps_fix,1],σs_stars[k][i,:,eps_fix,1]
         c_func_u = lambda m: interp(m_plt_u,c_plt_u,m)
         c_func_e = lambda m: interp(m_plt_e,c_plt_e,m)
-        #axes[x].plot(m_grid,
-        #             c_func_u(m_grid),
-        #             label = model_name+',unemployed',
-        #             lw=3
-        #            )
         axes[x].plot(m_grid,
-                     c_func_e(m_grid),
-                     label = model_name+',employed',
+                     c_func_u(m_grid),
+                     label = model_name+',unemployed',
                      lw=3
                     )
+        #axes[x].plot(m_grid,
+        #             c_func_e(m_grid),
+        #             label = model_name+',employed',
+        #             lw=3
+        #            )
     axes[x].legend()
     #axes[x].set_xlim(0.0,np.max(m_plt_u))
     axes[x].set_xlabel('asset')
@@ -565,7 +688,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[0, 6, 101, 142, 467, 482, 489, 518, 525, 554, 568, 586]
+# + code_folding=[6, 101, 142, 467, 482, 489, 518, 525, 554, 568, 586]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1189,7 +1312,7 @@ def calc_ergodic_dist(transition_matrix = None):
 """
 
 
-# + code_folding=[0, 5, 17, 113, 280, 301, 341, 386]
+# + code_folding=[5, 17, 113, 280, 301, 341, 386]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1943,13 +2066,13 @@ def solve_models(model_list,
             'ap_grid_dist_ge':ap_grid_dist_ge_list,
             'ap_pdfs_dist_ge':ap_pdfs_dist_ge_list
            }
-        
 
-# + code_folding=[0]
+
+# + code_folding=[]
 model_results = solve_models(models,
-                               model_names,
-                               ms_stars,
-                               σs_stars)
+                             model_names,
+                             ms_stars,
+                             σs_stars)
 
 # +
 ## get list of model outputs from the results dictionary 
@@ -1997,7 +2120,8 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 line_patterns =['g-v',
                 'r-.',
-                'b--']
+                'b--',
+                'y.']
 
 ## Lorenz curve of steady state wealth distribution
 
@@ -2177,10 +2301,6 @@ print('aggregate savings under stationary distribution:', str(HH.A))
 
 share_agents_cp,share_cp = HH.Lorenz(variable='c')
 share_agents_ap,share_ap = HH.Lorenz(variable='a')
-
-# + code_folding=[]
-
-
 
 # + code_folding=[]
 ## Lorenz curve of steady state wealth distribution
