@@ -70,14 +70,14 @@ plt.style.use('seaborn')
 
 # ## The Model Class and Solver
 
-# + code_folding=[0]
+# + code_folding=[]
 lc_data = [
     ## model paras
     ('ρ', float64),              # utility parameter CRRA
     ('β', float64),              # discount factor
     ('R',float64),               # Real interest rate factor 
     ('W',float64),               # Wage rate
-    ('P', float64[:, :]),        # transition probs for z_t, a persistent (macro) state  x
+    ('P', float64[:, :]),        # transition probs for z_t, a persistent state  x
     ('z_val', float64[:]),       # values of z, grid values for the continous (macro) persistent state    x
     ('sigma_psi', float64),      # permanent shock volatility              x
     ('sigma_eps', float64),      # transitory shock volatility
@@ -112,15 +112,19 @@ lc_data = [
     ('eps_shk_mkv_draws',float64[:,:]), ## 2-state markov on transitory risks
     ('init_p_draws', float64[:]),     ## Draws of initial permanent income
     ## regarding subjective beliefs
+    ('P_sub',float64[:, :]),            # trans probs of belief states
+    ('U2U_2mkv',float64[:]),            # state-dependent U2U prob
+    ('E2E_2mkv',float64[:]),            # state-dependent E2E prob
     ('sigma_psi_true', float64),      # true permanent shock volatility              
     ('sigma_eps_true', float64),      # ture transitory shock volatility
     ('subjective',boolean),  ## belief is not necessarily equal to true 
+    ('state_dependent_belief',boolean),  ## belief is state-dependent
     ('psi_shk_true_draws',float64[:]), ## draws of true permanent income shock 
     ('eps_shk_true_draws',float64[:]) ## draws of true transitory income shock 
 ]
 
 
-# + code_folding=[6, 134, 151, 202]
+# + code_folding=[1, 121, 122, 132, 136, 141, 157, 208]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -141,8 +145,6 @@ class LifeCycle:
                  U = 0.0,   ## unemployment risk probability (0-1)
                  LivPrb = 0.995,       ## living probability 
                  b_y = 0.0,          ## loading of markov state on income  
-                 sigma_psi_2mkv = np.array([0.05,0.2]),  ## permanent risks in 2 markov states
-                 sigma_eps_2mkv = np.array([0.08,0.12]),  ## transitory risks in 2 markov states
                  R = 1.02,           ## interest factor 
                  W = 1.0,            ## Wage rate
                  T = 40,             ## work age, from 25 to 65 (including 65)
@@ -151,6 +153,15 @@ class LifeCycle:
                  shock_draw_size = 7,
                  grid_max = 5.0,
                  grid_size = 50,
+                 ## subjective state dependent 
+                 subjective = False,
+                 state_dependent_belief = False,
+                 P_sub = np.array([[0.5,0.5],
+                              [0.5,0.5]]), 
+                 sigma_psi_2mkv = np.array([0.05,0.2]),  ## permanent risks in 2 markov states
+                 sigma_eps_2mkv = np.array([0.08,0.12]),  ## transitory risks in 2 markov states
+                 U2U_2mkv = np.array([0.05,0.1]),         ## U2U in low and high risk mkv state
+                 E2E_2mkv = np.array([0.95,0.9]),         ## E2E in low and high risk mkv state
                  theta = 2,               ## assymetric extrapolative parameter
                  unemp_insurance = 0.0,   #  unemp_insurance = 0.0,   
                  pension = 1.0,           
@@ -163,8 +174,8 @@ class LifeCycle:
                  transfer = 0.0,
                  bequest_ratio = 0.0,
                  sigma_psi_true = 0.10,     ## true size of permanent income shocks
-                 sigma_eps_true = 0.10,     ## ture size of transitory income risks  
-                 subjective = False): 
+                 sigma_eps_true = 0.10     ## ture size of transitory income risks  
+                ): 
         self.ρ, self.β = ρ, β
         self.R = R 
         self.W = W
@@ -271,7 +282,6 @@ class LifeCycle:
     def Γ(self,psi_shk):
         return np.exp(psi_shk)
     
-    
     def prepare_shocks(self):
         subjective = self.subjective
         shock_draw_size = self.shock_draw_size
@@ -337,7 +347,7 @@ class LifeCycle:
         return m_init,σ_init
 
 
-# + code_folding=[7]
+# + code_folding=[]
 ## This function takes the consumption values at different 
 ## grids of state variables variables from period t+1, and 
 ## the model class, then generates the consumption values at t.

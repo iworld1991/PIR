@@ -38,7 +38,7 @@ import statsmodels.api as sm
 from Utility import mkv2_M2Q, mkv2_Q2Y, mkv2_Y2M, mkv2_Y2Q
 
 
-# + code_folding=[0, 47, 62, 69, 78, 82, 104, 124, 132]
+# + code_folding=[0, 15, 47, 62, 75, 79, 83, 105, 125, 136]
 class Markov2Switching:
     """
     A class that stores primitives for the Markov Regime Switching Model
@@ -99,12 +99,13 @@ class Markov2Switching:
         return temp1*temp2 
     
     ## The functions below are help functions 
-    ## that turn a hard constraint for parameters to a unconstrainted problem
+    ## that turn a hard constraint for parameters to an unconstrainted problem
     ## prob_func  from R -> [0,1]
     def prob_func(self,
                    x):
         """
         this bound function maps unconstrained x to y between 0 and 1
+        and it increases with x
         """
         return np.exp(x)/(1+np.exp(x))     
     
@@ -166,11 +167,14 @@ class Markov2Switching:
     def steady_state(self,
                       q,
                       p):
+        """
+        a function that computes the ss of a 2-state markov 
+        """
         return ((1-p)/(2-p-q),
                 (1-q)/(2-p-q))
     
     
-    ## Key function that computes log-likelihood for a list of time series of realized data
+    ## The key function that computes log-likelihood for a list of time series of realized data
     def log_likelihood(self,
                        Y_list,   ## a list of multiple series 
                        para):
@@ -179,7 +183,7 @@ class Markov2Switching:
         inputs
         ======
         Y: a list of independent univariate/multivariate (a vector) time series for which the log-likilihood is computed jointly
-        para: parameters of the process sized of nb of vairalbes x nb of parameters, with the strictly set order of α,β,σ,q,p,ϕ1
+        para: parameters of the process sized of nb of vairalbes x nb of parameters, with the strict order of α,β,σ,q,p,ϕ1
         
         outputs
         =======
@@ -234,7 +238,7 @@ class Markov2Switching:
                 f1[t]= pdf_t_1+pdf_t_0     # f1= f(y_t|Y_t-1)
                 #print(f1[t])
                 llh_pred = np.log(f1[t])     # log( f(y_t|Y_t-1))
-                llh = llh + llh_pred    # llh_pred = log(f(y_t|Y_t-1))
+                llh = llh + llh_pred         # llh_pred = log(f(y_t|Y_t-1))
                 update1[t] = pdf_t_1/(pdf_t_1+ pdf_t_0)  # p(s_t=0|y_t-1) 
                 update0[t] = 1-update1[t]                # p(s_t=1|y_t-1)
                 
@@ -258,14 +262,14 @@ mkv2 = Markov2Switching(AR=0,
 
 # ### Test using fake simulated data with known parameters
 
-# + code_folding=[14, 32]
+# + code_folding=[14]
 import quantecon as qe
 from quantecon import MarkovChain
 
 ## fake parameters 
 α_fake = 0.1
 β_fake = 0.2
-σ_fake = 0.8
+σ_fake = 0.1
 q_fake = 0.7
 p_fake = 0.6
 ϕ1_fake = 0.0
@@ -340,7 +344,7 @@ plt.legend(loc=1)
 llh,filter1,pr1,pdf = mkv2.log_likelihood(fake_data_list,
                                           para_fake)
 
-# + code_folding=[19]
+# + code_folding=[0, 19]
 ## plot the simulated data 
 if len(fake_data_list)==1:
     random_id = 0
@@ -375,7 +379,7 @@ ax2.plot(filter1[random_id][:-1],
 ax.legend(loc=1)
 ax2.legend(loc=2)
 
-# + code_folding=[2]
+# + code_folding=[0, 2]
 ## try estimation
 
 obj = lambda para: -mkv2.log_likelihood(fake_data_list,
@@ -426,7 +430,7 @@ llh,filter1,pr1,pdf = mkv2.log_likelihood(fake_data_list,
 # filter1: prob of good state;
 # pr1: predicted prob of good state 
 
-# + code_folding=[1, 3, 20]
+# + code_folding=[0, 1, 3, 17, 20]
 ## plot the simulated data 
 if len(fake_data_list)==1:
     random_id = 0
@@ -613,7 +617,7 @@ vars_rd_list = ['lrincvar_rd',
 print('residual correlation')
 SCEM[vars_rd_list].corr()
 
-# + code_folding=[]
+# + code_folding=[0]
 ## convert it to a list of arrays storing all time series data for each individual
 
 SCEM_sub = SCEM[['userid']+vars_rd_list].dropna(how='any')
@@ -646,7 +650,7 @@ axes[2].plot(SCE_list[random_id][2,:],
 axes[2].legend(loc=1)
 fig.savefig('../Graphs/sce/markov_example.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## initialize the model based on the SCE  
 
 AR = 1
@@ -679,7 +683,7 @@ SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
 
 
 # + code_folding=[]
-## impose some bounds for some parameters with sensible priors
+## impose bounds on some parameters with sensible priors
 
 ## the size of the shock cannot exceed the sample variation
 sigma_ub0 = np.mean([np.std(np.array(x[0,:])) for x in SCE_list])
@@ -742,7 +746,7 @@ kappa_sipp = np.median(kappas_sipp.dropna())
 kappa = kappa_sipp ## ratio of permanent and transitory risks 
 
 
-# + code_folding=[8, 75]
+# + code_folding=[0, 8, 75]
 ## create a dictionary for storing QUARTERLY parameters 
 
 model_para_q_est = {}
@@ -983,7 +987,6 @@ if __name__ == "__main__":
 # + code_folding=[2]
 if __name__ == "__main__":
 
-
     ## use statsmodels 
 
     mod_hamilton = sm.tsa.MarkovAutoregression(
@@ -998,6 +1001,7 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     res_hamilton.summary()
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1021,6 +1025,7 @@ if __name__ == "__main__":
 
     fig.tight_layout()
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
 

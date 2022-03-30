@@ -73,17 +73,15 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
-# +
 ## make some modifications 
-#lc_paras_y['P'] = np.array([[0.2,0.8],[0.2,0.8]])
+P_ss = cal_ss_2markov(lc_paras_y['P'])
 #lc_paras_y['σ_ψ_2mkv'] = np.flip(lc_paras_y['σ_ψ_2mkv'])
 #lc_paras_y['σ_θ_2mkv'] = np.flip(lc_paras_y['σ_θ_2mkv'])
-#lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],lc_paras_y['P'][0,:],0.2)))
-#lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],lc_paras_y['P'][0,:],0.2)))
+lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.2)))
+lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.2)))
 #lc_paras_y['unemp_insurance'] = 0.0 
 #lc_paras_y['init_b'] = 0.0 
 #lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
-# -
 
 print(lc_paras_y)
 
@@ -2236,7 +2234,6 @@ ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
-
 
 
 ## wealth distributions in ge
