@@ -77,8 +77,8 @@ lc_paras_q = copy(lc_paras_Q)
 P_ss = cal_ss_2markov(lc_paras_y['P'])
 #lc_paras_y['σ_ψ_2mkv'] = np.flip(lc_paras_y['σ_ψ_2mkv'])
 #lc_paras_y['σ_θ_2mkv'] = np.flip(lc_paras_y['σ_θ_2mkv'])
-lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.2)))
-lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.2)))
+lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.5)))
+lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.5)))
 #lc_paras_y['unemp_insurance'] = 0.0 
 #lc_paras_y['init_b'] = 0.0 
 #lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
@@ -686,7 +686,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[6, 101, 142, 467, 482, 489, 518, 525, 554, 568, 586]
+# + code_folding=[0, 6, 101, 142, 467, 482, 489, 518, 525, 554, 568, 586]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1310,7 +1310,7 @@ def calc_ergodic_dist(transition_matrix = None):
 """
 
 
-# + code_folding=[5, 17, 113, 280, 301, 341, 386]
+# + code_folding=[0, 5, 17, 113, 280, 301, 341, 386]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -2066,13 +2066,14 @@ def solve_models(model_list,
            }
 
 
-# + code_folding=[]
+# + code_folding=[1]
+## solve a list of models 
 model_results = solve_models(models,
                              model_names,
                              ms_stars,
                              σs_stars)
 
-# +
+# + code_folding=[]
 ## get list of model outputs from the results dictionary 
 
 ## PE 
@@ -2089,7 +2090,7 @@ C_life_ge_list =  model_results['C_life_ge']
 
 ap_grid_dist_ge_list, ap_pdfs_dist_ge_list = model_results['ap_grid_dist_ge'],model_results['ap_pdfs_dist_ge']
 
-# + code_folding=[]
+# + code_folding=[0]
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
@@ -2113,7 +2114,7 @@ SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
 
 SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot results from different models 
 
 line_patterns =['g-v',

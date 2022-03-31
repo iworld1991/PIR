@@ -575,7 +575,7 @@ SCEM =SCEM[SCEM['tenure']>=3]
 SCEM = SCEM[SCEM['fulltime']==1]
 SCEM = SCEM[SCEM['selfemp']==1]  ## working for someone 
 SCEM =SCEM[(SCEM['age']<=65) & (SCEM['age']>=25) ]
-SCEM =SCEM[SCEM['nlit']>=2.0]
+#SCEM =SCEM[SCEM['nlit']>=2.0]
 #SCEM =SCEM[SCEM['educ']>=2]
 print('nb of observations after dropping low numeracy/low education sample:',str(len(SCEM)))
 
@@ -650,39 +650,13 @@ axes[2].plot(SCE_list[random_id][2,:],
 axes[2].legend(loc=1)
 fig.savefig('../Graphs/sce/markov_example.png')
 
-# + code_folding=[0]
+# + code_folding=[]
 ## initialize the model based on the SCE  
 
-AR = 1
+AR = 0
 nb_var = 3
 
-if AR ==0:
-    if nb_var==3:
-        paras_init = np.array([0.1,0.1,0.1,0.7,0.7,
-                               0.1,0.1,0.1,0.7,0.7,
-                               0.1,-0.1,0.1,0.7,0.7])
-    elif nb_var ==1:
-        paras_init = np.array([0.1,0.1,0.1,0.7,0.7])
 
-elif AR==1:
-    if nb_var==3:
-        paras_init= np.array([0.1,0.1,0.1,0.7,0.7,0.8,
-                              0.1,0.1,0.1,0.7,0.7,0.8,
-                              0.1,-0.1,0.1,0.7,0.7,0.9])
-    elif nb_var==1:
-        paras_init= np.array([0.1,0.1,0.1,0.7,0.7,0.8])
-    
-    
-SCE_mkv2 = Markov2Switching(AR=AR,
-                            paras = paras_init,
-                            nb_var = nb_var)
-
-## objective func
-SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
-                                                para)[0]   ## only the first output
-
-
-# + code_folding=[]
 ## impose bounds on some parameters with sensible priors
 
 ## the size of the shock cannot exceed the sample variation
@@ -701,25 +675,63 @@ q_inv_lb = SCE_mkv2.prob_func_inv(q_lb)
 p_lb = 0.5 ## persistent 
 p_inv_lb = SCE_mkv2.prob_func_inv(p_lb)
 
-## estimation 
-guess = np.array([0.2,0.4,-0.5,0.1,0.4,0.8,
-                0.2,0.4,-2,0.1,0.4,0.8,
-                0.2,-0.1,-2,0.1,0.4,0.8])
 
 
-bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),
-         (None,None),(0.0,None),(-3,sigma_inv_ub1),(None,None),(None,None),
-         (None,None),(None,0.0),(-3,sigma_inv_ub2),(None,None),(None,None),)
+if AR ==0:
+    if nb_var==3:
+        paras_init = np.array([0.1,0.1,0.1,0.7,0.7,
+                               0.1,0.1,0.1,0.7,0.7,
+                               0.1,-0.1,0.1,0.7,0.7])
+        guess = np.array([0.2,0.4,-0.5,0.1,0.4,
+                0.2,0.4,-2,0.1,0.4,
+                0.2,-0.1,-2,0.1,0.4])
 
-#bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_inv_lb,None),(p_inv_lb,None),
-#         (None,None),(0.0,None),(-2,sigma_inv_ub1),(None,None),(None,None),
-#         (None,None),(None,0.0),(-2,sigma_inv_ub2),(None,None),(None,None),)
 
+        bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),
+                 (None,None),(0.0,None),(-3,sigma_inv_ub1),(None,None),(None,None),
+                 (None,None),(None,0.0),(-3,sigma_inv_ub2),(None,None),(None,None),)
+        
+    elif nb_var ==1:
+        paras_init = np.array([0.1,0.1,0.1,0.7,0.7])
+        guess = np.array([0.2,0.4,-0.5,0.1,0.4,0.8])
+        bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),)
+
+elif AR==1:
+    if nb_var==3:
+        paras_init= np.array([0.1,0.1,0.1,0.7,0.7,0.8,
+                              0.1,0.1,0.1,0.7,0.7,0.8,
+                              0.1,-0.1,0.1,0.7,0.7,0.9])
+        guess = np.array([0.2,0.4,-0.5,0.1,0.4,0.8,
+                        0.2,0.4,-2,0.1,0.4,0.8,
+                        0.2,-0.1,-2,0.1,0.4,0.8])
+        
+        bounds = ((None,None),(0.0,None),(-1,None),(q_lb,None),(None,None),(None,None),
+                 (None,None),(0.0,None),(-3,None),(None,None),(None,None),(None,None),
+                 (None,None),(None,0.0),(-3,None),(None,None),(None,None),(None,None),)
+        
+    elif nb_var==1:
+        paras_init= np.array([0.1,0.1,0.1,0.7,0.7,0.8])
+        
+        guess = np.array([0.2,0.4,-0.5,0.1,0.4,0.8,0.8])
+        
+        bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),(None,None),)
+    
+    
+SCE_mkv2 = Markov2Switching(AR=AR,
+                            paras = paras_init,
+                            nb_var = nb_var)
+
+## objective func
+SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
+                                                para)[0]   ## only the first output
+
+
+# + code_folding=[]
 
 result = minimize(SCE_obj,
                   x0 = guess,
-                  method='Nelder-Mead',   #SLSQP
-                  #bounds = bounds,
+                  method='SLSQP',   #SLSQP
+                  bounds = bounds,
                   options={'disp': True,
                             'maxiter':20000}
                    )
