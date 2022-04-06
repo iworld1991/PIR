@@ -686,7 +686,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[0, 6, 101, 142, 467, 482, 489, 518, 525, 554, 568, 586]
+# + code_folding=[6, 101, 142, 467, 482, 489, 518, 525, 554, 568, 586]
 #################################
 ## general functions used 
 # for computing transition matrix
