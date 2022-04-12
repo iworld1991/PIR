@@ -218,7 +218,7 @@ The consumer's solution to the problem above is the age-specific consumption pol
 The distinction between objective and subject risk perception marks the single most important deviation of this paper from existing incomplete-market macro papers. \footnote{For instance, \cite{bewley1976permanent}, \cite{huggett1993risk}, \cite{aiyagari1994uninsured}, \cite{krusell1998income},  \cite{krueger2016macroeconomics},  \cite{carroll2017distribution}.} There is a long tradition of explicitly incorporating various kinds of heterogeneity in addition to uninsured idiosyncratic income shocks in these kinds of models to achieve better match with observed cross-sectional wealth inequality. One of the most notable assumptions used in the literature is the heterogeneity in time preferences (\cite{krusell1998income}, \cite{carroll2017distribution}, \cite{krueger2016macroeconomics}). My modeling approach shares the spirit with and are not mutually exclusive to these existing assumptions on preferential heterogeneity. But, to some extent, perceptual heterogeneity is more preferable as such patterns are directly observed from the survey data, as I show in the previous part of the paper.  
 
 
-A more fundamental justification for such deviations from the full information rational expectation assumption is that risk parameters $\Gamma$ are not endogenous variables to be realized in the equilibrium of the model. Therefore, the conventional argument in favor of rational expectation assumption, namely equilibrium outcome drives the agents' perceptions to converge to the ``truth'', does not apply here. So far, the majority workhorse incomplete market macro literature has not incorporated any endogenous mechanisms that determine the level of income risks. The emerging literature that incorporates labor market search/match frictions in these models have relied upon simplifying assumptions to get tractability. \footnote{ See, for instance, \cite{mckay2017time,acharya2020understanding,ravn2021macroeconomic},  with the only exception being \cite{ravn2017job}.}
+A more fundamental justification for such a deviation from the full information rational expectation assumption is that risk parameters $\Gamma$ are barely observable objects to agents. This is so no matter if they are exogenously assumed by economists or endogenously determined in the equilibrium of the model. \footnote{So far, the majority workhorse incomplete market macro literature has not incorporated any endogenous mechanisms that determine the level of income risks. The emerging literature that incorporates labor market search/match frictions in these models have relied upon simplifying assumptions to get tractability. See, for instance, \cite{mckay2017time,acharya2020understanding,ravn2021macroeconomic},  with the only exception being \cite{ravn2017job}.} Therefore, the conventional argument in favor of rational expectation assumption, namely equilibrium outcome drives the agents' perceptions to converge to the ``truth'', does not apply here. 
 
 Incorporating subjective risk perceptions also alters aggregate dynamics of the distributions as described in Equation \ref{Eq:DistDyn}, as restated below. 
 
@@ -231,6 +231,7 @@ The state variable $\tilde x$ includes subjective state $\tilde \Gamma$ in addit
 
 Then the new StE under subjective risk perceptions can be defined accordingly. 
 
+\begin{comment}
 \subsection{Objective versus subjective risk profiles}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -262,7 +263,7 @@ Figure \ref{fig:comparison2} further compares the objective model under transito
 \end{center}
 
 The most obvious pattern seen in the figure is that within the objective model, unemployed workers have less consumption than employed workers. In addition, between the objective and subjective-extrapolation model, an employed worker with lower risk perceptions actually consume less than the employed worker in the objective model. 
-
+\end{comment}
 
 \subsection{Calibration}
 
@@ -289,7 +290,7 @@ $\tilde {\var}_{i,t}= (12 \tilde \sigma^2_{i,t,\psi} + 1/12 \tilde \sigma^2_{i,t
 
 For each individual $i$, we observe at most 12 observations of their perceived income volatility of the earning growth next year $\tilde {var}_{i,t}$ from $t$ to $t+12$ and their job-separation and job-finding expectations, respectively. The panel structure allows the individual fixed effect $\eta_i$ and time-fixed effect $\xi_t$ to be easily identified.  
 
-Then the parameters can be estimated with a modified 2-regime Markov switching model a la \cite{hamilton1989new} using the maximum-log-likelihood (MLE). (See the detailed implementation in Appendix \ref{appendix:markov}). Table \ref{tab:PRMarkovEst}  reports the baseline estimates of the parameters associated with the 2-state Markov model of subjective perceptions. All parameters are converted from monthly into quarterly counterparts to be consistent with the model frequency. 
+Then the parameters can be estimated with a modified 2-regime Markov switching model a la \cite{hamilton1989new} using the maximum-log-likelihood (MLE). (See the detailed implementation in Appendix \ref{appendix:markov}). Table \ref{tab:PRMarkovEst}  reports the baseline estimates of the parameters associated with the 2-state Markov model of subjective perceptions. All parameters are converted from monthly into yearly counterparts to be consistent with the model frequency. 
 
 The estimates of subjective profile confirms the key finding we have detailed in the previous section. The estimated staying probabilities at low and high risk perceptions, $q$ and $p$, are around $0.9$, indicating a high degree of persistence in individual risk perceptions. Given these estimated transition probabilities, earning risk perceptions are on average lower than the objective level assumed in the literature.  
 
@@ -305,7 +306,7 @@ The estimates of subjective profile confirms the key finding we have detailed in
 
 
 As to the deterministic permanent income profile over the life-cycle, $G_\tau$, I draw on an age polynomial regressions of the earning growth from SIPP for workers aged between 25-65, controlling
-for other observable demographic variables such as education, gender, occupation, and time fixed effects, etc. This produces very similar estimation results to that in \cite{gourinchas2002consumption}, \cite{cagetti2003wealth} and \cite{kaplan2014model}. The estimated income profile is plotted in Appendix \ref{fig:life-cycle-determinstic}. For the retirement phase, I assume a one-time drop of $20\%$ in permanent income in the age of $66$, i.e. $G_{41}=0.8$, and then the permanent income stays flat till death. This produces an average expected growth rate of permanent income over the entire life-cycle exactly equal to one. This serves as a normalization. Note that although alternative assumptions, such as a more smooth decline of income after retirement, do change the wealth distribution across generations among the retired, but they do not change the consumption/saving decisions as such a profile is entirely deterministic. 
+for other observable demographic variables such as education, gender, occupation, and time fixed effects, etc. This produces very similar estimation results to that in \cite{gourinchas2002consumption}, \cite{cagetti2003wealth} and \cite{kaplan2014model}. The estimated income profile is plotted in Appendix \ref{fig:life-cycle-determinstic}. For the retirement phase, I assume a one-time drop of $20\%$ in permanent income in the age of $66$, i.e. $G_{41}=0.8$, and then the permanent income stays flat till death. This produces an average expected growth rate of permanent income over the entire life-cycle exactly equal to one. This serves as a normalization. Note that although alternative assumptions, such as a more smooth decline of income after retirement, do change the wealth distribution across generations among the retired, they do not change the consumption/saving decisions as such a profile is entirely deterministic. 
 
 \textbf{Initial conditions} Assumptions about cross-sectional distribution of the initial permanent productivity and liquid asset holdings matter for the subsequent wealthy inequality. I set the standard deviation of the log-normally distributed initial permanent individual productivity $p_{i,\tau}$ to be $0.6$ to match the earning heterogeneity in ``usual income'' (approximated permanent income) at age 25 from the SCF. Initial liquid assets holdings at $\tau=0$ is assumed to have a cross-sectional standard-deviation of $0.50$. %% need some reference on this 
 
@@ -319,9 +320,9 @@ The annual depreciation rate is set to be $\delta =2.5\%$. The capital share tak
 \textbf{Government policies} Unemployment insurance replacement ratio is set to be $\mu=0.15$, as the same as \cite{krueger2016macroeconomics}.  
 The pension income relative to the permanent income is assumed to be $\mathbb{S}=60\%$. This, plus the $ 20\%$ drop in permanent income, gives an effective deterministic income drop of $48\%$ from the working-age to retirement, which corresponds to an empirical replacement ratio estimated for the U.S. economy. The corresponding tax rates financing the unemployment insurance and social security is determined in the equilibrium within the model. 
 
-\textbf{Preference} The discount factor is set to be $\beta=0.98$, the average value estimated in the models with heterogeneous time preferences such as \cite{carroll2017distribution},\cite{krueger2016macroeconomics}. The coefficient of relative risk aversion $\rho=2.0$, which is common in this literature. 
+\textbf{Preference} The discount factor is set to be $\beta=0.98$, the average value estimated in the models with heterogeneous time preferences such as \cite{carroll2017distribution}, \cite{krueger2016macroeconomics}. The coefficient of relative risk aversion $\rho=2.0$, which is common in this literature. 
 
-For a summary of the parameters used in this calibration, See Table \ref{tab:calibration}. 
+Table \ref{tab:calibration} summarizes the parameters used in this calibration. 
 
 \begin{center}
 [FIGURE \ref{tab:calibration} HERE]
