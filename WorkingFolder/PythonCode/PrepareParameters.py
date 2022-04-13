@@ -188,6 +188,10 @@ SCE_est_q = pd.read_pickle('data/subjective_profile_est_q.pkl')
 SCE_est_y = pd.read_pickle('data/subjective_profile_est_y.pkl')
 SCE_est_q = SCE_est_q['baseline']
 SCE_est_y = SCE_est_y['baseline']
+P_sub_q = np.array([[SCE_est_q.loc['$q$'],1-SCE_est_q.loc['$q$']],
+                    [1-SCE_est_q.loc['$p$'],SCE_est_q.loc['$p$']]])
+P_sub_y = np.array([[SCE_est_y.loc['$q$'],1-SCE_est_y.loc['$q$']],
+                    [1-SCE_est_y.loc['$p$'],SCE_est_y.loc['$p$']]])
 
 # + code_folding=[]
 ## create a dictionary of parameters 
@@ -217,8 +221,7 @@ life_cycle_paras_q = {'ρ': 2.0,
                      ## subjective profile
                     'σ_ψ_sub':sigma_psi_sub**2*4/11,
                     'σ_θ_sub':sigma_eps_sub**2*4,
-                    'q':SCE_est_q.loc['$q$'],
-                    'p':SCE_est_q.loc['$p$'],
+                    'P_sub': P_sub_q,
                     'σ_ψ_2mkv':np.array([SCE_est_q.loc['$\tilde\sigma^l_\psi$'],
                                        SCE_est_q.loc['$\tilde\sigma^h_\psi$']]),
                     'σ_θ_2mkv':np.array([SCE_est_q.loc['$\tilde\sigma^l_\theta$'],
@@ -260,8 +263,7 @@ life_cycle_paras_y = {'ρ': 2.0,
                     ## subjective profile
                     'σ_ψ_sub':sigma_psi_sub,
                     'σ_θ_sub':sigma_eps_sub,
-                    'q':SCE_est_y.loc['$q$'],
-                    'p':SCE_est_y.loc['$p$'],
+                    'P_sub': P_sub_y,
                     'σ_ψ_2mkv':np.array([SCE_est_y.loc['$\tilde\sigma^l_\psi$'],
                                        SCE_est_y.loc['$\tilde\sigma^h_\psi$']]),
                     'σ_θ_2mkv':np.array([SCE_est_y.loc['$\tilde\sigma^l_\theta$'],
@@ -302,8 +304,9 @@ del life_cycle_paras_y_copy['P']
 del life_cycle_paras_y_copy['z_val']  
 del life_cycle_paras_y_copy['U']  
 del life_cycle_paras_y_copy['κ']  
-del life_cycle_paras_y_copy['q']  
-del life_cycle_paras_y_copy['p']  
+del life_cycle_paras_y_copy['P_sub']  
+#del life_cycle_paras_y_copy['q']  
+#del life_cycle_paras_y_copy['p']  
 del life_cycle_paras_y_copy['transfer']  
 
 
@@ -440,3 +443,7 @@ model_paras_by_block_df=model_paras_by_block_df.reset_index(level=1, drop=True)
 model_paras_by_block_df.to_excel('../Tables/calibration.xlsx')
 
 model_paras_by_block_df
+
+
+
+

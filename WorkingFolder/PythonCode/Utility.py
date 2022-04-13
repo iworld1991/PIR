@@ -170,6 +170,29 @@ def lorenz_curve(grid_distribution,
 # ## Tools for Markov regime switching 
 #
 
+# + code_folding=[0]
+def combine_ind_markov(Ps):
+    """
+    input
+    =====
+    Ps: a list storing all transitory matrices of different markov 
+    output
+    =====
+    P_combined: combined transition matrices, and its size is equal to the multiplication of number of states in each markov
+    the states from the first markov are adjacent in the combined markov.
+    """
+    
+    ns = [len(P) for P in Ps]
+    n_combined = np.prod(ns)
+    
+    P_combined = np.array([1])
+    
+    for i,P in enumerate(Ps):
+        P_combined = np.kron(P,P_combined) 
+    assert len(P_combined) == n_combined, 'the dimension of the combined P should be '+str(n_combined)
+    return P_combined 
+
+
 # +
 ## some functions used for markov-related calculations 
 ## a simple function that computes steady state of 2-state markov

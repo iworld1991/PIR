@@ -161,7 +161,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[20, 76, 130, 231, 256, 284, 311]
+# + code_folding=[0, 20, 76, 130, 231, 256, 284, 311]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -502,7 +502,7 @@ else:
                       )
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## solve various models
 
 models = [lc_mkv,
@@ -686,7 +686,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[6, 101, 142, 467, 482, 489, 518, 525, 554, 568, 586]
+# + code_folding=[6, 101, 142, 467, 482, 489, 518, 525, 554, 586]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1255,7 +1255,7 @@ def AggregateDist(dist_lists,  ## size of nb markov state, each of which is size
 
 ## get the single vector of distribution 
 
-def faltten_dist(grid_lists,      ## nb.z x T x nb x nm x np 
+def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np 
                  mp_pdfs_lists,   ## nb.z x T x nb x nm x np 
                  dstn,            ## size of nb.z 
                  age_dist):       ## size of T 
@@ -1310,7 +1310,7 @@ def calc_ergodic_dist(transition_matrix = None):
 """
 
 
-# + code_folding=[0, 5, 17, 113, 280, 301, 341, 386]
+# + code_folding=[5, 17, 280, 341, 386]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1576,12 +1576,12 @@ class HH_OLG_Markov:
         
         
         ## also store flatten list of level of a and c
-        self.ap_grid_dist, self.ap_pdfs_dist = faltten_dist(ap_PolGrid_list,
+        self.ap_grid_dist, self.ap_pdfs_dist = flatten_list(ap_PolGrid_list,
                                                             mp_pdfs_2d_lists,
                                                             ss_dstn,
                                                             age_dist)
             
-        self.cp_grid_dist, self.cp_pdfs_dist = faltten_dist(cp_PolGrid_list,
+        self.cp_grid_dist, self.cp_pdfs_dist = flatten_list(cp_PolGrid_list,
                                                             mp_pdfs_2d_lists,
                                                             ss_dstn,
                                                             age_dist)
@@ -1734,7 +1734,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0]
+# + code_folding=[]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1951,7 +1951,7 @@ n_p = 40
 
 # ## compare different models 
 
-# + code_folding=[0]
+# + code_folding=[]
 def solve_models(model_list,
                    model_names_list,
                    ms_star_list,

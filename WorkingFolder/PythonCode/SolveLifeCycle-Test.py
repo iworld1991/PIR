@@ -24,7 +24,7 @@
 #   - Preference/income process
 #
 #       - CRRA utility 
-#       - During work: labor income risk: permanent + MA(1)/persistent/transitory/2-state Markov between UE and EMP or between low and high risk + i.i.d. unemployment shock
+#       - During work: labor income risk: permanent + persistent/transitory/2-state Markov between UE and EMP or between low and high risk + i.i.d. unemployment shock
 #        -  a deterministic growth rate of permanent income over the life cycle 
 #       - During retirement: receives a constant pension proportional to permanent income (no permanent/transitory income risks)
 #       - A positive probability of death before terminal age 
@@ -33,7 +33,7 @@
 import numpy as np
 import pandas as pd
 from quantecon.optimize import brent_max, brentq
-from interpolation import interp, mlinterp
+from interpolation import interp #mlinterp
 from scipy import interpolate
 import numba as nb
 from numba import jit,njit, float64, int64, boolean
@@ -133,7 +133,7 @@ if __name__ == "__main__":
 
 # ### Consumption  the last period 
 
-# + code_folding=[0, 1]
+# + code_folding=[1]
 if __name__ == "__main__":
     lc = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
@@ -151,7 +151,7 @@ if __name__ == "__main__":
                    )
 
 
-# + code_folding=[]
+# + code_folding=[2]
 # Initial the end-of-period consumption policy of σ = consume all assets
 
 if __name__ == "__main__":
@@ -164,11 +164,11 @@ if __name__ == "__main__":
 if __name__ == "__main__":
 
     plt.title('Consumption in the last period')
-    plt.plot(m_init[:,0,1],
-             σ_init[:,0,1])
+    plt.plot(m_init[:,0,0],
+             σ_init[:,0,0])
 # -
 
-# ## subjective versus objective 
+# ## subjective (low risk) versus objective (high risk)
 
 if __name__ == "__main__":
 
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     lc_paras_y = copy(lc_paras_Y)
     lc_paras = lc_paras_y
 
-# + code_folding=[1, 45]
+# + code_folding=[]
 if __name__ == "__main__":
     lc_obj = LifeCycle(
         ## primitives
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     model_names = ['subjective','objective']
 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     
     t_start = time()
@@ -317,15 +317,13 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    eps_fix = 0 ## the first eps grid 
-
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
     for x,year in enumerate(years_left):
         age = lc.L-year
         i = lc.L-age
         for k,model_name in enumerate(model_names):
-            m_plt,c_plt = ms_stars[k][i,:,eps_fix,0],σs_stars[k][i,:,eps_fix,0]
+            m_plt,c_plt = ms_stars[k][i,:,0,0],σs_stars[k][i,:,0,0]
             c_func = lambda m: interp(m_plt,c_plt,m)
             axes[x].plot(m_grid,
                          c_func(m_grid),
@@ -356,6 +354,7 @@ if __name__ == "__main__":
         lc.sigma_eps = sigma_eps_ls[i]
         ### this line is very important!!!!
         #### need to regenerate shock draws for new sigmas
+        lc.update_parameter()
         lc.prepare_shocks()
         
         ## terminal solution
@@ -393,8 +392,6 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    eps_fix = 0 ## the first eps grid 
-
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
     for x,year in enumerate(years_left):
@@ -402,7 +399,7 @@ if __name__ == "__main__":
         i = lc.L-age
         model_names = ['low PR','high PR']
         for k,model_name in enumerate(model_names):
-            m_plt,c_plt = ms_stars[k][i,:,eps_fix,0],σs_stars[k][i,:,eps_fix,0]
+            m_plt,c_plt = ms_stars[k][i,:,0,0],σs_stars[k][i,:,0,0]
             c_func = lambda m: interp(m_plt,c_plt,m)
             axes[x].plot(m_grid,
                          c_func(m_grid),
@@ -422,7 +419,7 @@ if __name__ == "__main__":
 #
 #
 
-# + code_folding=[]
+# + code_folding=[2]
 if __name__ == "__main__":
 
     lc_trans_ue =  LifeCycle(sigma_psi = sigma_psi,
@@ -462,8 +459,6 @@ if __name__ == "__main__":
     model_names = ['transitory UE',
                   'markov UE:special case']
 
-
-
     t_start = time()
 
     ms_stars =[]
@@ -488,11 +483,9 @@ if __name__ == "__main__":
 
 
     ## plot c func at different age /asset grid
-    years_left = [0,20,30,40]
+    years_left = [0,1,30,40]
 
     n_sub = len(years_left)
-
-    eps_fix = 0 ## the first eps grid 
 
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
@@ -500,7 +493,7 @@ if __name__ == "__main__":
         age = lc.L-year
         i = lc.L-age
         for k,model_name in enumerate(model_names):
-            m_plt,c_plt = ms_stars[k][i,:,eps_fix,0],σs_stars[k][i,:,eps_fix,0]
+            m_plt,c_plt = ms_stars[k][i,:,0,0],σs_stars[k][i,:,0,0]
             axes[x].plot(m_plt,
                          c_plt,
                          label = model_name,
@@ -511,3 +504,6 @@ if __name__ == "__main__":
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
+# -
+
+
