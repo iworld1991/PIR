@@ -124,7 +124,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[6, 125, 145, 162]
+# + code_folding=[6, 125, 145, 162, 213]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -353,7 +353,7 @@ class LifeCycle:
         return m_init,σ_init
 
 
-# + code_folding=[7]
+# + code_folding=[]
 ## This function takes the consumption values at different 
 ## grids of state variables variables from period t+1, and 
 ## the model class, then generates the consumption values at t.
@@ -481,12 +481,12 @@ def EGM(mϵ_in,
                 σ_out[0,j,z] = 0.0
                 self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
                 self_min_a = min(self_min_a,-unemp_insurance/R)
-                aϵ_out[0,j,z] = self_min_a
+                mϵ_out[0,j,z] = self_min_a
 
     return mϵ_out, σ_out
 
 
-# + code_folding=[5]
+# + code_folding=[]
 ## the operator under markov stochastic risks 
 ## now the permanent and transitory risks are 
 ## different between markov states. 
@@ -504,9 +504,9 @@ def EGM_sv(mϵ_in,
         * σ_in is a n1 x n2 x n3 dimension consumption policy 
           * n1 = dim(s), n2 = dim(eps), n3 = dim(z)
         * mϵ_in is the same sized grid points of the three state variable 
-        * mϵ_in[:,j,z] is the vector of asset grids corresponding to j-th grid of eps and z-th grid of z 
+        * mϵ_in[:,j,z] is the vector of wealth grids corresponding to j-th grid of eps and z-th grid of z 
         * σ_in[i,j,z] is consumption at aϵ_in[i,j,z]
-    """
+    """    
 
     # Simplify names
     u_prime, u_prime_inv = lc.u_prime, lc.u_prime_inv

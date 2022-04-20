@@ -22,17 +22,13 @@
 
 import numpy as np
 import pandas as pd
-from quantecon.optimize import brent_max, brentq
 from interpolation import interp, mlinterp
-from scipy import interpolate
 import numba as nb
 from numba import jit,njit, float64, int64, boolean
 from numba.experimental import jitclass
 import matplotlib as mp
 import matplotlib.pyplot as plt
 # %matplotlib inline
-from quantecon import MarkovChain
-import quantecon as qe 
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from time import time
@@ -66,8 +62,8 @@ inf_paras['G'] =  np.ones_like(inf_paras['G'])
 inf_paras['unemp_insurance'] = 0.0
 inf_paras['P'] = np.array([[0.9,0.1],[0.2,0.8]])
 
-grid_max = 5.0
-grid_size = 50
+grid_max = 6.0
+grid_size = 100
 
 # + code_folding=[0]
 inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
@@ -111,22 +107,13 @@ inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
                     grid_size = grid_size,
     )
 
-# + code_folding=[0, 9]
+# + code_folding=[0]
 ## initial consumption functions 
 
-k = len(inf_mkv.s_grid)
-k2 =len(inf_mkv.eps_grid)
-
-n = len(inf_mkv.P)
-σ_init = np.empty((k,k2,n))
-a_init = np.empty((k,k2,n))
-
-for z in range(n):
-    for j in range(k2):
-        a_init[:,j,z] = inf_mkv.s_grid
-        σ_init[:,j,z] = 0.1*a_init[:,j,z]
 
 t_start = time()
+
+a_init,σ_init = inf_mkv.terminal_solution()
 
 a_inf_star, σ_inf_star = solve_model_iter(inf_mkv,
                                           a_init,
@@ -137,10 +124,11 @@ print("Time taken, in seconds: "+ str(t_finish - t_start))
 
 
 ## plot c func 
+z_l = 0
+z_h = 1
 
-eps = 10 ## a random number 
-m_plt_u, c_plt_u = a_inf_star[:,eps,0],σ_inf_star[:,eps,0] 
-m_plt_e, c_plt_e = a_inf_star[:,eps,1], σ_inf_star[:,eps,1]
+m_plt_u, c_plt_u = a_inf_star[:,z_l,0],σ_inf_star[:,z_l,0] 
+m_plt_e, c_plt_e = a_inf_star[:,z_h,0], σ_inf_star[:,z_h,0]
 plt.plot(m_plt_u,
          c_plt_u,
          label = 'unemployed',

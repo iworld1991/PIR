@@ -478,7 +478,7 @@ import numpy as np
 pd.options.display.float_format = '{:,.3f}'.format
 
 
-# + code_folding=[0, 14, 28]
+# + code_folding=[14, 28]
 ## import data 
 dataset = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 
