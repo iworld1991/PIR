@@ -5,14 +5,27 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f290b72f-8ca8-4172-8aff-a339b0e03e62" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../DoFile/Step05c_SIPPAnalysis-Dev.do" beforeDir="false" afterPath="$PROJECT_DIR$/../DoFile/Step05c_SIPPAnalysis-Dev.do" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Graphs/model/comparison1.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/comparison1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Graphs/model/comparison2.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/comparison2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/PythonCode.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/PythonCode.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SolveLifeCycle.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/SolveLifeCycle.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SolveLifeCycleMAshock.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/SolveLifeCycleMAshock.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/distribution_a_compare_ge.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/distribution_a_compare_ge.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/distribution_a_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/distribution_a_test.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/distribution_c_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/distribution_c_test.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_compare_ge.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_compare_ge.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_compare_pe.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_compare_pe.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_test.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/lorenz_a_compare_pe.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/lorenz_a_compare_pe.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/lorenz_a_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/lorenz_a_test.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/lorenz_c_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/lorenz_c_test.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/model/lorenz_curve_a_compare_ge.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/lorenz_curve_a_compare_ge.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/OLG-GE-MAShock-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/OLG-GE-MAShock-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/SolveLifeCycle-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/SolveLifeCycle-checkpoint.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/OLG-GE-MAShock.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/OLG-GE-MAShock.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/OLG-GE-MAShock.py" beforeDir="false" afterPath="$PROJECT_DIR$/OLG-GE-MAShock.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SolveLifeCycle.ipynb" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/SolveLifeCycle.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Tables/calibration.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Tables/calibration.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,11 +51,17 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
@@ -79,6 +98,13 @@
       <workItem from="1650907684723" duration="7407000" />
       <workItem from="1650917996719" duration="1324000" />
       <workItem from="1650919337784" duration="1399000" />
+      <workItem from="1650982474127" duration="2355000" />
+      <workItem from="1650985983067" duration="1318000" />
+      <workItem from="1650995137633" duration="3014000" />
+      <workItem from="1651072694106" duration="3684000" />
+      <workItem from="1651079386278" duration="2096000" />
+      <workItem from="1651082682840" duration="905000" />
+      <workItem from="1651496503156" duration="3767000" />
     </task>
     <servers />
   </component>

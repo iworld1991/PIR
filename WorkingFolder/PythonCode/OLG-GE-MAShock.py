@@ -22,26 +22,17 @@
 import numpy as np
 import pandas as pd
 from interpolation import interp, mlinterp
-import numba as nb
-from numba import jit, njit, float64, int64, boolean
+from numba import njit
 from numba.typed import List
-from numba.experimental import jitclass
 import matplotlib as mp
 import matplotlib.pyplot as plt
 # %matplotlib inline
-from quantecon import MarkovChain
-import quantecon as qe 
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
 from time import time
 from Utility import make_grid_exp_mult
-from scipy import sparse as sp
-import scipy.sparse.linalg
 import scipy.optimize as op
-from scipy import linalg as lg 
 from matplotlib import cm
 import joypy
-from copy import copy,deepcopy
+from copy import copy
 from Utility import cal_ss_2markov,lorenz_curve
 from Utility import mean_preserving_spread
 
@@ -62,7 +53,7 @@ plt.style.use('seaborn')
 # ### The Life-cycle Model Class and the Solver
 
 # + code_folding=[]
-from SolveLifeCycleMAShock import LifeCycle, EGM, solve_model_backward_iter,compare_2solutions
+from SolveLifeCycleMAshock import LifeCycle, EGM, solve_model_backward_iter,compare_2solutions
 # -
 
 # ### Initialize the model
@@ -507,17 +498,17 @@ else:
 
 models = [lc_mkv,
           lc_mkv_sub,
-          lc_mkv_sub_true,
+          #lc_mkv_sub_true,
           lc_mkv_sub_cr]
 specs = ['ob',
          'sub',
-         'sub_true',
+         #'sub_true',
          'cr']
 
 model_names=['objective',
              'subjective',
-             'subjective_true',
-             'subective_sv']
+         #    'subjective_true',
+             'subjective_sv']
 
 ms_stars = []
 σs_stars = []
@@ -686,15 +677,14 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[6, 101, 142, 467, 482, 489, 518, 525, 554, 586]
+# + code_folding=[6, 100, 140, 452, 467, 502, 525, 538, 552]
 #################################
 ## general functions used 
 # for computing transition matrix
 ##################################
 
 @njit
-def jump_to_grid(model, 
-                 m_vals, 
+def jump_to_grid(m_vals,
                  perm_vals, 
                  probs, 
                  dist_mGrid, 
@@ -702,7 +692,7 @@ def jump_to_grid(model,
 
     '''
     Distributes values onto a predefined grid, maintaining the means. m_vals and perm_vals are realizations of market resources and permanent income while 
-    dist_mGrid and dist_pGrid are the predefined grids of market resources and permanent income, respectively. That is, m_vals and perm_vals do not necesarily lie on their 
+    dist_mGrid and dist_pGrid are the predefined grids of market resources and permanent income, respectively. That is, m_vals and perm_vals do not necessarily lie on their
     respective grids. Returns probabilities of each gridpoint on the combined grid of market resources and permanent income.
 
 
@@ -734,7 +724,7 @@ def jump_to_grid(model,
     mIndex = np.digitize(m_vals,dist_mGrid) - 1 # Array indicating in which bin each values of m_vals lies in relative to dist_mGrid. Bins lie between between point of Dist_mGrid. 
     #For instance, if mval lies between dist_mGrid[4] and dist_mGrid[5] it is in bin 4 (would be 5 if 1 was not subtracted in the previous line). 
     mIndex[m_vals <= dist_mGrid[0]] = -1 # if the value is less than the smallest value on dist_mGrid assign it an index of -1
-    mIndex[m_vals >= dist_mGrid[-1]] = len(dist_mGrid)-1 # if value if greater than largest value on dist_mGrid assign it an index of the length of the grid minus 1
+    mIndex[m_vals >= dist_mGrid[-1]] = len(dist_mGrid)-1 # if value is greater than largest value on dist_mGrid assign it an index of the length of the grid minus 1
 
     #the following three lines hold the same intuition as above
     pIndex = np.digitize(perm_vals,dist_pGrid) - 1
@@ -756,7 +746,7 @@ def jump_to_grid(model,
         #identify which two points on the grid the mval is inbetween
             mlowerIndex = mIndex[i] 
             mupperIndex = mIndex[i]+1
-        #Assign weight to the indices that bound the m_vals point. Intuitively, an mval perfectly between two points on the mgrid will assign a weight of .5 to the gridpoint above and below
+        #Assign weight to the indices that bound the m_vals point. Intuitively, a mval perfectly between two points on the mgrid will assign a weight of .5 to the gridpoint above and below
             mlowerWeight = (dist_mGrid[mupperIndex]-m_vals[i])/(dist_mGrid[mupperIndex]-dist_mGrid[mlowerIndex]) #Metric to determine weight of gridpoint/index below. Intuitively, mvals that are close to gridpoint/index above are assigned a smaller mlowerweight.
             mupperWeight = 1.0 - mlowerWeight # weight of gridpoint/ index above
 
@@ -788,8 +778,7 @@ def jump_to_grid(model,
     return probGrid.flatten()
 
 @njit
-def jump_to_grid_fast(model, 
-                      vals, 
+def jump_to_grid_fast(vals,
                       probs,
                       Grid ):
     '''
@@ -831,11 +820,10 @@ def jump_to_grid_fast(model,
 @njit
 def calc_transition_matrix(model, 
                            ms_star, ## new,  life cycle age x asset x tran shock x z state grid 
-                           σs_star, ## new, life cycle consumptiona t age  x asset x tran shock x z state grid 
+                           σs_star, ## new, life cycle consumption t age  x asset x tran shock x z state grid
                            dist_mGrid_list, ## new, list, grid of m for distribution 
                            dist_pGrid_list,  ## new, list, grid of p for distribution 
-                           finite_horizon = True, ## new 
-                           fast = False   ## new 
+                           fast = False   ## new
                           ):
         '''
         Calculates how the distribution of agents across market resources 
@@ -858,11 +846,7 @@ def calc_transition_matrix(model,
             ## each of which is sized of T, each of which is sized of n_m x n_p 
         
         ''' 
-        fix_epsGrid = 0.0
-        
-        ## nb of states 
-        state_num = len(model.P)
-        
+
         ## unemployment insurance 
         unemp_insurance = model.unemp_insurance
         
@@ -968,8 +952,7 @@ def calc_transition_matrix(model,
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
                         mNext_ij = bNext_u[i]/perm_shks_none +model.transfer+model.pension
                     # Compute next period's market resources given todays bank balances bnext[i]
-                    TranMatrix_uu[:,i] = jump_to_grid_fast(model,
-                                                           mNext_ij,
+                    TranMatrix_uu[:,i] = jump_to_grid_fast(mNext_ij,
                                                            shk_prbs_ntrl,
                                                            this_dist_mGrid) 
 
@@ -986,8 +969,7 @@ def calc_transition_matrix(model,
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
                         mNext_ij = bNext_u[i]/perm_shks_none +model.transfer+model.pension
                     # Compute next period's market resources given todays bank balances bnext[i]
-                    TranMatrix_ue[:,i] = jump_to_grid_fast(model,
-                                                            mNext_ij,
+                    TranMatrix_ue[:,i] = jump_to_grid_fast(mNext_ij,
                                                             shk_prbs_ntrl,
                                                             this_dist_mGrid) 
                 
@@ -1004,8 +986,7 @@ def calc_transition_matrix(model,
                         ## retirement 
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
                         mNext_ij = bNext_e[i]/perm_shks_none +model.transfer+model.pension
-                    TranMatrix_ee[:,i] = jump_to_grid_fast(model,
-                                                          mNext_ij,
+                    TranMatrix_ee[:,i] = jump_to_grid_fast(mNext_ij,
                                                           shk_prbs_ntrl,
                                                           this_dist_mGrid)
 
@@ -1021,8 +1002,7 @@ def calc_transition_matrix(model,
                         ## retirement
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
                         mNext_ij = bNext_e[i]/perm_shks_none +model.transfer+ model.pension
-                    TranMatrix_eu[:,i] = jump_to_grid_fast(model,
-                                                           mNext_ij, 
+                    TranMatrix_eu[:,i] = jump_to_grid_fast(mNext_ij,
                                                            shk_prbs_ntrl,
                                                             this_dist_mGrid) 
 
@@ -1046,8 +1026,7 @@ def calc_transition_matrix(model,
                             ## retirement
                             mNext_ij = bNext_u[i]/perm_shks_none +model.transfer+ model.pension
 
-                        TranMatrix_uu[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
-                                                                                 mNext_ij,
+                        TranMatrix_uu[:,i*len(this_dist_pGrid)+j] = jump_to_grid(mNext_ij,
                                                                                  pNext_ij,
                                                                                  shk_prbs,
                                                                                  this_dist_mGrid, 
@@ -1067,13 +1046,12 @@ def calc_transition_matrix(model,
                         if k <=model.T-1:
                             ## work age 
                             perm_shks_G = perm_shks* G[k+1]
-                            mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
+                            mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*tran_shks # Compute next period's market resources given today's bank balances bnext[i]
                         else:
                             ## retirement
                             perm_shks_none = np.ones_like(perm_shks)*G[k+1]
                             mNext_ij = bNext_u[i]/perm_shks_none +model.transfer+ model.pension
-                        TranMatrix_ue[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
-                                                                               mNext_ij, 
+                        TranMatrix_ue[:,i*len(this_dist_pGrid)+j] = jump_to_grid(mNext_ij,
                                                                                pNext_ij, 
                                                                                shk_prbs, 
                                                                                this_dist_mGrid, 
@@ -1090,13 +1068,12 @@ def calc_transition_matrix(model,
                         if k <=model.T-1:
                             ## work age 
                             perm_shks_G = perm_shks* G[k+1]
-                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
+                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+ (1-λ)*unemp_insurance # Compute next period's market resources given today's bank balances bnext[i]
                         else:
                             ## retirement
                             perm_shks_none = np.ones_like(perm_shks)*G[k+1]
                             mNext_ij = bNext_e[i]/perm_shks_none +model.transfer+ model.pension
-                        TranMatrix_eu[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
-                                                                                   mNext_ij, 
+                        TranMatrix_eu[:,i*len(this_dist_pGrid)+j] = jump_to_grid(mNext_ij,
                                                                                    pNext_ij, 
                                                                                    shk_prbs, 
                                                                                    this_dist_mGrid, 
@@ -1111,13 +1088,12 @@ def calc_transition_matrix(model,
                         pNext_ij = this_dist_pGrid[j]*perm_shks*G[k+1] # Computes next period's permanent income level by applying permanent income shock
                         if k <=model.T-1:
                             perm_shks_G = perm_shks*G[k+1]
-                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+(1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
+                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+(1-λ)*tran_shks # Compute next period's market resources given today's bank balances bnext[i]
                         else:
                             ## retirement
                             perm_shks_none = np.ones_like(perm_shks)*G[k+1]
                             mNext_ij = bNext_e[i]/perm_shks_none +model.transfer+model.pension
-                        TranMatrix_ee[:,i*len(this_dist_pGrid)+j] = jump_to_grid(model,
-                                                                               mNext_ij, 
+                        TranMatrix_ee[:,i*len(this_dist_pGrid)+j] = jump_to_grid(mNext_ij,
                                                                                pNext_ij, 
                                                                                shk_prbs, 
                                                                                this_dist_mGrid, 
@@ -1141,7 +1117,7 @@ def calc_transition_matrix(model,
                                  tran_matrix_e_list])
         
         ## return aggregate transition matrix and 
-        ###.   the age/state dependent transition matricies necessary for computing aggregate consumption 
+        ###.   the age/state dependent transition matrices necessary for computing aggregate consumption
         
         
         ## consumption policy and saving grid on each m, p, z and k grid 
@@ -1196,8 +1172,7 @@ def initial_distribution_u(model,
                           len(model.eps_shk_draws)))
     
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
-    NewBornDist = jump_to_grid(model,
-                               np.ones_like(init_p_draws)*((1-λ)*ue_insurance+init_b/init_p_draws+model.transfer), ## initial unemployment insurance and accidental bequest transfer
+    NewBornDist = jump_to_grid(np.ones_like(init_p_draws)*((1-λ)*ue_insurance+init_b/init_p_draws+model.transfer), ## initial unemployment insurance and accidental bequest transfer
                                init_p_draws,
                                shk_prbs,
                                dist_mGrid,
@@ -1233,8 +1208,8 @@ def initial_distribution_e(model,
     init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
                           len(model.eps_shk_draws)))
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
-    NewBornDist = jump_to_grid(model,
-                              (1-λ)*(1-λ_SS)*tran_shks+init_b/init_p_draws+model.transfer, ## initial transitory risks and accidental bequest transfer
+    NewBornDist = jump_to_grid((1-λ)*(1-λ_SS)*tran_shks+init_b/init_p_draws+model.transfer,
+                               ## initial transitory risks and accidental bequest transfer
                                init_p_draws,
                                shk_prbs,
                                dist_mGrid,
@@ -1284,7 +1259,7 @@ def calc_ergodic_dist(transition_matrix = None):
     Parameters
     ----------
     transition_matrix: array 
-                transition matrix whose ergordic distribution is to be solved
+                transition matrix whose ergodic distribution is to be solved
 
     Returns
     -------
@@ -1310,7 +1285,7 @@ def calc_ergodic_dist(transition_matrix = None):
 """
 
 
-# + code_folding=[5, 17, 280, 341, 386]
+# + code_folding=[5, 17]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1332,7 +1307,7 @@ class HH_OLG_Markov:
                                  dist_mGrid = None, 
                                  dist_pGrid = None, 
                                  m_density = 0, 
-                                 num_pointsM = 48,  
+                                 num_pointsM = 40,  
                                  num_pointsP = 50, 
                                  max_p_fac = 20.0):
 
@@ -1426,9 +1401,7 @@ class HH_OLG_Markov:
 
     def ComputeSSDist(self,
               ms_star = None,
-              σs_star = None,
-              m_dist_grid_list = None,
-              p_dist_grid_list = None):
+              σs_star = None):
         
         model = self.model
         m_dist_grid_list = self.m_dist_grid_list
@@ -1620,8 +1593,7 @@ class HH_OLG_Markov:
         ap_PolGrid_list = self.ap_PolGrid_list
         mp_pdfs_2d_lists = self.mp_pdfs_2d_lists
         ss_dstn = self.ss_dstn
-        age_dist = self.age_dist
-        
+
         ### Aggregate distributions within age
 
         C_life = []
@@ -1672,7 +1644,7 @@ class HH_OLG_Markov:
             age_dist_sparse = np.zeros(model.L)
             age_dist_sparse[t] = 1.0
 
-            ap_grid_dist_this_age, ap_pdfs_dist_this_age = faltten_dist(ap_PolGrid_list,
+            ap_grid_dist_this_age, ap_pdfs_dist_this_age = flatten_list(ap_PolGrid_list,
                                                                         mp_pdfs_2d_lists,
                                                                         ss_dstn,
                                                                         age_dist_sparse)
@@ -1680,7 +1652,7 @@ class HH_OLG_Markov:
             ap_grid_dist_life.append(ap_grid_dist_this_age)
             ap_pdfs_dist_life.append(ap_pdfs_dist_this_age)
 
-            cp_grid_dist_this_age, cp_pdfs_dist_this_age = faltten_dist(cp_PolGrid_list,
+            cp_grid_dist_this_age, cp_pdfs_dist_this_age = flatten_list(cp_PolGrid_list,
                                                                         mp_pdfs_2d_lists,
                                                                         ss_dstn,
                                                                         age_dist_sparse)
@@ -1734,7 +1706,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[]
+# + code_folding=[0, 24, 146, 158]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1754,7 +1726,7 @@ class Market_OLG_mkv:
         L_ss = np.sum(age_dist[:T-1])*ss_dstn[1] ## employment fraction for working age population
         self.households.emp_ss = L_ss
         production.normlize_Z(N_ss = L_ss)
-        self.production = production   ## Produciton function 
+        self.production = production   ## Production function
 
 
     ## stationary asset demand for a given capital stock/factor price
@@ -1770,7 +1742,6 @@ class Market_OLG_mkv:
         model = self.model 
         households = self.households
         production = self.production 
-        emp_now = households.emp_ss
         age_dist = households.age_dist
         T = self.model.T ## retirement age 
         ################################
@@ -1781,7 +1752,7 @@ class Market_OLG_mkv:
         print('Labor force',str(emp_now))
 
 
-        ## obtaine factor prices from FOC of firms 
+        ## Obtain factor prices from FOC of firms
         
         production.K = K_s
         production.L = emp_now
@@ -1811,7 +1782,7 @@ class Market_OLG_mkv:
         model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
                             model.T,  ## retirement years
                             age_dist,  ## age distribution in the economy 
-                            model.G,         ## permanent growth fractor lists over cycle
+                            model.G,         ## permanent growth factor lists over cycle
                             emp_now)
 
         print('Social security tax rate',str(model.λ_SS))
@@ -1936,7 +1907,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[0, 1]
+# + code_folding=[1]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1944,16 +1915,15 @@ production = CDProduction(α = production_paras['α'],
                          target_W = production_paras['W']) 
 
 ## nb of grids used for transition matrix  
-n_m = 30
+n_m = 20
 n_p = 40
 
 # -
 
 # ## compare different models 
 
-# + code_folding=[]
+# + code_folding=[0]
 def solve_models(model_list,
-                   model_names_list,
                    ms_star_list,
                    σs_star_list):
     
@@ -2069,7 +2039,6 @@ def solve_models(model_list,
 # + code_folding=[1]
 ## solve a list of models 
 model_results = solve_models(models,
-                             model_names,
                              ms_stars,
                              σs_stars)
 
@@ -2090,7 +2059,7 @@ C_life_ge_list =  model_results['C_life_ge']
 
 ap_grid_dist_ge_list, ap_pdfs_dist_ge_list = model_results['ap_grid_dist_ge'],model_results['ap_pdfs_dist_ge']
 
-# + code_folding=[0]
+# + code_folding=[0] pycharm={"is_executing": true}
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
@@ -2114,7 +2083,7 @@ SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
 
 SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
-# + code_folding=[0]
+# + code_folding=[0] pycharm={"is_executing": true}
 ## plot results from different models 
 
 line_patterns =['g-v',
@@ -2256,7 +2225,7 @@ fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
 
 # ## Analysis of the baseline model 
 
-# + code_folding=[]
+# + code_folding=[] pycharm={"is_executing": true}
 ## testing of the household class 
 
 HH = HH_OLG_Markov(model=lc_mkv)
@@ -2272,7 +2241,7 @@ HH.ComputeSSDist(ms_star = ms_star_mkv,
                   σs_star = σs_star_mkv)
 
 
-# + code_folding=[]
+# + code_folding=[] pycharm={"is_executing": true}
 ## plot the initial distribution in the first period of life 
 
 plt.title('Initial distributions over m and p given u')
@@ -2281,7 +2250,7 @@ plt.spy(HH.initial_dist_u.reshape(n_m,-1),
 plt.xlabel('p')
 plt.ylabel('m')
 
-# + code_folding=[]
+# + code_folding=[] pycharm={"is_executing": true}
 ## plot the initial distribution in the first period of life 
 
 plt.title('Initial distributions over m and p given e')
@@ -2289,18 +2258,20 @@ plt.spy(HH.initial_dist_e.reshape(n_m,-1),
        markersize = 2)
 plt.xlabel('p')
 plt.ylabel('m')
-# -
 
+# + pycharm={"is_executing": true}
 HH.Aggregate()
 print('aggregate consumption under stationary distribution:', str(HH.C))
 print('aggregate savings under stationary distribution:', str(HH.A))
+# -
 
 # ### Stationary wealth/consumption distribution
 
+# + pycharm={"is_executing": true}
 share_agents_cp,share_cp = HH.Lorenz(variable='c')
 share_agents_ap,share_ap = HH.Lorenz(variable='a')
 
-# + code_folding=[]
+# + code_folding=[] pycharm={"is_executing": true}
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(5,5))
@@ -2322,7 +2293,7 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 plt.savefig('../Graphs/model/lorenz_a_test.png')
 
-# + code_folding=[0]
+# + code_folding=[0] pycharm={"is_executing": true}
 ## Wealth distribution 
 
 ap_grid_dist = HH.ap_grid_dist
@@ -2353,16 +2324,14 @@ fig.savefig('../Graphs/model/distribution_c_test.png')
 
 # ### Life-cycle profile and wealth distribution
 
-
-
-# + code_folding=[]
+# + code_folding=[] pycharm={"is_executing": true}
 HH.AggregatebyAge()
 
 A_life = HH.A_life
 C_life = HH.C_life
 
 
-# + code_folding=[11]
+# + code_folding=[11] pycharm={"is_executing": true}
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -2400,7 +2369,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_test.png')
 
-# + code_folding=[0]
+# + code_folding=[0] pycharm={"is_executing": true}
 ## get the within-age distribution 
 
 HH.get_lifecycle_dist()
@@ -2408,7 +2377,7 @@ HH.get_lifecycle_dist()
 ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
 cp_grid_dist_life,cp_pdfs_dist_life = HH.cp_grid_dist_life,HH.cp_pdfs_dist_life
 
-# + code_folding=[0]
+# + code_folding=[0] pycharm={"is_executing": true}
 ## create the dataframe to plot distributions over the life cycle 
 ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
 cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
@@ -2418,7 +2387,7 @@ cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
 ap_range = list(ap_pdfs_life.index)
 cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[1, 2, 11, 21]
+# + code_folding=[1, 2, 11, 21] pycharm={"is_executing": true}
 joy = False
 if joy == True:
     fig, axes = joypy.joyplot(ap_pdfs_life, 
@@ -2446,7 +2415,7 @@ else:
 
 # ### General Equilibrium 
 
-# + code_folding=[]
+# + code_folding=[] pycharm={"is_executing": true}
 ## initialize a market and solve the equilibrium 
 
 
@@ -2456,11 +2425,11 @@ market_OLG_mkv = Market_OLG_mkv(households = HH,
 
 market_OLG_mkv.get_equilibrium_k()
 
-# -
 
+# + pycharm={"is_executing": true}
 market_OLG_mkv.get_equilibrium_dist()
 
-# + code_folding=[0]
+# + code_folding=[0] pycharm={"is_executing": true}
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -2498,7 +2467,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_eq.png')
 
-# + code_folding=[0]
+# + code_folding=[0] pycharm={"is_executing": true}
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_ap, share_ap = market_OLG_mkv.households.Lorenz(variable='a')
@@ -2516,7 +2485,7 @@ fig.savefig('../Graphs/model/lorenz_curve_a_eq.png')
 
 
 
-# + code_folding=[0]
+# + code_folding=[0] pycharm={"is_executing": true}
 ## Wealth distribution 
 
 fig, ax = plt.subplots(figsize=(6,4))
@@ -2539,16 +2508,15 @@ fig.savefig('../Graphs/model/distribution_c_eq.png')
 # -
 # ## Compare different models
 
-# + code_folding=[0]
+# + code_folding=[0] pycharm={"is_executing": true}
 
-# -
 
-model_results = compare_models(models[0:1],
-                               model_names[0:1],
+# + pycharm={"is_executing": true}
+model_results = solve_models(models[0:1],
                                ms_stars[0:1],
                                σs_stars[0:1])
 
-# + code_folding=[]
+# + code_folding=[] pycharm={"is_executing": true}
 ## create a new subjective household block 
 
 HH_sub = HH_OLG_Markov(model=lc_mkv_sub)
@@ -2690,7 +2658,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_sub_eq.png')
 
-#######################################
+###################################
 ## lorenz curve 
 ###################################
 
@@ -2712,7 +2680,7 @@ plt.ylim([0,1])
 fig.savefig('../Graphs/model/lorenz_curve_a_sub_eq.png')
 
 
-# +
+# + pycharm={"is_executing": true}
 ## wealth distributions 
 
 fig, ax = plt.subplots(figsize=(6,4))

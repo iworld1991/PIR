@@ -20,10 +20,7 @@ count
 
 
 egen uniqueid=group(SSUID PNUM)
-*gen year= SPANEL+SWAVE-2 
 
-
-** year t panel data is for income in year t-1
 gen month = MONTHCODE
 
 gen quarter = .
