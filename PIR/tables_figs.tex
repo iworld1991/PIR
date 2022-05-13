@@ -37,7 +37,7 @@
     
     \clearpage
     \begin{figure}[!ht]
-    	\caption{Perceived and Realized Earning Risks}
+    	\caption{Perceived and Realized Risks}
     	\label{fig:ts_compare}
     	\begin{center}
     	\adjustimage{max size={0.5\linewidth}}{figures/real_volatility_compare.png}
@@ -46,7 +46,7 @@
     	\vbiskip
     	\adjustimage{max size={0.5\linewidth}}{figures/real_transitory_compare.png}
     	\end{center}
-    \begin{flushleft}Note: this figure plots median perceived income risks in the whole SCE sample against the realized volatility, permanent, and transitory risks over the same period. The realized risks are first estimated monthly from SIPP and then aggregated into annual frequency. Specifically, the permanent risks are the sum of monthly permanent risks and the annual transitory risks are the simple average over the corresponding 12 months.\end{flushleft}
+    \begin{flushleft}Note: this figure plots median 1-year-ahead perceived income risks in the whole SCE sample against the realized volatility, permanent, and transitory risks over the same period. Both series are regarding the real wage.The realized risks are first estimated monthly from SIPP and then aggregated into annual frequency. Specifically, the permanent risks are the sum of monthly permanent risks and the annual transitory risks are the simple average over the corresponding 12 months.\end{flushleft}
     \end{figure}
     
   
@@ -62,7 +62,7 @@
      
     \clearpage
     \begin{figure}[!ht]
-      \caption{Expected and Realized Job-separation rate}
+      \caption{Expected and Realized Job-separation Rate}
     \label{fig:srate_compare}
     	\begin{center}\adjustimage{max size=0.7\linewidth}{figures/seperation_rate_1y.png}\end{center}
     \begin{flushleft}Note: realized job separation rate is computed from CPS. Both are expressed as Poisson arrival rates in continuous time with one month as the unit of time. The 5-month moving average expected rate is plotted.\end{flushleft}
@@ -113,25 +113,31 @@
 
 
 \begin{figure}[!ht]
-	\caption{Wealth inequality in StE}
+	\caption{Wealth inequality in Partial and General Equilibrium: baseline model}
 	\label{fig:StE_dist_objective}
 	\begin{center}
-		\adjustimage{max size={0.5\linewidth}{0.4\paperheight}}{figures/lorenz_curve_a_eq.png}
-	\adjustimage{max size={0.8\linewidth}{0.4\paperheight}}{figures/life_cycle_a_eq.png}
+		\adjustimage{max size={0.3\linewidth}{0.4\paperheight}}{figures/lorenz_curve_a_eq.png}
+	\adjustimage{max size={0.6\linewidth}{0.4\paperheight}}{figures/life_cycle_a_test.png} \\
+		\adjustimage{max size={0.3\linewidth}{0.4\paperheight}}{figures/lorenz_a_test.png} 
+	\adjustimage{max size={0.6\linewidth}{0.4\paperheight}}{figures/life_cycle_a_eq.png}
+		
+	
 \end{center}
-\begin{flushleft}Note: the upper panel shows the Lorenz curve of households wealth in StE of the objective model; the bottom panel plots the model-implied log average wealth at different ages against that seen from the 2016 vintage of Survey of Consumer Finance (SCF). \end{flushleft}
+\begin{flushleft}Note: the panel shows, under the baseline objective model, the Lorenz curve of households wealth (left) and the model-generated life-cycle profile of log average wealth compared to that seen in the 2016 vintage of Survey of Consumer Finance (SCF) (right) in the partial equilibrium (upper panel) and in general equilibrium (bottom panel). \end{flushleft}
 \end{figure}
 
 
-
 \begin{figure}[!ht]
-	\caption{Wealth inequality in StE under Different Model Assumptions}
+	\caption{Wealth inequality in Partial and General Equilibrium: under Different Model Assumptions}
 	\label{fig:StE_dist_compare}
 	\begin{center}
-		\adjustimage{max size={0.5\linewidth}{0.4\paperheight}}{figures/lorenz_curve_a_compare_ge.png}
-	\adjustimage{max size={0.8\linewidth}{0.4\paperheight}}{figures/life_cycle_a_compare_ge.png}
+		\adjustimage{max size={0.3\linewidth}{0.4\paperheight}}{figures/lorenz_a_compare_pe.png}
+	\adjustimage{max size={0.6\linewidth}{0.4\paperheight}}{figures/life_cycle_a_compare_pe.png} \\
+		\adjustimage{max size={0.3\linewidth}{0.4\paperheight}}{figures/lorenz_curve_a_compare_ge.png}
+	\adjustimage{max size={0.6\linewidth}{0.4\paperheight}}{figures/life_cycle_a_compare_ge.png} \\
+	
 \end{center}
-\begin{flushleft}Note: the upper panel shows the Lorenz curve of households wealth in StE under various model assumptions; the bottom panel plots these model-implied log average wealth profiles at different ages against that seen from the 2016 vintage of Survey of Consumer Finance (SCF). \end{flushleft}
+\begin{flushleft}Note: the panel shows, under different assumptions, the Lorenz curve of households wealth (left) and the model-generated life-cycle profile of log average wealth compared to that seen in the 2016 vintage of Survey of Consumer Finance (SCF) (right) in the partial equilibrium (upper panel) and in general equilibrium (bottom panel). \end{flushleft}
 \end{figure}
 
 
@@ -360,8 +366,8 @@ $\tilde E^h$ &     0.514 \\
 block             & parameter name              & values & source                               \\
 \hline 
 
-risk              & $\sigma_\psi$               & 0.15   & Median estimates from the literature \\
-risk              & $\sigma_\theta$             & 0.1    & Median estimates from the literature \\
+risk              & $\sigma_\psi$               & 0.10   & Median estimates from the literature \\
+risk              & $\sigma_\theta$             & 0.15    & Median estimates from the literature \\
 risk              & $U2U$                       & 0.18   & Median estimates from the literature \\
 risk              & $E2E$                       & 0.96   & Median estimates from the literature \\
 \hline 
@@ -380,8 +386,8 @@ preference        & $\beta$                     & 0.98   & standard assumption  
 \hline 
 
 policy            & $\mathbb{S}$                & 0.65   & U.S. average                         \\
-policy            & $\lambda$                   & 0      & endogenously determined              \\
-policy            & $\lambda_{SS}$              & 0      & endogenously determined              \\
+policy            & $\lambda$                   & N/A      & endogenously determined              \\
+policy            & $\lambda_{SS}$              & N/A      & endogenously determined              \\
 policy            & $\mu$                       & 0.15   & U.S. average                         \\
 \hline 
 

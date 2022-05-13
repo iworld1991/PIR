@@ -8,7 +8,7 @@ perceptions}\label{income-process-and-risk-perceptions}}
 
 Conditional on employment at the same job and position and same hours of work, the log idiosyncratic earning of individual \(i\) from group \(c\) at time \(t\), $y_{i,c,t}$ consists of a predictable component $z_{i,c,t}$ and a stochastic component $e_{i,c,t}$. (Equation \ref{Eq:IncProcess0}) In general, the group \(c\) is defined such that within-group workers share the same income process, therefore, same income risks. For instance, it could be defined based on age, gender, education or the years of entering job markets. 
 
-There is an extensive discussion in the literature about the exact time-series nature of the stochastic component $e$. For instance, it may consist of a permanent part and a transitory component.\footnote{\cite{gottschalk1994growth}, and \cite{carroll1997nature}.} Or some literature replaces the permanent component with a persistent component in the form of AR process.\footnote{\cite{storesletten2004cyclical} and \cite{guvenen_empirical_2009}.} The transitory component could be moderately serially correlated with a moving-average (MA). \footnote{\cite{meghir2004income}.} I first proceed with the generic structure like in Equation \ref{Eq:IncProcess0} without differentiating these various specifications. I defer this discussion to Section \ref{dcomposed-risks-of-different-nature}. 
+There is an extensive discussion in the literature about the exact time-series nature of the stochastic component $e$. For instance, it may consist of a permanent and a transitory component.\footnote{\cite{abowd1989covariance},\cite{gottschalk1994growth}, \cite{carroll1997nature}, \cite{blundell_consumption_2008}, and \cite{kaplan2010much}.} Or some literature replaces the permanent component with a persistent component in the form of AR process.\footnote{\cite{storesletten2004cyclical} and \cite{guvenen_empirical_2009}.} The transitory component could be moderately serially correlated following a moving-average (MA) process. \footnote{\cite{meghir2004income}.} I first proceed with the generic structure like in Equation \ref{Eq:IncProcess0} without differentiating these various specifications. I defer this discussion to Section \ref{dcomposed-risks-of-different-nature}. 
 
 \begin{equation}
 \begin{split}
@@ -37,7 +37,7 @@ variance of income growth from \(t\) to \(t+1\).
 Var_{t}^*(\Delta y_{i,c,t+1}) =Var_{t}^*(\Delta e_{i,c,t+1}) =\sigma^2_{c,t+1|t}
 \end{equation}
 
-The predictable changes do not enter PR. Hence, the expected volatility in earning growth is the \emph{conditional} expected variance of the change in the stochastic component. Notice here that $Var_{t}^*(\Delta e_{i,c,t+1})$ crucially depends on its time-series nature. 
+The predictable changes do not enter PR. Hence, the expected volatility in earning growth is the \emph{conditional} expected variance of the change in the stochastic component. Notice here that $Var_{t}^*(\Delta e_{i,c,t+1})$ crucially depends on the time-series nature of $e_{i,c,t}$.
 
 
 
@@ -62,9 +62,10 @@ perceived risks.
 
 \end{comment}
 
-The size of the risks, including the component-specific ones under a specified structure of $e_{i,c,t}$, are not directly observed by economists. Econometricians 
+Although in theory, the risk as perceived by an FIRE agent could be totally individual-specific, economists can only approximate them at the group level, as there are only realizations of outcomes but not realizations of risks to each individual. Furthermore, the size of the risks, including the component-specific ones under a specified structure of $e_{i,c,t}$, are not directly observed by economists.  Econometricians 
 usually try to approximate it, relying upon a panel data of earnings. To be more specific, in these estimations, what is used as the proxy of the stochastic component $e$ and latter further decomposed into various components, is the regression residual of individual earnings on all the observable characteristics of the individual in a first-step regression. Denote it by $\hat e_{i,c,t}$. \footnote{$\hat e_{i,c,t}= y_{i,c,t}-\hat z_{i,c,t}$($\hat z_{i,c,t}$ is the
 observable counterpart of $z_{i,c,t}$ from data).} 
+
 
 Different from the PR by the agent, the cross-sectional variance of the change in residuals, $\Delta \hat e_{i,c,t}$, usually referred to as the ``income volatility'' in the literature, \footnote{For instance, \cite{gottschalk1994growth}, \cite{moffitt2002trends}, \cite{sabelhaus2010great}, \cite{dynan2012evolution}, \cite{bloom2018great}.} is an  \emph{unconditional} variance. 
 
@@ -77,7 +78,7 @@ Var(\Delta \hat e_{i,c,t}) = \hat\sigma^2_{c,t}+ \hat\sigma^2_{c,t+1} - 2Cov^c(\
 The distinction between the \emph{conditional} PR by the agent and the \emph{unconditional} volatility approximated by the economists is crucial. There are two important issues around the comparability of the two objects. 
 
 First, it is very likely that what is controlled for in the first-step income regression, namely $\hat z_{i,c,t}$, does not perfectly coincide with what is \emph{predictable} from the point of view of the agent at time $t$. The reasons could be either due to the ``superior information'' problem \footnote{\cite{pistaferri_superior_2001, kaufmann_disentangling_2009}.} or incomplete information, model misspecification and behavioral bias of the agents. The former issue refers to the possibility that agents may have other information regarding their earning growth that is not available to econometricians. For instance, a worker may already anticipate a recent dispute with her boss may negatively affect her earning next year, but econometricians have no way of knowing this. At the same time, econometricians may have a better idea about the real generating process of earning than the individual agents and are less subject to psychological biases. 
-The possible existence of both issues discussed here makes it challenging to attribute the differences between PR and estimated income volatility I report in the next section to a single course. 
+The possible existence of both issues discussed here makes it challenging to attribute the differences between PR and estimated income volatility I report in the next section to a single cause. 
 
 Second, the comparison is sensitive to the time-series nature of $e_{i,c,t}$. This is, again, because economists' estimated volatility is unconditional, while the perception is conditional on the information till time $t$. To illustrate this point, imagine there is a very persistent component in the income shock, then under the aforementioned process, the estimated income volatility also includes the variance of the realized shock till $t$, which enters the information set of the agents already. Therefore, even if the econometricians perfectly recover the $e_{i,c,t}$ in the first step regression, any differences in the perceived time-series nature of the $e_{i,c,t}$ by agents and econometricians would lead to differences between PR and income volatility. I return to this discussion in Section \ref{dcomposed-risks-of-different-nature}. 
 

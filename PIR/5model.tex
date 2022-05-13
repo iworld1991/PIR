@@ -4,7 +4,7 @@
 \subsection{An overlapping generation model}
 
 
-I set up a standard incomplete market/life-cycle model without aggregate risks. It is built on \cite{huggett1996wealth}, except for  a more realistic income risk profile and economic environment a la \cite{krueger2016macroeconomics,carroll2017distribution}. Then, I add one single deviation from the benchmark to allow for the subjective income risk perceptions. 
+I set up a standard incomplete market/life-cycle/general-equilibrium model without aggregate risks. The model structure resembles that of \cite{huggett1996wealth}, although it embeds a more realistic income risk profile and economic environment a la \cite{carroll1997nature,krueger2016macroeconomics,carroll2017distribution}. 
 
 In each period, a continuum of agents is born. Each agent $i$ lives for $L$ and works for $T$ ($T\leq L$) periods since entering the labor market, during which he/she earns stochastic labor income \(y_\tau\) at the
 work-age of \(\tau\). After retiring at age of \(T\), the agent lives
@@ -28,14 +28,14 @@ preference-shifter along life cycle, but these features can be easily incorporat
 
 
  Denote total cash in hand at the beginning of the period
-\(\tau\) as $m_{i,\tau}$, the end-of-period saving in period $\tau$ after consumption as $a_{i,\tau}$, the bank balance in period $\tau$ as $b_{i,\tau}$. Also, assume 
-$R$ is the gross real interest factor. The consumer starts with some positive bank balance in the first period of life,  $b_1$, which this paper assumes to be from a lump-sum accidental bequest from the deceased population each period. The household makes consumption and saving decisions subject to the following intertemporal budget constraint.
+\(\tau\) as $m_{i,\tau}$, the end-of-period saving in period $\tau$ after consumption as $a_{i,\tau}$, the bank balance in period $\tau$ as $b_{i,\tau}$. Labor income $y_\tau$ is taxed at an income rate of $\lambda$ and social tax rate $\lambda_{SS}$. Also,assume 
+$R$ is the gross real interest factor. The consumer starts with some positive bank balance in the first period of life,  $b_1$, which may partly come from a lump-sum accidental bequest from the deceased population each period. The household makes consumption and saving decisions subject to the following intertemporal budget constraint.
 
 \begin{equation}
 \begin{split}
 & a_{i,\tau} = m_{i,\tau} - c_{i,\tau} \\
 & b_{i,\tau+1} = a_{i,\tau} R  \\
-& m_{i,\tau+1}   = b_{i,\tau+1}+(1-\lambda)y_{i,\tau+1}\\
+& m_{i,\tau+1}   = b_{i,\tau+1}+(1-\lambda)(1-\lambda_{SS})y_{i,\tau+1}\\
 & a_{i,\tau} \geq 0 
 \end{split}
 \end{equation}
@@ -96,7 +96,7 @@ In general, this assumption implies some degree of the persistence of unemployme
 
 Unemployment risks are idiosyncratic, hence by the law of large numbers, the fraction of the population being unemployed and employed at each age, denoted by $\Pi^\mho_\tau$ and $\Pi^E_\tau$, respectively, are essentially deterministic and does not depend on age.  
 
-Notice that in the benchmark model laid out here, I assume the all parameters of income risks $\sigma_\psi$, $\sigma_\theta$, $\mho$, and $E$ to be age-invariant (equivalent to time-independent in this setting). By doing this, I avoid making explicit assumptions on the stochastic process of income risks. This is a common practice in the incomplete market macro literature since    \cite{gourinchas2002consumption} and \cite{cagetti2003wealth}. It is also not fundamentally different from assuming a deterministic age-specific risk profile, as in some variants of the models with the life-cycle component. \footnote{See \cite{carroll2017distribution} and other examples.} I relax this assumption by considering an explicitly specified stochastic process of the income volatility a la GARCH in the extension of the model (See the Appendix). 
+Notice that in the benchmark model laid out here, I assume the all parameters of income risks $\sigma_\psi$, $\sigma_\theta$, $\mho$, and $E$ to be age-invariant (equivalent to time-independent in this setting). By doing this, I avoid making explicit assumptions on the stochastic process of income risks. This is a common practice in the incomplete market macro literature since    \cite{gourinchas2002consumption} and \cite{cagetti2003wealth}. It is also not fundamentally different from assuming a deterministic age-specific risk profile, as in some variants of the models with the life-cycle component.\footnote{See \cite{carroll2017distribution} and other examples.} I allow for income risks to be stochastic/state-dependent in one of the extensions of the model discussed later.
 
 \subsubsection{Value function and consumption policy}
 
@@ -124,22 +124,32 @@ The capital depreciates at a rate of $\delta$ each period.
 
 The factors of input markets are fully competitive. Euler Theorem implies that the output either becomes labor income or capital income. 
 
+
+\subsubsection{Demographics}
+
+For simplicity, we assume there is no population growth. With a deterministic life-cycle profile of survival probabilities, there exists a stable age distribution $\{\mu_\tau \}_{\mu=1,2,..L}$ such that $\mu_{\tau+1} = (1-D)\mu_{\tau}$ and $\sum^{L}_{\tau=1}\mu_{\tau} = 1$. The former condition reflects the probability of survivals at each age and the latter is a normalization that guarantees the fraction of all age groups sum up to 1.\footnote{In a more general setting with a constant population growth rate $n$ and age-specific survival probability $1-D_\tau$, the condition becomes $\mu_{\tau+1} = \frac{(1-D_{\tau+1})}{1+n}\mu_{\tau}\quad \forall \tau = 1, 2...L$, as discussed in \cite{rios1996life} and \cite{huggett1996wealth}.}
+
+
 \subsubsection{Government}
 
-Government runs a balanced budget in each period. Therefore, outlays from unemployment insurances are financed by the income tax that is levied on both labor income and unemployment benefit. Given a replacement ratio $\zeta$, and the proportion of employed population, the corresponding tax rate $\lambda$ can be easily pinned down based on the equation below. \footnote{This convenient result crucially depends on the assumption that unemployment insurance benefit is paid proportionally to permanent income.}
+Government runs a balanced budget in each period. Therefore, outlays from unemployment insurances are financed by the income tax that is levied on both labor income and unemployment benefit. Given a replacement ratio $\zeta$, and the proportion of employed population, the corresponding tax rate $\lambda$ can be easily pinned down based on the equation below. \footnote{This convenient result crucially depends on the assumption that unemployment insurance benefit is paid proportionally to permanent income.} 
 
 \begin{equation}
 \label{Eq:gov}
     \lambda \left[ 1-\Pi^\mho  + \zeta \Pi^\mho \right]  = \zeta \Pi^\mho   
 \end{equation}
 
-\subsubsection{Demographics}
+Social security tax rate $\lambda_{SS}$ is also determined in the model depending on the pension replacement ratio $\mathbb{S}$, the permanent income ratio and the relative population size of the retired and the working age, and the aggregate employment rate. 
 
-For simplicity, we assume there is no population growth. With a deterministic life-cycle profile of survival probabilities, there exists a stable age distribution $\{\mu_\tau \}_{\mu=1,2,..L}$ such that $\mu_{\tau+1} = (1-D)\mu_{\tau}$ and $\sum^{L}_{\tau=1}\mu_{\tau} = 1$. The former condition reflects the probability of survivals at each age and the latter is a normalization that guarantees the fraction of all age groups sum up to 1.\footnote{In a more general setting with a constant population growth rate $n$ and age-specific survival probability $1-D_\tau$, the condition becomes $\mu_{\tau+1} = \frac{(1-D_{\tau+1})}{1+n}\mu_{\tau}\quad \forall \tau = 1, 2...L$, as discussed in \cite{rios1996life} and \cite{huggett1996wealth}.}
+\begin{equation}
+\label{Eq:gov2}
+    \lambda_{SS} \sum^{T}_{\tau=1}G_{\tau}(1-\Pi^\mho) = \mathbb{S} \sum^{L}_{\tau=T+1} G_{\tau} 
+\end{equation}
+
 
 \subsubsection{Stationary equilibrium}
 
-Denote $x= \{m,p,\nu \} \in X$  as the idiosyncratic state of individuals. At any point in time, agents in the economy differ in age $\tau$ and their idiosyncratic state $x$. The former is given by $\{\mu_\tau \}_{\mu=1,2,..L}$. For the latter, using $\psi_\tau(B)$ to represent the fraction of agents at age $\tau$ whose individual states lie in $B$ as a proportion of all age $\tau$ agents. ($B$ is essentially a subset of Borel $\sigma$-algebra on state space $X$.) The distribution of age $\tau=1$ agents depend on the initial condition of labor income outcomes and the size of accidental bequest. For any other age $\tau=2...L$, the distribution $\phi_\tau(B)$ evolves as the following.
+Denote $x= \{m,p,\nu \} \in X$  as the idiosyncratic state of individuals. At any point in time, agents in the economy differ in age $\tau$ and their idiosyncratic state $x$. The former is given by $\{\mu_\tau \}_{\mu=1,2,..L}$. For the latter, using $\psi_\tau(B)$ to represent the fraction of agents at age $\tau$ whose individual states lie in $B$ as a proportion of all age $\tau$ agents. ($B$ is essentially a subset of Borel $\sigma$-algebra on state space $X$.) The distribution of age $\tau=1$ agents depend on the initial condition of labor income outcomes and the size of accidental bequests, if any. For any other age $\tau=2...L$, the distribution $\phi_\tau(B)$ evolves as the following.
 
 \begin{equation}
 \label{Eq:DistDyn}
@@ -176,60 +186,11 @@ $$R = 1+Z\alpha (K/N)^{\alpha-1} - \delta$$
 
 $$b_1=\sum_{\tau} \mu_{\tau}D \int_{x \in X} a(x, \tau)R \mathrm{d} \psi_{\tau}$$
  
-6. Government budget is balanced as described in Equation \ref{Eq:gov}.
+6. Government budget is balanced as described in Equation \ref{Eq:gov} and \ref{Eq:gov2}. 
 
 The economy may potentially arrive at different stationary equilibrium depending on the specific assumptions about objective or subjective models under the configurations. 
 
 
-
-\subsection{Subjective risk perceptions}
-
-In the benchmark model, I maintain the FIRE assumption that the agents perfectly know the underlying parameters of income risks $\Gamma =\{\sigma^2_\psi,\sigma^2_\theta,\mho,E\}$ as assumed by the modelers and behave optimally accordingly. 
-
-But here, I relax the FIRE assumption by separately treating the ``true'' underlying risk parameters $\Gamma$ and the risk perceptions held by the agents. The latter is denoted as $\tilde \Gamma_i$. This extension is meant to capture the four empirical patterns documented in the previous sections. 
-
-\begin{enumerate}
-    \item Underestimation of the earning risks (compared to what is assumed to be the truth in the model) 
-    \item Heterogeneity in risk perceptions 
-    \item Extrapolation of recent experiences
-    \item State-dependence of risk perceptions 
-\end{enumerate}
-
-The possible approaches of capturing these perceptual patterns are by no means unique. I adopt one simple framework that does not require explicitly specified mechanisms of perception formation but sufficient to reflect these the patterns revealed from the survey data.
-
-Assume that each agent $i$ in the economy cannot directly observe the underlying risk parameters $\Gamma$, but instead make his/her best choices based on a subjective risk perceptions  $\tilde \Gamma_{i,\tau}$, which swing between two states: $\tilde \Gamma_l$ (low risk) and $\tilde \Gamma_h$ (high risk). The transition between the two states is governed by a Markov process with a transition matrix $\Omega$. In the calibration of the model in latter sections, these subjective parameters can be estimated from survey data relied upon auxiliary assumptions. 
-
-Such an assumption automatically allows for heterogeneity in risk perceptions across different agents at any point of the time. All individuals are distributed between low and high risk-perception states. In one of the extensions, I also admit ex-ante heterogeneity, namely permanent differences in risk perceptions due to individual fixed effects.  
-
-The transition probability between low-risk and high-risk perception states can be also configured so that the average risk perception is lower than the true level of the risk. If we let the transition matrix $\Omega$ to be dependent on individual unemployment status $\nu_{i,\tau}$, or macroeconomic conditions, we can also easily accommodate the possibility of experience extrapolation and state-dependence feature of risk perceptions. 
-
-Under the assumption of subjective perception, the subjective state of the risk perceptions $\tilde \Gamma$ becomes an additional state variable entering the Bellman equation of the consumer's problem, restated in below.
-
-\begin{equation}
-\begin{split}
-\tilde V_{\tau}(\tilde \Gamma_\tau, \nu_\tau, m_\tau, p_\tau) = \underset{\{c_\tau\}}{\textrm{max}} \quad u(c_\tau) + (1-D)\beta \mathbb{E}_{\tau}\left[\tilde V_{\tau+1}(\tilde \Gamma_{\tau+1}, \nu_\tau,m_{\tau+1}, p_{\tau+1})\right] 
-\end{split}
-\end{equation}
-
-Notice here that I assume that the agents recognize the transition between two subjective perception states and take it into account when making the best choices. This assumption guarantees time-consistency and provides additional discipline to the model assumption.  
-
-The consumer's solution to the problem above is the age-specific consumption policy $\tilde c_\tau^*(\tilde \Gamma_\tau,u_\tau, m_\tau,p_\tau)$ that is also a function of subject risk perception state $\tilde \Gamma$.
-
-The distinction between objective and subject risk perception marks the single most important deviation of this paper from existing incomplete-market macro papers. \footnote{For instance, \cite{bewley1976permanent}, \cite{huggett1993risk}, \cite{aiyagari1994uninsured}, \cite{krusell1998income},  \cite{krueger2016macroeconomics},  \cite{carroll2017distribution}.} There is a long tradition of explicitly incorporating various kinds of heterogeneity in addition to uninsured idiosyncratic income shocks in these kinds of models to achieve better match with observed cross-sectional wealth inequality. One of the most notable assumptions used in the literature is the heterogeneity in time preferences (\cite{krusell1998income}, \cite{carroll2017distribution}, \cite{krueger2016macroeconomics}). My modeling approach shares the spirit with and are not mutually exclusive to these existing assumptions on preferential heterogeneity. But, to some extent, perceptual heterogeneity is more preferable as such patterns are directly observed from the survey data, as I show in the previous part of the paper.  
-
-
-A more fundamental justification for such a deviation from the full information rational expectation assumption is that risk parameters $\Gamma$ are barely observable objects to agents. This is so no matter if they are exogenously assumed by economists or endogenously determined in the equilibrium of the model. \footnote{So far, the majority workhorse incomplete market macro literature has not incorporated any endogenous mechanisms that determine the level of income risks. The emerging literature that incorporates labor market search/match frictions in these models have relied upon simplifying assumptions to get tractability. See, for instance, \cite{mckay2017time,acharya2020understanding,ravn2021macroeconomic},  with the only exception being \cite{ravn2017job}.} Therefore, the conventional argument in favor of rational expectation assumption, namely equilibrium outcome drives the agents' perceptions to converge to the ``truth'', does not apply here. 
-
-Incorporating subjective risk perceptions also alters aggregate dynamics of the distributions as described in Equation \ref{Eq:DistDyn}, as restated below. 
-
-\begin{equation}
-\label{Eq:DistDynSub}
-\tilde \psi_{\tau-1}(\tilde B)=\int_{\tilde x \in \tilde X} \tilde P(\tilde x, \tau-1, \tilde B) \mathrm{d} \tilde \psi_{\tau-1} \quad \text { for all } \quad \tilde B \in \tilde B(X)
-\end{equation}
-
-The state variable $\tilde x$ includes subjective state $\tilde \Gamma$ in addition to those contained in $x$. The transition probabilities $\tilde P$ now depend on the optimal consumption policies $c^*(\tilde x)$ as a function of belief state $\tilde \Gamma$, as well as the exogenous transition probabilities of the true stochastic income process $\Gamma$.  
-
-Then the new StE under subjective risk perceptions can be defined accordingly. 
 
 \begin{comment}
 \subsection{Objective versus subjective risk profiles}
@@ -268,7 +229,7 @@ The most obvious pattern seen in the figure is that within the objective model, 
 \subsection{Calibration}
 
 
-\subsubsection{Estimation of subjective risk profiles}
+\subsubsection{Calibrating income risks from the survey}
 
 The parameters to be estimated from the panel data of risk perceptions from $SCE$ are the state-dependent risk profile $\tilde \Gamma_l=\{\tilde \sigma^l_\psi,\tilde \sigma^l_\theta, \tilde{\mho^l}, \tilde{E^l}\}$, $\tilde \Gamma_h =\{\tilde \sigma^h_\psi,\tilde \sigma^h_\theta, \tilde{\mho^h}, \tilde{E^h}\}$ and $\Omega$, the transition matrix between the two states.
 
@@ -325,5 +286,5 @@ The pension income relative to the permanent income is assumed to be $\mathbb{S}
 Table \ref{tab:calibration} summarizes the parameters used in this calibration. 
 
 \begin{center}
-[FIGURE \ref{tab:calibration} HERE]
+[TABLE \ref{tab:calibration} HERE]
 \end{center}

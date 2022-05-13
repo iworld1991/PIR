@@ -1,31 +1,56 @@
 \hypertarget{experiments}{%
-\section{Model implications (incomplete)}\label{experiments}}
+\section{Model implications (preliminary)}\label{experiments}}
 
+\subsection{Baseline model results}
+
+I first examine the wealthy inequality generated from the benchmark objective model with the income risks calibrated following the existing literature such as \cite{krueger2016macroeconomics,carroll2017distribution}. In particular, I use the standard parameterization on permanent and transitory risks at the annual frequency being $\sigma_\psi=0.10$ and $\sigma_\theta =0.15$, and the unemployment risks $U2U=0.18$ and $E2E=0.96$. The upper panel of Figure \ref{fig:StE_dist_objective} reproduces the well-known result\footnote{For a thorough survey on this topic, see \cite{guvenen2011macroeconomics}, \cite{de2015quantitative}, and \cite{kaplan2018microeconomic}. } that a standard incomplete market model, without additional heterogeneity such as that in time discount rates, imply less (either in partial equilibrium or general equilibrium) wealth inequality than that seen in the data. \footnote{I use 2016 vintage of the SCF. }
 
 \begin{center}
 [FIGURE \ref{fig:StE_dist_objective} HERE]
 \end{center}
 
-\subsection{Risk perceptions and wealth inequality}
+The life-cycle profile of wealth is another dimension of the model implications that can be compared to its counterparts seen in the data. The bottom panel of Figure  \ref{fig:StE_dist_objective} plots the hump-shaped average wealth over the life cycle implied by the model against the median net wealth between the age of 25 to 85 from SCF. There are two divergences between the model and the data. First, compared to the data, the model implies a more rapid build-up of buffer-stock wealth before the middle age. This is so because of the precautionary saving motives in the presence of income risks of various kinds in this model. 
 
+The second divergence has to do with the high wealth of the old seen in the data, in comparison with the sharp decline in wealth toward zero in the model, as the latter dictates it is optimal to consume all wealth in the end of the life. Such a divergent pattern is usually accounted for by specifically taking into account the bequest motives in the literature.\footnote{\cite{de2004wealth}.} As the focus of this paper is on labor income risks of the work-age, I choose not to model such a mechanism. 
 
+The difference between the partial equilibrium and general equilibrium in terms of wealth inequality is rather small. Instead, allowing for the endogenous determination of real interest rate in the asset markets clearing as well as the resource constraint imposed by government budget balancing induces a steeper build-up of the buffer stock savings by the young. This is partly due to a higher real return to savings is higher in GE than PE. 
+
+\subsection{Model results with survey-implied risks}
+
+I incorporate the two salient facts as revealed in perceived income risks and explore their implications, respectively. First, an average lower income risk, possibly due to superior information by the agents. Call it the $LPR$ (lower perceived risks) model. Second, the heterogeneity in perceived risks. Call it a $HPR$ (heterogeneous perceived risks) model. I examine their implications separately compared to the benchmark model. 
+
+\subsubsection{LPR}
+
+For LPR calibration, I keep everything the same as baseline calibration above, except for setting the permanent and transitory risks to be smaller based on an upper bound of total perceived risk of $0.04$, i.e. $\sigma_\psi=0.03$ and $\sigma_\theta=0.02$. 
+
+Figure \ref{fig:StE_dist_compare} confirms the two straightforward implications of a smaller size of risks. First, a lower PR induce less precautionary saving motive and reduces buffer-stock savings of all working agents, as indicated by a lower line of the wealth before retirement than the benchmark model. This also means that there will be a leftward shift in wealth distribution of the entire population, therefore increasing the proportion of the agents that are close to zero wealth. 
+
+Second, if it does reflect an objectively lower size of the idiosyncratic risks than the usual estimation in the benchmark model, a lower PR unambiguously leads to \emph{less} wealth inequality than in the benchmark model, as shown in the Lorenz curve in Figure \ref{fig:StE_dist_compare}. This means that the simple LPR extension cannot help explain an additional degree of wealth inequality as seen in the data.
 
 \begin{center}
 [FIGURE \ref{fig:StE_dist_compare} HERE]
 \end{center}
-% first, benchmark the model with both life-cycle profile and cross-sectional inequality 
 
-% then compare the subjective and objective model and show the differences in wealth inequality 
+A lower wealth inequality could be either due to an objectively higher income inequality, which is exogenous to the agents in the model, or partly endogenous responses via consumption/saving decisions. In order to separate the two channels, I solve the model above by separately parameterizing the risks as perceived by the agents (subjective) and the level of risks that determine the realized income distributions (objective). In particular, I set the perceived risks that affect agents' consumption/saving decisions to be the low values as reported in the survey, like in LPR, while keeping the objective risk parameters the same as the baseline model. Call this model SLPR (subjective LPR model). % need better names. 
 
-% also show the differences in aggregate savings in Eq 
-
-\subsection{Counterfactuals }
-
-\subsection{``Scarring'' effect in labor markets}
-
-\subsection{Risk perceptions over business cycles}
+SLPR can be thought of as a thought experiment I invoked to disentangle the effects via choices and realizations. It can also be a model which accommodates more general possibilities of discrepancies between perceptions and the objective model counterpart,  which deviates from the assumption of rational expectations. Appendix \ref{appendix:subjective_model} discusses in greater detail on how the consumer problem, the dynamics and stationary distribution of the economy change within a model allowing for subjective risk perceptions and the objective risks to be different. 
 
 
-%%
-% alternative CRRA coefficient
-% alternative social security
+The difference between SLPR and the baseline model reflects the changes solely attributable to responses in saving behaviors under a lower risk perceptions, and the difference between SLPR and LPR corresponds to income inequality. As shown in Figure \ref{fig:StE_dist_compare}, the income inequality channel contributes to approximately 80\% of the decreases in inequality and the rest is attributable to saving behavior changes. In this class of models, both permanent and transitory income shocks are at most partially insured via self-insurance. This explains why saving behaviors have a smaller effect in driving the distribution than income inequality. 
+
+
+\subsubsection{HPR}
+
+Compared to the baseline model, HPR model assumes heterogeneous idiosyncratic risks due to stochastic transitions between different levels of risks, as seen from the survey data. This is to model the state-dependence in risk perceptions of individuals, depending on the information set available to agents unobserved by economists. It is also consistent with the observation that individuals in SCE does change their reported risk perceptions from time to time. These changes are possibly due to purely idiosyncratic reasons which economists have no way of knowing, even controlling time individual effects. Such an assumption of stochastic/state-dependent risk assumes that the heterogeneity in risks is not due to ax-ante time-invariant heterogeneity in the level of risks facing everyone. In one of the latter extension, I also allow for ex ante/constant heterogeneity in risks, as estimated from individual fixed effects in PR.  
+
+Stochastic risks results in more wealth inequality compared to the baseline model. This is so simply because different risks induce different precautionary saving motives, therefore, different buffer-stock savings. In addition, the transitions across states with different risks at individual levels also generate more income inequality, separate from the saving behaviors. 
+
+Like in LPR, I also consider an intermediate model experiment, allowing for the divergence between the perceived risks and that objective risks that drive income inequality. In particular, I assume that in SHPR, agents choose saving/consumption believing the stochastic nature of income risks while the realized income inequality is determined by homogenous degree of income risks. Call it SHPR (subjective HPR) model. The difference between HPR and SHPR speaks to the response in saving behaviors in response to heterogeneity in risks due to the state-dependence. The difference between baseline and SHPR corresponds to the additional inequality that comes from stochastic income risks.  Alternatively, this model can be thought of as one where agents do not recognize the heterogeneity in income risks. 
+
+\subsection{Robustness (in progress)}
+
+\subsubsection{Ex-ante heterogeneity in risks}
+
+\subsubsection{Job-switching wage loss and risks}
+
+\subsubsection{Unemployment risks}

@@ -8,6 +8,61 @@
 \label{sec:appendix}
 % ----------------------------------------------------------------
 
+\subsection{Income risk decomposition using SIPP data}
+\label{appendix:sipp_data}
+\subsubsection{Sample selection}
+
+To estimate the risks to the labor earnings conditional on working for the same hours and staying in the same job, I restrict the universe of the SIPP sample according to this definition for the worker's primary job (JB1). The specific filtering criteria is listed as below, and it is approximately identical to that in \cite{low2010wage} for computing the wage rate of the same job using 1993 panel of SIPP. 
+
+\begin{itemize}
+    \item Time: January 2013-December 2020
+    \item Age: 20 - 60
+    \item Work-arrangement: employed by someone else (excluding self-employment and other work-arrangement): EJB1\_JBORSE ==1.
+    \item Employer: staying with the same employer for a tenure longer than 4 months: the same EJB1\_JOBID for  4 or more consecutive months. 
+    \item Wage: total monthly earning from the primary job divided by the average number of hours worked in the same job, wage = TJB1\_MSUM/TJB1\_MWKHRS.
+    \item Outliers: drop observations with wage rate lower than 0.1 or greater than 2.5 times of the individual's average wage.
+    \item No days off from work without pay: EJB1\_AWOP1 = 2. 
+    \item Continued job spell since December of the last year: RJB1\_CFLG=1.
+    \item Drop imputed values: EINTTYPE==1 or 2.
+    \item Drop government/agriculture jobs: drop if TJB1\_IND>=9400.
+\end{itemize}
+
+The selected sample has summary statistics as reported in Table \ref{tab:sipp_sum_stat} below. 
+
+\begin{table}[!ht]
+    \centering
+    \caption{Summary statistics of SIPP sample used for risk estimation}
+    \label{tab:sipp_sum_stat}
+   \begin{tabular}{lll}
+   \hline 
+                     & Obs    & Volatility \\
+                     \hline 
+year                 &        &            \\
+\hline 
+2013 (17\%)          & 9,811  & 0.06       \\
+2014 (20\%)          & 12,657 & 0.11       \\
+2015 (15\%)          & 9,505  & 0.09       \\
+2016 (9\%)           & 6,097  & 0.1        \\
+2017 (13\%)          & 7,517  & 0.07       \\
+2018 (15\%)          & 9,362  & 0.13       \\
+2019 (8\%)           & 5,485  & 0.11       \\
+\hline 
+educ                 &        &            \\
+\hline 
+HS dropout (22\%)    & 13,823 & 0.09       \\
+HS graduate (46\%)   & 28,332 & 0.09       \\
+College/above (30\%) & 18,279 & 0.12       \\\hline 
+gender               &        &            \\
+\hline 
+male (55\%)          & 33,740 & 0.09       \\
+female (44\%)        & 26,694 & 0.1        \\
+\hline 
+Full sample (100\%)        & 60,434 & 0.1       \\
+\hline 
+\end{tabular}
+
+\end{table}
+
 \subsection{Income risk decomposition under alternative processes}
 
 \subsubsection{Baseline estimation}
@@ -18,7 +73,7 @@
     	\begin{center}
     	\adjustimage{max size={0.8\linewidth}}{figures/permanent-transitory-risk.jpg}
     	\end{center}
-    	\floatfoot{Note: this figure plots the estimated monthly permanent and transitory risks (variances) from SIPP between 2013m3-2019m12. }
+    	\floatfoot{Note: this figure plots the 3-month moving average of the estimated monthly permanent and transitory risks (in variance) using the SIPP panel data on wage between 2013m3-2019m12. }
     \end{figure}
     
 \pagebreak
@@ -29,40 +84,40 @@
 	\caption{Estimated realized income risk and perceptions}
 	\label{risk_compare}
 		\adjustbox{max height=0.5\textheight, max width=\textwidth}{ 
-			\begin{tabular}{llllll}
-				\hline 
-				\hline 
-				& PerceivedRisk & PerceivedRisk(median) & RealizedGroupVolatility & RealizedPRisk & RealizedTRisk \\
-				\hline 
-				full sample (100\%)        & 0.029         & 0.021                 & 0.090                   & 0.101         & 0.016       \\
-				\hline 
-				gender               &               &                       &                         &               &              \\
-					\hline 
-				
-				1 (50\%)             & 0.030         & 0.022                 & 0.091                   & 0.102         & 0.016        \\
-				2 (49\%)             & 0.028         & 0.022                 & 0.089                   & 0.101         & 0.016        \\
-				\hline 
-				
-				education       &               &                       &                         &               &              \\
-				\hline 
-				HS dropout (0\%)     & 0.036         & 0.022                 & 0.051                   & 0.100         & 0.016        \\
-				HS graduate (42\%)   & 0.030         & 0.022                 & 0.085                   & 0.101         & 0.016        \\
-				College/above (56\%) & 0.028         & 0.021                 & 0.094                   & 0.101         & 0.016        \\
 
-				\hline 
-				
-				5-year age           &               &                       &                         &               &              \\
-					\hline 
-				20 (2\%)             & 0.037         & 0.031                 & 0.072                   & 0.102         & 0.015        \\
-				25 (12\%)            & 0.032         & 0.027                 & 0.115                   & 0.102         & 0.016        \\
-				30 (12\%)            & 0.030         & 0.023                 & 0.091                   & 0.101         & 0.016        \\
-				35 (13\%)            & 0.029         & 0.021                 & 0.098                   & 0.101         & 0.016        \\
-				40 (13\%)            & 0.028         & 0.020                 & 0.084                   & 0.101         & 0.016        \\
-				45 (14\%)            & 0.028         & 0.020                 & 0.065                   & 0.101         & 0.016        \\
-				50 (15\%)            & 0.027         & 0.019                 & 0.078                   & 0.101         & 0.016        \\
-				55 (15\%)            & 0.027         & 0.018                 & 0.105                   & 0.100         & 0.016        \\
-				\hline 
-			\end{tabular}
+		\begin{tabular}{llllll}
+		\hline \hline 
+                     & Mean          & Median                & Mean                    & Mean          & Mean         \\
+                     & PerceivedRisk & PerceivedRisk(median) & RealizedGroupRisks & RealizedPRisk & RealizedTRsk \\
+                     \hline 
+gender               &               &                       &                         &               &              \\
+\hline 
+1 (50\%)             & 0.03          & 0.022                 & 0.103                   & 0.117         & 0.024        \\
+2 (49\%)             & 0.028         & 0.022                 & 0.101                   & 0.116         & 0.024        \\
+\hline  
+
+\multicolumn{2}{l}{education group}  &                       &                         &               &              \\
+\hline  
+
+HS dropout (0\%)     & 0.036         & 0.022                 & 0.061                   & 0.116         & 0.022        \\
+HS graduate (42\%)   & 0.03          & 0.022                 & 0.079                   & 0.116         & 0.023        \\
+College/above (56\%) & 0.028         & 0.021                 & 0.12                    & 0.116         & 0.024        \\
+\hline 
+5-year age           &               &                       &                         &               &              \\
+\hline  
+20 (2\%)             & 0.037         & 0.031                 & 0.069                   & 0.114         & 0.024        \\
+25 (12\%)            & 0.032         & 0.027                 & 0.136                   & 0.117         & 0.024        \\
+30 (12\%)            & 0.03          & 0.023                 & 0.087                   & 0.116         & 0.023        \\
+35 (13\%)            & 0.029         & 0.021                 & 0.127                   & 0.117         & 0.024        \\
+40 (13\%)            & 0.028         & 0.02                  & 0.105                   & 0.116         & 0.024        \\
+45 (14\%)            & 0.028         & 0.02                  & 0.074                   & 0.116         & 0.024        \\
+50 (15\%)            & 0.027         & 0.019                 & 0.09                    & 0.116         & 0.024        \\
+55 (15\%)            & 0.027         & 0.018                 & 0.109                   & 0.115         & 0.023        \\
+\hline 
+full sample (100\%)  & 0.029         & 0.021                 & 0.102                   & 0.116         & 0.024        \\
+\hline 
+\hline 
+\end{tabular}
 }
 	\begin{flushleft} This table reports estimated realized annual volatility, risks of different components, and the expected income volatility of different groups. All are expressed in standard deviation units.\end{flushleft}
 \end{table}
@@ -119,25 +174,28 @@
 \begin{threeparttable}
 \caption{The size and nature of idiosyncratic income risks in the literature}
 \label{tab:risks_literature}
-
 \begin{tabular}{llllllll}
 \hline 
-                                 & $\sigma_\psi$  & $\sigma_\theta$ & $\mho$        & $E$          & Earning Process         & Unemployment & Source    \\
- \hline 
-\cite{huggett1996wealth}         & [0.21,+]       & N/A             & N/A           & N/A          & AR(1)                   & No           & Page 480  \\
-\cite{krusell1998income}         & N/A            & N/A             & [0.04,0.1]    & [0.9,0.96]   & N/A                     & Persistent   & Page 876  \\
-\cite{cagetti2003wealth}         & [0.264, 0.348] & N/A             & N/A           & N/A          & Random +MA innovations  & No           & Page 344  \\
-\cite{gourinchas2002consumption} & [0.108,0.166]  & [0.18, 0.256]   & 0.003         & 0.997        & Permanent +transitory   & Transitory   & Table 1   \\
-\cite{meghir2004income}          & 0.173          & [0.09, 0.21]    & N/A           & N/A          & Permanent +MA           & No           & Table 3   \\
-\cite{storesletten2004cyclical}  & [0.094; +]     & 0.255           & N/A           & N/A          & Persistent + transitory & No           & Table 2   \\
-\cite{blundell_consumption_2008} & [0.1,+]        & [0.169,+]       & N/A           & N/A          & Permanent + MA          & No           & Table 6   \\
-\cite{kaplan2014model}           & 0.11           & N/A             & N/A           & N/A          & Persistent              & No           & Page 1220 \\
-\cite{krueger2016macroeconomics} & [0.196,+]      & 0.23            & [0.046,0.095] & [0.894,0.95] & Persistent +transitory  & Persistent   & Page 26   \\
-\cite{carroll2017distribution}   & 0.10           & 0.10            & 0.07          & 0.93         & Permanent+transitory    & Transitory   & Table 2   \\
-\cite{bayer2019precautionary}    & 0.148          & 0.693           & N/A           & N/A          & Persistent time+MA      & No           & Table 1   \\
-My Estimates based on SIPP       & 0.10           & 0.016           & N/A           & N/A          & Permanent +transitory   & No           & Table A.1
-\end{tabular} \\
+
+                                 & $\sigma_\psi$  & $\sigma_\theta$ & $\mho$        & $E$          & Earning Process                        & Unemployment & Source    \\
+                                 \hline 
+
+\cite{huggett1996wealth}         & [0.21,+]       & N/A             & N/A           & N/A          & AR(1)                                  & No           & Page 480  \\
+\cite{krusell1998income}         & N/A            & N/A             & [0.04,0.1]    & [0.9,0.96]   & N/A                                    & Persistent   & Page 876  \\
+\cite{cagetti2003wealth}         & [0.264, 0.348] & N/A             & N/A           & N/A          & Random +MA innovations                 & No           & Page 344  \\
+\cite{gourinchas2002consumption} & [0.108,0.166]  & [0.18, 0.256]   & 0.003         & 0.997        & Permanent +transitory                  & Transitory   & Table 1   \\
+\cite{meghir2004income}          & 0.173          & [0.09, 0.21]    & N/A           & N/A          & Permanent +MA                          & No           & Table 3   \\
+\cite{storesletten2004cyclical}  & [0.094; +]     & 0.255           & N/A           & N/A          & Persistent + transitory                & No           & Table 2   \\
+\cite{blundell_consumption_2008} & [0.1,+]        & [0.169,+]       & N/A           & N/A          & Permanent + MA                         & No           & Table 6   \\
+\cite{low2010wage}               & [0.095,0.106]  & 0.08            & 0.028         & N/A          & Permanent+transitory with job mobility & Persistent   & Table 1   \\
+\cite{kaplan2014model}           & 0.11           & N/A             & N/A           & N/A          & Persistent                             & No           & Page 1220 \\
+\cite{krueger2016macroeconomics} & [0.196,+]      & 0.23            & [0.046,0.095] & [0.894,0.95] & Persistent +transitory                 & Persistent   & Page 26   \\
+\cite{carroll2017distribution}   & 0.10           & 0.10            & 0.07          & 0.93         & Permanent+transitory                   & Transitory   & Table 2   \\
+\cite{bayer2019precautionary}    & 0.148          & 0.693           & N/A           & N/A          & Persistent time+MA                     & No           & Table 1   \\
+My Estimates based on SIPP       & 0.10           & 0.016           & N/A           & N/A          & Permanent +transitory                  & No           & Table A.1\\
+\hline
 \hline 
+\end{tabular} 
 	\begin{flushleft}
 \item This table summarizes the  conservative (lower bound) estimates/parameterization on idiosyncratic income risks at the annual frequency seen in the literature.    \end{flushleft}
 \end{threeparttable}
@@ -170,10 +228,10 @@ My Estimates based on SIPP       & 0.10           & 0.016           & N/A       
 \cite{jacobson1993earnings}   & 25\%(6)                           & NA             & 1974-1986  & Earning   & Administrative records of Pennsylvanian.                 \\
 \cite{von2009long}            & 21\%-27\%(20)                     & NA             & 1978-2004  & Earning   & Social security records, and firm-level employment data. \\
 \cite{couch2010earnings}      & 13\%-15\% (6)                     & NA             & 1993-2004  & Earning   & Administrative data of Connecticut                       \\
-\cite{low2010wage}            & 6\%-9\%(1)                        & NA             & Model      & Wage rate & Model                                                    \\
+\cite{low2010wage}            & 6\%-9\%(1)                        & 20\%             & Model      & Wage rate & Model                                                    \\
 \cite{davis2011recessions}    & 10\%-20\%(20)                     & NA             & 1980-2005  & Earning   & Social security records                                  \\
-\cite{farber2017employment}   & 6.2\% (0)                         & Lower E2E rate & 1984 –2016 & Wage rate & Displaced Workers Surveys (DWS)                          \\
-\cite{lachowska2020sources}   & 16\%(5)                           & NA             & 2002–2014  & Wage rate & Employment Security Department of Washington state.      \\
+\cite{farber2017employment}   & 6.2\% (0)                         & Lower E2E rate & 1984-2016 & Wage rate & Displaced Workers Surveys (DWS)                          \\
+\cite{lachowska2020sources}   & 16\%(5)                           & NA             & 2002-2014  & Wage rate & Employment Security Department of Washington state.      \\
 \cite{pytka2021understanding} & 6\% (11) (median)                 & NA             & 1984-2017  & Earning   & Austrian social security records      \\
 \hline
 \hline
@@ -215,7 +273,58 @@ $$\tilde \Gamma^h = [\log[(12+\frac{1}{12\kappa^2})\tilde \sigma^{h2}_{\psi}],\t
 
 \textbf{Estimation sample} I restrict the sample to SCE respondents who were surveyed for at least 6 consecutive months with non-empty reported perceived earning volatility, separation and job-finding expectations. This left with me 6457 individuals.
 
-\subsection{Solution algorithm of the model} 
+%\subsection{Solution algorithm of the model} 
+
+
+\subsection{Model extension: subjective risk perceptions}
+\label{appendix:subjective_model}
+
+In the benchmark model, I maintain the FIRE assumption that the agents perfectly know the underlying parameters of income risks $\Gamma =\{\sigma^2_\psi,\sigma^2_\theta,\mho,E\}$ as assumed by the modelers and behave optimally accordingly. 
+
+But here, I relax the FIRE assumption by separately treating the ``true'' underlying risk parameters $\Gamma$ and the risk perceptions held by the agents. The latter is denoted as $\tilde \Gamma_i$. This extension is meant to capture the four empirical patterns documented in the previous sections. 
+
+\begin{enumerate}
+    \item Underestimation of the earning risks (compared to what is assumed to be the truth in the model) 
+    \item Heterogeneity in risk perceptions 
+    \item Extrapolation of recent experiences
+    \item State-dependence of risk perceptions 
+\end{enumerate}
+
+The possible approaches of capturing these perceptual patterns are by no means unique. I adopt one simple framework that does not require explicitly specified mechanisms of perception formation but sufficient to reflect these the patterns revealed from the survey data.
+
+Assume that each agent $i$ in the economy cannot directly observe the underlying risk parameters $\Gamma$, but instead make his/her best choices based on a subjective risk perceptions  $\tilde \Gamma_{i,\tau}$, which swing between two states: $\tilde \Gamma_l$ (low risk) and $\tilde \Gamma_h$ (high risk). The transition between the two states is governed by a Markov process with a transition matrix $\Omega$. In the calibration of the model in latter sections, these subjective parameters can be estimated from survey data relied upon auxiliary assumptions. 
+
+Such an assumption automatically allows for heterogeneity in risk perceptions across different agents at any point of the time. All individuals are distributed between low and high risk-perception states. In one of the extensions, I also admit ex-ante heterogeneity, namely permanent differences in risk perceptions due to individual fixed effects.  
+
+The transition probability between low-risk and high-risk perception states can be also configured so that the average risk perception is lower than the true level of the risk. If we let the transition matrix $\Omega$ to be dependent on individual unemployment status $\nu_{i,\tau}$, or macroeconomic conditions, we can also easily accommodate the possibility of experience extrapolation and state-dependence feature of risk perceptions. 
+
+Under the assumption of subjective perception, the subjective state of the risk perceptions $\tilde \Gamma$ becomes an additional state variable entering the Bellman equation of the consumer's problem, restated in below.
+
+\begin{equation}
+\begin{split}
+\tilde V_{\tau}(\tilde \Gamma_\tau, \nu_\tau, m_\tau, p_\tau) = \underset{\{c_\tau\}}{\textrm{max}} \quad u(c_\tau) + (1-D)\beta \mathbb{E}_{\tau}\left[\tilde V_{\tau+1}(\tilde \Gamma_{\tau+1}, \nu_\tau,m_{\tau+1}, p_{\tau+1})\right] 
+\end{split}
+\end{equation}
+
+Notice here that I assume that the agents recognize the transition between two subjective perception states and take it into account when making the best choices. This assumption guarantees time-consistency and provides additional discipline to the model assumption.  
+
+The consumer's solution to the problem above is the age-specific consumption policy $\tilde c_\tau^*(\tilde \Gamma_\tau,u_\tau, m_\tau,p_\tau)$ that is also a function of subject risk perception state $\tilde \Gamma$.
+
+The distinction between objective and subject risk perception marks the single most important deviation of this paper from existing incomplete-market macro papers. \footnote{For instance, \cite{bewley1976permanent}, \cite{huggett1993risk}, \cite{aiyagari1994uninsured}, \cite{krusell1998income},  \cite{krueger2016macroeconomics},  \cite{carroll2017distribution}.} There is a long tradition of explicitly incorporating various kinds of heterogeneity in addition to uninsured idiosyncratic income shocks in these kinds of models to achieve better match with observed cross-sectional wealth inequality. One of the most notable assumptions used in the literature is the heterogeneity in time preferences (\cite{krusell1998income}, \cite{carroll2017distribution}, \cite{krueger2016macroeconomics}). My modeling approach shares the spirit with and are not mutually exclusive to these existing assumptions on preferential heterogeneity. But, to some extent, perceptual heterogeneity is more preferable as such patterns are directly observed from the survey data, as I show in the previous part of the paper.  
+
+
+A more fundamental justification for such a deviation from the full information rational expectation assumption is that risk parameters $\Gamma$ are barely observable objects to agents. This is so no matter if they are exogenously assumed by economists or endogenously determined in the equilibrium of the model. \footnote{So far, the majority workhorse incomplete market macro literature has not incorporated any endogenous mechanisms that determine the level of income risks. The emerging literature that incorporates labor market search/match frictions in these models have relied upon simplifying assumptions to get tractability. See, for instance, \cite{mckay2017time,acharya2020understanding,ravn2021macroeconomic},  with the only exception being \cite{ravn2017job}.} Therefore, the conventional argument in favor of rational expectation assumption, namely equilibrium outcome drives the agents' perceptions to converge to the ``truth'', does not apply here. 
+
+Incorporating subjective risk perceptions also alters aggregate dynamics of the distributions as described in Equation \ref{Eq:DistDyn}, as restated below. 
+
+\begin{equation}
+\label{Eq:DistDynSub}
+\tilde \psi_{\tau-1}(\tilde B)=\int_{\tilde x \in \tilde X} \tilde P(\tilde x, \tau-1, \tilde B) \mathrm{d} \tilde \psi_{\tau-1} \quad \text { for all } \quad \tilde B \in \tilde B(X)
+\end{equation}
+
+The state variable $\tilde x$ includes subjective state $\tilde \Gamma$ in addition to those contained in $x$. The transition probabilities $\tilde P$ now depend on the optimal consumption policies $c^*(\tilde x)$ as a function of belief state $\tilde \Gamma$, as well as the exogenous transition probabilities of the true stochastic income process $\Gamma$.  
+
+Then the new StE under subjective risk perceptions can be defined accordingly. 
 
 
 \subsection{Model Extension: costly adjustment in consumption}
@@ -239,6 +348,5 @@ The change in the nature of the problem can be summarized by the restated value 
 
 where $V^A$ and $V^N$ represent value functions associated with adjustment and non-adjustment. Notice that in the case of non-adjustment, the consumption in previous period becomes an additional state variable. But essentially, there is no choice to be made as to consumption in the case of non-adjustment. 
 
-Solving consumption policies with the both intensive and extensive margin choices introduces additional computational challenges. In particular, it results in discrete jumps hence discontinuity in the value function over different values of state variables and the first order condition, namely the Euler equation, is no longer sufficient for the optimality of consumption. Although brutal force value function maximization is able to produce solutions to the model, I adopt the ``Discrete Choice Endogenous Grid Algorithm (DCEGM)'' introduced by \cite{iskhakov2017endogenous} to speed up the computation. (See Appendix for the detailed steps of the implementation.)
-
+Solving consumption policies with the both intensive and extensive margin choices introduces additional computational challenges. In particular, it results in discrete jumps hence discontinuity in the value function over different values of state variables and the first order condition, namely the Euler equation, is no longer sufficient for the optimality of consumption. Although brutal force value function maximization is able to produce solutions to the model, I adopt the ``Discrete Choice Endogenous Grid Algorithm (DCEGM)'' introduced by \cite{iskhakov2017endogenous} to speed up the computation.
 %\subsubsection{Heterogeneity in time preferences}
