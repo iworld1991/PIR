@@ -62,6 +62,7 @@ account the unemployment risk.
 \subsection{Density estimation and
 variables}\label{density-estimation-and-variables}}
 
+
 With the histogram answers for each individual in hand, I follow
 \cite{engelberg_comparing_2009} to fit each of them with a parametric
 distribution accordingly for three following cases. In the first case
@@ -77,6 +78,7 @@ with an isosceles triangular distribution. In the third case, if there
 is only one positive-probability of interval only, i.e.~equal to one, it
 is fitted with a uniform distribution.
 
+\begin{comment}
 Since subjective moments such as variance is calculated based on the
 estimated distribution, it is important to make sure the estimation
 assumptions of the density distribution do not mechanically distort my
@@ -100,6 +102,8 @@ provided, I use my own estimates. I also confirm that my estimates and
 theirs for the first two moments are correlated with a coefficient of
 0.9.
 
+\end{comment}
+
 For all the moment's estimates, there are inevitably extreme values.
 This could be due to the idiosyncratic answers provided by the original
 respondent, or some non-convergence of the numerical estimation program.
@@ -108,29 +112,16 @@ Therefore, for each moment of the analysis, I exclude top and bottom
 
 I also recognize what is really relevant to many economic decisions such
 as consumption is real income instead of nominal income. I use the inflation expectation and inflation uncertainty (also estimated
-from density question) to convert nominal earning growth moments to real
-terms. In particular, the real
-earning growth rate is expected nominal growth minus inflation
-expectation of the same individuals.
-
-\begin{eqnarray}
-E_{i,t}({\Delta y}_{i,t}) = E_{i,t}(\Delta y^n_{i,t+1}) - E_{i,t}(\pi_{t+1})
-\end{eqnarray}
+from density question) to convert expected nominal earning growth to real
+growth expectations.
 
 The variance associated with real earning growth, if we treat inflation
 and nominal earning growth as two independent stochastic variables, is
 equal to the summed variance of the two. The independence assumption is
 admittedly an imperfect assumption because of the correlation of wage
-growth and inflation at the macro level. So it is should be interpreted
-with caution.
+growth and inflation at the macro level. In the Appendix, I report results of the paper with alternative assumptions about the correlation between the nominal wage and inflation expectations.
 
-\begin{eqnarray}
-Var_{i,t}(\Delta y_{i,t+1}) = Var_{i,t}(\Delta y^n_{i,t+1}) + Var_{i,t}(\pi_{t+1})
-\end{eqnarray}
 
-As there are extreme values on inflation
-expectations and uncertainty, I also exclude top and bottom \(2\%\) of
-the observations. 
 
 \subsection{Labor income data}
 

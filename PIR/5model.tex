@@ -50,6 +50,7 @@ Each agent receives stochastic labor income during working age from $\tau=0$ to 
 
 \begin{equation}
 \begin{split}
+\label{Eq:income_model}
 y_{i,\tau} = n_{i,\tau}W \\ 
 n_{i,\tau} = p_{i,\tau}\xi_{i,\tau}
 \end{split}
@@ -230,7 +231,7 @@ The most obvious pattern seen in the figure is that within the objective model, 
 
 
 \subsubsection{Calibrating income risks from the survey}
-
+\label{subsubsec:survey_risk}
 The parameters to be estimated from the panel data of risk perceptions from $SCE$ are the state-dependent risk profile $\tilde \Gamma_l=\{\tilde \sigma^l_\psi,\tilde \sigma^l_\theta, \tilde{\mho^l}, \tilde{E^l}\}$, $\tilde \Gamma_h =\{\tilde \sigma^h_\psi,\tilde \sigma^h_\theta, \tilde{\mho^h}, \tilde{E^h}\}$ and $\Omega$, the transition matrix between the two states.
 
 Denote the reported risk perception of the individual $i$ at time $t$ in the survey by $\tilde \Gamma^s_{i,t}$. It consists of the underlying risk perceptions relevant to individual decisions, or the model counterpart $\tilde \Gamma_{i,t}$, and an individual-specific, time-specific and an $i.i.d$ shock to the survey responses, respectively. The realization of $\tilde \Gamma_{i,t}$ depends on a hidden state $J_{i,t}$ which is non-observable to economists working with the survey data. It takes value of $1$ if the individual $i$ is at a high-risk-perception state $\tilde \Gamma_{i,t}=\tilde \Gamma_h$ and zero if at low-risk-perceptions $\tilde \Gamma_{i,t} = \tilde \Gamma_l$. The $i.i.d$ shock $\epsilon_{i,t}$ is assumed to follow a mean-zero normal distribution with variance $\sigma^2_\epsilon$.  
