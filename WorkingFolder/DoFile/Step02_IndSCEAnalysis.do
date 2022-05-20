@@ -1,5 +1,5 @@
 clear
-global mainfolder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder"
+global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
 global folder "${mainfolder}/SurveyData/"
 global otherdata_folder "${mainfolder}/OtherData"
 global otherfolder "/Users/Myworld/Dropbox/SearchMatchExpectation/"
@@ -30,10 +30,9 @@ gen date = monthly(date_str,"YM")
 format date %tm
 drop DATE date_str year month new_date 
 label var sp500 "growth rate (%) of sp500 index from last month"
-rename UNRATE uerate
+rename ue uerate
 label var uerate "unemployment rate"
 label var he "quarterly growth in hourly earning"
-rename VIXCLS vix 
 label var vix "vix indices"
 save "${mainfolder}/OtherData/macroM.dta",replace 
 clear 
@@ -173,7 +172,7 @@ gen trisk2_`x'_rl = (f1.trisk2_`x'+f2.trisk2_`x'+f3.trisk2_`x'+f4.trisk2_`x'+ //
 gen rincvar_`x'_rl = prisk2_`x'_rl+ trisk2_`x'_rl
 }
 
-label var rincvar_sub_rl "realized sub-sampel annual risk"
+label var rincvar_sub_rl "realized sub-sample annual risk"
 
 gen rincvar_sub_now = l12.rincvar_sub_rl
 label var rincvar_sub_now "realized sub-sample annual risk since 12m ago"
@@ -240,7 +239,7 @@ gen EUprobInd = Q22new/100
 
 **macro data
 merge m:1 date using "${mainfolder}/OtherData/macroM.dta",keep(master match)
-rename CPIAUCSL CPIAU
+rename cpi CPIAU
 drop _merge 
 
 
@@ -598,13 +597,11 @@ graph export "${sum_graph_folder}/boxplot_rvar_earning.png", as(png) replace
 ** Compare risks between perception and realization **
 ********************************************************
 
-
 tabout gender edu_g age_5 using "${sum_table_folder}/risks_compare.csv", ///
-            c(mean rincsd median rincsd mean rincsd_all_rl mean rincsd_sub_rl mean psd2_all_rl mean tsd2_all_rl ) ///
-			f(3c 3c 3c 3c 3c 3c) ///
-			clab(PerceivedRisk PerceivedRisk(median) RealizedVolatility RealizedGroupVolatility RealizedPRisk RealizedTRsk) ///
+            c(mean rincsd median rincsd mean rincsd_sub_rl mean psd2_all_rl mean tsd2_all_rl ) ///
+			f(3c 3c 3c 3c 4c 4c) ///
+			clab(PerceivedRisk PerceivedRisk(median) RealizedGroupVolatility RealizedPRisk RealizedTRsk) ///
 			sum npos(tufte) rep style(csv) bt cl2(2-4 5-6) cltr2(.75em 1.5em) 
-
 
 ***************************************
 **** unemployment experience and risk perceptions

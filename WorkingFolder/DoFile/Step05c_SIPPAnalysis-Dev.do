@@ -5,7 +5,7 @@
 global datafolder "/Users/Myworld/Dropbox/SIPP/"
 global scefolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/SurveyData/SCE/"
 global otherdatafolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/"
-global table_folder "/Users/Myworld/Dropbox/PIRder/OtherData/sipp/"
+global table_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/sipp/"
 global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/sipp/"
 
 clear
@@ -54,35 +54,74 @@ drop _merge
 *******************************
 sort uniqueid date 
 
-/*
-** yearly 
- 
 gen ntot_earning_jb1 = TJB1_MSUM
 label var ntot_earning_jb1 "nominal total monthly earning"
-
-gen ntot_earning_jb1_y = l11.ntot_earning_jb1+ l10.ntot_earning_jb1+ ///
-                        l9.ntot_earning_jb1+l8.ntot_earning_jb1+l7.ntot_earning_jb1 + ///
-						l6.ntot_earning_jb1+ l5.ntot_earning_jb1 +l4.ntot_earning_jb1 + ///
-						l3.ntot_earning_jb1+ l2.ntot_earning_jb1+l1.ntot_earning_jb1+ntot_earning_jb1
-						
-label var ntot_earning_jb1 "nominal total monthly earning"
-
 gen rtot_earning_jb1 = TJB1_MSUM*100/CPIAU
 label var rtot_earning_jb1 "real total monthly earning"
+gen tot_hours_jb1 = TJB1_MWKHRS
+label var tot_hours_jb1 "average hours worked per week in the month"
 
-gen rtot_earning_jb1_y = l11.rtot_earning_jb1+ l10.rtot_earning_jb1+ ///
-                        l9.rtot_earning_jb1+l8.rtot_earning_jb1+l7.rtot_earning_jb1 + ///
-						l6.rtot_earning_jb1+ l5.rtot_earning_jb +l4.rtot_earning_jb1 + ///
-						l3.rtot_earning_jb1+ l2.rtot_earning_jb1+l1.rtot_earning_jb1+rtot_earning_jb1
-						
+****************************
+** deal with SEAM problem
+****************************
+
+*replace ntot_earning_jb1 = (l1.ntot_earning_jb1+f1.ntot_earning_jb1)/2 if month==1 & ntot_earning_jb1!=.
+*replace rtot_earning_jb1 = (l1.rtot_earning_jb1+f1.rtot_earning_jb1)/2 if month==1 & rtot_earning_jb1!=.
+*replace tot_hours_jb1 = (l1.tot_hours_jb1+f1.tot_hours_jb1)/2 if month==1 & tot_hours_jb1!=.
+
+** monthly 
+gen wage = ntot_earning_jb1/tot_hours_jb1
+** TJB1_MSUM: total earning from the primary job in the month
+** TJB1_MWKHRS: Average number of hours worked per week at job 1 during the reference month. 
+** Note: the average includes all weeks in the reference month. Weeks before the job began, 
+*** after the job ended, and during an away without pay spell are counted as 0 hours worked. 
+** Therefore, the total ours of worked for this job is essentially proportional to TJB1_MWKHRS given 
+** most of the months have approximately same number of weeks. 
+** use the primary job monthly earning for now  
+gen wage_n = wage
+label var wage_n "nominal monthly wage rate of the primary job"
+
+** nominal to real terms 
+replace wage = wage*100/CPIAU
+label var wage "real monthly wage rate of the primary job"
+
+
+
+*********************
+** other frequency **
+**********************
+
+
+***********
+** quarterly 
+***********
+
+egen ntot_earning_jb1_q = sum(ntot_earning_jb1), by(uniqueid year quarter)
+label var ntot_earning_jb1_q "quarterly nominal total earning"
+
+egen rtot_earning_jb1_q = sum(rtot_earning_jb1), by(uniqueid year quarter)
+label var rtot_earning_jb1_q "quarterly real total earning from primary job"
+
+egen tot_hours_jb1_q = sum(tot_hours_jb1), by(uniqueid year quarter) 
+label var tot_hours_jb1_q "quarterly total hours of working for primary job"
+
+gen wage_Q =  rtot_earning_jb1_q/tot_hours_jb1_q				
+label var wage_Q "real yearly wage rate of primary job"
+
+gen wage_n_Q = ntot_earning_jb1_q/tot_hours_jb1_q				
+label var wage_n_Q "nominal yearly wage rate of primary job"
+
+***********
+** yearly 
+***********
+
+egen ntot_earning_jb1_y = sum(ntot_earning_jb1), by(uniqueid year)
+label var ntot_earning_jb1 "nominal total monthly earning"
+
+egen rtot_earning_jb1_y = sum(rtot_earning_jb1), by(uniqueid year)
 label var rtot_earning_jb1_y "yearly real total earning from primary job"
 
-gen tot_hours_jb1 = TJB1_MWKHRS
-
-gen tot_hours_jb1_y = l11.tot_hours_jb1+ l10.tot_hours_jb1+ ///
-                        l9.tot_hours_jb1+l8.tot_hours_jb1+l7.tot_hours_jb1 + ///
-						l6.tot_hours_jb1+ l5.tot_hours_jb1 +l4.tot_hours_jb1 + ///
-						l3.tot_hours_jb1+ l2.tot_hours_jb1+l1.tot_hours_jb1+tot_hours_jb1
+egen tot_hours_jb1_y = sum(tot_hours_jb1), by(uniqueid year) 
 label var tot_hours_jb1_y "yearly total hours of working for primary job"
 
 gen wage_Y =  rtot_earning_jb1_y/tot_hours_jb1_y				
@@ -90,46 +129,55 @@ label var wage_Y "real yearly wage rate of primary job"
 
 gen wage_n_Y = ntot_earning_jb1_y/tot_hours_jb1_y				
 label var wage_n_Y "nominal yearly wage rate of primary job"
-*/
-				
-** monthly 
-gen wage = TJB1_MSUM/TJB1_MWKHRS
-** or divided by average nb of weeks of work TJB1_MWKHRS
-** use the primary job monthly earning for now  
-** nominal to real terms 
-gen wage_n = wage
-label var wage_n "nominal monthly wage rate of the primary job"
 
-replace wage = wage*100/CPIAU
-label var wage "real monthly wage rate of the primary job"
 
+*************************************
+***** Focus on job-stayers *********
+***** following Low et al 2010 *********
+**************************************
+
+*****CREATES A NO-GAP SEQUENCE OF FIRM IDS: 123... OR 213...; 
+** THIS VARIABLE (NF) REPLACES FIRM ID JOBID1****************
+egen nf=group(uniqueid EJB1_JOBID)
+egen min=min(nf),by(uniqueid)
+replace nf=nf-min+1
+drop min
+
+*****CREATES A VARIABLE # OF JOBS***************************************************************************************************
+egen minnf=min(nf),by(uniqueid)
+egen maxnf=max(nf),by(uniqueid)
+gen num_jobs=maxnf-minnf+1
+
+*****IDENTIFIES Those who NEVER change employer*****
+egen sdf=sd(nf),by(uniqueid)
+keep if sdf==0 & num_jobs==1
 
 **************************
 ***** Winsorization ******
 **************************
 
-egen wage_mean = mean(wage),by(uniqueid)
-label var wage_mean "average monthly real earning of the individual"
-drop if wage<0.1* wage_mean | wage>1.9*wage_mean
+foreach var in wage wage_n wage_Q wage_n_Q wage_Y wage_n_Y{
+	egen `var'_mean = mean(`var'),by(uniqueid)
+	label var `var' "average monthly real earning of the individual"
+	replace `var'=. if `var'<0.1* `var'_mean | `var'>2.5*`var'_mean
+}
 
-
-foreach var in wage{
+foreach var in wage wage_n wage_Q wage_n_Q wage_Y wage_n_Y{
 egen `var'_p1 = pctile(`var'),p(1) by(date)
 egen `var'_p99 = pctile(`var'),p(99) by(date)
 replace `var'=. if `var'<`var'_p1 | `var'>=`var'_p99
 }
 
-
-**************************
-***** Validation ******
-**************************
+************************************************
+***** Validation and Additional Filtering *****
+*************************************************
 xtset uniqueid date
 
 drop if (ESEX!=l1.ESEX & ESEX!=.)| (ERACE!=l1.ERACE & ERACE!=.)
 gen AGE_df = TAGE-l1.TAGE
 drop if AGE_df >=2
 
-keep if tenure>=4
+keep if tenure>=24
 
 ** conditional on having no days off from the job 
 keep if EJB1_AWOP1 ==2
@@ -160,31 +208,6 @@ drop if TJB1_IND>=9400
 
 table AJB1_MSUM
 **9 indicates allocation flags for the components
-
-/*
-******************************************************
-***** Quarterly                                     **
-***** Set on if we want to collapse data into quarterly 
-*******************************************************
-
-
-gen wageQ = wage+l1.wage+l2.wage
-replace wage =wageQ
-drop wageQ
-label var wage "real quarterly earning"
-** sum m-2 m-1 and m for quarterly wage 
-
-keep if month==3 | month==6 |month==9|month==12
-
-gen date_str=string(year)+"Q"+string(quarter)
-gen dateq = quarterly(date_str,"YQ")
-format dateq %tq
-drop date_str
-
-table dateq
-xtset uniqueid dateq
-*/
-
 
 
 
@@ -219,6 +242,8 @@ label values gender gender_lb
 
 label define educ_lb 1 "HS dropout" 2 "HS graduate" 3 "college graduates/above"
 label values educ edu_lb
+
+
 
 
 ***********************
@@ -270,17 +295,27 @@ label var lwage_n "log nominal monthly wage rate"
 gen lwage =log(wage)
 label var lwage "log real monthly wage rate"
 
-/*
+gen lwage_n_Q = log(wage_n_Q)
+label var lwage_n_Q "log nomimal quarterly wage rate"
+gen lwage_Q = log(wage_Q)
+label var lwage_Q "log real quarterly wage rate"
+
 gen lwage_n_Y = log(wage_n_Y)
 label var lwage_n_Y "log nomimal yearly wage rate"
 
 gen lwage_Y = log(wage_Y)
 label var lwage_Y "log real yearly wage rate"
-*/
 
 ** demean the data
 egen lwage_av = mean(lwage), by(date) 
 egen lwage_sd = sd(lwage), by(date)
+
+
+egen lwage_Q_av = mean(lwage_Q), by(year quarter) 
+egen lwage_Q_sd = sd(lwage_Q), by(year quarter)
+
+egen lwage_Y_av = mean(lwage_Y), by(year) 
+egen lwage_Y_sd = sd(lwage_Y), by(year)
 
 ************************************
 *** Deterministic income component *
@@ -307,18 +342,18 @@ save "${otherdatafolder}age_profile.dta",replace
 restore 
 
 
-*********************************
-*** Stochastic income component *
-*********************************
+*****************************************
+*** Stochastic wage component/ shocks *
+*****************************************
 
 ***********************************************************************************
 ** mincer regressions 
 ** monthly 
-reghdfe lwage age age2 end_yr beg_yr, a(i.race i.gender i.educ i.TJB1_IND) resid
+reghdfe lwage age age2 age3 end_yr beg_yr, a(i.race i.gender i.educ i.TJB1_IND) resid
 predict lwage_shk, residuals
  
 * including aggregate shock
-reghdfe lwage age age2 end_yr beg_yr, a(i.date i.race i.gender i.educ i.TJB1_IND) resid
+reghdfe lwage age age2 age3 end_yr beg_yr, a(i.date i.race i.gender i.educ i.TJB1_IND) resid
 predict lwage_id_shk, residuals
 
 gen lwage_ag_shk = lwage_shk- lwage_id_shk
@@ -327,13 +362,32 @@ label var lwage_shk "log wage shock"
 label var lwage_id_shk "log wage idiosyncratic shock"
 label var lwage_ag_shk "log wage aggregate shock"
 
-/*
-** yearly 
-reghdfe lwage_Y age age2 end_yr beg_yr, a(i.year i.race i.gender i.educ i.TJB1_IND) resid
-predict lwage_Y_id_shk, residuals
-label var lwage_Y_id_shk "log wage idiosyncratic shock"
-*/
+
 *************************************************************************************
+** quarterly  
+*************************************************************************************
+
+reghdfe lwage_Q age age2 age3, a(i.year#i.quarter i.race i.gender i.educ i.TJB1_IND) resid
+predict lwage_Q_id_shk, residuals
+label var lwage_Q_id_shk "log yearly wage idiosyncratic shock"
+
+** first difference for quarterly  
+foreach var in lwage_Q lwage_n_Q lwage_Q_id_shk{
+gen `var'_gr = `var'- l3.`var'
+}
+
+label var lwage_Q_gr "log quarterly growth of nominal wage"
+label var lwage_n_Q_gr "log quarterly growth of real wage"
+label var lwage_Q_id_shk_gr "log quarterly growth of idiosyncratic unexplained wage"
+
+
+*************************************************************************************
+** yearly 
+*************************************************************************************
+
+reghdfe lwage_Y age age2 age3, a(i.year i.race i.gender i.educ i.TJB1_IND) resid
+predict lwage_Y_id_shk, residuals
+label var lwage_Y_id_shk "log yearly wage idiosyncratic shock"
 
 ** first difference for monthly 
 foreach var in lwage lwage_n lwage_shk lwage_id_shk lwage_ag_shk{
@@ -345,24 +399,21 @@ label var lwage_shk_gr "log growth of unexplained wage"
 label var lwage_id_shk_gr "log growth of idiosyncratic unexplained wage"
 label var lwage_ag_shk_gr "log growth of aggregate unexplained wage"
 
-
-** first difference for monthly 
-foreach var in lwage lwage_n lwage_id_shk{
-gen `var'_Y_gr = `var'- l12.`var'
+** first difference for yearly 
+foreach var in lwage_Y lwage_n_Y lwage_Y_id_shk{
+gen `var'_gr = `var'- l12.`var'
 }
 label var lwage_Y_gr "log yearly growth of nominal wage"
 label var lwage_n_Y_gr "log yearly growth of real wage"
-label var lwage_id_shk_Y_gr "log yearly growth of idiosyncratic unexplained wage"
+label var lwage_Y_id_shk_gr "log yearly growth of idiosyncratic unexplained wage"
 
-
-*foreach var in ue{
-*gen ue_gr = ue-l2.ue
-*}
-*label var ue_gr "change in ue in 2 year"
 
 **  volatility 
-egen lwage_shk_gr_sd = sd(lwage_shk_gr), by(date)
-label var lwage_shk_gr_sd "standard deviation of log shocks"
+
+foreach wvar in lwage lwage_Q lwage_Y{
+egen `wvar'_id_shk_gr_sd = sd(`wvar'_id_shk_gr), by(date)
+label var `wvar'_id_shk_gr_sd "standard deviation of log idiosyncratic shocks"
+}
 
 ***********************************************
 ** summary chart of unconditional wages ********
@@ -372,26 +423,43 @@ label var lwage_shk_gr_sd "standard deviation of log shocks"
 hist  wage, title("distribution of real wage rate") 
 graph export "${graph_folder}/hist_wage.png", as(png) replace 
 
-/*
+
+hist  wage_Q, title("distribution of real wage rate (yearly)") 
+graph export "${graph_folder}/hist_wage_Q.png", as(png) replace
+ 
 hist  wage_Y, title("distribution of real wage rate (yearly)") 
 graph export "${graph_folder}/hist_wage_Y.png", as(png) replace 
-*/
 
 ** time series plots 
 preserve
-collapse (mean) lwage lwage_sd, by(date year month) 
+collapse (mean) lwage_Q_av lwage_Q_sd, by(year quarter) 
+
+gen date_str=string(year)+"Q"+string(quarter)
+gen dateq = quarterly(date_str,"YQ")
+drop date_str
+*xtset uniqueid dateq
+format dateq %tq
+
 ** average log wage whole sample
-twoway  (connected lwage date) if lwage!=., title("The mean of log real wages") 
+twoway  (connected lwage_Q_av dateq) if lwage_Q_av!=., title("The mean of log real wages") 
 graph export "${graph_folder}/log_wage_av.png", as(png) replace 
 
 ** std log wage whole sample
-twoway  (connected lwage_sd date) if lwage_sd!=., title("The standard deviation of log real wages") 
+twoway  (connected lwage_Q_sd dateq) if lwage_Q_sd!=., title("The standard deviation of log real wages") 
 graph export "${graph_folder}/log_wage_sd.png", as(png) replace 
 restore 
 
 
 preserve 
-collapse (mean) lwage lwage_sd lwage_av_educ=lwage (sd) lwage_sd_educ = lwage, by(date year month educ) 
+replace lwage = lwage_Q
+
+collapse (mean) lwage_av_educ=lwage (sd) lwage_sd_educ = lwage, by(year quarter educ) 
+
+gen date_str=string(year)+"Q"+string(quarter)
+gen dateq = quarterly(date_str,"YQ")
+drop date_str
+gen date = dateq 
+format date %tq
 
 * average log wage
 twoway  (connected lwage_av_educ date if lwage_av!=. & educ==1) ///
@@ -412,27 +480,42 @@ graph export "${graph_folder}/log_wage_sd_by_edu.png", as(png) replace
 restore 
 
 ************************************************
+** summary table of conditional wages ********
+************************************************
+
+
+label define edu_glb 1 "HS dropout" 2 "HS graduate" 3 "College/above"
+label value educ edu_glb
+
+tabout year educ gender using "${table_folder}sum_table_sipp.csv", ///
+            c(N lwage_id_shk_gr sd lwage_id_shk_gr) ///
+			 f(0c 2c) clab(Obs Volatility) sum ///
+			  npos(tufte) style(csv) rep bt cltr2(.75em) 
+
+************************************************
 ** summary chart of conditional wages ********
 ************************************************
 
 preserve
 
-collapse (mean) lwage_shk_gr lwage_shk_gr_sd, by(year month date) 
+collapse (mean) lwage_id_shk_gr lwage_id_shk_gr_sd, by(year month date) 
 
-replace lwage_shk_gr=. if month==1
-replace lwage_shk_gr_sd=. if month==1
+replace lwage_id_shk_gr=. if month==1 | month==2 
+replace lwage_id_shk_gr_sd=. if month==1| month==2
 
 ** average log wage shock whole sample
-twoway  (connected lwage_shk_gr date) if lwage_shk_gr!=., title("The mean of log real wage shocks") 
+twoway  (connected lwage_id_shk_gr date) if lwage_id_shk_gr!=., title("The mean of log real wage shocks") 
 graph export "${graph_folder}/log_wage_shk_gr.png", as(png) replace 
 
 ** std log wage whole sample
-twoway  (connected lwage_shk_gr_sd date) if lwage_shk_gr_sd!=., title("The standard deviation of log real wage shocks") 
+twoway  (connected lwage_id_shk_gr_sd date) if lwage_id_shk_gr_sd!=., title("The standard deviation of log real wage shocks") 
 graph export "${graph_folder}/log_wage_shk_gr_sd.png", as(png) replace
 restore 
 
 * education profile bar
 preserve 
+replace lwage_shk_gr = lwage_Y_id_shk_gr
+
 collapse (mean) lwage_shk_gr_av_edu=lwage_shk_gr (sd) lwage_shk_gr_sd_edu = lwage_shk_gr, by(educ) 
 * average log wage
 
@@ -446,15 +529,16 @@ restore
 * education profile: time series 
 
 preserve 
+replace lwage_shk_gr = lwage_id_shk_gr
+
 collapse (mean) lwage_shk_gr_av_edu=lwage_shk_gr (sd) lwage_shk_gr_sd_edu = lwage_shk_gr, by(year month date educ) 
 
-replace lwage_shk_gr_av_edu=. if month==1
-replace lwage_shk_gr_sd_edu=. if month==1
-
+replace lwage_shk_gr_av_edu=. if month==1 | month==2
+replace lwage_shk_gr_sd_edu=. if month==1| month==2
 xtset educ date 
 
-egen avmv3 = filter(lwage_shk_gr_av_edu), coef(1 1 1) lags(-1/1) normalise 
-egen sdmv3 = filter(lwage_shk_gr_sd_edu), coef(1 1 1) lags(-1/1) normalise 
+gen avmv3 = (l1.lwage_shk_gr_av_edu+lwage_shk_gr_av_edu+f1.lwage_shk_gr_av_edu)/3
+gen sdmv3 = (l1.lwage_shk_gr_sd_edu+lwage_shk_gr_sd_edu+f1.lwage_shk_gr_sd_edu)/3
 
 * average log wage
 twoway  (connected avmv3 date if avmv3!=. & educ==1) ///
@@ -501,6 +585,37 @@ save "${datafolder}sipp_matrix.dta",replace
 restore 
 
 
+preserve
+duplicates drop uniqueid year quarter,force
+gen date_str=string(year)+"Q"+string(quarter)
+gen dateq = quarterly(date_str,"YQ")
+drop date_str
+format date %tq
+tsset uniqueid dateq 
+tsfill,full		    
+keep uniqueid year quarter lwage_Q_id_shk_gr educ gender age_5yr
+gen date_temp = year*10+quarter
+drop if date_temp==.
+drop year quarter 
+reshape wide lwage_Q_id_shk_gr, i(uniqueid educ gender age_5yr) j(date_temp)
+save "${datafolder}sipp_matrix_Q.dta",replace 
+restore 
+
+
+preserve
+duplicates drop uniqueid year,force
+tsset uniqueid year 
+tsfill,full						
+*replace year=year(dofm(date)) if year==.
+*replace month=month(dofm(date)) if month==.
+*replace lwage_id_shk_gr=. if month==1		    
+keep uniqueid year lwage_Y_id_shk_gr educ gender age_5yr
+*gen date_temp = year
+drop if year==.
+reshape wide lwage_Y_id_shk_gr, i(uniqueid educ gender age_5yr) j(year)
+save "${datafolder}sipp_matrix_Y.dta",replace 
+restore 
+
 
 *****************************************************************************
 **** comparison and perceptions and realizations for idiosyncratic shocks ***
@@ -518,15 +633,15 @@ gen lwage_h_n_gr = lwage_n_Y_gr
 
 ** notice here we use lwage_id_shk_gr !!
 
-/*
+
 ** byear_5yr and age
 
 preserve
 * average log wage
 collapse (count) ct = lwage_shk_gr ///
-         (mean) lwage_shk_gr_av_byear= lwage_id_shk_Y_gr ///
-         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_Y_gr ///
-		 (mean) lwage_shk_av_byear= lwage_id_shk ///
+         (mean) lwage_shk_gr_av_byear= lwage_Y_id_shk_gr ///
+         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_gr ///
+		 (mean) lwage_shk_av_byear= lwage_Y_id_shk ///
          (sd) lwage_shk_sd_byear = lwage_id_shk, by(byear_5yr age_h)
 gen age = age_h
 summarize ct
@@ -554,30 +669,15 @@ twoway (scatter lwage_shk_gr_sd_byear byear_5yr, color(ltblue)) ///
 graph export "${graph_folder}/real_log_wage_shk_gr_by_byear_age_compare.png", as(png) replace 
 
 
-* standard deviation log wage level and risk perception 
-
-twoway (scatter lwage_shk_sd_byear byear_5yr, color(ltblue)) ///
-       (lfit lwage_shk_sd_byear byear_5yr, lcolor(red)) ///
-       (scatter lrincvar byear_5yr, color(gray) yaxis(2)) ///
-	   (lfit lrincvar byear_5yr,lcolor(black) yaxis(2)), ///
-       title("Realized Inequality and Perceived Risks by Cohort/Age")  ///
-	   xtitle("year of birth")  ///
-	   ytitle("income inequality (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_by_byear_age_compare.png", as(png) replace 
-
 restore
 
 ** cohort and gender 
 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_byear= lwage_id_shk_Y_gr ///
-         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_Y_gr ///
-		 (mean) lwage_shk_av_byear= lwage_id_shk ///
+collapse (mean) lwage_shk_gr_av_byear= lwage_Y_id_shk_gr ///
+         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_gr ///
+		 (mean) lwage_shk_av_byear= lwage_Y_id_shk ///
          (sd) lwage_shk_sd_byear = lwage_id_shk, by(byear sex_h)
 
 gen gender = sex_h 
@@ -605,21 +705,6 @@ twoway (scatter lwage_shk_gr_sd_byear byear, color(ltblue)) ///
 graph export "${graph_folder}/real_log_wage_shk_gr_by_byear_gender_compare.png", as(png) replace 
 
 
-* standard deviation log wage level and risk perception 
-
-twoway (scatter lwage_shk_sd_byear byear, color(ltblue)) ///
-       (lfit lwage_shk_sd_byear byear, lcolor(red)) ///
-       (scatter lrincvar byear, color(gray) yaxis(2)) ///
-	   (lfit lrincvar byear,lcolor(black) yaxis(2)), ///
-       title("Realized Inequality and Perceived Risks by Cohort/Gender")  ///
-	   xtitle("year of birth")  ///
-	    ytitle("income inequality (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_by_byear_gender_compare.png", as(png) replace 
-
 restore
 
 
@@ -627,9 +712,9 @@ restore
 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_byear= lwage_id_shk_Y_gr ///
-         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_Y_gr ///
-		 (mean) lwage_shk_av_byear= lwage_id_shk ///
+collapse (mean) lwage_shk_gr_av_byear= lwage_Y_id_shk_gr ///
+         (sd) lwage_shk_gr_sd_byear= lwage_id_shk_gr ///
+		 (mean) lwage_shk_av_byear= lwage_Y_id_shk ///
          (sd) lwage_shk_sd_byear = lwage_id_shk, by(byear) 
 
 merge 1:1 byear using "${scefolder}incvar_by_byear.dta",keep(match) 
@@ -669,22 +754,6 @@ twoway (scatter lwage_shk_gr_sd_byear byear, color(ltblue)) ///
 	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
 graph export "${graph_folder}/real_log_wage_shk_gr_by_byear_compare.png", as(png) replace 
 
-
-* standard deviation log wage level and risk perception 
-
-twoway (scatter lwage_shk_sd_byear byear, color(ltblue)) ///
-       (lfit lwage_shk_sd_byear byear, lcolor(red)) ///
-       (scatter lrincvar byear, color(gray) yaxis(2)) ///
-	   (lfit lrincvar byear,lcolor(black) yaxis(2)), ///
-       title("Realized Inequality and Perceived Risks by Cohort")  ///
-	   xtitle("year of birth")  ///
-	   ytitle("income inequality (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_by_byear_compare.png", as(png) replace 
-
 restore
 
 
@@ -692,9 +761,9 @@ restore
 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_byear_edu = lwage_id_shk_Y_gr ///
-         (sd) lwage_shk_gr_sd_byear_edu = lwage_id_shk_Y_gr ///
-		 (mean) lwage_shk_av_byear_edu = lwage_id_shk ///
+collapse (mean) lwage_shk_gr_av_byear_edu = lwage_Y_id_shk_gr ///
+         (sd) lwage_shk_gr_sd_byear_edu = lwage_id_shk_gr ///
+		 (mean) lwage_shk_av_byear_edu = lwage_Y_id_shk ///
          (sd) lwage_shk_sd_byear_edu = lwage_id_shk, by(byear_5yr edu_i_g) 
 
 gen edu_g = edu_i_g 
@@ -722,32 +791,18 @@ twoway (scatter lwage_shk_gr_sd_byear_edu byear_5yr, color(ltblue)) ///
 					  
 graph export "${graph_folder}/real_log_wage_shk_gr_by_byear_5yr_edu_compare.png", as(png) replace 
 
-* standard deviation log wage level and risk perception 
-
-twoway (scatter lwage_shk_sd_byear_edu byear_5yr, color(ltblue)) ///
-       (lfit lwage_shk_sd_byear_edu byear_5yr, lcolor(red)) ///
-       (scatter lrincvar byear_5yr, color(gray) yaxis(2)) ///
-	   (lfit lrincvar byear_5yr,lcolor(black) yaxis(2)), ///
-       title("Realized Inequality and Perceived Risks by Cohort/Education")  ///
-	   xtitle("year of birth")  ///
-	   ytitle("income inequality (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-	   
-graph export "${graph_folder}/real_log_wage_shk_by_byear_5yr_edu_compare.png", as(png) replace 
-
 restore
 
 
 ** 5-year cohort/education/gender profile
 
 preserve
+
+
 * average log wage
-collapse (mean) lwage_shk_gr_av_byear_5yr_edu = lwage_id_shk_Y_gr ///
-         (sd) lwage_shk_gr_sd_byear_5yr_edu = lwage_id_shk_Y_gr ///
-		 (mean) lwage_shk_av_byear_5yr_edu = lwage_id_shk ///
+collapse (mean) lwage_shk_gr_av_byear_5yr_edu = lwage_Y_id_shk_gr ///
+         (sd) lwage_shk_gr_sd_byear_5yr_edu = lwage_id_shk_gr ///
+		 (mean) lwage_shk_av_byear_5yr_edu = lwage_Y_id_shk ///
          (sd) lwage_shk_sd_byear_5yr_edu = lwage_id_shk, by(byear_5yr edu_i_g sex_h)
 		 
 gen edu_g = edu_i_g 
@@ -777,31 +832,15 @@ twoway (scatter lwage_shk_gr_sd_byear_5yr_edu byear_5yr, color(ltblue)) ///
 graph export "${graph_folder}/real_log_wage_shk_gr_by_byear_5yr_edu_gender_compare.png", as(png) replace 
 
 
-* standard deviation log wage level and risk perception 
-
-twoway (scatter lwage_shk_sd_byear_5yr_edu byear_5yr, color(ltblue)) ///
-       (lfit lwage_shk_sd_byear_5yr_edu byear_5yr, lcolor(red)) ///
-       (scatter lrincvar byear_5yr, color(gray) yaxis(2)) ///
-	   (lfit lrincvar byear_5yr,lcolor(black) yaxis(2)), ///
-       title("Realized Inequality and Perceived Risks by Cohort/Education")  ///
-	   xtitle("year of birth")  ///
-	   ytitle("income inequality (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-	   
-graph export "${graph_folder}/real_log_wage_shk_by_byear_5yr_edu_gender_compare.png", as(png) replace 
-
 restore
 
 
 ** age profile 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_age = lwage_id_shk_Y_gr ///
-         (sd)   lwage_shk_gr_sd_age = lwage_id_shk_Y_gr ///
-		 (mean)	lwage_shk_av_age = lwage_id_shk ///
+collapse (mean) lwage_shk_gr_av_age = lwage_Y_id_shk_gr ///
+         (sd)   lwage_shk_gr_sd_age = lwage_id_shk_gr ///
+		 (mean)	lwage_shk_av_age = lwage_Y_id_shk ///
 		 (sd)    lwage_shk_sd_age = lwage_id_shk, by(age_h) 
 
 gen age = age_h 
@@ -845,28 +884,12 @@ twoway (scatter lwage_shk_gr_sd_age age_h, color(ltblue)) ///
 	   (lfit lrincvar age_h,lcolor(black) yaxis(2)), ///
        title("Realized Volatility and Perceived Risks by Age")  ///
 	   xtitle("age")  ///
-	    ytitle("income volatility (std)") ///
+	    ytitle("wage volatility (std)") ///
 	   ytitle("risk perception (std)", axis(2)) ///
 	   ysc(titlegap(3) outergap(0)) ///
 	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
 	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
 graph export "${graph_folder}/real_log_wage_shk_gr_by_age_compare.png", as(png) replace 
-
-** age-specific level risks and perceptions
-
-twoway (scatter lwage_shk_sd_age age_h, color(ltblue)) ///
-       (lfit lwage_shk_sd_age age_h, lcolor(red)) ///
-       (scatter lrincvar age_h, color(gray) yaxis(2)) ///
-	   (lfit lrincvar age_h,lcolor(black) yaxis(2)), ///
-       title("Realized Inequality Perceived Risks by Age")  ///
-	   xtitle("age")  ///
-	   ytitle("income inequality (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_by_age_compare.png", as(png) replace 
-
 
 
 ** age-specific level risks and perceptions 
@@ -886,9 +909,9 @@ restore
 
 preserve
 * average log wage
-collapse (mean) lwage_shk_gr_av_age_edu = lwage_id_shk_Y_gr ///
-         (sd) lwage_shk_gr_sd_age_edu = lwage_id_shk_Y_gr ///
-		 (mean) lwage_shk_av_age_edu = lwage_id_shk ///
+collapse (mean) lwage_shk_gr_av_age_edu = lwage_Y_id_shk_gr ///
+         (sd) lwage_shk_gr_sd_age_edu = lwage_id_shk_gr ///
+		 (mean) lwage_shk_av_age_edu = lwage_Y_id_shk ///
          (sd) lwage_shk_sd_age_edu = lwage_id_shk, by(age_h edu_i_g) 
 
 gen age = age_h 
@@ -915,21 +938,6 @@ twoway (scatter lwage_shk_gr_sd_age_edu age_h, color(ltblue)) ///
 graph export "${graph_folder}/real_log_wage_shk_gr_by_age_edu_compare.png", as(png) replace 
 
 
-* standard deviation log wage level and risk perception 
-twoway (scatter lwage_shk_sd_age_edu age_h, color(ltblue)) ///
-       (lfit lwage_shk_sd_age_edu age_h, lcolor(red)) ///
-       (scatter lrincvar age_h, color(gray) yaxis(2)) ///
-	   (lfit lrincvar age_h,lcolor(black) yaxis(2)), ///
-       title("Realized Inequality and Perceived Risks by Age/Education")  ///
-	   xtitle("age")  ///
-	   ytitle("income inequality (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_by_age_edu_compare.png", as(png) replace 
-
-
 * perceived riks by age/education  
 twoway (scatter lrincvar lwage_shk_gr_sd_age, color(ltblue)) ///
        (lfit lrincvar lwage_shk_gr_sd_age, lcolor(red)) if lwage_shk_gr_sd!=., ///
@@ -946,9 +954,9 @@ restore
 
 ** scatter 
 preserve 
-collapse (mean) lwage_shk_gr_av_age_sex = lwage_id_shk_Y_gr ///
-         (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_Y_gr ///
-		 (mean) lwage_shk_av_age_sex = lwage_id_shk ///
+collapse (mean) lwage_shk_gr_av_age_sex = lwage_Y_id_shk_gr ///
+         (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_gr ///
+		 (mean) lwage_shk_av_age_sex = lwage_Y_id_shk ///
          (sd) lwage_shk_sd_age_sex = lwage_id_shk, by(age_h sex_h) 
 gen age = age_h
 
@@ -972,42 +980,32 @@ twoway (scatter lwage_shk_gr_sd_age_sex age_h, color(ltblue)) ///
 	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
 graph export "${graph_folder}/real_log_wage_shk_gr_by_age_gender_compare.png", as(png) replace 
 
-* standard deviation log wage level and risk perception 
-twoway (scatter lwage_shk_sd_age_sex age_h, color(ltblue)) ///
-       (lfit lwage_shk_sd_age_sex age_h, lcolor(red)) ///
-       (scatter lrincvar age_h, color(gray) yaxis(2)) ///
-	   (lfit lrincvar age_h,lcolor(black) yaxis(2)), ///
-       title("Realized Inequality and Perceived Risks by Age/Gender")  ///
-	   xtitle("age")  ///
-	   ytitle("income inequality (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_by_age_gender_compare.png", as(png) replace 
-
 restore
 */
-
+ddd
 ** age/gender/educ profile 
 
 ** scatter 
 preserve 
-collapse  (mean) lwage_h_gr_av_age_sex = lwage_h_gr ///
+
+
+collapse  (count) ct = lwage_id_shk_gr ///
+          (mean) lwage_h_gr_av_age_sex = lwage_h_gr ///
           (mean) lwage_h_n_gr_av_age_sex = lwage_h_n_gr ///
-          (mean) lwage_shk_gr_av_age_sex = lwage_id_shk_Y_gr ///
-         (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_Y_gr ///
-		 (mean) lwage_shk_av_age_sex = lwage_id_shk ///
-         (sd) lwage_shk_sd_age_sex = lwage_id_shk, by(age_h sex_h edu_i_g) 
-gen age = age_h
+          (mean) lwage_shk_gr_av_age_sex = lwage_Y_id_shk_gr ///
+         (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_gr ///
+		 (mean) lwage_shk_av_age_sex = lwage_Y_id_shk ///
+         (sd) lwage_shk_sd_age_sex = lwage_id_shk, by(age_5yr sex_h edu_i_g) 
+
+gen age_h = age_5yr
 gen gender = sex_h
 gen edu_g = edu_i_g 
-drop if edu_g ==1
+*drop if edu_g ==1
 
-merge 1:1 age gender edu_g using "${scefolder}incvar_by_age_edu_gender.dta",keep(master match) 
+
+merge 1:1 age_5yr gender edu_g using "${scefolder}incvar_by_age5y_edu_gender.dta",keep(master match) 
 gen lincvar = sqrt(incvar)
 gen lrincvar = sqrt(rincvar)
-
 
 * average nominal growth rate and expected growth rate. 
 
@@ -1015,7 +1013,7 @@ twoway (scatter lwage_h_n_gr_av_age_sex age_h, color(ltblue)) ///
        (lfit lwage_h_n_gr_av_age_sex age_h, lcolor(red)) ///
        (scatter incmean age_h, color(gray) yaxis(2)) ///
 	   (lfit incmean age_h,lcolor(black) yaxis(2)), ///
-       title("Realized and Expected Nominal Earning Growth by Age/Gender/Educ")  ///
+       title("Realized and Expected Nominal Earning Growth by Age/Gender/Educ",size(med))  ///
 	   xtitle("age")  ///
 	   ytitle("realized growth") ///
 	   ytitle("expected growth ", axis(2)) ///
@@ -1031,7 +1029,7 @@ twoway (scatter lwage_h_gr_av_age_sex age_h, color(ltblue)) ///
        (lfit lwage_h_gr_av_age_sex age_h, lcolor(red)) ///
        (scatter rincmean age_h, color(gray) yaxis(2)) ///
 	   (lfit rincmean age_h,lcolor(black) yaxis(2)), ///
-       title("Realized and Expected Earning Growth by Age/Gender/Educ")  ///
+       title("Realized and Expected Earning Growth by Age/Gender/Educ",size(med))  ///
 	   xtitle("age")  ///
 	   ytitle("realized growth") ///
 	   ytitle("expected growth ", axis(2)) ///
@@ -1046,69 +1044,43 @@ twoway (scatter lwage_shk_gr_sd_age_sex age_h, color(ltblue)) ///
        (lfit lwage_shk_gr_sd_age_sex age_h, lcolor(red)) ///
        (scatter lrincvar age_h, color(gray) yaxis(2)) ///
 	   (lfit lrincvar age_h,lcolor(black) yaxis(2)), ///
-       title("Realized Volatility and Perceived Risks by Age/Gender/Educ")  ///
+       title("Realized Volatility and Perceived Risks by Age/Gender/Educ",size(med))  ///
 	   xtitle("age")  ///
-	   ytitle("income volatility (std)") ///
+	   ytitle("wage volatility (std)") ///
 	   ytitle("risk perception (std)", axis(2)) ///
 	   ysc(titlegap(3) outergap(0)) ///
 	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
 	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
 graph export "${graph_folder}/real_log_wage_shk_gr_by_age_edu_gender_compare.png", as(png) replace 
 
-
-
-* standard deviation log wage growth and risk perception 
-twoway (scatter lwage_shk_gr_sd_age_sex age_h, color(ltblue)) ///
-       (lfit lwage_shk_gr_sd_age_sex age_h, lcolor(red)) ///
-       (scatter lrincvar age_h, color(gray) yaxis(2)) ///
-	   (lfit lrincvar age_h,lcolor(black) yaxis(2)), ///
-       title("Realized Volatility and Perceived Risks by Age/Gender/Educ")  ///
-	   xtitle("age")  ///
-	   ytitle("income volatility (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_gr_by_age_edu_gender_compare.png", as(png) replace 
-
-* standard deviation log wage level and risk perception 
-twoway (scatter lwage_shk_sd_age_sex age_h, color(ltblue)) ///
-       (lfit lwage_shk_sd_age_sex age_h, lcolor(red)) ///
-       (scatter lrincvar age_h, color(gray) yaxis(2)) ///
-	   (lfit lrincvar age_h,lcolor(black) yaxis(2)), ///
-       title("Realized Inequality and Perceived Risks by Age/Gender/Educ")  ///
-	   xtitle("age")  ///
-	   ytitle("income inequality (std)") ///
-	   ytitle("risk perception (std)", axis(2)) ///
-	   ysc(titlegap(3) outergap(0)) ///
-	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
-	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_by_age_edu_gender_compare.png", as(png) replace 
+* perceived riks by age/education  
+twoway (scatter lrincvar lwage_shk_gr_sd_age_sex, color(ltblue)) ///
+       (lfit lrincvar lwage_shk_gr_sd_age_sex, lcolor(red)) if lwage_shk_gr_sd_age_sex!=., ///
+       title("Realized Volatility and Perceived Risks by Age/Gendeer/Educ")  ///
+	   xtitle("Volatility") ///
+	   ytitle("Perceived risk") 
+graph export "${graph_folder}/real_realized_perceived_risks_by_age_edu_gender.png", as(png) replace  
 
 restore
 
 
-/*
 ** time series 
 
 preserve 
-collapse (mean) lwage_shk_gr_av_sex=lwage_id_shk_gr ///
-         (sd) lwage_shk_gr_sd_sex = lwage_id_shk_gr, by(year sex_h) 
-* average log wage
+collapse (mean) lwage_shk_gr_av=lwage_id_shk_gr ///
+         (sd) lwage_shk_gr_sd = lwage_id_shk_gr, by(year month date) 
 
-twoway  (connected lwage_shk_gr_av_sex year if lwage_shk_gr_av_sex!=. & sex_h==1) ///
-        (connected lwage_shk_gr_av_sex year if lwage_shk_gr_av_sex!=. & sex_h==2), ///
-        title("The mean of log real wage shocks") ///
-		legend(label(1 "male") label(2 "female") col(1)) 
-graph export "${graph_folder}/log_wage_shk_gr_by_sex.png", as(png) replace 
+replace lwage_shk_gr_sd=. if month==1 | month==2
+* average log wage
+tset date
+twoway  (connected lwage_shk_gr_av date), ///
+        title("The mean of log real wage shocks") 
+graph export "${graph_folder}/log_wage_shk_gr.png", as(png) replace 
 
 * standard deviation log wage
 
-twoway  (connected lwage_shk_gr_sd_sex year if lwage_shk_gr_sd_sex!=. & sex_h==1) ///
-        (connected lwage_shk_gr_sd_sex year if lwage_shk_gr_sd_sex!=. & sex_h==2), ///
-        title("The standard deviation of log real wage shocks") ///
-		legend(label(1 "male") label(2 "female") col(1)) 
-graph export "${graph_folder}/log_wage_shk_gr_sd_by_sex.png", as(png) replace
+twoway  (connected lwage_shk_gr_sd date if lwage_shk_gr_sd!=.), ///
+        title("The standard deviation of log real wage shocks") 
+graph export "${graph_folder}/log_wage_shk_gr_sd.png", as(png) replace
 
 restore 
-*/
