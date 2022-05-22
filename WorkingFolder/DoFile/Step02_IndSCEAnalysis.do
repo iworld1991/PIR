@@ -244,7 +244,7 @@ drop _merge
 
 
 * flow rate data
-merge m:1 year month using "${otherfolder}/workingdata/CPS_worker_flows.dta",keep(master match)
+merge m:1 year month using "${otherfolder}/workingdata/CPS_worker_flows_SA.dta",keep(master match)
 drop _merge 
 
 
@@ -287,6 +287,13 @@ merge m:1 gender educ age_5yr YM ///
          using "${otherdata_folder}/sipp/sipp_history_vol_decomposed_edu_gender_age5_annual.dta", keep(master match)
 
 drop _merge 
+
+** 
+merge m:1 gender educ age_5yr ///
+         using "${otherdata_folder}/sipp/sipp_vol_edu_gender_age5.dta", keep(master match)
+
+drop _merge 
+
 
 *******************************
 **  Set Panel Data Structure **
@@ -593,14 +600,40 @@ graph bar rincsd, ///
 graph export "${sum_graph_folder}/boxplot_rvar_earning.png", as(png) replace 
 
 
+graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_all_rl psd2_all_rl if educ!=1, ///
+           over(age_5yr) over(gender,relabel(1 "Male" 2 "Female")) ///
+		   bar(1, color(navy)) ///
+		   bar(2, color(gray)) ///
+		   bar(3, color(cranberry)) ///
+		   bar(4, color(orange)) ///
+		   title("Perceived and realized risk by age",size(med)) ///
+		   ytitle("Average perceived risk (std)")  ///
+		   legend(row(2) label(1 "perceived pisk") label(2 "volatility") label(3 "realized risk") label(4 "permanent risk"))
+
+graph export "${sum_graph_folder}/boxplot_rvar_compare_age.png", as(png) replace 
+
+
+graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_all_rl psd2_all_rl, ///
+           over(educ,relabel(1 "HS dropout" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
+		   bar(1, color(navy)) ///
+		   bar(2, color(gray)) ///
+		   bar(3, color(cranberry)) ///
+		   bar(4, color(orange)) ///
+		   title("Perceived and realized risk by education",size(med)) ///
+		   ytitle("Average perceived risk (std)")  ///
+		   legend(row(2) label(1 "perceived pisk") label(2 "volatility")  label(3 "realized risk") label(4 "permanent risk"))
+
+graph export "${sum_graph_folder}/boxplot_rvar_compare_educ.png", as(png) replace 
+
+
 ********************************************************
 ** Compare risks between perception and realization **
 ********************************************************
 
 tabout gender edu_g age_5 using "${sum_table_folder}/risks_compare.csv", ///
-            c(mean rincsd median rincsd mean rincsd_sub_rl mean psd2_all_rl mean tsd2_all_rl ) ///
-			f(3c 3c 3c 3c 4c 4c) ///
-			clab(PerceivedRisk PerceivedRisk(median) RealizedGroupVolatility RealizedPRisk RealizedTRsk) ///
+            c(mean rincsd median rincsd mean lwage_shk_gr_sd_age_sex mean rincsd_sub_rl mean psd2_all_rl mean tsd2_all_rl ) ///
+			f(3c 3c 3c 3c 3c 4c 4c) ///
+			clab(PR(mean) PR(median) Volatility(median) RealizedRisk PRisk TRisk) ///
 			sum npos(tufte) rep style(csv) bt cl2(2-4 5-6) cltr2(.75em 1.5em) 
 
 ***************************************

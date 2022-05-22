@@ -159,7 +159,7 @@ keep if sdf==0 & num_jobs==1
 foreach var in wage wage_n wage_Q wage_n_Q wage_Y wage_n_Y{
 	egen `var'_mean = mean(`var'),by(uniqueid)
 	label var `var' "average monthly real earning of the individual"
-	replace `var'=. if `var'<0.1* `var'_mean | `var'>2.5*`var'_mean
+	replace `var'=. if `var'<0.1* `var'_mean | `var'>10*`var'_mean
 }
 
 foreach var in wage wage_n wage_Q wage_n_Q wage_Y wage_n_Y{
@@ -423,7 +423,6 @@ label var `wvar'_id_shk_gr_sd "standard deviation of log idiosyncratic shocks"
 hist  wage, title("distribution of real wage rate") 
 graph export "${graph_folder}/hist_wage.png", as(png) replace 
 
-
 hist  wage_Q, title("distribution of real wage rate (yearly)") 
 graph export "${graph_folder}/hist_wage_Q.png", as(png) replace
  
@@ -514,7 +513,7 @@ restore
 
 * education profile bar
 preserve 
-replace lwage_shk_gr = lwage_Y_id_shk_gr
+replace lwage_shk_gr = lwage_id_shk_gr
 
 collapse (mean) lwage_shk_gr_av_edu=lwage_shk_gr (sd) lwage_shk_gr_sd_edu = lwage_shk_gr, by(educ) 
 * average log wage
@@ -559,12 +558,28 @@ graph export "${graph_folder}/log_wage_shk_gr_sd_by_edu.png", as(png) replace
 restore 
 
 ********************************************
-** Unconditional summary statistics *****
+** Unconditional and conditional summary statistics *****
 *****************************************
 
-tabstat lwage_shk_gr, st(sd) by(educ)
-tabstat lwage_shk_gr, st(sd) by(age)
-tabstat lwage_shk_gr, st(sd) by(gender)
+tabstat lwage_gr lwage_id_shk_gr, st(sd) by(educ)
+tabstat lwage_gr lwage_id_shk_gr, st(sd) by(age)
+tabstat lwage_gr lwage_id_shk_gr, st(sd) by(gender)
+
+
+
+********************************************
+** Generate income volatility data by group *****
+*****************************************
+** can be done by other grouping method  
+preserve 
+
+collapse  (count) ct = lwage_id_shk_gr ///
+          (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_gr , by(age_5yr gender educ) 
+
+
+save "${otherdatafolder}/sipp/sipp_vol_edu_gender_age5.dta",replace
+
+restore 
 
 ********************************************
 ** Prepare the matrix for GMM estimation
@@ -633,7 +648,7 @@ gen lwage_h_n_gr = lwage_n_Y_gr
 
 ** notice here we use lwage_id_shk_gr !!
 
-
+/*
 ** byear_5yr and age
 
 preserve
@@ -982,12 +997,11 @@ graph export "${graph_folder}/real_log_wage_shk_gr_by_age_gender_compare.png", a
 
 restore
 */
-ddd
+
 ** age/gender/educ profile 
 
 ** scatter 
 preserve 
-
 
 collapse  (count) ct = lwage_id_shk_gr ///
           (mean) lwage_h_gr_av_age_sex = lwage_h_gr ///
@@ -1000,12 +1014,38 @@ collapse  (count) ct = lwage_id_shk_gr ///
 gen age_h = age_5yr
 gen gender = sex_h
 gen edu_g = edu_i_g 
-*drop if edu_g ==1
 
 
 merge 1:1 age_5yr gender edu_g using "${scefolder}incvar_by_age5y_edu_gender.dta",keep(master match) 
 gen lincvar = sqrt(incvar)
 gen lrincvar = sqrt(rincvar)
+
+
+
+* bar charts comparing realized volatility and risks  by education 
+
+graph bar lwage_shk_gr_sd_age_sex lrincvar, over(edu_g,relabel(1 "HS Drop" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
+          title("Realized Volatility and Perceived Income Risks by Education",size(med)) ///
+		  bar(1, color(cranberry)) ///
+		  bar(2, color(navy)) ///
+		  ytitle("Risk (std)") ///
+		  legend(label(1 "realized volatility")  label(2 "perceived risk"))
+
+graph export "${graph_folder}/real_log_wage_shk_gr_by_educ_compare_bar.png", as(png) replace
+
+
+* bar charts comparing realized volatility and risks  by age 
+drop if edu_g==1
+graph bar lwage_shk_gr_sd_age_sex lrincvar, over(age_h) ///
+          over(gender,relabel(1 "Male" 2 "Female")) ///
+		  bar(1, color(cranberry)) ///
+		  bar(2, color(navy)) ///
+		  ytitle("Risk (std)") ///
+          title("Realized Volatility and Perceived Income Risks by Age",size(med)) ///
+		  legend(label(1 "realized volatility")  label(2 "perceived risk"))
+
+graph export "${graph_folder}/real_log_wage_shk_gr_by_age_compare_bar.png", as(png) replace 
+ 
 
 * average nominal growth rate and expected growth rate. 
 
@@ -1053,6 +1093,7 @@ twoway (scatter lwage_shk_gr_sd_age_sex age_h, color(ltblue)) ///
 	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
 graph export "${graph_folder}/real_log_wage_shk_gr_by_age_edu_gender_compare.png", as(png) replace 
 
+
 * perceived riks by age/education  
 twoway (scatter lrincvar lwage_shk_gr_sd_age_sex, color(ltblue)) ///
        (lfit lrincvar lwage_shk_gr_sd_age_sex, lcolor(red)) if lwage_shk_gr_sd_age_sex!=., ///
@@ -1061,9 +1102,10 @@ twoway (scatter lrincvar lwage_shk_gr_sd_age_sex, color(ltblue)) ///
 	   ytitle("Perceived risk") 
 graph export "${graph_folder}/real_realized_perceived_risks_by_age_edu_gender.png", as(png) replace  
 
+
 restore
-
-
+ddd
+/*
 ** time series 
 
 preserve 
@@ -1082,5 +1124,5 @@ graph export "${graph_folder}/log_wage_shk_gr.png", as(png) replace
 twoway  (connected lwage_shk_gr_sd date if lwage_shk_gr_sd!=.), ///
         title("The standard deviation of log real wage shocks") 
 graph export "${graph_folder}/log_wage_shk_gr_sd.png", as(png) replace
-
 restore 
+*/
