@@ -6,6 +6,31 @@
     % figures 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
+    
+    \begin{figure}[!ht]
+    	\caption{Perceived Risks, Wage Volatility and Estimated Wage Risks by Observable Factors}
+    	\label{fig:group_compare}
+    	\begin{center}
+    	%\adjustimage{max size={0.7\linewidth}}{figures/real_log_wage_shk_gr_by_age_edu_gender_compare.png}
+    		\adjustimage{max size={0.68\linewidth}}{figures/boxplot_rvar_compare_educ.png} \\
+    		\medskip
+    	\adjustimage{max size={0.68\linewidth}}{figures/boxplot_rvar_compare_age.png}
+    	\end{center}
+    	
+    	\begin{flushleft}Note: this figure plots perceived risk (from SCE), average estimated wage volatility, approximated wage risk, and permanent risk (from SIPP) of each education-gender (upper panel) or age-gender (bottom panel) group. The volatility is approximated by the within-group cross-sectional standard deviation of log changes in unexplained wage residuals, as defined in Equation \ref{Eq:definition_volatility}. The estimated risk is based on the process specified in Equation \ref{Eq:income_volatility}.\end{flushleft}
+    \end{figure}
+
+    \clearpage
+    \begin{figure}[!ht]
+    	\caption{Perceived Wage Risks by Earning Decile}
+    	\label{fig:barplot_byinc}
+    	\begin{center}\adjustimage{max size={0.7\linewidth}}{figures/boxplot_rvar_earning.png}\end{center}
+    \begin{flushleft}Note: this figure plots average perceived income risks by the decile of annual earning of the same individual.\end{flushleft}
+    \end{figure}
+    
+    
+    \clearpage
+    
         \begin{figure}[!ht]
     \caption{Dispersion in Unexplained Perceived Income Risks}
     \label{fig:histmoms}
@@ -20,23 +45,6 @@
     \clearpage
     
     \begin{figure}[!ht]
-    	\caption{Realized and Perceived Income Risks over the Life Cycle}
-    	\label{fig:age_compare}
-    	\begin{center}\adjustimage{max size={0.7\linewidth}}{figures/real_log_wage_shk_gr_by_age_edu_gender_compare.png}\end{center}
-    	\begin{flushleft}Note: this figure plots average realized income volatility and perceived risks of different age groups. The realized income volatility is approximated by the cross-sectional standard deviation of log changes in unexplained income residuals within age/education/gender group based on PSID.\end{flushleft}
-    \end{figure}
-
-    \clearpage
-    \begin{figure}[!ht]
-    	\caption{Perceived Earning Risks by Earning Decile}
-    	\label{fig:barplot_byinc}
-    	\begin{center}\adjustimage{max size={0.7\linewidth}}{figures/boxplot_rvar_earning.png}\end{center}
-    \begin{flushleft}Note: this figure plots average perceived income risks by the decile of annual earning of the same individual.\end{flushleft}
-    \end{figure}
-    
-    
-    \clearpage
-    \begin{figure}[!ht]
     	\caption{Perceived and Realized Risks}
     	\label{fig:ts_compare}
     	\begin{center}
@@ -46,7 +54,7 @@
     	\vbiskip
     	\adjustimage{max size={0.5\linewidth}}{figures/real_transitory_compare.png}
     	\end{center}
-    \begin{flushleft}Note: this figure plots median 1-year-ahead perceived income risks in the whole SCE sample against the realized volatility, permanent, and transitory risks over the same period. Both series are regarding the real wage.The realized risks are first estimated monthly from SIPP and then aggregated into annual frequency. Specifically, the permanent risks are the sum of monthly permanent risks and the annual transitory risks are the simple average over the corresponding 12 months.\end{flushleft}
+    \begin{flushleft}Note: this figure plots median 1-year-ahead perceived income risks in the whole SCE sample against the estimated realized risks, permanent, and transitory risks over the \emph{same} period. Both series are regarding the real wage.The realized risks are first estimated monthly from SIPP and then aggregated into annual frequency. Specifically, the permanent risks are the sum of monthly permanent risks and the annual transitory risks are the simple average over the corresponding 12 months.\end{flushleft}
     \end{figure}
     
   

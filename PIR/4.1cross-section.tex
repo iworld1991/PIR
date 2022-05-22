@@ -1,13 +1,32 @@
 
 \hypertarget{cross-sectional-heterogeneity}{%
-\subsection{Cross-sectional
+\subsection{Observable and unobservable
 heterogeneity}\label{cross-sectional-heterogeneity}}
 
-This section inspects some basic cross-sectional patterns of the subject
-moments of labor income. In Figure \ref{fig:histmoms}, I plot the
-distribution of unexplained residuals of perceived income risks both in nominal and real terms after controlling for observable individual characteristics including age, age polynomial, gender, education, type of work, and time fixed effect, respectively.
+%This section inspects some basic cross-sectional patterns of the perceived income risks. 
 
-There remains a sizable dispersion in perceived income risks. In both nominal
+In both income risk estimation and parameterization of the standard incomplete market macro models, it is common practice to assume idiosyncratic risks differ by certain observable factors such as education, gender, and age, and furthermore, there is no additional within-group heterogeneity in the degree of the risks.\footnote{For instance, \cite{meghir2004income} found that more educated workers are faced with higher income risks than the less-education one. In addition, \cite{sabelhaus2010great, bloom2018great} documented that income risks decrease with age, and vary with current income level in a non-monotonic U-shape. \cite{cagetti2003wealth},\cite{blundell_consumption_2008}, \cite{carroll2017distribution} allows for heterogeneous risks in their models.} This section reports the finding that although the observed heterogeneity in PR across individuals does reflect between-group differences along dimensions economists have commonly assumed, a dominant fraction of the differences in PR is attributed to be other unobservable heterogeneity. 
+
+Figure
+\ref{fig:group_compare} plots the group average of perceived risk and approximated income volatility as defined in Equation \ref{Eq:definition_volatility} by age, gender and education. Consistent with the finding of \cite{meghir2004income} for labor income, more educated workers face higher wage risks, as realized wage volatility of both males and females increases with the level of their education. In contrast, risk perceptions seem to have the opposite pattern, especially for males, in that less-educated workers perceive wage risks to be higher than more-educated workers. As to the life-cycle pattern of risks, the income volatility does not show very clear heterogeneity across different ages in life, while in contrast, perceived risks do clearly decline over the life cycle for both males and females. The homogenous pattern of wage risks across life patterns may not contradict with the well documented declining pattern estimated using data on household income or total earning\footnote{For instance, \cite{cagetti2003wealth}, \cite{sabelhaus2010great}, etc.}. It is likely that the decline of income risks over the life cycle has to do with non-wage risks or better insurance via work arrangements over the life cycle. These findings are also confirmed by Table \ref{tab:sipp_sum_stat}. 
+
+%It is clear that the subjective risk perceptions decline over the life cycle, consistent with the estimated risk from realizations of income. It is important to notice, however, in principle, the reasons for which subjective risk perceptions decline as one age may not be exactly the same as the one for the same pattern of the actual profile. For instance,  as one accumulates experience over time, it may also reduce the subjective uncertainty about the income dynamics of themselves. 
+
+\begin{center}
+ [FIGURE \ref{fig:group_compare} HERE]
+ \end{center}
+ 
+Another important question is how risk perceptions correlate with the
+realized earnings. This is unclear in theory because it could depend on both the true income process and the perception formation. For a subsample of around 4000 observations, SCE surveys the annual earning of the respondent along with their risk perceptions. I group individuals into 10 groups based on their reported earning (within the same time) and plot the average risk perceptions against the decile rank in Figure \ref{fig:barplot_byinc}. Perceived risks decline as one's earnings increase.  This is not exactly consistent with the uptick in income risks for the highest income group, as documented by \cite{bloom2018great} using tax records of income. The most likely explanation is that the small sample I used from SCE does not cover actual top earners. The average annual earning of the top income group is between \$45,000 and \$120,000 in our sample.  
+
+\begin{center}
+ [FIGURE \ref{fig:barplot_byinc} HERE]
+\end{center}
+
+But despite controlling for all the observable factors of the individuals, there remains a large degree of heterogeneity that seems to be most likely attributable to other unobserved factors. Figure \ref{fig:histmoms} plots the
+cross-sectional distribution of unexplained residuals of perceived income risks both in nominal and real terms after controlling for observable individual characteristics including age, age polynomial, gender, education, type of work, and time fixed effect, respectively.
+
+In both nominal
 and real terms, the distribution is right-skewed with a long tail.
 Specifically, most of the workers have perceived a variance of nominal
 earning growth ranging from zero to \(20\) (a standard-deviation
@@ -21,23 +40,5 @@ This implies by no means negligible earning risk.
 
 \begin{center}
 [FIGURE \ref{fig:histmoms} HERE]
-\end{center}
-
-How are perceived income risks different along important dimensions of observable individual characteristics? Empirical estimates of income risks of different demographic
-groups from microdata have been rare but not non-existant\footnote{For instance, \cite{meghir2004income} estimated that the high-education group is faced with higher income risks than the low-education group.  This is further confirmed by my estimation using SIPP.  In addition, \cite{sabelhaus2010great, bloom2018great} documented that income risks decrease with age, and vary with current income level in a non-monotonic U-shape.}. It is worth asking if subjective risk perceptions exhibit similar between-group differences. This helps evaluate to what extent heterogeneity in risk perceptions partly reflects the actual differences in income risks.
-
- Figure
-\ref{fig:age_compare} plots both perceived and realized income volatility over the life-cycle. In order to control for the differences in risks between gender and education, I calculate the average within gender and education groups. It is clear that the subjective risk perceptions decline over the life cycle, consistent with the estimated risk from realizations of income. It is important to notice, however, in principle, the reasons for which subjective risk perceptions decline as one age may not be exactly the same as the one for the same pattern of the actual profile. For instance,  as one accumulates experience over time, it may also reduce the subjective uncertainty about the income dynamics of themselves. 
-
-\begin{center}
- [FIGURE \ref{fig:age_compare} HERE]
- \end{center}
- 
-Another important question is how income risk perceptions correlate with the
-realized labor income. This is unclear in theory because it could depend on both the true
-income process and the perception formation. For a subsample of around 4000 observations, SCE surveys the annual earning of the respondent along with their risk perceptions. I group individuals into 10 groups based on their reported earning (within the same time) and plot the average risk perceptions against the decile rank in Figure \ref{fig:barplot_byinc}. Perceived risks decline as one's earnings increase.  This is not exactly consistent with the uptick in income risks for the highest income group, as documented by \cite{bloom2018great} using tax records of income. The most likely explanation is that the small sample I used from SCE does not cover actual top earners. The average annual earning of the top income group is between \$45,000 and \$120,000 in our sample.  
-
-\begin{center}
- [FIGURE \ref{fig:barplot_byinc} HERE]
 \end{center}
 
