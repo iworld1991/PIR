@@ -200,8 +200,8 @@ life_cycle_paras_q = {'ρ': 2.0,
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
                     'z_val': np.array([0., 1.]), 
-                    'σ_ψ': np.sqrt(0.15**2*4/11), 
-                    'σ_θ': np.sqrt(0.1**2*4), 
+                    'σ_ψ': np.sqrt(0.10**2*4/11), 
+                    'σ_θ': np.sqrt(0.15**2*4), 
                     'U': 0.0, 
                     'LivPrb': 1.0-0.00625, 
                     'R': 1.01**(1/4), 
@@ -242,8 +242,8 @@ life_cycle_paras_y = {'ρ': 2.0,
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
                     'z_val': np.array([0., 1.]), 
-                    'σ_ψ': np.sqrt(0.15**2), 
-                    'σ_θ': np.sqrt(0.1**2), 
+                    'σ_ψ': np.sqrt(0.10**2), 
+                    'σ_θ': np.sqrt(0.15**2), 
                     'U': 0.0, 
                     'LivPrb': 1.0-0.00625, 
                     'R': 1.01, 
@@ -397,8 +397,10 @@ model_paras_by_block_df.loc[('initial condition','bequest_ratio'),'source']='ass
 model_paras_by_block_df.loc['life cycle','source']='standard assumption'
 model_paras_by_block_df.loc['preference','source']='standard assumption'
 model_paras_by_block_df.loc['policy','source']='U.S. average'
+model_paras_by_block_df.loc[('policy','λ'),'values']=np.nan
 model_paras_by_block_df.loc[('policy','λ'),'source']='endogenously determined'
 model_paras_by_block_df.loc[('policy','λ_SS'),'source']='endogenously determined'
+model_paras_by_block_df.loc[('policy','λ_SS'),'values']=np.nan
 
 model_paras_by_block_df.loc['production','source']='standard assumption'
 model_paras_by_block_df.loc[('production','W'),'source']='target values in steady state'

@@ -1,0 +1,506 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/Users/Myworld/Dropbox/PIR/WorkingFolder/indSCE_log.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}22 May 2022, 13:16:02
+{txt}
+{com}. 
+. 
+. *********************************************************
+. *** before working with SCE, clean the macro monthly data 
+. ********************************************************
+. 
+. use "${c -(}mainfolder{c )-}/OtherData/macroM_raw.dta",clear 
+{txt}
+{com}. 
+. generate new_date = dofc(DATE)
+{txt}
+{com}. *format new_date %tm
+. gen year = year(new_date)
+{txt}
+{com}. gen month = month(new_date)
+{txt}
+{com}. gen date_str = string(year)+ "m"+string(month)
+{txt}
+{com}. gen date = monthly(date_str,"YM")
+{txt}
+{com}. format date %tm
+{txt}
+{com}. drop DATE date_str year month new_date 
+{txt}
+{com}. label var sp500 "growth rate (%) of sp500 index from last month"
+{txt}
+{com}. rename ue uerate
+{res}{txt}
+{com}. label var uerate "unemployment rate"
+{txt}
+{com}. label var he "quarterly growth in hourly earning"
+{txt}
+{com}. label var vix "vix indices"
+{txt}
+{com}. save "${c -(}mainfolder{c )-}/OtherData/macroM.dta",replace 
+{txt}file /Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/macroM.dta saved
+
+{com}. clear 
+{txt}
+{com}. 
+. 
+. *****************************************
+. ** Prepare estimated income risks data **
+. ******************************************
+. 
+. ** full sample
+. use "${c -(}otherdata_folder{c )-}/sipp/sipp_history_vol_decomposed.dta", clear 
+{txt}
+{com}. 
+. drop index 
+{txt}
+{com}. gen year = floor(YM/100)
+{txt}
+{com}. gen month = YM - year*100
+{txt}
+{com}. gen date_str=string(year)+"M"+string(month)
+{txt}
+{com}. gen date = monthly(date_str,"YM")
+{txt}
+{com}. format date %tm
+{txt}
+{com}. drop date_str 
+{txt}
+{com}. 
+. table date
+
+{txt}{hline 10}{c TT}{hline 11}
+     date {c |}      Freq.
+{hline 10}{c +}{hline 11}
+   2013m3 {c |}          {res}1
+   {txt}2013m4 {c |}          {res}1
+   {txt}2013m5 {c |}          {res}1
+   {txt}2013m6 {c |}          {res}1
+   {txt}2013m7 {c |}          {res}1
+   {txt}2013m8 {c |}          {res}1
+   {txt}2013m9 {c |}          {res}1
+  {txt}2013m10 {c |}          {res}1
+  {txt}2013m11 {c |}          {res}1
+  {txt}2013m12 {c |}          {res}1
+   {txt}2014m1 {c |}          {res}1
+   {txt}2014m2 {c |}          {res}1
+   {txt}2014m3 {c |}          {res}1
+   {txt}2014m4 {c |}          {res}1
+   {txt}2014m5 {c |}          {res}1
+   {txt}2014m6 {c |}          {res}1
+   {txt}2014m7 {c |}          {res}1
+   {txt}2014m8 {c |}          {res}1
+   {txt}2014m9 {c |}          {res}1
+  {txt}2014m10 {c |}          {res}1
+  {txt}2014m11 {c |}          {res}1
+  {txt}2014m12 {c |}          {res}1
+   {txt}2015m1 {c |}          {res}1
+   {txt}2015m2 {c |}          {res}1
+   {txt}2015m3 {c |}          {res}1
+   {txt}2015m4 {c |}          {res}1
+   {txt}2015m5 {c |}          {res}1
+   {txt}2015m6 {c |}          {res}1
+   {txt}2015m7 {c |}          {res}1
+   {txt}2015m8 {c |}          {res}1
+   {txt}2015m9 {c |}          {res}1
+  {txt}2015m10 {c |}          {res}1
+  {txt}2015m11 {c |}          {res}1
+  {txt}2015m12 {c |}          {res}1
+   {txt}2016m1 {c |}          {res}1
+   {txt}2016m2 {c |}          {res}1
+   {txt}2016m3 {c |}          {res}1
+   {txt}2016m4 {c |}          {res}1
+   {txt}2016m5 {c |}          {res}1
+   {txt}2016m6 {c |}          {res}1
+   {txt}2016m7 {c |}          {res}1
+   {txt}2016m8 {c |}          {res}1
+   {txt}2016m9 {c |}          {res}1
+  {txt}2016m10 {c |}          {res}1
+  {txt}2016m11 {c |}          {res}1
+  {txt}2016m12 {c |}          {res}1
+   {txt}2017m1 {c |}          {res}1
+   {txt}2017m2 {c |}          {res}1
+   {txt}2017m3 {c |}          {res}1
+   {txt}2017m4 {c |}          {res}1
+   {txt}2017m5 {c |}          {res}1
+   {txt}2017m6 {c |}          {res}1
+   {txt}2017m7 {c |}          {res}1
+   {txt}2017m8 {c |}          {res}1
+   {txt}2017m9 {c |}          {res}1
+  {txt}2017m10 {c |}          {res}1
+  {txt}2017m11 {c |}          {res}1
+  {txt}2017m12 {c |}          {res}1
+   {txt}2018m1 {c |}          {res}1
+   {txt}2018m2 {c |}          {res}1
+   {txt}2018m3 {c |}          {res}1
+   {txt}2018m4 {c |}          {res}1
+   {txt}2018m5 {c |}          {res}1
+   {txt}2018m6 {c |}          {res}1
+   {txt}2018m7 {c |}          {res}1
+   {txt}2018m8 {c |}          {res}1
+   {txt}2018m9 {c |}          {res}1
+  {txt}2018m10 {c |}          {res}1
+  {txt}2018m11 {c |}          {res}1
+  {txt}2018m12 {c |}          {res}1
+   {txt}2019m1 {c |}          {res}1
+   {txt}2019m2 {c |}          {res}1
+   {txt}2019m3 {c |}          {res}1
+   {txt}2019m4 {c |}          {res}1
+   {txt}2019m5 {c |}          {res}1
+   {txt}2019m6 {c |}          {res}1
+   {txt}2019m7 {c |}          {res}1
+   {txt}2019m8 {c |}          {res}1
+   {txt}2019m9 {c |}          {res}1
+  {txt}2019m10 {c |}          {res}1
+  {txt}2019m11 {c |}          {res}1
+  {txt}2019m12 {c |}          {res}1
+{txt}{hline 10}{c BT}{hline 11}
+
+{com}. 
+. tsset date
+{res}{txt}{col 9}time variable:  {res}{col 25}date, 2013m3 to 2019m12
+{txt}{col 17}delta:  {res}1 month
+{txt}
+{com}. tsfill
+{txt}
+{com}. replace month=1 if f1.month==2 & month==.
+{txt}(0 real changes made)
+
+{com}. replace year = f1.year if f1.month==2 & month==1
+{txt}(0 real changes made)
+
+{com}. replace YM = 100*year+month if YM==.
+{txt}(0 real changes made)
+
+{com}. 
+. 
+. rename permanent prisk_all
+{res}{txt}
+{com}. rename transitory trisk_all
+{res}{txt}
+{com}. label var prisk_all "estimated full-sample permanent risk(std)"
+{txt}
+{com}. label var trisk_all "estimated full-sample transitory risk (std)"
+{txt}
+{com}. 
+. ** estimated risks in variances 
+. 
+. gen prisk2_all=prisk_all^2
+{txt}(5 missing values generated)
+
+{com}. gen trisk2_all=trisk_all^2
+{txt}
+{com}. 
+. 
+. label var prisk2_all "full sample permanent risk (var)"
+{txt}
+{com}. label var trisk2_all "full sample transitory risk  (var)"
+{txt}
+{com}. 
+. 
+. ***********************************
+. ** Fill some estimation risk for january 
+. *************************************
+. 
+. replace prisk2_all=(l1.prisk2_all+f1.prisk2_all)/2 if month==1
+{txt}(6 real changes made)
+
+{com}. replace trisk2_all=(l1.trisk2_all+f1.trisk2_all)/2 if month==1
+{txt}(6 real changes made)
+
+{com}. 
+. ***********************************
+. ** Time aggregation of estimation risk
+. *************************************
+. 
+. foreach x in all{c -(}
+{txt}  2{com}. gen prisk2_`x'_rl = (f1.prisk2_`x'+f2.prisk2_`x'+f3.prisk2_`x'+f4.prisk2_`x'+ ///
+>                       f5.prisk2_`x'+f6.prisk2_`x'+f7.prisk2_`x'+f8.prisk2_`x'+ ///
+>                                           f9.prisk2_`x'+ f10.prisk2_`x'+ f11.prisk2_`x'+f12.prisk2_`x') 
+{txt}  3{com}. 
+. gen trisk2_`x'_rl = (f1.trisk2_`x'+f2.trisk2_`x'+f3.trisk2_`x'+f4.trisk2_`x'+ ///
+>                       f5.trisk2_`x'+f6.trisk2_`x'+f7.trisk2_`x'+f8.trisk2_`x'+ ///
+>                                           f9.trisk2_`x'+ f10.trisk2_`x'+ f11.trisk2_`x'+f12.trisk2_`x')/12
+{txt}  4{com}. 
+. gen rincvar_`x'_rl = prisk2_`x'_rl+ trisk2_`x'_rl
+{txt}  5{com}. {c )-}
+{txt}(12 missing values generated)
+(12 missing values generated)
+(12 missing values generated)
+
+{com}. 
+. label var rincvar_all_rl "realized full-sample annual risk 12 m from now"
+{txt}
+{com}. 
+. 
+. gen rincvar_all_now = l12.rincvar_all_rl
+{txt}(12 missing values generated)
+
+{com}. label var rincvar_all_now "realized full-sample annual risk since 12 m ago"
+{txt}
+{com}. 
+. drop year month
+{txt}
+{com}. save "${c -(}otherdata_folder{c )-}/sipp/sipp_history_vol_decomposed_annual.dta",replace 
+{txt}file /Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/sipp/sipp_history_vol_decomposed_annual.dta saved
+
+{com}. 
+. 
+. *****************************
+. ** subsample sample
+. ******************************
+. 
+. use "${c -(}otherdata_folder{c )-}/sipp/sipp_history_vol_decomposed_edu_gender_age5.dta", clear
+{txt}
+{com}. 
+. drop index 
+{txt}
+{com}. gen year = floor(YM/100)
+{txt}
+{com}. gen month = YM - year*100
+{txt}
+{com}. gen date_str=string(year)+"M"+string(month)
+{txt}
+{com}. gen date = monthly(date_str,"YM")
+{txt}
+{com}. format date %tm
+{txt}
+{com}. drop date_str 
+{txt}
+{com}. 
+. table date
+
+{txt}{hline 10}{c TT}{hline 11}
+     date {c |}      Freq.
+{hline 10}{c +}{hline 11}
+   2013m3 {c |}         {res}48
+   {txt}2013m4 {c |}         {res}48
+   {txt}2013m5 {c |}         {res}48
+   {txt}2013m6 {c |}         {res}48
+   {txt}2013m7 {c |}         {res}48
+   {txt}2013m8 {c |}         {res}48
+   {txt}2013m9 {c |}         {res}48
+  {txt}2013m10 {c |}         {res}48
+  {txt}2013m11 {c |}         {res}48
+  {txt}2013m12 {c |}         {res}48
+   {txt}2014m1 {c |}         {res}48
+   {txt}2014m2 {c |}         {res}48
+   {txt}2014m3 {c |}         {res}48
+   {txt}2014m4 {c |}         {res}48
+   {txt}2014m5 {c |}         {res}48
+   {txt}2014m6 {c |}         {res}48
+   {txt}2014m7 {c |}         {res}48
+   {txt}2014m8 {c |}         {res}48
+   {txt}2014m9 {c |}         {res}48
+  {txt}2014m10 {c |}         {res}48
+  {txt}2014m11 {c |}         {res}48
+  {txt}2014m12 {c |}         {res}48
+   {txt}2015m1 {c |}         {res}48
+   {txt}2015m2 {c |}         {res}48
+   {txt}2015m3 {c |}         {res}48
+   {txt}2015m4 {c |}         {res}48
+   {txt}2015m5 {c |}         {res}48
+   {txt}2015m6 {c |}         {res}48
+   {txt}2015m7 {c |}         {res}48
+   {txt}2015m8 {c |}         {res}48
+   {txt}2015m9 {c |}         {res}48
+  {txt}2015m10 {c |}         {res}48
+  {txt}2015m11 {c |}         {res}48
+  {txt}2015m12 {c |}         {res}48
+   {txt}2016m1 {c |}         {res}48
+   {txt}2016m2 {c |}         {res}48
+   {txt}2016m3 {c |}         {res}48
+   {txt}2016m4 {c |}         {res}48
+   {txt}2016m5 {c |}         {res}48
+   {txt}2016m6 {c |}         {res}48
+   {txt}2016m7 {c |}         {res}48
+   {txt}2016m8 {c |}         {res}48
+   {txt}2016m9 {c |}         {res}48
+  {txt}2016m10 {c |}         {res}48
+  {txt}2016m11 {c |}         {res}48
+  {txt}2016m12 {c |}         {res}48
+   {txt}2017m1 {c |}         {res}48
+   {txt}2017m2 {c |}         {res}48
+   {txt}2017m3 {c |}         {res}48
+   {txt}2017m4 {c |}         {res}48
+   {txt}2017m5 {c |}         {res}48
+   {txt}2017m6 {c |}         {res}48
+   {txt}2017m7 {c |}         {res}48
+   {txt}2017m8 {c |}         {res}48
+   {txt}2017m9 {c |}         {res}48
+  {txt}2017m10 {c |}         {res}48
+  {txt}2017m11 {c |}         {res}48
+  {txt}2017m12 {c |}         {res}48
+   {txt}2018m1 {c |}         {res}48
+   {txt}2018m2 {c |}         {res}48
+   {txt}2018m3 {c |}         {res}48
+   {txt}2018m4 {c |}         {res}48
+   {txt}2018m5 {c |}         {res}48
+   {txt}2018m6 {c |}         {res}48
+   {txt}2018m7 {c |}         {res}48
+   {txt}2018m8 {c |}         {res}48
+   {txt}2018m9 {c |}         {res}48
+  {txt}2018m10 {c |}         {res}48
+  {txt}2018m11 {c |}         {res}48
+  {txt}2018m12 {c |}         {res}48
+   {txt}2019m1 {c |}         {res}48
+   {txt}2019m2 {c |}         {res}48
+   {txt}2019m3 {c |}         {res}48
+   {txt}2019m4 {c |}         {res}48
+   {txt}2019m5 {c |}         {res}48
+   {txt}2019m6 {c |}         {res}48
+   {txt}2019m7 {c |}         {res}48
+   {txt}2019m8 {c |}         {res}48
+   {txt}2019m9 {c |}         {res}48
+  {txt}2019m10 {c |}         {res}48
+  {txt}2019m11 {c |}         {res}48
+  {txt}2019m12 {c |}         {res}48
+{txt}{hline 10}{c BT}{hline 11}
+
+{com}. ************************************************
+. egen groupid = group(gender educ age_5yr)
+{txt}
+{com}. xtset groupid date 
+{res}{txt}{col 8}panel variable:  {res}groupid (strongly balanced)
+{txt}{col 9}time variable:  {res}{col 25}date, 2013m3 to 2019m12
+{txt}{col 17}delta:  {res}1 month
+{txt}
+{com}. 
+. ********************************************
+. rename permanent prisk_sub
+{res}{txt}
+{com}. rename transitory trisk_sub
+{res}{txt}
+{com}. label var prisk_sub "estimated sub-sample permanent risk(std)"
+{txt}
+{com}. label var trisk_sub "estimated sub-sample transitory risk (std)"
+{txt}
+{com}. 
+. ** estimated risks in variances 
+. gen prisk2_sub=prisk_sub^2
+{txt}(240 missing values generated)
+
+{com}. gen trisk2_sub = trisk_sub^2 
+{txt}
+{com}. 
+. label var prisk2_sub "sub sample permanent risk  (var)"
+{txt}
+{com}. label var trisk2_sub "sub sample transitory risk  (var)"
+{txt}
+{com}. 
+. 
+. foreach var in prisk2_sub trisk2_sub{c -(}
+{txt}  2{com}.       egen `var'pl=pctile(`var'),p(1) by(date)
+{txt}  3{com}.           egen `var'pu=pctile(`var'),p(99) by(date)
+{txt}  4{com}.           replace `var' = . if `var' <`var'pl | (`var' >`var'pu & `var'!=.)
+{txt}  5{com}. {c )-}
+{txt}(240 missing values generated)
+(240 missing values generated)
+(0 real changes made)
+(0 real changes made)
+
+{com}. 
+. ***********************************
+. ** Fill some estimation risk for january 
+. *************************************
+. 
+. replace prisk2_sub=(l1.prisk2_sub+f1.prisk2_sub)/2 if month==1
+{txt}(288 real changes made)
+
+{com}. replace trisk2_sub=(l1.trisk2_sub+f1.trisk2_sub)/2 if month==1
+{txt}(288 real changes made)
+
+{com}. 
+. ***********************************
+. ** Time aggregation of estimation risk
+. *************************************
+. 
+. foreach x in sub{c -(}
+{txt}  2{com}. gen prisk2_`x'_rl = (f1.prisk2_`x'+f2.prisk2_`x'+f3.prisk2_`x'+f4.prisk2_`x'+ ///
+>                       f5.prisk2_`x'+f6.prisk2_`x'+f7.prisk2_`x'+f8.prisk2_`x'+ ///
+>                                           f9.prisk2_`x'+ f10.prisk2_`x'+ f11.prisk2_`x'+f12.prisk2_`x') 
+{txt}  3{com}. 
+. gen trisk2_`x'_rl = (f1.trisk2_`x'+f2.trisk2_`x'+f3.trisk2_`x'+f4.trisk2_`x'+ ///
+>                       f5.trisk2_`x'+f6.trisk2_`x'+f7.trisk2_`x'+f8.trisk2_`x'+ ///
+>                                           f9.trisk2_`x'+ f10.trisk2_`x'+ f11.trisk2_`x'+f12.trisk2_`x')/12 
+{txt}  4{com}. 
+. gen rincvar_`x'_rl = prisk2_`x'_rl+ trisk2_`x'_rl
+{txt}  5{com}. {c )-}
+{txt}(576 missing values generated)
+(576 missing values generated)
+(576 missing values generated)
+
+{com}. 
+. label var rincvar_sub_rl "realized sub-sample annual risk"
+{txt}
+{com}. 
+. gen rincvar_sub_now = l12.rincvar_sub_rl
+{txt}(576 missing values generated)
+
+{com}. label var rincvar_sub_now "realized sub-sample annual risk since 12m ago"
+{txt}
+{com}. drop year month groupid 
+{txt}
+{com}. save "${c -(}otherdata_folder{c )-}/sipp/sipp_history_vol_decomposed_edu_gender_age5_annual.dta",replace
+{txt}file /Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/sipp/sipp_history_vol_decomposed_edu_gender_age5_annual.dta saved
+
+{com}.  
+. ***************************
+. **  Clean and Merge Data **
+. ***************************
+. 
+. use "${c -(}folder{c )-}/SCE/IncExpSCEProbIndM",clear 
+{txt}
+{com}. 
+. duplicates report year month userid
+
+{p 0 4}{txt}Duplicates in terms of {res} year month userid{p_end}
+
+{txt}{hline 10}{c TT}{hline 27}
+   copies {c |} observations       surplus
+{hline 10}{c +}{hline 27}
+        1 {c |}        {res}98593             0
+{txt}{hline 10}{c BT}{hline 27}
+
+{com}. 
+. ************************************
+. **  merge with estimated moments **
+. ***********************************
+. 
+. * IncExpSCEDstIndM is the output from ../Pythoncode/DoDensityEst.ipynb
+. merge 1:1 userid date using "${c -(}folder{c )-}/SCE/IncExpSCEDstIndM.dta", keep(master match) 
+{res}{txt}{p 0 7 2}
+(note: variable
+date was 
+float, now double to accommodate using data's values)
+{p_end}
+
+{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}          98,593
+{txt}{col 9}from master{col 30}{res}          98,593{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}matched{col 30}{res}               0{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. rename _merge IndEst_merge
+{res}{txt}
+{com}. 
+. duplicates report year month userid
+
+{p 0 4}{txt}Duplicates in terms of {res} year month userid{p_end}
+
+{txt}{hline 10}{c TT}{hline 27}
+   copies {c |} observations       surplus
+{hline 10}{c +}{hline 27}
+        1 {c |}        {res}98593             0
+{txt}{hline 10}{c BT}{hline 27}
+
+{com}. 
+. 
+. ** merge labor market module  
+. merge 1:1 year month userid using "${c -(}otherfolder{c )-}/data/SCE/LaborExpSCEIndM", keep(master match)
+{res}

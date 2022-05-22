@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.6.0
 #   kernelspec:
-#     display_name: Python 3 (ipykernel)
+#     display_name: Python 3
 #     language: python
 #     name: python3
 # ---
@@ -262,24 +262,30 @@ for i,paras_est in enumerate([data_para_est_full]):
     print('whole sample')
     fig = plt.figure(figsize=([13,12]))
     this_est = paras_est
+    p_risk = this_est[1][0][1:]**2
+    t_risk = this_est[1][1][1:]**2
+    p_risk_mv = (p_risk[0:-2]+p_risk[1:-1]+p_risk[2:])/3
+    t_risk_mv = (t_risk[0:-2]+t_risk[1:-1]+t_risk[2:])/3
     plt.subplot(2,1,1)
     plt.title('Permanent Risk')
-    plt.plot(months,
-             this_est[1][0][1:].T**2,
+    plt.plot(months[2:],
+             p_risk_mv,
              'r-o',
              lw=lw,
              label='Estimation')
-    plt.xticks(rotation='vertical')
+    plt.xticks(months[2::4],
+               rotation='vertical')
     plt.grid(True)
 
     plt.subplot(2,1,2)
     plt.title('Transitory Risk')
-    plt.plot(months,
-             this_est[1][1][1:].T**2,
+    plt.plot(months[2:],
+             t_risk_mv,
              'r-o',
              lw=lw,
              label='Estimation')
-    plt.xticks(rotation='vertical')
+    plt.xticks(months[2::4],
+               rotation='vertical')
     plt.legend(loc=0)
     plt.grid(True)
     plt.savefig('../Graphs/sipp/permanent-transitory-risk.jpg')
@@ -319,30 +325,6 @@ est_df
 # -
 
 est_df[['permanent','transitory']].plot()
-
-# +
-ratios = est_df['permanent']/est_df['transitory']
-
-ratios.describe()
-
-# +
-## compute the average ratio of p to t
-
-kappas_sipp  = est_df['permanent']/est_df['transitory']
-kappa_sipp = np.median(kappas_sipp.dropna())
-print('the median ratio of permanent to transitory std is ',kappa_sipp)
-
-import pickle
-
-with open("parameters.txt", "rb") as fp:
-    lc_paras = pickle.load(fp)
-    
-lc_paras['kappa'] = kappa_sipp
-    
-print(lc_paras)
-with open("parameters.txt", "wb") as fp:
-    pickle.dump(lc_paras, fp)
-# -
 
 ## export to stata
 est_df.to_stata('../OtherData/sipp/sipp_history_vol_decomposed.dta')
