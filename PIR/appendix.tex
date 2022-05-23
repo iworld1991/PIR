@@ -31,47 +31,40 @@ The selected sample has summary statistics as reported in Table \ref{tab:sipp_su
 
 \begin{table}[!ht]
     \centering
-    \caption{Perceived risk, realized volatility and approximated risks of each group}
+    \caption{Summary statistics of SIPP sample}
     \label{tab:sipp_sum_stat}
-  \begin{tabular}{lllllll}
-  \hline\hline 
-                     & PR(mean) & PR(median) & Volatility & RealizedRisk & PRisk & TRisk \\
+\begin{tabular}{lll}
+\hline \hline 
+                     & Obs    & Volatility \\
                      \hline 
-
-gender               &               &                       &                         &                   &               &              \\
+Year                 &        &            \\
 \hline 
-Male (50\%)             & 0.03          & 0.022                 & 0.105                   & 0.115             & 0.142         & 0.0351       \\
-Female (49\%)             & 0.028         & 0.022                 & 0.118                   & 0.131             & 0.142         & 0.0347       \\
-                     &               &                       &                         &                   &               &              \\
+2013 (17\%)          & 9,815  & 0.06       \\
+2014 (20\%)          & 12,672 & 0.11       \\
+2015 (15\%)          & 9,543  & 0.1        \\
+2016 (9\%)           & 6,128  & 0.11       \\
+2017 (13\%)          & 7,533  & 0.07       \\
+2018 (15\%)          & 9,378  & 0.13       \\
+2019 (8\%)           & 5,507  & 0.12       \\
+\hline 
+Education                 &        &            \\
+\hline 
+HS dropout (22\%)    & 13,846 & 0.09       \\
+HS graduate (46\%)   & 28,385 & 0.1        \\
+College/above (30\%) & 18,345 & 0.12       \\
+
                      \hline 
-
-\multicolumn{2}{l}{education group}  &                       &                         &                   &               &              \\
+Gender               &        &            \\
 \hline 
-
-HS dropout (0\%)     & 0.036         & 0.022                 & 0.088                   & 0.071             & 0.141         & 0.0341       \\
-HS graduate (42\%)   & 0.03          & 0.022                 & 0.096                   & 0.098             & 0.142         & 0.0345       \\
-College/above (56\%) & 0.028         & 0.021                 & 0.124                   & 0.142             & 0.141         & 0.0347       \\
-                     &               &                       &                         &                   &               &              \\
-                     \hline 
-
-5-year age           &               &                       &                         &                   &               &   \\
-\hline 
-
-20 (2\%)             & 0.037         & 0.031                 & 0.094                   & 0.069             & 0.141         & 0.0353       \\
-25 (12\%)            & 0.032         & 0.027                 & 0.111                   & 0.157             & 0.143         & 0.0347       \\
-30 (12\%)            & 0.03          & 0.023                 & 0.116                   & 0.112             & 0.142         & 0.0344       \\
-35 (13\%)            & 0.029         & 0.021                 & 0.125                   & 0.149             & 0.142         & 0.035        \\
-40 (13\%)            & 0.028         & 0.02                  & 0.1                     & 0.119             & 0.142         & 0.0348       \\
-45 (14\%)            & 0.028         & 0.02                  & 0.119                   & 0.113             & 0.141         & 0.0349       \\
-50 (15\%)            & 0.027         & 0.019                 & 0.095                   & 0.1               & 0.141         & 0.0345       \\
-55 (15\%)            & 0.027         & 0.018                 & 0.122                   & 0.128             & 0.141         & 0.0342       \\ \hline 
-Full sample (100\%)        & 0.029         & 0.021                 & 0.112                   & 0.123             & 0.142         & 0.0346    \\   
-\hline\hline 
+male (55\%)          & 33,842 & 0.1        \\
+female (44\%)        & 26,734 & 0.11       \\
+\hline \hline 
+Full sample (100\%)        & 60,576 & 0.1       \\
+\hline \hline 
 \end{tabular}
-
 \end{table}
 
-\subsection{Income risk decomposition under alternative processes}
+\subsection{Income risk decomposition under alternative assumptions}
 
 \subsubsection{Baseline estimation}
 
@@ -89,43 +82,42 @@ Full sample (100\%)        & 0.029         & 0.021                 & 0.112      
 
 \begin{table}
 	\centering
-	\caption{Estimated realized income risk and perceptions}
+	\caption{Perceived risk, realized volatility and approximated risks of each group}
 	\label{risk_compare}
 		\adjustbox{max height=0.5\textheight, max width=\textwidth}{ 
 
-		\begin{tabular}{llllll}
-		\hline \hline 
-                     & Mean          & Median                & Mean                    & Mean          & Mean         \\
-                     & PerceivedRisk & PerceivedRisk(median) & RealizedGroupRisks & RealizedPRisk & RealizedTRsk \\
-                     \hline 
-gender               &               &                       &                         &               &              \\
+\begin{tabular}{lllllll}
+\hline \hline 
+                       & PR(mean)   & PR(median) & Volatility(median) & RealizedRisk & PRisk & TRisk  \\
+                       \hline 
+gender                 &            &            &                    &              &       &        \\
 \hline 
-1 (50\%)             & 0.03          & 0.022                 & 0.103                   & 0.117         & 0.024        \\
-2 (49\%)             & 0.028         & 0.022                 & 0.101                   & 0.116         & 0.024        \\
-\hline  
-
-\multicolumn{2}{l}{education group}  &                       &                         &               &              \\
-\hline  
-
-HS dropout (0\%)     & 0.036         & 0.022                 & 0.061                   & 0.116         & 0.022        \\
-HS graduate (42\%)   & 0.03          & 0.022                 & 0.079                   & 0.116         & 0.023        \\
-College/above (56\%) & 0.028         & 0.021                 & 0.12                    & 0.116         & 0.024        \\
+1 (50\%)               & 0.03       & 0.022      & 0.105              & 0.115        & 0.109 & 0.0238 \\
+2 (49\%)               & 0.028      & 0.022      & 0.118              & 0.131        & 0.122 & 0.0322 \\
+                       &            &            &                    &              &       &        \\
+                       \hline 
+\multicolumn{2}{l}{education group} &            &                    &              &       &        \\
 \hline 
-5-year age           &               &                       &                         &               &              \\
-\hline  
-20 (2\%)             & 0.037         & 0.031                 & 0.069                   & 0.114         & 0.024        \\
-25 (12\%)            & 0.032         & 0.027                 & 0.136                   & 0.117         & 0.024        \\
-30 (12\%)            & 0.03          & 0.023                 & 0.087                   & 0.116         & 0.023        \\
-35 (13\%)            & 0.029         & 0.021                 & 0.127                   & 0.117         & 0.024        \\
-40 (13\%)            & 0.028         & 0.02                  & 0.105                   & 0.116         & 0.024        \\
-45 (14\%)            & 0.028         & 0.02                  & 0.074                   & 0.116         & 0.024        \\
-50 (15\%)            & 0.027         & 0.019                 & 0.09                    & 0.116         & 0.024        \\
-55 (15\%)            & 0.027         & 0.018                 & 0.109                   & 0.115         & 0.023        \\
+HS dropout (0\%)       & 0.036      & 0.022      & 0.088              & 0.071        & 0.07  & 0.0063 \\
+HS graduate (42\%)     & 0.03       & 0.022      & 0.096              & 0.098        & 0.094 & 0.0176 \\
+College/above (56\%)   & 0.028      & 0.021      & 0.124              & 0.142        & 0.132 & 0.0357 \\
+                       &            &            &                    &              &       &        \\
+                       \hline 
+5-year age             &            &            &                    &              &       &        \\
 \hline 
-full sample (100\%)  & 0.029         & 0.021                 & 0.102                   & 0.116         & 0.024        \\
+20 (2\%)               & 0.037      & 0.031      & 0.094              & 0.069        & 0.068 & 0.0061 \\
+25 (12\%)              & 0.032      & 0.027      & 0.111              & 0.157        & 0.156 & 0.0083 \\
+30 (12\%)              & 0.03       & 0.023      & 0.116              & 0.112        & 0.098 & 0.0372 \\
+35 (13\%)              & 0.029      & 0.021      & 0.125              & 0.149        & 0.134 & 0.0524 \\
+40 (13\%)              & 0.028      & 0.02       & 0.1                & 0.119        & 0.111 & 0.0287 \\
+45 (14\%)              & 0.028      & 0.02       & 0.119              & 0.113        & 0.106 & 0.0224 \\
+50 (15\%)              & 0.027      & 0.019      & 0.095              & 0.1          & 0.096 & 0.0203 \\
+55 (15\%)              & 0.027      & 0.018      & 0.122              & 0.128        & 0.121 & 0.0283 \\
 \hline 
-\hline 
+Full sample (100\%)          & 0.029      & 0.021      & 0.112              & 0.123        & 0.115 & 0.0279 \\
+\hline \hline 
 \end{tabular}
+
 }
 	\begin{flushleft} This table reports estimated realized annual volatility, risks of different components, and the expected income volatility of different groups. All are expressed in standard deviation units.\end{flushleft}
 \end{table}
