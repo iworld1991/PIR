@@ -88,7 +88,7 @@ Full sample (100\%)        & 60,576 & 0.1       \\
 
 \begin{tabular}{lllllll}
 \hline \hline 
-                       & PR(mean)   & PR(median) & Volatility(median) & RealizedRisk & PRisk & TRisk  \\
+                       & PR(mean)   & PR(median) & Volatility & RealizedRisk & PRisk & TRisk  \\
                        \hline 
 gender                 &            &            &                    &              &       &        \\
 \hline 
@@ -126,26 +126,24 @@ Full sample (100\%)          & 0.029      & 0.021      & 0.112              & 0.
 
 \subsubsection{Infrequent arrival of the transitory shocks}
 
-\subsection{Results with expected earning growth}
+\subsection{Results with the first moment (the expected and realized wage growth)}
 
-
-\begin{center}
-[INSERT FIGURE \ref{fig:growth_age_compare} HERE] 
-\end{center}
-
+Although the main focus of this paper is on income/wage risks, specifically the second moment of wage growth, it is natural to ask if the expected wage growth revealed in SCE aligns with what is realized as seen in SIPP. It is not surprising that both expected and the realized average wage growth rate conditional on education and gender decline over the life-cycle, as shown in the downward fitted lines in Figure \ref{fig:growth_age_compare}. But In the sample of 2013-2019, expected wage growth seems to be persistently downward biased compared to its realization. This was not driven by the widely-documented fact of upward biased inflation expectation (See for instance, \cite{wang2021infvar}), as even the same pattern shows up in the nominal wage growth.
 
  \begin{figure}[!ht]
     	\caption{Realized and Perceived Income Growth over the Life Cycle}
     	\label{fig:growth_age_compare}
     	\begin{center}
-    	\adjustimage{max size={0.7\linewidth}}{figures/real_log_wage_shk_gr_level_by_age_edu_gender_compare.png}
+    	\adjustimage{max size={0.7\linewidth}}{figures/real_log_wage_gr_level_by_age_edu_gender_compare.png} \\
+    	\medskip
+    	\adjustimage{max size={0.7\linewidth}}{figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png} 
     	\end{center}
-    	\begin{flushleft} Note: this figure plots average realized and perceived income growth of different age groups. The realized income growth is approximated by the the average log changes in real wage by age/education/gender group based on PSID.\end{flushleft}
+    	\begin{flushleft} Note: this figure plots the average real (upper panel) and nominal (bottom panel) realized and perceived wage growth of different age groups, conditional on the gender and education of the individual. The realized wage growth is approximated by the average log changes in real wage of each age/education/gender group based on SIPP.\end{flushleft}
     \end{figure}
     
 %\subsection{Results with PSID data}
 
-\subsection{Life-cycle earning profile}
+\subsection{Life-cycle wage profile}
 \label{appendix:life-cycle-determinstic}
 
 \begin{center}
@@ -205,7 +203,7 @@ My Estimates based on SIPP       & 0.10           & 0.016           & N/A       
 	
 	
 
-\subsection{Persistent/permanent effect of job displacement in the existing literature}
+\subsection{Persistent/permanent effect of job loss in the existing literature}
 
 \begin{center}
 [INSERT TABLE \ref{tab:scarring_literature} HERE]  
