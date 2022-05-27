@@ -1021,46 +1021,20 @@ gen lincvar = sqrt(incvar)
 gen lrincvar = sqrt(rincvar)
 
 
-
-* bar charts comparing realized volatility and risks  by education 
-
-graph bar lwage_shk_gr_sd_age_sex lrincvar, over(edu_g,relabel(1 "HS Drop" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
-          title("Realized Volatility and Perceived Income Risks by Education",size(med)) ///
-		  bar(1, color(cranberry)) ///
-		  bar(2, color(navy)) ///
-		  ytitle("Risk (std)") ///
-		  legend(label(1 "realized volatility")  label(2 "perceived risk"))
-
-graph export "${graph_folder}/real_log_wage_shk_gr_by_educ_compare_bar.png", as(png) replace
-
-
-* bar charts comparing realized volatility and risks  by age 
-drop if edu_g==1
-graph bar lwage_shk_gr_sd_age_sex lrincvar, over(age_h) ///
-          over(gender,relabel(1 "Male" 2 "Female")) ///
-		  bar(1, color(cranberry)) ///
-		  bar(2, color(navy)) ///
-		  ytitle("Risk (std)") ///
-          title("Realized Volatility and Perceived Income Risks by Age",size(med)) ///
-		  legend(label(1 "realized volatility")  label(2 "perceived risk"))
-
-graph export "${graph_folder}/real_log_wage_shk_gr_by_age_compare_bar.png", as(png) replace 
- 
-
 * average nominal growth rate and expected growth rate. 
 
 twoway (scatter lwage_h_n_gr_av_age_sex age_h, color(ltblue)) ///
        (lfit lwage_h_n_gr_av_age_sex age_h, lcolor(red)) ///
        (scatter incmean age_h, color(gray) yaxis(2)) ///
 	   (lfit incmean age_h,lcolor(black) yaxis(2)), ///
-       title("Realized and Expected Nominal Earning Growth by Age/Gender/Educ",size(med))  ///
+       title("Realized and Expected Nominal Wage Growth by Age/Gender/Educ",size(med))  ///
 	   xtitle("age")  ///
 	   ytitle("realized growth") ///
 	   ytitle("expected growth ", axis(2)) ///
 	   ysc(titlegap(3) outergap(0)) ///
 	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
 	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_gr_nlevel_by_age_edu_gender_compare.png", as(png) replace 
+graph export "${graph_folder}/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png", as(png) replace 
 
 
 * average growth rate and expected growth rate. 
@@ -1069,14 +1043,14 @@ twoway (scatter lwage_h_gr_av_age_sex age_h, color(ltblue)) ///
        (lfit lwage_h_gr_av_age_sex age_h, lcolor(red)) ///
        (scatter rincmean age_h, color(gray) yaxis(2)) ///
 	   (lfit rincmean age_h,lcolor(black) yaxis(2)), ///
-       title("Realized and Expected Earning Growth by Age/Gender/Educ",size(med))  ///
+       title("Realized and Expected Wage Growth by Age/Gender/Educ",size(med))  ///
 	   xtitle("age")  ///
 	   ytitle("realized growth") ///
 	   ytitle("expected growth ", axis(2)) ///
 	   ysc(titlegap(3) outergap(0)) ///
 	   legend(col(2) lab(1 "Realized") lab(2 "Realized (fitted)")  ///
 	                  lab(3 "Perceived (RHS)") lab(4 "Perceived (fitted)(RHS)"))
-graph export "${graph_folder}/real_log_wage_shk_gr_level_by_age_edu_gender_compare.png", as(png) replace 
+graph export "${graph_folder}/real_log_wage_gr_level_by_age_edu_gender_compare.png", as(png) replace 
 
 
 * standard deviation log wage growth and risk perception 

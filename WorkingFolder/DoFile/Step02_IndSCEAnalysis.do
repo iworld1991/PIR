@@ -2,7 +2,6 @@ clear
 global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
 global folder "${mainfolder}/SurveyData/"
 global otherdata_folder "${mainfolder}/OtherData"
-global otherfolder "/Users/Myworld/Dropbox/SearchMatchExpectation/"
 global graph_folder "${mainfolder}/Graphs/sce/"
 global sum_graph_folder "${mainfolder}/Graphs/ind"
 global sum_table_folder "${mainfolder}/Tables"
@@ -244,7 +243,7 @@ drop _merge
 
 
 * flow rate data
-merge m:1 year month using "${otherfolder}/workingdata/CPS_worker_flows_SA.dta",keep(master match)
+merge m:1 year month using "${otherdata_folder}/CPS_worker_flows_SA.dta",keep(master match)
 drop _merge 
 
 
@@ -586,9 +585,12 @@ restore
 
 gen rincsd = sqrt(rincvar)
 gen rincsd_all_rl = sqrt(rincvar_all_rl)
-gen rincsd_sub_rl = sqrt(rincvar_sub_rl)
 gen psd2_all_rl = sqrt(prisk2_all_rl)
 gen tsd2_all_rl = sqrt(trisk2_all_rl)
+
+gen rincsd_sub_rl = sqrt(rincvar_sub_rl)
+gen psd2_sub_rl = sqrt(prisk2_sub_rl)
+gen tsd2_sub_rl = sqrt(trisk2_sub_rl)
 
 
 graph bar rincsd, ///
@@ -600,7 +602,7 @@ graph bar rincsd, ///
 graph export "${sum_graph_folder}/boxplot_rvar_earning.png", as(png) replace 
 
 
-graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_all_rl psd2_all_rl if educ!=1, ///
+graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl if educ!=1, ///
            over(age_5yr) over(gender,relabel(1 "Male" 2 "Female")) ///
 		   bar(1, color(navy)) ///
 		   bar(2, color(gray)) ///
@@ -613,7 +615,7 @@ graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_all_rl psd2_all_rl if educ!=1, /
 graph export "${sum_graph_folder}/boxplot_rvar_compare_age.png", as(png) replace 
 
 
-graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_all_rl psd2_all_rl, ///
+graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
            over(educ,relabel(1 "HS dropout" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
 		   bar(1, color(navy)) ///
 		   bar(2, color(gray)) ///
@@ -631,7 +633,7 @@ graph export "${sum_graph_folder}/boxplot_rvar_compare_educ.png", as(png) replac
 ********************************************************
 
 tabout gender edu_g age_5 using "${sum_table_folder}/risks_compare.csv", ///
-            c(mean rincsd median rincsd mean lwage_shk_gr_sd_age_sex mean rincsd_sub_rl mean psd2_all_rl mean tsd2_all_rl ) ///
+            c(mean rincsd median rincsd mean lwage_shk_gr_sd_age_sex mean rincsd_sub_rl mean psd2_sub_rl mean tsd2_sub_rl ) ///
 			f(3c 3c 3c 3c 3c 4c 4c) ///
 			clab(PR(mean) PR(median) Volatility(median) RealizedRisk PRisk TRisk) ///
 			sum npos(tufte) rep style(csv) bt cl2(2-4 5-6) cltr2(.75em 1.5em) 
@@ -640,19 +642,48 @@ tabout gender edu_g age_5 using "${sum_table_folder}/risks_compare.csv", ///
 **** unemployment experience and risk perceptions
 ***************************************
 
-/*
-graph box rincsd, over(u2e,relabel(1 "other" 2 "recently unemployed")) ///
+
+graph bar rincsd, over(u2e,relabel(1 "other" 2 "recently unemployed")) ///
          title("Perceived risk by unemployment experience") ///
 		 ytitle("Average perceived risk (std)") 
 graph export "${sum_graph_folder}/boxplot_rvar_ue_peperience.png", as(png) replace 
 
 
-graph box rincsd, over(u2em12,relabel(1 "other" 2 "unemployed within past year")) ///
+graph bar rincsd, over(u2em12,relabel(1 "other" 2 "unemployed within past year")) ///
          title("Perceived risk by unemployment experience") ///
 		 ytitle("Average perceived risk (std)") 
 graph export "${sum_graph_folder}/boxplot_rvar_ue_peperience_m12.png", as(png) replace 
-*/
 
+
+
+************************************************
+** time series dynamics of risk perceptions ********
+************************************************
+
+eststo clear
+
+eststo: reghdfe lrincvar l1.lrincvar, a(ID)
+estadd local hasid "Yes",replace
+estadd local hastid "No",replace
+
+eststo: reghdfe lrincvar l1.lrincvar l2.lrincvar , a(ID)
+estadd local hasid "Yes",replace
+estadd local hastid "No",replace
+
+eststo: reghdfe lrincvar l1.lrincvar i.date, a(ID)
+estadd local hasid "Yes",replace
+estadd local hastid "Yes",replace
+
+eststo: reghdfe lrincvar l1.lrincvar l2.lrincvar i.date, a(ID)
+estadd local hasid "Yes",replace
+estadd local hastid "Yes",replace
+
+esttab using "${sum_table_folder}/ind/autoreg_perceived_risk.csv", ///
+       stats(hasid hastid r2 N, label("Individual FE" "Time FE" "R-squared" "Sample Size")) ///
+	   label mtitles se r2 ///
+	   drop(*.date) replace
+
+eststo clear
 
 ************************************************
 ** income shock /volatility and risk perceptions ********
@@ -671,25 +702,25 @@ label var rincvar_sub_now "realized annual group earning risk"
 eststo: reghdfe rincvar_rv prisk2_all trisk2_all, a(ID)
 estadd local hasid "Yes",replace
 
-*eststo: reghdfe rincvar_rv prisk2_sub trisk2_sub, a(ID)
-*estadd local hasid "Yes",replace
+eststo: reghdfe rincvar_rv prisk2_sub trisk2_sub, a(ID)
+estadd local hasid "Yes",replace
 
 eststo: reghdfe rincvar_rv prisk2_all_ch trisk2_all_ch, a(ID)
 estadd local hasid "Yes",replace
 
-*eststo: reghdfe rincvar_rv prisk2_sub_ch trisk2_sub_ch, a(ID)
-*estadd local hasid "Yes",replace
+eststo: reghdfe rincvar_rv prisk2_sub_ch trisk2_sub_ch, a(ID)
+estadd local hasid "Yes",replace
 
 eststo: reghdfe rincvar_rv rincvar_all_now_ch, a(ID)
 estadd local hasid "Yes",replace
 
-*eststo: reghdfe rincvar_rv rincvar_sub_now_ch, a(ID)
-*estadd local hasid "Yes",replace
+eststo: reghdfe rincvar_rv rincvar_sub_now_ch, a(ID)
+estadd local hasid "Yes",replace
 
 esttab using "${sum_table_folder}/ind/extrapolation_earning_risk.csv", ///
        stats(hasid r2 N, label("Individual FE" "R-squared" "Sample Size")) ///
 	   label mtitles se r2 ///
-drop(_cons) replace
+       drop(_cons) replace
 eststo clear
 
 
@@ -738,7 +769,6 @@ eststo: reghdfe lrincvar uerate lwage_1y_shk_gr2, a(age edu_g gender)
 esttab using "${sum_table_folder}/ind/extrapolation_earning_risk_ind.csv", label mtitles se r2 ///
 drop(_cons) replace
 eststo clear
-
 
 
 ************************************************

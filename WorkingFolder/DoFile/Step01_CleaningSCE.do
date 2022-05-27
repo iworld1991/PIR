@@ -8,9 +8,9 @@
 
 
 clear
-global mainfolder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder"
+global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
 global folder "${mainfolder}/SurveyData/"
-global data_folder "/Users/Myworld/Dropbox/ExpProject/workingfolder/SurveyData/SCE/"
+global big_data_folder "/Users/Myworld/Dropbox/InfVar-local/workingfolder/SurveyData/SCE/"
 global otherfolder "${mainfolder}/OtherData/"
 global sum_graph_folder "${mainfolder}/Graphs/pop"
 global sum_table_folder "${mainfolder}/Tables"
@@ -20,9 +20,9 @@ pwd
 set more off 
 
 
-use "${data_folder}NYFED_SCE_13_16.dta",clear
-append using "${data_folder}NYFED_SCE_17_19.dta",force
-append using  "${data_folder}NYFED_SCE_20.dta",force
+use "${big_data_folder}NYFED_SCE_13_16.dta",clear
+append using "${big_data_folder}NYFED_SCE_17_19.dta",force
+append using  "${big_data_folder}NYFED_SCE_20.dta",force
 
 sort date
 unique userid
@@ -269,11 +269,11 @@ keep ${keeplist}
 rename _STATE state 
 
 
-merge m:1 state using "${otherfolder}statecode.dta"
-rename _merge state_code_merge 
+*merge m:1 state using "${otherfolder}statecode.dta"
+*rename _merge state_code_merge 
 
-merge m:1 statecode year month using "${otherfolder}stateM.dta",keep(master match) 
-rename _merge stateM_merge 
+*merge m:1 statecode year month using "${otherfolder}stateM.dta",keep(master match) 
+*rename _merge stateM_merge 
 
 *************************
 *** Exclude outliers ****

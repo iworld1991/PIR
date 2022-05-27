@@ -3,7 +3,7 @@
       name:  {res}<unnamed>
        {txt}log:  {res}/Users/Myworld/Dropbox/PIR/WorkingFolder/indSCE_log.smcl
   {txt}log type:  {res}smcl
- {txt}opened on:  {res}22 May 2022, 13:16:02
+ {txt}opened on:  {res}27 May 2022, 17:12:03
 {txt}
 {com}. 
 . 
@@ -461,7 +461,7 @@
 {txt}{hline 10}{c TT}{hline 27}
    copies {c |} observations       surplus
 {hline 10}{c +}{hline 27}
-        1 {c |}        {res}98593             0
+        1 {c |}       {res}115083             0
 {txt}{hline 10}{c BT}{hline 27}
 
 {com}. 
@@ -476,11 +476,16 @@
 date was 
 float, now double to accommodate using data's values)
 {p_end}
+{p 0 7 2}
+(note: variable
+month was 
+byte, now float to accommodate using data's values)
+{p_end}
 
 {col 5}Result{col 38}# of obs.
 {col 5}{hline 41}
-{col 5}not matched{col 30}{res}          98,593
-{txt}{col 9}from master{col 30}{res}          98,593{txt}  (_merge==1)
+{col 5}not matched{col 30}{res}         115,083
+{txt}{col 9}from master{col 30}{res}         115,083{txt}  (_merge==1)
 {col 9}from using{col 30}{res}               0{txt}  (_merge==2)
 
 {col 5}matched{col 30}{res}               0{txt}  (_merge==3)
@@ -496,7 +501,7 @@ float, now double to accommodate using data's values)
 {txt}{hline 10}{c TT}{hline 27}
    copies {c |} observations       surplus
 {hline 10}{c +}{hline 27}
-        1 {c |}        {res}98593             0
+        1 {c |}       {res}115083             0
 {txt}{hline 10}{c BT}{hline 27}
 
 {com}. 
@@ -504,3 +509,2611 @@ float, now double to accommodate using data's values)
 . ** merge labor market module  
 . merge 1:1 year month userid using "${c -(}otherfolder{c )-}/data/SCE/LaborExpSCEIndM", keep(master match)
 {res}
+{txt}{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}          98,478
+{txt}{col 9}from master{col 30}{res}          98,478{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}matched{col 30}{res}          16,605{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. rename _merge labor_merge
+{res}{txt}
+{com}. rename userid ID 
+{res}{txt}
+{com}. 
+. *****************************************
+. ****  Renaming so that more consistent **
+. *****************************************
+. 
+. rename Q24_mean incmean
+{res}{txt}
+{com}. rename Q24_var incvar
+{res}{txt}
+{com}. rename Q24_iqr inciqr
+{res}{txt}
+{com}. rename IncSkew incskew 
+{res}{txt}
+{com}. rename Q24_rmean rincmean
+{res}{txt}
+{com}. rename Q24_rvar rincvar
+{res}{txt}
+{com}. 
+. *rename Q36 educ
+. rename D6 HHinc 
+{res}{txt}
+{com}. rename Q32 age 
+{res}{txt}
+{com}. rename Q33 gender 
+{res}{txt}
+{com}. gen fulltime = Q10_1 
+{txt}
+{com}. gen parttime = Q10_2 
+{txt}
+{com}. rename Q12new selfemp
+{res}{txt}
+{com}. gen Stkprob= Q6new/100
+{txt}(851 missing values generated)
+
+{com}. gen UEprobAgg=Q4new/100
+{txt}(299 missing values generated)
+
+{com}. gen  UEprobInd4m = oo1_5/100
+{txt}(106887 missing values generated)
+
+{com}. gen UEprobInd=Q13new/100
+{txt}(41918 missing values generated)
+
+{com}. rename Q26v2 spending_dum
+{res}{txt}
+{com}. rename Q26v2part2 spending 
+{res}{txt}
+{com}. replace spending = spending/100
+{txt}(108735 real changes made)
+
+{com}. 
+. gen exp_offer = oo2u/100
+{txt}(111904 missing values generated)
+
+{com}. gen EUprobInd = Q22new/100
+{txt}(41709 missing values generated)
+
+{com}. 
+. ***********************
+. ** merge other data ***
+. **************************
+. 
+. 
+. **macro data
+. merge m:1 date using "${c -(}mainfolder{c )-}/OtherData/macroM.dta",keep(master match)
+{res}
+{txt}{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}          17,650
+{txt}{col 9}from master{col 30}{res}          17,650{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}matched{col 30}{res}          97,433{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. rename cpi CPIAU
+{res}{txt}
+{com}. drop _merge 
+{txt}
+{com}. 
+. 
+. * flow rate data
+. merge m:1 year month using "${c -(}otherdata_folder{c )-}/CPS_worker_flows_SA.dta",keep(master match)
+{res}
+{txt}{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}               0
+{txt}{col 5}matched{col 30}{res}         115,083{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. drop _merge 
+{txt}
+{com}. 
+. 
+. * income risk estimation data
+. gen YM = year*100+month
+{txt}
+{com}. 
+. ** merge population estimation 
+. merge m:1 YM using "${c -(}otherdata_folder{c )-}/sipp/sipp_history_vol_decomposed_annual.dta", keep(master match)
+{res}{txt}{p 0 7 2}
+(note: variable
+YM was 
+float, now double to accommodate using data's values)
+{p_end}
+
+{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}          21,142
+{txt}{col 9}from master{col 30}{res}          21,142{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}matched{col 30}{res}          93,941{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. drop _merge 
+{txt}
+{com}. 
+. ********************
+. ** group variables *
+. ********************
+. 
+. egen byear_5yr = cut(byear), ///
+>      at(1915 1920 1925 1930 1935 1940 ///
+>             1945 1950 1955 1960 1965 1970 ///
+>             1975 1980 1985 1990 1995 2000 ///
+>                 2005 2010)
+{txt}
+{com}. label var byear_5yr "5-year cohort"
+{txt}
+{com}. 
+. egen age_5yr = cut(age), ///
+>      at(20 25 30 35 40 45 ///
+>             50 55 60)
+{txt}(29738 missing values generated)
+
+{com}. label var age_5yr "5-year age"
+{txt}
+{com}. 
+. 
+. gen edu_g = . 
+{txt}(115083 missing values generated)
+
+{com}. replace edu_g = 1 if educ==1
+{txt}(987 real changes made)
+
+{com}. replace edu_g = 2 if educ==2 | educ ==3 | educ == 4
+{txt}(49240 real changes made)
+
+{com}. replace edu_g = 3 if educ <=9 & educ>4
+{txt}(64856 real changes made)
+
+{com}. 
+. label var edu_g "education group"
+{txt}
+{com}. label define edu_glb 1 "HS dropout" 2 "HS graduate" 3 "College/above"
+{txt}
+{com}. label value edu_g edu_glb
+{txt}
+{com}. 
+. replace educ = edu_g 
+{txt}(102496 real changes made)
+
+{com}. 
+. merge m:1 gender educ age_5yr YM ///
+>          using "${c -(}otherdata_folder{c )-}/sipp/sipp_history_vol_decomposed_edu_gender_age5_annual.dta", keep(master match)
+{res}{txt}{p 0 7 2}
+(note: variable
+educ was 
+float, now double to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+gender was 
+byte, now long to accommodate using data's values)
+{p_end}
+{p 0 7 2}
+(note: variable
+age_5yr was 
+float, now double to accommodate using data's values)
+{p_end}
+
+{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}          56,019
+{txt}{col 9}from master{col 30}{res}          56,019{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}matched{col 30}{res}          59,064{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. 
+. drop _merge 
+{txt}
+{com}. 
+. ** 
+. merge m:1 gender educ age_5yr ///
+>          using "${c -(}otherdata_folder{c )-}/sipp/sipp_vol_edu_gender_age5.dta", keep(master match)
+{res}{txt}{p 0 7 2}
+(note: variable
+gender was 
+long, now double to accommodate using data's values)
+{p_end}
+(label edu_glb already defined)
+
+{col 5}Result{col 38}# of obs.
+{col 5}{hline 41}
+{col 5}not matched{col 30}{res}          15,774
+{txt}{col 9}from master{col 30}{res}          15,774{txt}  (_merge==1)
+{col 9}from using{col 30}{res}               0{txt}  (_merge==2)
+
+{col 5}matched{col 30}{res}          99,309{txt}  (_merge==3)
+{col 5}{hline 41}
+
+{com}. 
+. drop _merge 
+{txt}
+{com}. 
+. 
+. *******************************
+. **  Set Panel Data Structure **
+. *******************************
+. 
+. xtset ID date
+{res}{txt}{col 8}panel variable:  {res}ID (unbalanced)
+{txt}{col 9}time variable:  {res}{col 25}date, 2013m6 to 2021m7, but with gaps
+{txt}{col 17}delta:  {res}1 month
+{txt}
+{com}. sort ID date
+{txt}
+{com}. 
+. *******************************
+. ** Exclude youth and retired
+. ******************************
+. keep if age <= 60 & age >= 20
+{txt}(26695 observations deleted)
+
+{com}. 
+. *******************************
+. **  Summary Statistics of SCE **
+. *******************************
+. 
+. tabstat ID,s(count) by(date) column(statistics)
+
+{txt}Summary for variables: ID
+{col 6}by categories of: date 
+
+{ralign 9:date} {...}
+{c |}         N
+{hline 10}{c +}{hline 10}
+{ralign 9: 2013m6} {...}
+{c |}{...}
+ {res}      891
+{txt}{ralign 9: 2013m7} {...}
+{c |}{...}
+ {res}      850
+{txt}{ralign 9: 2013m8} {...}
+{c |}{...}
+ {res}     1233
+{txt}{ralign 9: 2013m9} {...}
+{c |}{...}
+ {res}     1082
+{txt}{ralign 9:2013m10} {...}
+{c |}{...}
+ {res}     1091
+{txt}{ralign 9:2013m11} {...}
+{c |}{...}
+ {res}     1083
+{txt}{ralign 9:2013m12} {...}
+{c |}{...}
+ {res}      947
+{txt}{ralign 9: 2014m1} {...}
+{c |}{...}
+ {res}      938
+{txt}{ralign 9: 2014m2} {...}
+{c |}{...}
+ {res}      915
+{txt}{ralign 9: 2014m3} {...}
+{c |}{...}
+ {res}      938
+{txt}{ralign 9: 2014m4} {...}
+{c |}{...}
+ {res}      927
+{txt}{ralign 9: 2014m5} {...}
+{c |}{...}
+ {res}      892
+{txt}{ralign 9: 2014m6} {...}
+{c |}{...}
+ {res}      910
+{txt}{ralign 9: 2014m7} {...}
+{c |}{...}
+ {res}      954
+{txt}{ralign 9: 2014m8} {...}
+{c |}{...}
+ {res}      936
+{txt}{ralign 9: 2014m9} {...}
+{c |}{...}
+ {res}      915
+{txt}{ralign 9:2014m10} {...}
+{c |}{...}
+ {res}      903
+{txt}{ralign 9:2014m11} {...}
+{c |}{...}
+ {res}      913
+{txt}{ralign 9:2014m12} {...}
+{c |}{...}
+ {res}      882
+{txt}{ralign 9: 2015m1} {...}
+{c |}{...}
+ {res}      900
+{txt}{ralign 9: 2015m2} {...}
+{c |}{...}
+ {res}      907
+{txt}{ralign 9: 2015m3} {...}
+{c |}{...}
+ {res}      869
+{txt}{ralign 9: 2015m4} {...}
+{c |}{...}
+ {res}      885
+{txt}{ralign 9: 2015m5} {...}
+{c |}{...}
+ {res}      891
+{txt}{ralign 9: 2015m6} {...}
+{c |}{...}
+ {res}      885
+{txt}{ralign 9: 2015m7} {...}
+{c |}{...}
+ {res}      869
+{txt}{ralign 9: 2015m8} {...}
+{c |}{...}
+ {res}      848
+{txt}{ralign 9: 2015m9} {...}
+{c |}{...}
+ {res}      879
+{txt}{ralign 9:2015m10} {...}
+{c |}{...}
+ {res}      868
+{txt}{ralign 9:2015m11} {...}
+{c |}{...}
+ {res}      866
+{txt}{ralign 9:2015m12} {...}
+{c |}{...}
+ {res}      843
+{txt}{ralign 9: 2016m1} {...}
+{c |}{...}
+ {res}      861
+{txt}{ralign 9: 2016m2} {...}
+{c |}{...}
+ {res}      815
+{txt}{ralign 9: 2016m3} {...}
+{c |}{...}
+ {res}      872
+{txt}{ralign 9: 2016m4} {...}
+{c |}{...}
+ {res}      841
+{txt}{ralign 9: 2016m5} {...}
+{c |}{...}
+ {res}      879
+{txt}{ralign 9: 2016m6} {...}
+{c |}{...}
+ {res}      877
+{txt}{ralign 9: 2016m7} {...}
+{c |}{...}
+ {res}      918
+{txt}{ralign 9: 2016m8} {...}
+{c |}{...}
+ {res}      884
+{txt}{ralign 9: 2016m9} {...}
+{c |}{...}
+ {res}      911
+{txt}{ralign 9:2016m10} {...}
+{c |}{...}
+ {res}      906
+{txt}{ralign 9:2016m11} {...}
+{c |}{...}
+ {res}      895
+{txt}{ralign 9:2016m12} {...}
+{c |}{...}
+ {res}      933
+{txt}{ralign 9: 2017m1} {...}
+{c |}{...}
+ {res}      936
+{txt}{ralign 9: 2017m2} {...}
+{c |}{...}
+ {res}      932
+{txt}{ralign 9: 2017m3} {...}
+{c |}{...}
+ {res}      949
+{txt}{ralign 9: 2017m4} {...}
+{c |}{...}
+ {res}      886
+{txt}{ralign 9: 2017m5} {...}
+{c |}{...}
+ {res}      944
+{txt}{ralign 9: 2017m6} {...}
+{c |}{...}
+ {res}      941
+{txt}{ralign 9: 2017m7} {...}
+{c |}{...}
+ {res}      948
+{txt}{ralign 9: 2017m8} {...}
+{c |}{...}
+ {res}      942
+{txt}{ralign 9: 2017m9} {...}
+{c |}{...}
+ {res}      919
+{txt}{ralign 9:2017m10} {...}
+{c |}{...}
+ {res}      956
+{txt}{ralign 9:2017m11} {...}
+{c |}{...}
+ {res}      921
+{txt}{ralign 9:2017m12} {...}
+{c |}{...}
+ {res}      870
+{txt}{ralign 9: 2018m1} {...}
+{c |}{...}
+ {res}      906
+{txt}{ralign 9: 2018m2} {...}
+{c |}{...}
+ {res}      908
+{txt}{ralign 9: 2018m3} {...}
+{c |}{...}
+ {res}      896
+{txt}{ralign 9: 2018m4} {...}
+{c |}{...}
+ {res}      875
+{txt}{ralign 9: 2018m5} {...}
+{c |}{...}
+ {res}      878
+{txt}{ralign 9: 2018m6} {...}
+{c |}{...}
+ {res}      873
+{txt}{ralign 9: 2018m7} {...}
+{c |}{...}
+ {res}      910
+{txt}{ralign 9: 2018m8} {...}
+{c |}{...}
+ {res}      897
+{txt}{ralign 9: 2018m9} {...}
+{c |}{...}
+ {res}      884
+{txt}{ralign 9:2018m10} {...}
+{c |}{...}
+ {res}      931
+{txt}{ralign 9:2018m11} {...}
+{c |}{...}
+ {res}      907
+{txt}{ralign 9:2018m12} {...}
+{c |}{...}
+ {res}      855
+{txt}{ralign 9: 2019m1} {...}
+{c |}{...}
+ {res}      937
+{txt}{ralign 9: 2019m2} {...}
+{c |}{...}
+ {res}      917
+{txt}{ralign 9: 2019m3} {...}
+{c |}{...}
+ {res}      925
+{txt}{ralign 9: 2019m4} {...}
+{c |}{...}
+ {res}      912
+{txt}{ralign 9: 2019m5} {...}
+{c |}{...}
+ {res}      895
+{txt}{ralign 9: 2019m6} {...}
+{c |}{...}
+ {res}      896
+{txt}{ralign 9: 2019m7} {...}
+{c |}{...}
+ {res}      908
+{txt}{ralign 9: 2019m8} {...}
+{c |}{...}
+ {res}      894
+{txt}{ralign 9: 2019m9} {...}
+{c |}{...}
+ {res}      904
+{txt}{ralign 9:2019m10} {...}
+{c |}{...}
+ {res}      880
+{txt}{ralign 9:2019m11} {...}
+{c |}{...}
+ {res}      867
+{txt}{ralign 9:2019m12} {...}
+{c |}{...}
+ {res}      874
+{txt}{ralign 9: 2020m1} {...}
+{c |}{...}
+ {res}      896
+{txt}{ralign 9: 2020m2} {...}
+{c |}{...}
+ {res}      913
+{txt}{ralign 9: 2020m3} {...}
+{c |}{...}
+ {res}      884
+{txt}{ralign 9: 2020m4} {...}
+{c |}{...}
+ {res}      895
+{txt}{ralign 9: 2020m5} {...}
+{c |}{...}
+ {res}      872
+{txt}{ralign 9: 2020m6} {...}
+{c |}{...}
+ {res}      802
+{txt}{ralign 9: 2020m7} {...}
+{c |}{...}
+ {res}      807
+{txt}{ralign 9: 2020m8} {...}
+{c |}{...}
+ {res}      797
+{txt}{ralign 9: 2020m9} {...}
+{c |}{...}
+ {res}      783
+{txt}{ralign 9:2020m10} {...}
+{c |}{...}
+ {res}      826
+{txt}{ralign 9:2020m11} {...}
+{c |}{...}
+ {res}      843
+{txt}{ralign 9:2020m12} {...}
+{c |}{...}
+ {res}      931
+{txt}{ralign 9: 2021m1} {...}
+{c |}{...}
+ {res}      873
+{txt}{ralign 9: 2021m2} {...}
+{c |}{...}
+ {res}      869
+{txt}{ralign 9: 2021m3} {...}
+{c |}{...}
+ {res}      855
+{txt}{ralign 9: 2021m4} {...}
+{c |}{...}
+ {res}      884
+{txt}{ralign 9: 2021m5} {...}
+{c |}{...}
+ {res}      872
+{txt}{ralign 9: 2021m6} {...}
+{c |}{...}
+ {res}      930
+{txt}{ralign 9: 2021m7} {...}
+{c |}{...}
+ {res}      881
+{txt}{hline 10}{c +}{hline 10}
+{ralign 9:Total} {...}
+{c |}{...}
+ {res}    88388
+{txt}{hline 10}{c BT}{hline 10}
+
+{com}. 
+. *******************************
+. **  Generate Variables       **
+. *******************************
+. 
+. gen Incmean = .
+{txt}(88388 missing values generated)
+
+{com}. gen Incvar = .
+{txt}(88388 missing values generated)
+
+{com}. gen Inciqr = .
+{txt}(88388 missing values generated)
+
+{com}. 
+. gen Incmean_ch = .
+{txt}(88388 missing values generated)
+
+{com}. gen Incvar_ch = .
+{txt}(88388 missing values generated)
+
+{com}. gen Inciqr_ch = .
+{txt}(88388 missing values generated)
+
+{com}. 
+. 
+. gen Inc_mom = .
+{txt}(88388 missing values generated)
+
+{com}. gen Inc_mom_ch = .
+{txt}(88388 missing values generated)
+
+{com}. 
+. *** take the log
+. 
+. foreach mom in var{c -(}
+{txt}  2{com}. gen linc`mom'= log(inc`mom') 
+{txt}  3{com}. gen lrinc`mom' = log(rinc`mom') 
+{txt}  4{com}. {c )-}
+{txt}(23357 missing values generated)
+(27125 missing values generated)
+
+{com}. 
+. 
+. foreach mom in iqr{c -(}
+{txt}  2{com}. gen linc`mom'= log(inc`mom') 
+{txt}  3{com}. {c )-}
+{txt}(16198 missing values generated)
+
+{com}. 
+. label var linciqr "log perceived iqr"
+{txt}
+{com}. label var lincvar "log perceived risk"
+{txt}
+{com}. label var lrincvar "log perceived risk (real)"
+{txt}
+{com}. label var spending "expected growth in spending"
+{txt}
+{com}. 
+. *************************************
+. *** Poisson rate in expectations 
+. **************************************
+. 
+. 
+. gen exp_s = log(1-UEprobInd4m)/(-3) 
+{txt}(82115 missing values generated)
+
+{com}. * can use exp_eu from micro data 
+. label var exp_s "expected Poisson separation rate"
+{txt}
+{com}. 
+. gen exp_f =log(1-EUprobInd)/(-4)
+{txt}(28367 missing values generated)
+
+{com}. * can use exp_ue from micro data 
+. label var exp_f "expected Poisson job-finding rate"
+{txt}
+{com}. 
+. gen exp_s_1y = log(1-UEprobInd)/(-12) 
+{txt}(23210 missing values generated)
+
+{com}. * can use exp_eu from micro data 
+. label var exp_s_1y "expected Poisson separation rate (1 year)"
+{txt}
+{com}. 
+. *************************************
+. *** Variables for overreaction test 
+. **************************************
+. 
+. 
+. ** earning risk 
+. 
+. gen rincvar_rv = rincvar - l1.rincvar
+{txt}(45438 missing values generated)
+
+{com}. label var rincvar "revision in earning risk"
+{txt}
+{com}. gen incvar_rv = incvar - l1.incvar
+{txt}(41578 missing values generated)
+
+{com}. label var incvar "revision in earning risk"
+{txt}
+{com}. 
+. gen rincvar_all_fe = rincvar-rincvar_all_rl
+{txt}(45951 missing values generated)
+
+{com}. label var rincvar_all_fe "forecast error in earning risk"
+{txt}
+{com}. gen rincvar_sub_fe = rincvar-rincvar_sub_rl
+{txt}(53378 missing values generated)
+
+{com}. label var rincvar_all_fe "forecast error in earning risk"
+{txt}
+{com}. 
+. ** negative fe means underestimation 
+. 
+. foreach var in prisk2_all trisk2_all prisk2_sub trisk2_sub rincvar_all_now rincvar_sub_now{c -(}
+{txt}  2{com}. gen `var'_ch = `var'-l1.`var'
+{txt}  3{com}. {c )-}
+{txt}(32209 missing values generated)
+(32209 missing values generated)
+(43751 missing values generated)
+(43751 missing values generated)
+(39204 missing values generated)
+(47478 missing values generated)
+
+{com}. 
+. ** separation risk
+. gen exp_s_1y_fe = exp_s_1y - f1.s
+{txt}(37103 missing values generated)
+
+{com}. label var exp_s_1y_fe "forecast error of separation rate"
+{txt}
+{com}. 
+. gen exp_s_1y_rv = exp_s_1y - l1.exp_s_1y
+{txt}(38769 missing values generated)
+
+{com}. label var exp_s_1y_rv "revision in separation rate"
+{txt}
+{com}. 
+. gen exp_s_fe = exp_s - f4.s
+{txt}(84853 missing values generated)
+
+{com}. label var exp_s_fe "forecast error of separation rate"
+{txt}
+{com}. 
+. gen exp_s_rv = exp_s - l4.exp_s
+{txt}(86036 missing values generated)
+
+{com}. label var exp_s_rv "revision in separation rate"
+{txt}
+{com}. 
+. gen exp_f_fe = exp_f - f1.f
+{txt}(41050 missing values generated)
+
+{com}. label var exp_s_fe "forecast error of separation rate"
+{txt}
+{com}. 
+. gen exp_f_rv = exp_f - l1.exp_f
+{txt}(44035 missing values generated)
+
+{com}. label var exp_f_rv "revision in separation rate"
+{txt}
+{com}. 
+. ***********************************************
+. **** Job experiences/transitions/search *****
+. ***********************************************
+. 
+. gen emp_status = .
+{txt}(88388 missing values generated)
+
+{com}. 
+. replace emp_status = 1 if Q10_1==1|Q10_2==1|Q10_5==1
+{txt}(73466 real changes made)
+
+{com}. replace emp_status = 2 if Q10_3==1|Q10_4==1
+{txt}(3978 real changes made)
+
+{com}. replace emp_status = 3 if Q10_6==1|Q10_7==1|Q10_8==1|Q10_9==1
+{txt}(14321 real changes made)
+
+{com}. 
+. label define emp_status_lb 1 "employed" 2 "unemployed" 3 "non-working"
+{txt}
+{com}. label value emp_status emp_status_lb
+{txt}
+{com}. 
+. gen e2u = cond(emp_status==2 & (l1.emp_status==1|l2.emp_status==1|l3.emp_status==1|l4.emp_status==1),1,0)
+{txt}
+{com}. label var e2u "employed since m-4 and unemployed now"
+{txt}
+{com}. 
+. gen u2e = cond(emp_status==1 &  (l1.emp_status==2|l2.emp_status==2|l3.emp_status==2|l4.emp_status==2),1,0)
+{txt}
+{com}. label var u2e "unemployed since m-4 and employed now"
+{txt}
+{com}. 
+. 
+. gen e2um8 = cond(emp_status==2 & ///
+>                  (l1.emp_status==1|l2.emp_status==1|l3.emp_status==1|l4.emp_status==1| ///
+>                                   l5.emp_status==1|l6.emp_status==1|l7.emp_status==1|l8.emp_status==1),1,0)
+{txt}
+{com}. label var e2um8 "employed since m-8 and unemployed now"
+{txt}
+{com}. 
+. gen u2em8 = cond(emp_status==1 &  ///
+>                (l1.emp_status==2|l2.emp_status==2|l3.emp_status==2|l4.emp_status==2| ///
+>                            l5.emp_status==2|l6.emp_status==2|l7.emp_status==2|l5.emp_status==2),1,0)
+{txt}
+{com}. label var u2em8 "unemployed since m-8 and employed now"
+{txt}
+{com}. 
+. 
+. gen e2um12 = cond(emp_status==2 & ///
+>                  (l1.emp_status==1|l2.emp_status==1|l3.emp_status==1|l4.emp_status==1| ///
+>                                   l5.emp_status==1|l6.emp_status==1|l7.emp_status==1|l8.emp_status==1| ///
+>                                   l9.emp_status==1|l10.emp_status==1|l11.emp_status==1|l12.emp_status==1),1,0)
+{txt}
+{com}. label var e2um12 "employed since y-1 and unemployed now"
+{txt}
+{com}. 
+. gen u2em12 = cond(emp_status==1 &  ///
+>                (l1.emp_status==2|l2.emp_status==2|l3.emp_status==2|l4.emp_status==2| ///
+>                            l5.emp_status==2|l6.emp_status==2|l7.emp_status==2|l5.emp_status==2| ///
+>                             l9.emp_status==2|l10.emp_status==2|l11.emp_status==2|l12.emp_status==2),1,0)
+{txt}
+{com}. label var u2em12 "unemployed since y-1 and employed now"
+{txt}
+{com}. 
+. *************************
+. *** Exclude outliers *****
+. *************************
+. 
+. local vars incvar rincvar l3
+{txt}
+{com}. 
+. foreach var in `vars'{c -(}
+{txt}  2{com}.       egen `var'pl=pctile(`var'),p(1)
+{txt}  3{com}.           egen `var'pu=pctile(`var'),p(99)
+{txt}  4{com}.           replace `var' = . if `var' <`var'pl | (`var' >`var'pu & `var'!=.)
+{txt}  5{com}. {c )-}
+{txt}(1965 real changes made, 1965 to missing)
+(668 real changes made, 668 to missing)
+(201 real changes made, 201 to missing)
+
+{com}. 
+. *************************
+. ** macro variables normalization
+. *****************************
+. 
+. replace he = he*l3.CPIAU/CPIAU
+{txt}(74668 real changes made, 29486 to missing)
+
+{com}. label var he "real hourly earning growth"
+{txt}
+{com}. 
+. gen ue_chg = uerate - l3.uerate
+{txt}(43206 missing values generated)
+
+{com}. label var ue_chg "change in unemployment rate"
+{txt}
+{com}. 
+. ************************
+. ** group variables ****
+. ************************
+. ** age square
+. gen age2 = age^2
+{txt}
+{com}. label var age2 "age squared"
+{txt}
+{com}. 
+. 
+. ***********************************
+. ** new variables SCE realizations **
+. **********************************
+. 
+. * log earning 
+. gen wage_1y = l3*100/CPIAU
+{txt}(78252 missing values generated)
+
+{com}. label var wage_1y "average real annual earning from primary job"
+{txt}
+{com}. 
+. ** average earning 
+. egen wage_1y_av = mean(wage_1y), by(ID)
+{txt}(38972 missing values generated)
+
+{com}. label var wage_1y_av "average real annual earning across time"
+{txt}
+{com}. 
+. ** income decile
+. egen earning_gp = xtile(wage_1y_av), by(date) n(10) 
+{txt}(38972 missing values generated)
+
+{com}. label var earning_gp "decile of earning from low to high"
+{txt}
+{com}. 
+. gen lwage_1y = log(wage_1y)
+{txt}(78252 missing values generated)
+
+{com}. label var lwage_1y "log average annual earning from primary job"
+{txt}
+{com}. 
+. gen lwage_1y_gm4 = lwage_1y-l4.lwage_1y
+{txt}(83475 missing values generated)
+
+{com}. label var lwage_1y_gm4 "log annual earning growth from previous m-4 to m"
+{txt}
+{com}. 
+. egen lwage_1y_gm4_sd = sd(lwage_1y_gm4), by(date)
+{txt}(74776 missing values generated)
+
+{com}. label var lwage_1y_gm4 "std log annual earning growth from previous m-4 to m"
+{txt}
+{com}. 
+. ** generate cross-sectional std
+. egen lwage_1y_sd = sd(lwage_1y), by(date)
+{txt}(73838 missing values generated)
+
+{com}. 
+. ** mincer regressions 
+. reghdfe lwage_1y age age2, a(i.gender i.edu_g) resid
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 3 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     8,751
+{txt}Absorbing 2 HDFE groups{col 51}F({res}   2{txt},{res}   8745{txt}){col 67}= {res}     58.44
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.1281
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.1276
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0132
+{txt}{col 51}Root MSE{col 67}= {res}    0.9399
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    lwage_1y{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 9}age {c |}{col 14}{res}{space 2}  .087877{col 26}{space 2} .0085779{col 37}{space 1}   10.24{col 46}{space 3}0.000{col 54}{space 4} .0710623{col 67}{space 3} .1046917
+{txt}{space 8}age2 {c |}{col 14}{res}{space 2}-.0009885{col 26}{space 2}  .000101{col 37}{space 1}   -9.78{col 46}{space 3}0.000{col 54}{space 4}-.0011865{col 67}{space 3}-.0007904
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} 7.991126{col 26}{space 2} .1740459{col 37}{space 1}   45.91{col 46}{space 3}0.000{col 54}{space 4} 7.649955{col 67}{space 3} 8.332297
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}      gender{col 14}{c |}{space 1}        2{col 27}{space 1}        0{col 39}{result}{space 1}        2{col 53}{text} {col 54}{c |}
+{col 1}{text}       edu_g{col 14}{c |}{space 1}        3{col 27}{space 1}        1{col 39}{result}{space 1}        2{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+
+{com}. predict lwage_1y_shk, residuals
+{txt}(79637 missing values generated)
+
+{com}. 
+. * including aggregate shock
+. reghdfe lwage_1y age age2, a(i.date i.gender i.edu_g) resid
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 4 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     8,751
+{txt}Absorbing 3 HDFE groups{col 51}F({res}   2{txt},{res}   8730{txt}){col 67}= {res}     58.40
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.1296
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.1276
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0132
+{txt}{col 51}Root MSE{col 67}= {res}    0.9399
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    lwage_1y{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 9}age {c |}{col 14}{res}{space 2}  .087862{col 26}{space 2}  .008584{col 37}{space 1}   10.24{col 46}{space 3}0.000{col 54}{space 4} .0710354{col 67}{space 3} .1046886
+{txt}{space 8}age2 {c |}{col 14}{res}{space 2}-.0009881{col 26}{space 2} .0001011{col 37}{space 1}   -9.77{col 46}{space 3}0.000{col 54}{space 4}-.0011863{col 67}{space 3}-.0007899
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} 7.991048{col 26}{space 2} .1741738{col 37}{space 1}   45.88{col 46}{space 3}0.000{col 54}{space 4} 7.649627{col 67}{space 3}  8.33247
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}        date{col 14}{c |}{space 1}       16{col 27}{space 1}        0{col 39}{result}{space 1}       16{col 53}{text} {col 54}{c |}
+{col 1}{text}      gender{col 14}{c |}{space 1}        2{col 27}{space 1}        1{col 39}{result}{space 1}        1{col 53}{text} {col 54}{c |}
+{col 1}{text}       edu_g{col 14}{c |}{space 1}        3{col 27}{space 1}        1{col 39}{result}{space 1}        2{col 53}{text}?{col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+
+{com}. predict lwage_1y_id_shk, residuals
+{txt}(79637 missing values generated)
+
+{com}. 
+. gen lwage_1y_ag_shk = lwage_1y_shk- lwage_1y_id_shk
+{txt}(79637 missing values generated)
+
+{com}. 
+. label var lwage_1y_shk "log wage shock"
+{txt}
+{com}. label var lwage_1y_id_shk "log wage idiosyncratic shock"
+{txt}
+{com}. label var lwage_1y_ag_shk "log wage aggregate shock"
+{txt}
+{com}. 
+. ** first difference
+. foreach var in lwage_1y_shk lwage_1y_id_shk lwage_1y_ag_shk{c -(}
+{txt}  2{com}. gen `var'_gr = `var'- l4.`var'
+{txt}  3{com}. {c )-}
+{txt}(84294 missing values generated)
+(84294 missing values generated)
+(84294 missing values generated)
+
+{com}. 
+. label var lwage_1y_shk_gr "log growth of unexplained wage"
+{txt}
+{com}. label var lwage_1y_id_shk_gr "log growth of idiosyncratic unexplained wage"
+{txt}
+{com}. label var lwage_1y_ag_shk_gr "log growth of aggregate unexplained wage"
+{txt}
+{com}. 
+. 
+. ** inequality  
+. gen lwage_1y_shk2 = log(lwage_1y_shk^2)
+{txt}(79637 missing values generated)
+
+{com}. label var lwage_1y_shk2 "squared log residuals"
+{txt}
+{com}. 
+. ** volatility 
+. gen lwage_1y_shk_gr2 = log(lwage_1y_shk_gr^2)
+{txt}(84294 missing values generated)
+
+{com}. label var lwage_1y_shk_gr2 "squared log shocks"
+{txt}
+{com}. 
+. egen lwage_1y_shk_gr_sd = sd(lwage_1y_shk_gr), by(date)
+{txt}(74776 missing values generated)
+
+{com}. label var lwage_1y_shk_gr_sd "standard deviation of log shocks"
+{txt}
+{com}. 
+. gen lwage_1y_shk_gr_var = lwage_1y_shk_gr_sd^2
+{txt}(74776 missing values generated)
+
+{com}. label var lwage_1y_shk_gr_sd "var of log shocks"
+{txt}
+{com}. 
+. 
+. /*
+> ***********************************************
+> ** summary chart of unconditional wages ********
+> ************************************************
+> 
+> preserve
+> 
+> collapse (mean) lwage_1y lwage_1y_sd, by(date year month) 
+> ** average log wage whole sample
+> twoway  (connected lwage_1y date) if lwage_1y!=., title("The mean of log real wages") 
+> graph export "${c -(}graph_folder{c )-}/log_wage_av.png", as(png) replace 
+> 
+> ** std log wage whole sample
+> twoway  (connected lwage_1y_sd date) if lwage_1y_sd!=., title("The standard deviation of log real wages") 
+> graph export "${c -(}graph_folder{c )-}/log_wage_sd.png", as(png) replace 
+> restore 
+> 
+> 
+> ************************************************
+> ** summary chart of conditional wages ********
+> ************************************************
+> 
+> preserve
+> 
+> collapse (mean) lwage_1y_shk_gr lwage_1y_shk_gr_sd, by(year month date) 
+> ** average log wage shock whole sample
+> twoway  (connected lwage_1y_shk_gr date) if lwage_1y_shk_gr!=., title("The mean of log real wage shocks") 
+> graph export "${c -(}graph_folder{c )-}/log_wage_shk_gr.png", as(png) replace 
+> 
+> ** std log wage whole sample
+> twoway  (connected lwage_1y_shk_gr_sd date) if lwage_1y_shk_gr_sd!=., title("The standard deviation of log real wage shocks") 
+> graph export "${c -(}graph_folder{c )-}/log_wage_shk_gr_sd.png", as(png) replace
+> restore 
+> */
+. 
+. ***************************************
+. **** earning level and risk perceptions
+. ***************************************
+. 
+. gen rincsd = sqrt(rincvar)
+{txt}(27793 missing values generated)
+
+{com}. gen rincsd_all_rl = sqrt(rincvar_all_rl)
+{txt}(27222 missing values generated)
+
+{com}. gen psd2_all_rl = sqrt(prisk2_all_rl)
+{txt}(27222 missing values generated)
+
+{com}. gen tsd2_all_rl = sqrt(trisk2_all_rl)
+{txt}(27222 missing values generated)
+
+{com}. 
+. gen rincsd_sub_rl = sqrt(rincvar_sub_rl)
+{txt}(38464 missing values generated)
+
+{com}. gen psd2_sub_rl = sqrt(prisk2_sub_rl)
+{txt}(38464 missing values generated)
+
+{com}. gen tsd2_sub_rl = sqrt(trisk2_sub_rl)
+{txt}(38464 missing values generated)
+
+{com}. 
+. 
+. graph bar rincsd, ///
+>            over(earning_gp,relabel(1 "10%" 2 "20%" 3 "30%" 4 "40%" 5 "50%" 6 "60%" 7 "70%" 8 "80%" 9 "90%" 10 "100%")) ///
+>                    bar(1, color(navy)) ///
+>                    title("Perceived risk by real earning") ///
+>                    b1title("earning decile") ///
+>                    ytitle("Average perceived risk (std)") 
+{res}{txt}
+{com}. graph export "${c -(}sum_graph_folder{c )-}/boxplot_rvar_earning.png", as(png) replace 
+{txt}(file /Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/ind/boxplot_rvar_earning.png written in PNG format)
+
+{com}. 
+. 
+. graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl if educ!=1, ///
+>            over(age_5yr) over(gender,relabel(1 "Male" 2 "Female")) ///
+>                    bar(1, color(navy)) ///
+>                    bar(2, color(gray)) ///
+>                    bar(3, color(cranberry)) ///
+>                    bar(4, color(orange)) ///
+>                    title("Perceived and realized risk by age",size(med)) ///
+>                    ytitle("Average perceived risk (std)")  ///
+>                    legend(row(2) label(1 "perceived pisk") label(2 "volatility") label(3 "realized risk") label(4 "permanent risk"))
+{res}{p 0 4 2}
+{txt}(note:  named style
+med not found in class
+gsize,  default attributes used)
+{p_end}
+{res}{txt}
+{com}. 
+. graph export "${c -(}sum_graph_folder{c )-}/boxplot_rvar_compare_age.png", as(png) replace 
+{txt}(file /Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/ind/boxplot_rvar_compare_age.png written in PNG format)
+
+{com}. 
+. 
+. graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
+>            over(educ,relabel(1 "HS dropout" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
+>                    bar(1, color(navy)) ///
+>                    bar(2, color(gray)) ///
+>                    bar(3, color(cranberry)) ///
+>                    bar(4, color(orange)) ///
+>                    title("Perceived and realized risk by education",size(med)) ///
+>                    ytitle("Average perceived risk (std)")  ///
+>                    legend(row(2) label(1 "perceived pisk") label(2 "volatility")  label(3 "realized risk") label(4 "permanent risk"))
+{res}{p 0 4 2}
+{txt}(note:  named style
+med not found in class
+gsize,  default attributes used)
+{p_end}
+{res}{txt}
+{com}. 
+. graph export "${c -(}sum_graph_folder{c )-}/boxplot_rvar_compare_educ.png", as(png) replace 
+{txt}(file /Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/ind/boxplot_rvar_compare_educ.png written in PNG format)
+
+{com}. 
+. 
+. ********************************************************
+. ** Compare risks between perception and realization **
+. ********************************************************
+. 
+. tabout gender edu_g age_5 using "${c -(}sum_table_folder{c )-}/risks_compare.csv", ///
+>             c(mean rincsd median rincsd mean lwage_shk_gr_sd_age_sex mean rincsd_sub_rl mean psd2_sub_rl mean tsd2_sub_rl ) ///
+>                         f(3c 3c 3c 3c 3c 4c 4c) ///
+>                         clab(PR(mean) PR(median) Volatility(median) RealizedRisk PRisk TRisk) ///
+>                         sum npos(tufte) rep style(csv) bt cl2(2-4 5-6) cltr2(.75em 1.5em) 
+{res}
+{txt}Table output written to: /Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/risks_compare.csv
+
+{res},Mean,Median,Mean,Mean,Mean,Mean
+,PR(mean),PR(median),Volatility(median),RealizedRisk,PRisk,TRisk
+gender,,,,,,
+1 (50%),0.030,0.022,0.106,0.115,0.109,0.0238
+2 (49%),0.029,0.022,0.119,0.131,0.122,0.0322
+Total (100%),0.029,0.022,0.112,0.123,0.115,0.0279
+
+education group,,,,,,
+HS dropout (0%),0.038,0.023,0.087,0.071,0.070,0.0063
+HS graduate (41%),0.031,0.023,0.096,0.098,0.094,0.0176
+College/above (57%),0.028,0.022,0.124,0.142,0.132,0.0357
+Total (100%),0.029,0.022,0.112,0.123,0.115,0.0279
+
+5-year age,,,,,,
+20 (2%),0.037,0.031,0.093,0.069,0.068,0.0061
+25 (12%),0.032,0.027,0.111,0.157,0.156,0.0083
+30 (13%),0.030,0.024,0.116,0.112,0.098,0.0372
+35 (13%),0.030,0.022,0.125,0.149,0.134,0.0524
+40 (13%),0.029,0.021,0.100,0.119,0.111,0.0287
+45 (14%),0.028,0.021,0.119,0.113,0.106,0.0224
+50 (15%),0.028,0.020,0.095,0.100,0.096,0.0203
+55 (15%),0.028,0.019,0.122,0.128,0.121,0.0283
+Total (100%),0.029,0.022,0.112,0.123,0.115,0.0279
+{txt}
+{com}. 
+. ***************************************
+. **** unemployment experience and risk perceptions
+. ***************************************
+. 
+. 
+. graph bar rincsd, over(u2e,relabel(1 "other" 2 "recently unemployed")) ///
+>          title("Perceived risk by unemployment experience") ///
+>                  ytitle("Average perceived risk (std)") 
+{res}{txt}
+{com}. graph export "${c -(}sum_graph_folder{c )-}/boxplot_rvar_ue_peperience.png", as(png) replace 
+{txt}(file /Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/ind/boxplot_rvar_ue_peperience.png written in PNG format)
+
+{com}. 
+. 
+. graph bar rincsd, over(u2em12,relabel(1 "other" 2 "unemployed within past year")) ///
+>          title("Perceived risk by unemployment experience") ///
+>                  ytitle("Average perceived risk (std)") 
+{res}{txt}
+{com}. graph export "${c -(}sum_graph_folder{c )-}/boxplot_rvar_ue_peperience_m12.png", as(png) replace 
+{txt}(file /Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/ind/boxplot_rvar_ue_peperience_m12.png written in PNG format)
+
+{com}. 
+. 
+. 
+. ************************************************
+. ** time series dynamics of risk perceptions ********
+. ************************************************
+. 
+. eststo clear
+{txt}
+{com}. 
+. eststo: reghdfe lrincvar l1.lrincvar, a(ID)
+{res}{txt}(dropped 1143 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    41,807
+{txt}Absorbing 1 HDFE group{col 51}F({res}   1{txt},{res}  35164{txt}){col 67}= {res}    601.51
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.6878
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.6289
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0168
+{txt}{col 51}Root MSE{col 67}= {res}    0.8058
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    lrincvar{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}lrincvar {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .1203394{col 26}{space 2} .0049067{col 37}{space 1}   24.53{col 46}{space 3}0.000{col 54}{space 4} .1107222{col 67}{space 3} .1299566
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-6.694593{col 26}{space 2} .0370802{col 37}{space 1} -180.54{col 46}{space 3}0.000{col 54}{space 4}-6.767271{col 67}{space 3}-6.621914
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     6642{col 27}{space 1}        0{col 39}{result}{space 1}     6642{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est1{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. estadd local hastid "No",replace
+
+{txt}added macro:
+             e(hastid) : "{res:No}"
+
+{com}. 
+. eststo: reghdfe lrincvar l1.lrincvar l2.lrincvar , a(ID)
+{res}{txt}(dropped 1016 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    30,894
+{txt}Absorbing 1 HDFE group{col 51}F({res}   2{txt},{res}  25535{txt}){col 67}= {res}     55.64
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.7210
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.6625
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0043
+{txt}{col 51}Root MSE{col 67}= {res}    0.7533
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    lrincvar{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}lrincvar {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .0460603{col 26}{space 2} .0059407{col 37}{space 1}    7.75{col 46}{space 3}0.000{col 54}{space 4} .0344161{col 67}{space 3} .0577045
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .0354251{col 26}{space 2}  .005501{col 37}{space 1}    6.44{col 46}{space 3}0.000{col 54}{space 4} .0246428{col 67}{space 3} .0462074
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-7.020422{col 26}{space 2} .0584733{col 37}{space 1} -120.06{col 46}{space 3}0.000{col 54}{space 4}-7.135033{col 67}{space 3}-6.905811
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     5357{col 27}{space 1}        0{col 39}{result}{space 1}     5357{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est2{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. estadd local hastid "No",replace
+
+{txt}added macro:
+             e(hastid) : "{res:No}"
+
+{com}. 
+. eststo: reghdfe lrincvar l1.lrincvar i.date, a(ID)
+{res}{txt}(dropped 1143 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    41,807
+{txt}Absorbing 1 HDFE group{col 51}F({res}  97{txt},{res}  35068{txt}){col 67}= {res}     16.11
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.6960
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.6376
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0427
+{txt}{col 51}Root MSE{col 67}= {res}    0.7963
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    lrincvar{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}lrincvar {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2}    .0879{col 26}{space 2} .0049975{col 37}{space 1}   17.59{col 46}{space 3}0.000{col 54}{space 4} .0781048{col 67}{space 3} .0976952
+{txt}{space 12} {c |}
+{space 8}date {c |}
+{space 8}643  {c |}{col 14}{res}{space 2} .0686218{col 26}{space 2} .0598022{col 37}{space 1}    1.15{col 46}{space 3}0.251{col 54}{space 4}-.0485925{col 67}{space 3} .1858361
+{txt}{space 8}644  {c |}{col 14}{res}{space 2} .0041738{col 26}{space 2} .0615922{col 37}{space 1}    0.07{col 46}{space 3}0.946{col 54}{space 4}-.1165489{col 67}{space 3} .1248965
+{txt}{space 8}645  {c |}{col 14}{res}{space 2}-.0223515{col 26}{space 2} .0619768{col 37}{space 1}   -0.36{col 46}{space 3}0.718{col 54}{space 4}-.1438281{col 67}{space 3}  .099125
+{txt}{space 8}646  {c |}{col 14}{res}{space 2}-.1031288{col 26}{space 2} .0626595{col 37}{space 1}   -1.65{col 46}{space 3}0.100{col 54}{space 4}-.2259434{col 67}{space 3} .0196858
+{txt}{space 8}647  {c |}{col 14}{res}{space 2}-.1014862{col 26}{space 2} .0675249{col 37}{space 1}   -1.50{col 46}{space 3}0.133{col 54}{space 4}-.2338371{col 67}{space 3} .0308648
+{txt}{space 8}648  {c |}{col 14}{res}{space 2}-.2419618{col 26}{space 2} .0685964{col 37}{space 1}   -3.53{col 46}{space 3}0.000{col 54}{space 4} -.376413{col 67}{space 3}-.1075106
+{txt}{space 8}649  {c |}{col 14}{res}{space 2}-.2029435{col 26}{space 2} .0693372{col 37}{space 1}   -2.93{col 46}{space 3}0.003{col 54}{space 4}-.3388466{col 67}{space 3}-.0670405
+{txt}{space 8}650  {c |}{col 14}{res}{space 2} -.235874{col 26}{space 2} .0707297{col 37}{space 1}   -3.33{col 46}{space 3}0.001{col 54}{space 4}-.3745066{col 67}{space 3}-.0972415
+{txt}{space 8}651  {c |}{col 14}{res}{space 2}  -.32819{col 26}{space 2} .0724997{col 37}{space 1}   -4.53{col 46}{space 3}0.000{col 54}{space 4}-.4702917{col 67}{space 3}-.1860884
+{txt}{space 8}652  {c |}{col 14}{res}{space 2}-.3307255{col 26}{space 2} .0737804{col 37}{space 1}   -4.48{col 46}{space 3}0.000{col 54}{space 4}-.4753373{col 67}{space 3}-.1861136
+{txt}{space 8}653  {c |}{col 14}{res}{space 2}-.3301676{col 26}{space 2} .0748064{col 37}{space 1}   -4.41{col 46}{space 3}0.000{col 54}{space 4}-.4767905{col 67}{space 3}-.1835447
+{txt}{space 8}654  {c |}{col 14}{res}{space 2}-.3941285{col 26}{space 2} .0748915{col 37}{space 1}   -5.26{col 46}{space 3}0.000{col 54}{space 4}-.5409183{col 67}{space 3}-.2473388
+{txt}{space 8}655  {c |}{col 14}{res}{space 2}-.4054267{col 26}{space 2} .0758233{col 37}{space 1}   -5.35{col 46}{space 3}0.000{col 54}{space 4}-.5540428{col 67}{space 3}-.2568107
+{txt}{space 8}656  {c |}{col 14}{res}{space 2}-.4185691{col 26}{space 2} .0774644{col 37}{space 1}   -5.40{col 46}{space 3}0.000{col 54}{space 4}-.5704017{col 67}{space 3}-.2667365
+{txt}{space 8}657  {c |}{col 14}{res}{space 2}-.5101538{col 26}{space 2} .0789724{col 37}{space 1}   -6.46{col 46}{space 3}0.000{col 54}{space 4}-.6649422{col 67}{space 3}-.3553653
+{txt}{space 8}658  {c |}{col 14}{res}{space 2}-.5035953{col 26}{space 2}  .080388{col 37}{space 1}   -6.26{col 46}{space 3}0.000{col 54}{space 4}-.6611584{col 67}{space 3}-.3460322
+{txt}{space 8}659  {c |}{col 14}{res}{space 2}-.5298762{col 26}{space 2} .0817583{col 37}{space 1}   -6.48{col 46}{space 3}0.000{col 54}{space 4}-.6901251{col 67}{space 3}-.3696273
+{txt}{space 8}660  {c |}{col 14}{res}{space 2}-.6239551{col 26}{space 2} .0834366{col 37}{space 1}   -7.48{col 46}{space 3}0.000{col 54}{space 4}-.7874934{col 67}{space 3}-.4604168
+{txt}{space 8}661  {c |}{col 14}{res}{space 2}-.6570408{col 26}{space 2} .0844292{col 37}{space 1}   -7.78{col 46}{space 3}0.000{col 54}{space 4}-.8225247{col 67}{space 3}-.4915568
+{txt}{space 8}662  {c |}{col 14}{res}{space 2} -.626328{col 26}{space 2} .0857408{col 37}{space 1}   -7.30{col 46}{space 3}0.000{col 54}{space 4}-.7943827{col 67}{space 3}-.4582732
+{txt}{space 8}663  {c |}{col 14}{res}{space 2}-.6532709{col 26}{space 2} .0871877{col 37}{space 1}   -7.49{col 46}{space 3}0.000{col 54}{space 4}-.8241614{col 67}{space 3}-.4823803
+{txt}{space 8}664  {c |}{col 14}{res}{space 2} -.748756{col 26}{space 2} .0876734{col 37}{space 1}   -8.54{col 46}{space 3}0.000{col 54}{space 4}-.9205985{col 67}{space 3}-.5769134
+{txt}{space 8}665  {c |}{col 14}{res}{space 2}-.6489146{col 26}{space 2} .0880375{col 37}{space 1}   -7.37{col 46}{space 3}0.000{col 54}{space 4}-.8214708{col 67}{space 3}-.4763584
+{txt}{space 8}666  {c |}{col 14}{res}{space 2}-.6876624{col 26}{space 2} .0890773{col 37}{space 1}   -7.72{col 46}{space 3}0.000{col 54}{space 4}-.8622568{col 67}{space 3} -.513068
+{txt}{space 8}667  {c |}{col 14}{res}{space 2}-.7628239{col 26}{space 2} .0905588{col 37}{space 1}   -8.42{col 46}{space 3}0.000{col 54}{space 4}-.9403221{col 67}{space 3}-.5853256
+{txt}{space 8}668  {c |}{col 14}{res}{space 2}-.8119935{col 26}{space 2} .0918006{col 37}{space 1}   -8.85{col 46}{space 3}0.000{col 54}{space 4}-.9919256{col 67}{space 3}-.6320615
+{txt}{space 8}669  {c |}{col 14}{res}{space 2}-.9432818{col 26}{space 2} .0923838{col 37}{space 1}  -10.21{col 46}{space 3}0.000{col 54}{space 4}-1.124357{col 67}{space 3}-.7622066
+{txt}{space 8}670  {c |}{col 14}{res}{space 2}-.9374735{col 26}{space 2} .0932767{col 37}{space 1}  -10.05{col 46}{space 3}0.000{col 54}{space 4}-1.120299{col 67}{space 3}-.7546482
+{txt}{space 8}671  {c |}{col 14}{res}{space 2}-1.008359{col 26}{space 2} .0944524{col 37}{space 1}  -10.68{col 46}{space 3}0.000{col 54}{space 4}-1.193489{col 67}{space 3}-.8232291
+{txt}{space 8}672  {c |}{col 14}{res}{space 2}-1.029669{col 26}{space 2} .0952715{col 37}{space 1}  -10.81{col 46}{space 3}0.000{col 54}{space 4}-1.216404{col 67}{space 3}-.8429338
+{txt}{space 8}673  {c |}{col 14}{res}{space 2}-1.124663{col 26}{space 2} .0966405{col 37}{space 1}  -11.64{col 46}{space 3}0.000{col 54}{space 4}-1.314082{col 67}{space 3}-.9352447
+{txt}{space 8}674  {c |}{col 14}{res}{space 2}-1.065146{col 26}{space 2}  .097587{col 37}{space 1}  -10.91{col 46}{space 3}0.000{col 54}{space 4} -1.25642{col 67}{space 3}-.8738727
+{txt}{space 8}675  {c |}{col 14}{res}{space 2} -1.14061{col 26}{space 2} .0984119{col 37}{space 1}  -11.59{col 46}{space 3}0.000{col 54}{space 4}-1.333501{col 67}{space 3}-.9477201
+{txt}{space 8}676  {c |}{col 14}{res}{space 2} -1.16011{col 26}{space 2} .0993173{col 37}{space 1}  -11.68{col 46}{space 3}0.000{col 54}{space 4}-1.354775{col 67}{space 3}-.9654454
+{txt}{space 8}677  {c |}{col 14}{res}{space 2}-1.192116{col 26}{space 2} .0996523{col 37}{space 1}  -11.96{col 46}{space 3}0.000{col 54}{space 4}-1.387438{col 67}{space 3}-.9967947
+{txt}{space 8}678  {c |}{col 14}{res}{space 2}-1.180858{col 26}{space 2} .1004395{col 37}{space 1}  -11.76{col 46}{space 3}0.000{col 54}{space 4}-1.377722{col 67}{space 3} -.983993
+{txt}{space 8}679  {c |}{col 14}{res}{space 2}-1.171411{col 26}{space 2}  .102098{col 37}{space 1}  -11.47{col 46}{space 3}0.000{col 54}{space 4}-1.371526{col 67}{space 3}-.9712958
+{txt}{space 8}680  {c |}{col 14}{res}{space 2}-1.277814{col 26}{space 2} .1026073{col 37}{space 1}  -12.45{col 46}{space 3}0.000{col 54}{space 4}-1.478927{col 67}{space 3}  -1.0767
+{txt}{space 8}681  {c |}{col 14}{res}{space 2}-1.244162{col 26}{space 2} .1033381{col 37}{space 1}  -12.04{col 46}{space 3}0.000{col 54}{space 4}-1.446708{col 67}{space 3}-1.041616
+{txt}{space 8}682  {c |}{col 14}{res}{space 2}-1.202765{col 26}{space 2} .1045307{col 37}{space 1}  -11.51{col 46}{space 3}0.000{col 54}{space 4}-1.407649{col 67}{space 3}-.9978818
+{txt}{space 8}683  {c |}{col 14}{res}{space 2}-1.271186{col 26}{space 2} .1050413{col 37}{space 1}  -12.10{col 46}{space 3}0.000{col 54}{space 4} -1.47707{col 67}{space 3}-1.065301
+{txt}{space 8}684  {c |}{col 14}{res}{space 2}-1.210645{col 26}{space 2} .1060205{col 37}{space 1}  -11.42{col 46}{space 3}0.000{col 54}{space 4}-1.418449{col 67}{space 3}-1.002842
+{txt}{space 8}685  {c |}{col 14}{res}{space 2}-1.331984{col 26}{space 2} .1069458{col 37}{space 1}  -12.45{col 46}{space 3}0.000{col 54}{space 4}-1.541601{col 67}{space 3}-1.122367
+{txt}{space 8}686  {c |}{col 14}{res}{space 2}-1.454393{col 26}{space 2}  .107951{col 37}{space 1}  -13.47{col 46}{space 3}0.000{col 54}{space 4} -1.66598{col 67}{space 3}-1.242806
+{txt}{space 8}687  {c |}{col 14}{res}{space 2}-1.536029{col 26}{space 2} .1085656{col 37}{space 1}  -14.15{col 46}{space 3}0.000{col 54}{space 4}-1.748821{col 67}{space 3}-1.323237
+{txt}{space 8}688  {c |}{col 14}{res}{space 2}-1.630071{col 26}{space 2} .1096144{col 37}{space 1}  -14.87{col 46}{space 3}0.000{col 54}{space 4}-1.844919{col 67}{space 3}-1.415223
+{txt}{space 8}689  {c |}{col 14}{res}{space 2}-1.538029{col 26}{space 2} .1101191{col 37}{space 1}  -13.97{col 46}{space 3}0.000{col 54}{space 4}-1.753866{col 67}{space 3}-1.322192
+{txt}{space 8}690  {c |}{col 14}{res}{space 2}-1.629999{col 26}{space 2}  .110778{col 37}{space 1}  -14.71{col 46}{space 3}0.000{col 54}{space 4}-1.847128{col 67}{space 3}-1.412871
+{txt}{space 8}691  {c |}{col 14}{res}{space 2}-1.739776{col 26}{space 2} .1117343{col 37}{space 1}  -15.57{col 46}{space 3}0.000{col 54}{space 4}-1.958779{col 67}{space 3}-1.520773
+{txt}{space 8}692  {c |}{col 14}{res}{space 2}-1.665029{col 26}{space 2} .1127906{col 37}{space 1}  -14.76{col 46}{space 3}0.000{col 54}{space 4}-1.886102{col 67}{space 3}-1.443956
+{txt}{space 8}693  {c |}{col 14}{res}{space 2}-1.785048{col 26}{space 2} .1135336{col 37}{space 1}  -15.72{col 46}{space 3}0.000{col 54}{space 4}-2.007577{col 67}{space 3}-1.562519
+{txt}{space 8}694  {c |}{col 14}{res}{space 2}-1.801981{col 26}{space 2} .1142087{col 37}{space 1}  -15.78{col 46}{space 3}0.000{col 54}{space 4}-2.025834{col 67}{space 3}-1.578128
+{txt}{space 8}695  {c |}{col 14}{res}{space 2}-1.842029{col 26}{space 2} .1153526{col 37}{space 1}  -15.97{col 46}{space 3}0.000{col 54}{space 4}-2.068123{col 67}{space 3}-1.615934
+{txt}{space 8}696  {c |}{col 14}{res}{space 2}-1.870623{col 26}{space 2} .1167245{col 37}{space 1}  -16.03{col 46}{space 3}0.000{col 54}{space 4}-2.099406{col 67}{space 3}-1.641839
+{txt}{space 8}697  {c |}{col 14}{res}{space 2}-1.891487{col 26}{space 2} .1173286{col 37}{space 1}  -16.12{col 46}{space 3}0.000{col 54}{space 4}-2.121455{col 67}{space 3} -1.66152
+{txt}{space 8}698  {c |}{col 14}{res}{space 2}-2.042826{col 26}{space 2} .1178447{col 37}{space 1}  -17.33{col 46}{space 3}0.000{col 54}{space 4}-2.273805{col 67}{space 3}-1.811847
+{txt}{space 8}699  {c |}{col 14}{res}{space 2}-1.981035{col 26}{space 2} .1190664{col 37}{space 1}  -16.64{col 46}{space 3}0.000{col 54}{space 4}-2.214409{col 67}{space 3}-1.747662
+{txt}{space 8}700  {c |}{col 14}{res}{space 2}-2.042145{col 26}{space 2} .1199381{col 37}{space 1}  -17.03{col 46}{space 3}0.000{col 54}{space 4}-2.277228{col 67}{space 3}-1.807063
+{txt}{space 8}701  {c |}{col 14}{res}{space 2}-2.021032{col 26}{space 2} .1209522{col 37}{space 1}  -16.71{col 46}{space 3}0.000{col 54}{space 4}-2.258102{col 67}{space 3}-1.783962
+{txt}{space 8}702  {c |}{col 14}{res}{space 2}-2.159456{col 26}{space 2} .1216113{col 37}{space 1}  -17.76{col 46}{space 3}0.000{col 54}{space 4}-2.397818{col 67}{space 3}-1.921094
+{txt}{space 8}703  {c |}{col 14}{res}{space 2}-2.297121{col 26}{space 2} .1220218{col 37}{space 1}  -18.83{col 46}{space 3}0.000{col 54}{space 4}-2.536288{col 67}{space 3}-2.057955
+{txt}{space 8}704  {c |}{col 14}{res}{space 2}-2.275091{col 26}{space 2} .1232564{col 37}{space 1}  -18.46{col 46}{space 3}0.000{col 54}{space 4}-2.516678{col 67}{space 3}-2.033505
+{txt}{space 8}705  {c |}{col 14}{res}{space 2} -2.33073{col 26}{space 2} .1239744{col 37}{space 1}  -18.80{col 46}{space 3}0.000{col 54}{space 4}-2.573723{col 67}{space 3}-2.087736
+{txt}{space 8}706  {c |}{col 14}{res}{space 2}-2.344532{col 26}{space 2} .1246797{col 37}{space 1}  -18.80{col 46}{space 3}0.000{col 54}{space 4}-2.588909{col 67}{space 3}-2.100156
+{txt}{space 8}707  {c |}{col 14}{res}{space 2} -2.36916{col 26}{space 2} .1259906{col 37}{space 1}  -18.80{col 46}{space 3}0.000{col 54}{space 4}-2.616105{col 67}{space 3}-2.122214
+{txt}{space 8}708  {c |}{col 14}{res}{space 2}-2.389796{col 26}{space 2} .1263423{col 37}{space 1}  -18.92{col 46}{space 3}0.000{col 54}{space 4}-2.637431{col 67}{space 3}-2.142161
+{txt}{space 8}709  {c |}{col 14}{res}{space 2}-2.516511{col 26}{space 2} .1268418{col 37}{space 1}  -19.84{col 46}{space 3}0.000{col 54}{space 4}-2.765124{col 67}{space 3}-2.267897
+{txt}{space 8}710  {c |}{col 14}{res}{space 2}-2.598929{col 26}{space 2} .1274188{col 37}{space 1}  -20.40{col 46}{space 3}0.000{col 54}{space 4}-2.848674{col 67}{space 3}-2.349184
+{txt}{space 8}711  {c |}{col 14}{res}{space 2}-2.681285{col 26}{space 2} .1286004{col 37}{space 1}  -20.85{col 46}{space 3}0.000{col 54}{space 4}-2.933346{col 67}{space 3}-2.429224
+{txt}{space 8}712  {c |}{col 14}{res}{space 2}-2.620025{col 26}{space 2} .1294423{col 37}{space 1}  -20.24{col 46}{space 3}0.000{col 54}{space 4}-2.873736{col 67}{space 3}-2.366314
+{txt}{space 8}713  {c |}{col 14}{res}{space 2} -2.70335{col 26}{space 2}  .130241{col 37}{space 1}  -20.76{col 46}{space 3}0.000{col 54}{space 4}-2.958627{col 67}{space 3}-2.448074
+{txt}{space 8}714  {c |}{col 14}{res}{space 2}-2.867114{col 26}{space 2} .1305852{col 37}{space 1}  -21.96{col 46}{space 3}0.000{col 54}{space 4}-3.123065{col 67}{space 3}-2.611163
+{txt}{space 8}715  {c |}{col 14}{res}{space 2}-2.914907{col 26}{space 2} .1317283{col 37}{space 1}  -22.13{col 46}{space 3}0.000{col 54}{space 4}-3.173099{col 67}{space 3}-2.656716
+{txt}{space 8}716  {c |}{col 14}{res}{space 2}-2.868972{col 26}{space 2} .1325418{col 37}{space 1}  -21.65{col 46}{space 3}0.000{col 54}{space 4}-3.128758{col 67}{space 3}-2.609186
+{txt}{space 8}717  {c |}{col 14}{res}{space 2}-2.898571{col 26}{space 2} .1327544{col 37}{space 1}  -21.83{col 46}{space 3}0.000{col 54}{space 4}-3.158774{col 67}{space 3}-2.638368
+{txt}{space 8}718  {c |}{col 14}{res}{space 2}-3.040436{col 26}{space 2} .1336331{col 37}{space 1}  -22.75{col 46}{space 3}0.000{col 54}{space 4}-3.302361{col 67}{space 3}-2.778511
+{txt}{space 8}719  {c |}{col 14}{res}{space 2} -3.03863{col 26}{space 2} .1348857{col 37}{space 1}  -22.53{col 46}{space 3}0.000{col 54}{space 4} -3.30301{col 67}{space 3}-2.774249
+{txt}{space 8}720  {c |}{col 14}{res}{space 2}-3.134058{col 26}{space 2}  .135305{col 37}{space 1}  -23.16{col 46}{space 3}0.000{col 54}{space 4} -3.39926{col 67}{space 3}-2.868856
+{txt}{space 8}721  {c |}{col 14}{res}{space 2} -3.21674{col 26}{space 2} .1358458{col 37}{space 1}  -23.68{col 46}{space 3}0.000{col 54}{space 4}-3.483002{col 67}{space 3}-2.950478
+{txt}{space 8}722  {c |}{col 14}{res}{space 2}-2.948625{col 26}{space 2} .1368053{col 37}{space 1}  -21.55{col 46}{space 3}0.000{col 54}{space 4}-3.216768{col 67}{space 3}-2.680482
+{txt}{space 8}723  {c |}{col 14}{res}{space 2}-2.893876{col 26}{space 2}   .13725{col 37}{space 1}  -21.08{col 46}{space 3}0.000{col 54}{space 4} -3.16289{col 67}{space 3}-2.624862
+{txt}{space 8}724  {c |}{col 14}{res}{space 2}-2.975736{col 26}{space 2} .1379334{col 37}{space 1}  -21.57{col 46}{space 3}0.000{col 54}{space 4} -3.24609{col 67}{space 3}-2.705382
+{txt}{space 8}725  {c |}{col 14}{res}{space 2}-3.247037{col 26}{space 2} .1389902{col 37}{space 1}  -23.36{col 46}{space 3}0.000{col 54}{space 4}-3.519463{col 67}{space 3}-2.974612
+{txt}{space 8}726  {c |}{col 14}{res}{space 2}-3.302407{col 26}{space 2} .1404597{col 37}{space 1}  -23.51{col 46}{space 3}0.000{col 54}{space 4}-3.577712{col 67}{space 3}-3.027101
+{txt}{space 8}727  {c |}{col 14}{res}{space 2}-3.290581{col 26}{space 2} .1413048{col 37}{space 1}  -23.29{col 46}{space 3}0.000{col 54}{space 4}-3.567543{col 67}{space 3}-3.013619
+{txt}{space 8}728  {c |}{col 14}{res}{space 2}-3.364422{col 26}{space 2} .1421645{col 37}{space 1}  -23.67{col 46}{space 3}0.000{col 54}{space 4}-3.643069{col 67}{space 3}-3.085775
+{txt}{space 8}729  {c |}{col 14}{res}{space 2}-3.310484{col 26}{space 2} .1422756{col 37}{space 1}  -23.27{col 46}{space 3}0.000{col 54}{space 4}-3.589349{col 67}{space 3}-3.031619
+{txt}{space 8}730  {c |}{col 14}{res}{space 2}-3.366519{col 26}{space 2} .1423355{col 37}{space 1}  -23.65{col 46}{space 3}0.000{col 54}{space 4}-3.645501{col 67}{space 3}-3.087537
+{txt}{space 8}731  {c |}{col 14}{res}{space 2}-3.351301{col 26}{space 2} .1425269{col 37}{space 1}  -23.51{col 46}{space 3}0.000{col 54}{space 4}-3.630659{col 67}{space 3}-3.071944
+{txt}{space 8}732  {c |}{col 14}{res}{space 2}  -3.3868{col 26}{space 2} .1433657{col 37}{space 1}  -23.62{col 46}{space 3}0.000{col 54}{space 4}-3.667801{col 67}{space 3}-3.105799
+{txt}{space 8}733  {c |}{col 14}{res}{space 2}-3.463265{col 26}{space 2} .1443749{col 37}{space 1}  -23.99{col 46}{space 3}0.000{col 54}{space 4}-3.746245{col 67}{space 3}-3.180286
+{txt}{space 8}734  {c |}{col 14}{res}{space 2} -3.54336{col 26}{space 2} .1459313{col 37}{space 1}  -24.28{col 46}{space 3}0.000{col 54}{space 4} -3.82939{col 67}{space 3} -3.25733
+{txt}{space 8}735  {c |}{col 14}{res}{space 2}-3.539159{col 26}{space 2} .1461705{col 37}{space 1}  -24.21{col 46}{space 3}0.000{col 54}{space 4}-3.825658{col 67}{space 3} -3.25266
+{txt}{space 8}736  {c |}{col 14}{res}{space 2}-3.499672{col 26}{space 2} .1466083{col 37}{space 1}  -23.87{col 46}{space 3}0.000{col 54}{space 4}-3.787029{col 67}{space 3}-3.212315
+{txt}{space 8}737  {c |}{col 14}{res}{space 2}-3.520133{col 26}{space 2}  .147126{col 37}{space 1}  -23.93{col 46}{space 3}0.000{col 54}{space 4}-3.808505{col 67}{space 3}-3.231761
+{txt}{space 8}738  {c |}{col 14}{res}{space 2}-3.585152{col 26}{space 2} .1480114{col 37}{space 1}  -24.22{col 46}{space 3}0.000{col 54}{space 4}-3.875259{col 67}{space 3}-3.295045
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-5.216089{col 26}{space 2} .0916382{col 37}{space 1}  -56.92{col 46}{space 3}0.000{col 54}{space 4}-5.395703{col 67}{space 3}-5.036475
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     6642{col 27}{space 1}        0{col 39}{result}{space 1}     6642{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est3{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. estadd local hastid "Yes",replace
+
+{txt}added macro:
+             e(hastid) : "{res:Yes}"
+
+{com}. 
+. eststo: reghdfe lrincvar l1.lrincvar l2.lrincvar i.date, a(ID)
+{res}{txt}(dropped 1016 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    30,894
+{txt}Absorbing 1 HDFE group{col 51}F({res}  97{txt},{res}  25440{txt}){col 67}= {res}      6.90
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.7270
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.6685
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0256
+{txt}{col 51}Root MSE{col 67}= {res}    0.7466
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    lrincvar{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}lrincvar {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .0280955{col 26}{space 2} .0059729{col 37}{space 1}    4.70{col 46}{space 3}0.000{col 54}{space 4} .0163884{col 67}{space 3} .0398027
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .0160822{col 26}{space 2} .0055966{col 37}{space 1}    2.87{col 46}{space 3}0.004{col 54}{space 4} .0051126{col 67}{space 3} .0270518
+{txt}{space 12} {c |}
+{space 8}date {c |}
+{space 8}644  {c |}{col 14}{res}{space 2}-.1090884{col 26}{space 2} .0683643{col 37}{space 1}   -1.60{col 46}{space 3}0.111{col 54}{space 4}-.2430864{col 67}{space 3} .0249096
+{txt}{space 8}645  {c |}{col 14}{res}{space 2}-.1600156{col 26}{space 2} .0683259{col 37}{space 1}   -2.34{col 46}{space 3}0.019{col 54}{space 4}-.2939382{col 67}{space 3}-.0260929
+{txt}{space 8}646  {c |}{col 14}{res}{space 2} -.212634{col 26}{space 2} .0698174{col 37}{space 1}   -3.05{col 46}{space 3}0.002{col 54}{space 4}-.3494802{col 67}{space 3}-.0757878
+{txt}{space 8}647  {c |}{col 14}{res}{space 2}-.2529211{col 26}{space 2} .0748737{col 37}{space 1}   -3.38{col 46}{space 3}0.001{col 54}{space 4}-.3996778{col 67}{space 3}-.1061644
+{txt}{space 8}648  {c |}{col 14}{res}{space 2}-.3679724{col 26}{space 2} .0772692{col 37}{space 1}   -4.76{col 46}{space 3}0.000{col 54}{space 4}-.5194245{col 67}{space 3}-.2165203
+{txt}{space 8}649  {c |}{col 14}{res}{space 2}-.3574969{col 26}{space 2} .0786216{col 37}{space 1}   -4.55{col 46}{space 3}0.000{col 54}{space 4}-.5115998{col 67}{space 3} -.203394
+{txt}{space 8}650  {c |}{col 14}{res}{space 2} -.334922{col 26}{space 2}  .079981{col 37}{space 1}   -4.19{col 46}{space 3}0.000{col 54}{space 4}-.4916895{col 67}{space 3}-.1781546
+{txt}{space 8}651  {c |}{col 14}{res}{space 2}-.4577516{col 26}{space 2} .0812909{col 37}{space 1}   -5.63{col 46}{space 3}0.000{col 54}{space 4}-.6170865{col 67}{space 3}-.2984168
+{txt}{space 8}652  {c |}{col 14}{res}{space 2}-.4545317{col 26}{space 2} .0839101{col 37}{space 1}   -5.42{col 46}{space 3}0.000{col 54}{space 4}-.6190002{col 67}{space 3}-.2900631
+{txt}{space 8}653  {c |}{col 14}{res}{space 2}-.3914612{col 26}{space 2}  .085042{col 37}{space 1}   -4.60{col 46}{space 3}0.000{col 54}{space 4}-.5581484{col 67}{space 3} -.224774
+{txt}{space 8}654  {c |}{col 14}{res}{space 2}-.4669074{col 26}{space 2} .0852819{col 37}{space 1}   -5.47{col 46}{space 3}0.000{col 54}{space 4}-.6340648{col 67}{space 3}  -.29975
+{txt}{space 8}655  {c |}{col 14}{res}{space 2}-.4263834{col 26}{space 2} .0867298{col 37}{space 1}   -4.92{col 46}{space 3}0.000{col 54}{space 4}-.5963787{col 67}{space 3}-.2563881
+{txt}{space 8}656  {c |}{col 14}{res}{space 2}-.4970111{col 26}{space 2} .0881949{col 37}{space 1}   -5.64{col 46}{space 3}0.000{col 54}{space 4}-.6698781{col 67}{space 3} -.324144
+{txt}{space 8}657  {c |}{col 14}{res}{space 2}-.5608376{col 26}{space 2} .0907013{col 37}{space 1}   -6.18{col 46}{space 3}0.000{col 54}{space 4}-.7386172{col 67}{space 3}-.3830579
+{txt}{space 8}658  {c |}{col 14}{res}{space 2}-.5693046{col 26}{space 2} .0926564{col 37}{space 1}   -6.14{col 46}{space 3}0.000{col 54}{space 4}-.7509164{col 67}{space 3}-.3876929
+{txt}{space 8}659  {c |}{col 14}{res}{space 2}-.6121869{col 26}{space 2} .0943323{col 37}{space 1}   -6.49{col 46}{space 3}0.000{col 54}{space 4}-.7970836{col 67}{space 3}-.4272903
+{txt}{space 8}660  {c |}{col 14}{res}{space 2} -.713528{col 26}{space 2} .0963827{col 37}{space 1}   -7.40{col 46}{space 3}0.000{col 54}{space 4}-.9024436{col 67}{space 3}-.5246124
+{txt}{space 8}661  {c |}{col 14}{res}{space 2}-.7545983{col 26}{space 2} .0979759{col 37}{space 1}   -7.70{col 46}{space 3}0.000{col 54}{space 4}-.9466366{col 67}{space 3}  -.56256
+{txt}{space 8}662  {c |}{col 14}{res}{space 2}-.6980934{col 26}{space 2} .0993924{col 37}{space 1}   -7.02{col 46}{space 3}0.000{col 54}{space 4}-.8929082{col 67}{space 3}-.5032787
+{txt}{space 8}663  {c |}{col 14}{res}{space 2} -.675029{col 26}{space 2}  .101021{col 37}{space 1}   -6.68{col 46}{space 3}0.000{col 54}{space 4} -.873036{col 67}{space 3} -.477022
+{txt}{space 8}664  {c |}{col 14}{res}{space 2}-.7868541{col 26}{space 2} .1020547{col 37}{space 1}   -7.71{col 46}{space 3}0.000{col 54}{space 4}-.9868872{col 67}{space 3}-.5868211
+{txt}{space 8}665  {c |}{col 14}{res}{space 2}-.6600102{col 26}{space 2} .1028827{col 37}{space 1}   -6.42{col 46}{space 3}0.000{col 54}{space 4}-.8616663{col 67}{space 3}-.4583541
+{txt}{space 8}666  {c |}{col 14}{res}{space 2}-.6873659{col 26}{space 2} .1037714{col 37}{space 1}   -6.62{col 46}{space 3}0.000{col 54}{space 4}-.8907637{col 67}{space 3}-.4839681
+{txt}{space 8}667  {c |}{col 14}{res}{space 2}-.7958901{col 26}{space 2} .1052932{col 37}{space 1}   -7.56{col 46}{space 3}0.000{col 54}{space 4}-1.002271{col 67}{space 3}-.5895094
+{txt}{space 8}668  {c |}{col 14}{res}{space 2}-.8595599{col 26}{space 2} .1072801{col 37}{space 1}   -8.01{col 46}{space 3}0.000{col 54}{space 4}-1.069835{col 67}{space 3}-.6492847
+{txt}{space 8}669  {c |}{col 14}{res}{space 2}-.9203691{col 26}{space 2} .1083398{col 37}{space 1}   -8.50{col 46}{space 3}0.000{col 54}{space 4}-1.132721{col 67}{space 3}-.7080168
+{txt}{space 8}670  {c |}{col 14}{res}{space 2}-.9497916{col 26}{space 2} .1092178{col 37}{space 1}   -8.70{col 46}{space 3}0.000{col 54}{space 4}-1.163865{col 67}{space 3}-.7357185
+{txt}{space 8}671  {c |}{col 14}{res}{space 2}-1.012345{col 26}{space 2} .1103365{col 37}{space 1}   -9.18{col 46}{space 3}0.000{col 54}{space 4}-1.228611{col 67}{space 3}-.7960796
+{txt}{space 8}672  {c |}{col 14}{res}{space 2}-1.052925{col 26}{space 2} .1116366{col 37}{space 1}   -9.43{col 46}{space 3}0.000{col 54}{space 4}-1.271739{col 67}{space 3}-.8341109
+{txt}{space 8}673  {c |}{col 14}{res}{space 2}-1.098548{col 26}{space 2} .1136806{col 37}{space 1}   -9.66{col 46}{space 3}0.000{col 54}{space 4}-1.321368{col 67}{space 3}-.8757271
+{txt}{space 8}674  {c |}{col 14}{res}{space 2}-1.087108{col 26}{space 2} .1144825{col 37}{space 1}   -9.50{col 46}{space 3}0.000{col 54}{space 4}  -1.3115{col 67}{space 3}-.8627155
+{txt}{space 8}675  {c |}{col 14}{res}{space 2}-1.155193{col 26}{space 2} .1157035{col 37}{space 1}   -9.98{col 46}{space 3}0.000{col 54}{space 4}-1.381979{col 67}{space 3} -.928408
+{txt}{space 8}676  {c |}{col 14}{res}{space 2} -1.16505{col 26}{space 2} .1169208{col 37}{space 1}   -9.96{col 46}{space 3}0.000{col 54}{space 4}-1.394222{col 67}{space 3}-.9358787
+{txt}{space 8}677  {c |}{col 14}{res}{space 2}-1.158316{col 26}{space 2} .1176258{col 37}{space 1}   -9.85{col 46}{space 3}0.000{col 54}{space 4}-1.388869{col 67}{space 3}-.9277627
+{txt}{space 8}678  {c |}{col 14}{res}{space 2}  -1.2008{col 26}{space 2} .1184535{col 37}{space 1}  -10.14{col 46}{space 3}0.000{col 54}{space 4}-1.432976{col 67}{space 3}-.9686244
+{txt}{space 8}679  {c |}{col 14}{res}{space 2}-1.140181{col 26}{space 2} .1201168{col 37}{space 1}   -9.49{col 46}{space 3}0.000{col 54}{space 4}-1.375616{col 67}{space 3}-.9047449
+{txt}{space 8}680  {c |}{col 14}{res}{space 2}-1.246446{col 26}{space 2} .1212865{col 37}{space 1}  -10.28{col 46}{space 3}0.000{col 54}{space 4}-1.484175{col 67}{space 3}-1.008718
+{txt}{space 8}681  {c |}{col 14}{res}{space 2} -1.13895{col 26}{space 2}  .122186{col 37}{space 1}   -9.32{col 46}{space 3}0.000{col 54}{space 4}-1.378441{col 67}{space 3}-.8994582
+{txt}{space 8}682  {c |}{col 14}{res}{space 2}-1.076344{col 26}{space 2}  .123441{col 37}{space 1}   -8.72{col 46}{space 3}0.000{col 54}{space 4}-1.318296{col 67}{space 3}-.8343928
+{txt}{space 8}683  {c |}{col 14}{res}{space 2}-1.151151{col 26}{space 2} .1242403{col 37}{space 1}   -9.27{col 46}{space 3}0.000{col 54}{space 4}-1.394669{col 67}{space 3}-.9076325
+{txt}{space 8}684  {c |}{col 14}{res}{space 2}-1.134658{col 26}{space 2} .1253287{col 37}{space 1}   -9.05{col 46}{space 3}0.000{col 54}{space 4} -1.38031{col 67}{space 3} -.889007
+{txt}{space 8}685  {c |}{col 14}{res}{space 2}-1.223377{col 26}{space 2} .1265895{col 37}{space 1}   -9.66{col 46}{space 3}0.000{col 54}{space 4}-1.471499{col 67}{space 3}-.9752539
+{txt}{space 8}686  {c |}{col 14}{res}{space 2}-1.353532{col 26}{space 2} .1277818{col 37}{space 1}  -10.59{col 46}{space 3}0.000{col 54}{space 4}-1.603992{col 67}{space 3}-1.103073
+{txt}{space 8}687  {c |}{col 14}{res}{space 2}-1.422212{col 26}{space 2} .1291552{col 37}{space 1}  -11.01{col 46}{space 3}0.000{col 54}{space 4}-1.675363{col 67}{space 3} -1.16906
+{txt}{space 8}688  {c |}{col 14}{res}{space 2}-1.511641{col 26}{space 2} .1300074{col 37}{space 1}  -11.63{col 46}{space 3}0.000{col 54}{space 4}-1.766463{col 67}{space 3}-1.256819
+{txt}{space 8}689  {c |}{col 14}{res}{space 2}-1.434324{col 26}{space 2} .1310935{col 37}{space 1}  -10.94{col 46}{space 3}0.000{col 54}{space 4}-1.691275{col 67}{space 3}-1.177374
+{txt}{space 8}690  {c |}{col 14}{res}{space 2}-1.473901{col 26}{space 2} .1319438{col 37}{space 1}  -11.17{col 46}{space 3}0.000{col 54}{space 4}-1.732519{col 67}{space 3}-1.215284
+{txt}{space 8}691  {c |}{col 14}{res}{space 2}-1.594029{col 26}{space 2} .1329932{col 37}{space 1}  -11.99{col 46}{space 3}0.000{col 54}{space 4}-1.854703{col 67}{space 3}-1.333355
+{txt}{space 8}692  {c |}{col 14}{res}{space 2}-1.528222{col 26}{space 2}  .134447{col 37}{space 1}  -11.37{col 46}{space 3}0.000{col 54}{space 4}-1.791745{col 67}{space 3}-1.264698
+{txt}{space 8}693  {c |}{col 14}{res}{space 2}-1.599575{col 26}{space 2} .1354208{col 37}{space 1}  -11.81{col 46}{space 3}0.000{col 54}{space 4}-1.865007{col 67}{space 3}-1.334142
+{txt}{space 8}694  {c |}{col 14}{res}{space 2}-1.627179{col 26}{space 2} .1364017{col 37}{space 1}  -11.93{col 46}{space 3}0.000{col 54}{space 4}-1.894534{col 67}{space 3}-1.359824
+{txt}{space 8}695  {c |}{col 14}{res}{space 2}-1.656491{col 26}{space 2} .1375357{col 37}{space 1}  -12.04{col 46}{space 3}0.000{col 54}{space 4}-1.926069{col 67}{space 3}-1.386913
+{txt}{space 8}696  {c |}{col 14}{res}{space 2}-1.669746{col 26}{space 2} .1393013{col 37}{space 1}  -11.99{col 46}{space 3}0.000{col 54}{space 4}-1.942785{col 67}{space 3}-1.396708
+{txt}{space 8}697  {c |}{col 14}{res}{space 2}-1.638519{col 26}{space 2} .1402137{col 37}{space 1}  -11.69{col 46}{space 3}0.000{col 54}{space 4}-1.913346{col 67}{space 3}-1.363692
+{txt}{space 8}698  {c |}{col 14}{res}{space 2}-1.783608{col 26}{space 2} .1413331{col 37}{space 1}  -12.62{col 46}{space 3}0.000{col 54}{space 4}-2.060629{col 67}{space 3}-1.506587
+{txt}{space 8}699  {c |}{col 14}{res}{space 2} -1.79337{col 26}{space 2} .1424317{col 37}{space 1}  -12.59{col 46}{space 3}0.000{col 54}{space 4}-2.072545{col 67}{space 3}-1.514196
+{txt}{space 8}700  {c |}{col 14}{res}{space 2}-1.732205{col 26}{space 2} .1434737{col 37}{space 1}  -12.07{col 46}{space 3}0.000{col 54}{space 4}-2.013421{col 67}{space 3}-1.450988
+{txt}{space 8}701  {c |}{col 14}{res}{space 2}-1.753055{col 26}{space 2} .1446381{col 37}{space 1}  -12.12{col 46}{space 3}0.000{col 54}{space 4}-2.036554{col 67}{space 3}-1.469556
+{txt}{space 8}702  {c |}{col 14}{res}{space 2}-1.817963{col 26}{space 2} .1456646{col 37}{space 1}  -12.48{col 46}{space 3}0.000{col 54}{space 4}-2.103474{col 67}{space 3}-1.532452
+{txt}{space 8}703  {c |}{col 14}{res}{space 2}-1.986763{col 26}{space 2} .1464857{col 37}{space 1}  -13.56{col 46}{space 3}0.000{col 54}{space 4}-2.273883{col 67}{space 3}-1.699643
+{txt}{space 8}704  {c |}{col 14}{res}{space 2}-1.954682{col 26}{space 2} .1473541{col 37}{space 1}  -13.27{col 46}{space 3}0.000{col 54}{space 4}-2.243505{col 67}{space 3} -1.66586
+{txt}{space 8}705  {c |}{col 14}{res}{space 2}-1.981034{col 26}{space 2} .1487453{col 37}{space 1}  -13.32{col 46}{space 3}0.000{col 54}{space 4}-2.272584{col 67}{space 3}-1.689485
+{txt}{space 8}706  {c |}{col 14}{res}{space 2}  -1.9369{col 26}{space 2} .1499343{col 37}{space 1}  -12.92{col 46}{space 3}0.000{col 54}{space 4} -2.23078{col 67}{space 3} -1.64302
+{txt}{space 8}707  {c |}{col 14}{res}{space 2} -2.02198{col 26}{space 2} .1507044{col 37}{space 1}  -13.42{col 46}{space 3}0.000{col 54}{space 4}-2.317369{col 67}{space 3}-1.726591
+{txt}{space 8}708  {c |}{col 14}{res}{space 2}-1.953851{col 26}{space 2} .1516044{col 37}{space 1}  -12.89{col 46}{space 3}0.000{col 54}{space 4}-2.251004{col 67}{space 3}-1.656697
+{txt}{space 8}709  {c |}{col 14}{res}{space 2}  -2.1514{col 26}{space 2} .1527718{col 37}{space 1}  -14.08{col 46}{space 3}0.000{col 54}{space 4}-2.450842{col 67}{space 3}-1.851959
+{txt}{space 8}710  {c |}{col 14}{res}{space 2}-2.170018{col 26}{space 2} .1529782{col 37}{space 1}  -14.19{col 46}{space 3}0.000{col 54}{space 4}-2.469864{col 67}{space 3}-1.870172
+{txt}{space 8}711  {c |}{col 14}{res}{space 2}-2.220544{col 26}{space 2} .1545685{col 37}{space 1}  -14.37{col 46}{space 3}0.000{col 54}{space 4}-2.523507{col 67}{space 3}-1.917581
+{txt}{space 8}712  {c |}{col 14}{res}{space 2}-2.226057{col 26}{space 2} .1554791{col 37}{space 1}  -14.32{col 46}{space 3}0.000{col 54}{space 4}-2.530805{col 67}{space 3}-1.921309
+{txt}{space 8}713  {c |}{col 14}{res}{space 2}-2.266457{col 26}{space 2} .1567549{col 37}{space 1}  -14.46{col 46}{space 3}0.000{col 54}{space 4}-2.573706{col 67}{space 3}-1.959209
+{txt}{space 8}714  {c |}{col 14}{res}{space 2}-2.387617{col 26}{space 2} .1577333{col 37}{space 1}  -15.14{col 46}{space 3}0.000{col 54}{space 4}-2.696783{col 67}{space 3} -2.07845
+{txt}{space 8}715  {c |}{col 14}{res}{space 2} -2.47373{col 26}{space 2} .1588843{col 37}{space 1}  -15.57{col 46}{space 3}0.000{col 54}{space 4}-2.785153{col 67}{space 3}-2.162308
+{txt}{space 8}716  {c |}{col 14}{res}{space 2}-2.435372{col 26}{space 2} .1597745{col 37}{space 1}  -15.24{col 46}{space 3}0.000{col 54}{space 4}-2.748539{col 67}{space 3}-2.122204
+{txt}{space 8}717  {c |}{col 14}{res}{space 2}-2.437289{col 26}{space 2} .1603221{col 37}{space 1}  -15.20{col 46}{space 3}0.000{col 54}{space 4}-2.751529{col 67}{space 3}-2.123049
+{txt}{space 8}718  {c |}{col 14}{res}{space 2}-2.546155{col 26}{space 2} .1612289{col 37}{space 1}  -15.79{col 46}{space 3}0.000{col 54}{space 4}-2.862172{col 67}{space 3}-2.230137
+{txt}{space 8}719  {c |}{col 14}{res}{space 2}-2.615597{col 26}{space 2} .1627133{col 37}{space 1}  -16.07{col 46}{space 3}0.000{col 54}{space 4}-2.934524{col 67}{space 3} -2.29667
+{txt}{space 8}720  {c |}{col 14}{res}{space 2}-2.651834{col 26}{space 2} .1636995{col 37}{space 1}  -16.20{col 46}{space 3}0.000{col 54}{space 4}-2.972694{col 67}{space 3}-2.330974
+{txt}{space 8}721  {c |}{col 14}{res}{space 2} -2.75581{col 26}{space 2} .1642908{col 37}{space 1}  -16.77{col 46}{space 3}0.000{col 54}{space 4}-3.077829{col 67}{space 3}-2.433791
+{txt}{space 8}722  {c |}{col 14}{res}{space 2}-2.466758{col 26}{space 2} .1652048{col 37}{space 1}  -14.93{col 46}{space 3}0.000{col 54}{space 4}-2.790568{col 67}{space 3}-2.142947
+{txt}{space 8}723  {c |}{col 14}{res}{space 2}-2.373665{col 26}{space 2} .1660415{col 37}{space 1}  -14.30{col 46}{space 3}0.000{col 54}{space 4}-2.699116{col 67}{space 3}-2.048214
+{txt}{space 8}724  {c |}{col 14}{res}{space 2}-2.434516{col 26}{space 2} .1664541{col 37}{space 1}  -14.63{col 46}{space 3}0.000{col 54}{space 4}-2.760776{col 67}{space 3}-2.108257
+{txt}{space 8}725  {c |}{col 14}{res}{space 2}-2.770703{col 26}{space 2} .1677003{col 37}{space 1}  -16.52{col 46}{space 3}0.000{col 54}{space 4}-3.099405{col 67}{space 3}-2.442001
+{txt}{space 8}726  {c |}{col 14}{res}{space 2}  -2.7977{col 26}{space 2} .1691135{col 37}{space 1}  -16.54{col 46}{space 3}0.000{col 54}{space 4}-3.129172{col 67}{space 3}-2.466228
+{txt}{space 8}727  {c |}{col 14}{res}{space 2}-2.787759{col 26}{space 2} .1704705{col 37}{space 1}  -16.35{col 46}{space 3}0.000{col 54}{space 4}-3.121891{col 67}{space 3}-2.453627
+{txt}{space 8}728  {c |}{col 14}{res}{space 2}-2.956405{col 26}{space 2} .1714903{col 37}{space 1}  -17.24{col 46}{space 3}0.000{col 54}{space 4}-3.292536{col 67}{space 3}-2.620274
+{txt}{space 8}729  {c |}{col 14}{res}{space 2}-2.844255{col 26}{space 2} .1720605{col 37}{space 1}  -16.53{col 46}{space 3}0.000{col 54}{space 4}-3.181504{col 67}{space 3}-2.507007
+{txt}{space 8}730  {c |}{col 14}{res}{space 2}-2.879965{col 26}{space 2} .1723026{col 37}{space 1}  -16.71{col 46}{space 3}0.000{col 54}{space 4}-3.217688{col 67}{space 3}-2.542242
+{txt}{space 8}731  {c |}{col 14}{res}{space 2}-2.831965{col 26}{space 2} .1722804{col 37}{space 1}  -16.44{col 46}{space 3}0.000{col 54}{space 4}-3.169645{col 67}{space 3}-2.494286
+{txt}{space 8}732  {c |}{col 14}{res}{space 2}-2.861381{col 26}{space 2} .1736059{col 37}{space 1}  -16.48{col 46}{space 3}0.000{col 54}{space 4}-3.201659{col 67}{space 3}-2.521104
+{txt}{space 8}733  {c |}{col 14}{res}{space 2}-2.922229{col 26}{space 2} .1744131{col 37}{space 1}  -16.75{col 46}{space 3}0.000{col 54}{space 4}-3.264089{col 67}{space 3} -2.58037
+{txt}{space 8}734  {c |}{col 14}{res}{space 2} -2.98162{col 26}{space 2} .1760705{col 37}{space 1}  -16.93{col 46}{space 3}0.000{col 54}{space 4}-3.326728{col 67}{space 3}-2.636512
+{txt}{space 8}735  {c |}{col 14}{res}{space 2}-2.979269{col 26}{space 2} .1769872{col 37}{space 1}  -16.83{col 46}{space 3}0.000{col 54}{space 4}-3.326174{col 67}{space 3}-2.632364
+{txt}{space 8}736  {c |}{col 14}{res}{space 2}-2.972274{col 26}{space 2} .1775525{col 37}{space 1}  -16.74{col 46}{space 3}0.000{col 54}{space 4}-3.320287{col 67}{space 3}-2.624261
+{txt}{space 8}737  {c |}{col 14}{res}{space 2}-2.998547{col 26}{space 2} .1779812{col 37}{space 1}  -16.85{col 46}{space 3}0.000{col 54}{space 4}  -3.3474{col 67}{space 3}-2.649693
+{txt}{space 8}738  {c |}{col 14}{res}{space 2}-3.007269{col 26}{space 2} .1792189{col 37}{space 1}  -16.78{col 46}{space 3}0.000{col 54}{space 4}-3.358548{col 67}{space 3}-2.655989
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-5.740719{col 26}{space 2} .1142334{col 37}{space 1}  -50.25{col 46}{space 3}0.000{col 54}{space 4}-5.964623{col 67}{space 3}-5.516815
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     5357{col 27}{space 1}        0{col 39}{result}{space 1}     5357{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est4{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. estadd local hastid "Yes",replace
+
+{txt}added macro:
+             e(hastid) : "{res:Yes}"
+
+{com}. 
+. esttab using "${c -(}sum_table_folder{c )-}/ind/autoreg_perceived_risk.csv", ///
+>        stats(hasid hastid r2 N, label("Individual FE" "Time FE" "R-squared" "Sample Size")) ///
+>            label mtitles se r2 ///
+>            drop(*.date) replace
+{res}{txt}(output written to {browse  `"/Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/ind/autoreg_perceived_risk.csv"'})
+
+{com}. 
+. eststo clear
+{txt}
+{com}. 
+. ************************************************
+. ** income shock /volatility and risk perceptions ********
+. ************************************************
+. 
+. ** earning risks 
+. 
+. eststo clear
+{txt}
+{com}. label var prisk2_all_ch  "change in p risk"
+{txt}
+{com}. label var trisk2_all_ch "change in t risk"
+{txt}
+{com}. label var rincvar_all_now_ch "change in annual risk"
+{txt}
+{com}. label var rincvar_sub_now_ch "change in annual group risk"
+{txt}
+{com}. label var rincvar_all_now "realized annual earning risk"
+{txt}
+{com}. label var rincvar_sub_now "realized annual group earning risk"
+{txt}
+{com}. 
+. eststo: reghdfe rincvar_rv prisk2_all trisk2_all, a(ID)
+{res}{txt}(dropped 983 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    33,712
+{txt}Absorbing 1 HDFE group{col 51}F({res}   2{txt},{res}  28253{txt}){col 67}= {res}      2.57
+{txt}{col 51}Prob > F{col 67}= {res}    0.0767
+{txt}{col 51}R-squared{col 67}= {res}    0.0884
+{txt}{col 51}Adj R-squared{col 67}= {res}   -0.0877
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0002
+{txt}{col 51}Root MSE{col 67}= {res}    0.0017
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}  rincvar_rv{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}prisk2_all {c |}{col 14}{res}{space 2} .0092025{col 26}{space 2} .0046812{col 37}{space 1}    1.97{col 46}{space 3}0.049{col 54}{space 4} .0000271{col 67}{space 3} .0183778
+{txt}{space 2}trisk2_all {c |}{col 14}{res}{space 2} .0051325{col 26}{space 2} .0053943{col 37}{space 1}    0.95{col 46}{space 3}0.341{col 54}{space 4}-.0054405{col 67}{space 3} .0157055
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2}-.0001279{col 26}{space 2} .0000134{col 37}{space 1}   -9.52{col 46}{space 3}0.000{col 54}{space 4}-.0001542{col 67}{space 3}-.0001016
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     5457{col 27}{space 1}        0{col 39}{result}{space 1}     5457{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est1{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. eststo: reghdfe rincvar_rv prisk2_sub trisk2_sub, a(ID)
+{res}{txt}(dropped 1332 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    26,674
+{txt}Absorbing 1 HDFE group{col 51}F({res}   2{txt},{res}  22263{txt}){col 67}= {res}      0.26
+{txt}{col 51}Prob > F{col 67}= {res}    0.7709
+{txt}{col 51}R-squared{col 67}= {res}    0.0956
+{txt}{col 51}Adj R-squared{col 67}= {res}   -0.0835
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 51}Root MSE{col 67}= {res}    0.0016
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}  rincvar_rv{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 2}prisk2_sub {c |}{col 14}{res}{space 2}-.0000365{col 26}{space 2} .0004322{col 37}{space 1}   -0.08{col 46}{space 3}0.933{col 54}{space 4}-.0008836{col 67}{space 3} .0008105
+{txt}{space 2}trisk2_sub {c |}{col 14}{res}{space 2} .0005461{col 26}{space 2} .0007577{col 37}{space 1}    0.72{col 46}{space 3}0.471{col 54}{space 4} -.000939{col 67}{space 3} .0020312
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2}-.0001168{col 26}{space 2} .0000102{col 37}{space 1}  -11.42{col 46}{space 3}0.000{col 54}{space 4}-.0001369{col 67}{space 3}-.0000968
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     4409{col 27}{space 1}        0{col 39}{result}{space 1}     4409{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est2{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. eststo: reghdfe rincvar_rv prisk2_all_ch trisk2_all_ch, a(ID)
+{res}{txt}(dropped 983 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    33,712
+{txt}Absorbing 1 HDFE group{col 51}F({res}   2{txt},{res}  28253{txt}){col 67}= {res}      0.76
+{txt}{col 51}Prob > F{col 67}= {res}    0.4680
+{txt}{col 51}R-squared{col 67}= {res}    0.0883
+{txt}{col 51}Adj R-squared{col 67}= {res}   -0.0879
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0001
+{txt}{col 51}Root MSE{col 67}= {res}    0.0017
+
+{txt}{hline 14}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}   rincvar_rv{col 15}{c |}      Coef.{col 27}   Std. Err.{col 39}      t{col 47}   P>|t|{col 55}     [95% Con{col 68}f. Interval]
+{hline 14}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+prisk2_all_ch {c |}{col 15}{res}{space 2} .0013363{col 27}{space 2} .0030797{col 38}{space 1}    0.43{col 47}{space 3}0.664{col 55}{space 4}-.0047001{col 68}{space 3} .0073726
+{txt}trisk2_all_ch {c |}{col 15}{res}{space 2} .0043213{col 27}{space 2} .0039504{col 38}{space 1}    1.09{col 47}{space 3}0.274{col 55}{space 4}-.0034217{col 68}{space 3} .0120643
+{txt}{space 8}_cons {c |}{col 15}{res}{space 2}-.0001061{col 27}{space 2} 9.14e-06{col 38}{space 1}  -11.62{col 47}{space 3}0.000{col 55}{space 4} -.000124{col 68}{space 3}-.0000882
+{txt}{hline 14}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     5457{col 27}{space 1}        0{col 39}{result}{space 1}     5457{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est3{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. eststo: reghdfe rincvar_rv prisk2_sub_ch trisk2_sub_ch, a(ID)
+{res}{txt}(dropped 1332 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    26,674
+{txt}Absorbing 1 HDFE group{col 51}F({res}   2{txt},{res}  22263{txt}){col 67}= {res}      0.06
+{txt}{col 51}Prob > F{col 67}= {res}    0.9418
+{txt}{col 51}R-squared{col 67}= {res}    0.0956
+{txt}{col 51}Adj R-squared{col 67}= {res}   -0.0836
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 51}Root MSE{col 67}= {res}    0.0016
+
+{txt}{hline 14}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}   rincvar_rv{col 15}{c |}      Coef.{col 27}   Std. Err.{col 39}      t{col 47}   P>|t|{col 55}     [95% Con{col 68}f. Interval]
+{hline 14}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+prisk2_sub_ch {c |}{col 15}{res}{space 2} .0000131{col 27}{space 2} .0002867{col 38}{space 1}    0.05{col 47}{space 3}0.964{col 55}{space 4}-.0005489{col 68}{space 3} .0005751
+{txt}trisk2_sub_ch {c |}{col 15}{res}{space 2}-.0001745{col 27}{space 2} .0005044{col 38}{space 1}   -0.35{col 47}{space 3}0.729{col 55}{space 4}-.0011632{col 68}{space 3} .0008141
+{txt}{space 8}_cons {c |}{col 15}{res}{space 2}-.0001158{col 27}{space 2}   .00001{col 38}{space 1}  -11.53{col 47}{space 3}0.000{col 55}{space 4}-.0001354{col 68}{space 3}-.0000961
+{txt}{hline 14}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     4409{col 27}{space 1}        0{col 39}{result}{space 1}     4409{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est4{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. eststo: reghdfe rincvar_rv rincvar_all_now_ch, a(ID)
+{res}{txt}(dropped 852 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    29,564
+{txt}Absorbing 1 HDFE group{col 51}F({res}   1{txt},{res}  24836{txt}){col 67}= {res}      1.73
+{txt}{col 51}Prob > F{col 67}= {res}    0.1887
+{txt}{col 51}R-squared{col 67}= {res}    0.0867
+{txt}{col 51}Adj R-squared{col 67}= {res}   -0.0871
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0001
+{txt}{col 51}Root MSE{col 67}= {res}    0.0017
+
+{txt}{hline 17}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}      rincvar_rv{col 18}{c |}      Coef.{col 30}   Std. Err.{col 42}      t{col 50}   P>|t|{col 58}     [95% Con{col 71}f. Interval]
+{hline 17}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+rincvar_all_no~h {c |}{col 18}{res}{space 2} .0044971{col 30}{space 2} .0034211{col 41}{space 1}    1.31{col 50}{space 3}0.189{col 58}{space 4}-.0022084{col 71}{space 3} .0112026
+{txt}{space 11}_cons {c |}{col 18}{res}{space 2}-.0001095{col 30}{space 2} 9.73e-06{col 41}{space 1}  -11.25{col 50}{space 3}0.000{col 58}{space 4}-.0001285{col 71}{space 3}-.0000904
+{txt}{hline 17}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     4727{col 27}{space 1}        0{col 39}{result}{space 1}     4727{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est5{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. eststo: reghdfe rincvar_rv rincvar_sub_now_ch, a(ID)
+{res}{txt}(dropped 899 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    24,830
+{txt}Absorbing 1 HDFE group{col 51}F({res}   1{txt},{res}  20703{txt}){col 67}= {res}      0.86
+{txt}{col 51}Prob > F{col 67}= {res}    0.3546
+{txt}{col 51}R-squared{col 67}= {res}    0.0910
+{txt}{col 51}Adj R-squared{col 67}= {res}   -0.0902
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0000
+{txt}{col 51}Root MSE{col 67}= {res}    0.0016
+
+{txt}{hline 17}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}      rincvar_rv{col 18}{c |}      Coef.{col 30}   Std. Err.{col 42}      t{col 50}   P>|t|{col 58}     [95% Con{col 71}f. Interval]
+{hline 17}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+rincvar_sub_no~h {c |}{col 18}{res}{space 2} .0003023{col 30}{space 2} .0003266{col 41}{space 1}    0.93{col 50}{space 3}0.355{col 58}{space 4}-.0003378{col 71}{space 3} .0009424
+{txt}{space 11}_cons {c |}{col 18}{res}{space 2}-.0001152{col 30}{space 2} .0000104{col 41}{space 1}  -11.06{col 50}{space 3}0.000{col 58}{space 4}-.0001356{col 71}{space 3}-.0000948
+{txt}{hline 17}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     4126{col 27}{space 1}        0{col 39}{result}{space 1}     4126{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est6{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. esttab using "${c -(}sum_table_folder{c )-}/ind/extrapolation_earning_risk.csv", ///
+>        stats(hasid r2 N, label("Individual FE" "R-squared" "Sample Size")) ///
+>            label mtitles se r2 ///
+>        drop(_cons) replace
+{res}{txt}(output written to {browse  `"/Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/ind/extrapolation_earning_risk.csv"'})
+
+{com}. eststo clear
+{txt}
+{com}. 
+. 
+. ** event expectations 
+. 
+. eststo clear
+{txt}
+{com}. 
+. ** event risk perceptions 
+. 
+. eststo: reghdfe exp_s_1y_rv l(1/4).exp_s_1y_fe, a(ID)
+{res}{txt}(dropped 654 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    24,728
+{txt}Absorbing 1 HDFE group{col 51}F({res}   4{txt},{res}  20407{txt}){col 67}= {res}   3459.39
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.4333
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.3133
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.4041
+{txt}{col 51}Root MSE{col 67}= {res}    0.0235
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1} exp_s_1y_rv{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 1}exp_s_1y_fe {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2}-.7831367{col 26}{space 2} .0066797{col 37}{space 1} -117.24{col 46}{space 3}0.000{col 54}{space 4}-.7962294{col 67}{space 3}-.7700441
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2}-.0639388{col 26}{space 2}  .006558{col 37}{space 1}   -9.75{col 46}{space 3}0.000{col 54}{space 4} -.076793{col 67}{space 3}-.0510846
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2}-.0452393{col 26}{space 2} .0066274{col 37}{space 1}   -6.83{col 46}{space 3}0.000{col 54}{space 4}-.0582295{col 67}{space 3}-.0322491
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2}-.0648186{col 26}{space 2} .0066663{col 37}{space 1}   -9.72{col 46}{space 3}0.000{col 54}{space 4}-.0778851{col 67}{space 3}-.0517522
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-.0005116{col 26}{space 2} .0001495{col 37}{space 1}   -3.42{col 46}{space 3}0.001{col 54}{space 4}-.0008046{col 67}{space 3}-.0002186
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     4317{col 27}{space 1}        0{col 39}{result}{space 1}     4317{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est1{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. eststo: reghdfe exp_s_rv l4.exp_s_fe, a(ID)
+{res}{txt}(dropped 994 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     1,358
+{txt}Absorbing 1 HDFE group{col 51}F({res}   1{txt},{res}    678{txt}){col 67}= {res}   1529.96
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.7898
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.5792
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.6929
+{txt}{col 51}Root MSE{col 67}= {res}    0.0679
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    exp_s_rv{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}exp_s_fe {c |}
+{space 9}L4. {c |}{col 14}{res}{space 2}-1.360188{col 26}{space 2} .0347743{col 37}{space 1}  -39.11{col 46}{space 3}0.000{col 54}{space 4}-1.428466{col 67}{space 3} -1.29191
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0368406{col 26}{space 2} .0020802{col 37}{space 1}   17.71{col 46}{space 3}0.000{col 54}{space 4} .0327562{col 67}{space 3}  .040925
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}      679{col 27}{space 1}        0{col 39}{result}{space 1}      679{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est2{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. eststo: reghdfe exp_f_rv l(1/4).exp_f_fe, a(ID)
+{res}{txt}(dropped 637 {browse "http://scorreia.com/research/singletons.pdf":singleton observations})
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}    21,075
+{txt}Absorbing 1 HDFE group{col 51}F({res}   4{txt},{res}  17312{txt}){col 67}= {res}   4657.04
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.5460
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.4473
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.5183
+{txt}{col 51}Root MSE{col 67}= {res}    0.1125
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    exp_f_rv{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}exp_f_fe {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2}-1.014451{col 26}{space 2} .0074396{col 37}{space 1} -136.36{col 46}{space 3}0.000{col 54}{space 4}-1.029034{col 67}{space 3} -.999869
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2}-.0671578{col 26}{space 2} .0072808{col 37}{space 1}   -9.22{col 46}{space 3}0.000{col 54}{space 4} -.081429{col 67}{space 3}-.0528866
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2}-.0888125{col 26}{space 2} .0070503{col 37}{space 1}  -12.60{col 46}{space 3}0.000{col 54}{space 4}-.1026317{col 67}{space 3}-.0749933
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2}-.0625351{col 26}{space 2} .0067477{col 37}{space 1}   -9.27{col 46}{space 3}0.000{col 54}{space 4}-.0757613{col 67}{space 3}-.0493088
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-.0657235{col 26}{space 2} .0010947{col 37}{space 1}  -60.04{col 46}{space 3}0.000{col 54}{space 4}-.0678692{col 67}{space 3}-.0635778
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}          ID{col 14}{c |}{space 1}     3759{col 27}{space 1}        0{col 39}{result}{space 1}     3759{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est3{txt} stored)
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. esttab using "${c -(}sum_table_folder{c )-}/ind/extrapolation_ue_risk.csv", label mtitles se r2 ///
+>        stats(hasid r2 N, label("Individual FE" "R-squared" "Sample Size")) ///
+>            drop(_cons) replace 
+{res}{txt}(output written to {browse  `"/Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/ind/extrapolation_ue_risk.csv"'})
+
+{com}. eststo clear
+{txt}
+{com}. 
+. 
+. *** earning risks at individual level within SCE  
+. 
+. eststo clear
+{txt}
+{com}. 
+. label var lwage_1y_id_shk_gr "ind shock"
+{txt}
+{com}. label var lwage_1y_shk_gr "income shock"
+{txt}
+{com}. label var lwage_1y_shk_gr2 "income shock squared"
+{txt}
+{com}. 
+. ** risk perceptions and experienced volatility 
+. 
+. eststo: reghdfe lrincvar lwage_1y_shk_gr2, a(date)
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 1 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     3,556
+{txt}Absorbing 1 HDFE group{col 51}F({res}   1{txt},{res}   3540{txt}){col 67}= {res}     13.96
+{txt}{col 51}Prob > F{col 67}= {res}    0.0002
+{txt}{col 51}R-squared{col 67}= {res}    0.0124
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0082
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0039
+{txt}{col 51}Root MSE{col 67}= {res}    1.3223
+
+{txt}{hline 17}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}        lrincvar{col 18}{c |}      Coef.{col 30}   Std. Err.{col 42}      t{col 50}   P>|t|{col 58}     [95% Con{col 71}f. Interval]
+{hline 17}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+lwage_1y_shk_gr2 {c |}{col 18}{res}{space 2} .0215291{col 30}{space 2} .0057623{col 41}{space 1}    3.74{col 50}{space 3}0.000{col 58}{space 4} .0102313{col 71}{space 3} .0328269
+{txt}{space 11}_cons {c |}{col 18}{res}{space 2}-7.578134{col 30}{space 2} .0449745{col 41}{space 1} -168.50{col 50}{space 3}0.000{col 58}{space 4}-7.666312{col 71}{space 3}-7.489955
+{txt}{hline 17}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}        date{col 14}{c |}{space 1}       15{col 27}{space 1}        0{col 39}{result}{space 1}       15{col 53}{text} {col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+({res}est1{txt} stored)
+
+{com}. 
+. eststo: reghdfe lrincvar lwage_1y_shk_gr2, a(age edu_g gender)
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 5 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     3,556
+{txt}Absorbing 3 HDFE groups{col 51}F({res}   1{txt},{res}   3512{txt}){col 67}= {res}     13.52
+{txt}{col 51}Prob > F{col 67}= {res}    0.0002
+{txt}{col 51}R-squared{col 67}= {res}    0.0277
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0158
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0038
+{txt}{col 51}Root MSE{col 67}= {res}    1.3173
+
+{txt}{hline 17}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}        lrincvar{col 18}{c |}      Coef.{col 30}   Std. Err.{col 42}      t{col 50}   P>|t|{col 58}     [95% Con{col 71}f. Interval]
+{hline 17}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+lwage_1y_shk_gr2 {c |}{col 18}{res}{space 2} .0210864{col 30}{space 2} .0057355{col 41}{space 1}    3.68{col 50}{space 3}0.000{col 58}{space 4} .0098411{col 71}{space 3} .0323316
+{txt}{space 11}_cons {c |}{col 18}{res}{space 2} -7.58114{col 30}{space 2} .0447744{col 41}{space 1} -169.32{col 50}{space 3}0.000{col 58}{space 4}-7.668927{col 71}{space 3}-7.493354
+{txt}{hline 17}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}         age{col 14}{c |}{space 1}       40{col 27}{space 1}        0{col 39}{result}{space 1}       40{col 53}{text} {col 54}{c |}
+{col 1}{text}       edu_g{col 14}{c |}{space 1}        3{col 27}{space 1}        1{col 39}{result}{space 1}        2{col 53}{text} {col 54}{c |}
+{col 1}{text}      gender{col 14}{c |}{space 1}        2{col 27}{space 1}        1{col 39}{result}{space 1}        1{col 53}{text}?{col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+({res}est2{txt} stored)
+
+{com}. 
+. ** risk perceptions and ue experience 
+. 
+. eststo: reghdfe lrincvar u2e lwage_1y_shk_gr2, a(age edu_g gender)
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 5 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     3,556
+{txt}Absorbing 3 HDFE groups{col 51}F({res}   2{txt},{res}   3511{txt}){col 67}= {res}      8.75
+{txt}{col 51}Prob > F{col 67}= {res}    0.0002
+{txt}{col 51}R-squared{col 67}= {res}    0.0288
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0166
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0050
+{txt}{col 51}Root MSE{col 67}= {res}    1.3167
+
+{txt}{hline 17}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}        lrincvar{col 18}{c |}      Coef.{col 30}   Std. Err.{col 42}      t{col 50}   P>|t|{col 58}     [95% Con{col 71}f. Interval]
+{hline 17}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 13}u2e {c |}{col 18}{res}{space 2} .5216704{col 30}{space 2}  .261711{col 41}{space 1}    1.99{col 50}{space 3}0.046{col 58}{space 4} .0085494{col 71}{space 3} 1.034791
+{txt}lwage_1y_shk_gr2 {c |}{col 18}{res}{space 2}  .020076{col 30}{space 2} .0057554{col 41}{space 1}    3.49{col 50}{space 3}0.000{col 58}{space 4} .0087917{col 71}{space 3} .0313604
+{txt}{space 11}_cons {c |}{col 18}{res}{space 2}-7.591815{col 30}{space 2} .0450747{col 41}{space 1} -168.43{col 50}{space 3}0.000{col 58}{space 4} -7.68019{col 71}{space 3} -7.50344
+{txt}{hline 17}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}         age{col 14}{c |}{space 1}       40{col 27}{space 1}        0{col 39}{result}{space 1}       40{col 53}{text} {col 54}{c |}
+{col 1}{text}       edu_g{col 14}{c |}{space 1}        3{col 27}{space 1}        1{col 39}{result}{space 1}        2{col 53}{text} {col 54}{c |}
+{col 1}{text}      gender{col 14}{c |}{space 1}        2{col 27}{space 1}        1{col 39}{result}{space 1}        1{col 53}{text}?{col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+({res}est3{txt} stored)
+
+{com}. 
+. ** risk perceptions and macroeconomy  
+. eststo: reghdfe lrincvar uerate lwage_1y_shk_gr2, a(age edu_g gender)
+{res}{txt}({browse "http://scorreia.com/research/hdfe.pdf":MWFE estimator} converged in 5 iterations)
+{res}
+{txt}HDFE Linear regression{col 51}Number of obs{col 67}= {res}     3,556
+{txt}Absorbing 3 HDFE groups{col 51}F({res}   2{txt},{res}   3511{txt}){col 67}= {res}     13.57
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.0314
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0193
+{txt}{col 51}Within R-sq.{col 67}= {res}    0.0077
+{txt}{col 51}Root MSE{col 67}= {res}    1.3149
+
+{txt}{hline 17}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}        lrincvar{col 18}{c |}      Coef.{col 30}   Std. Err.{col 42}      t{col 50}   P>|t|{col 58}     [95% Con{col 71}f. Interval]
+{hline 17}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 10}uerate {c |}{col 18}{res}{space 2} .1115256{col 30}{space 2} .0302672{col 41}{space 1}    3.68{col 50}{space 3}0.000{col 58}{space 4} .0521826{col 71}{space 3} .1708686
+{txt}lwage_1y_shk_gr2 {c |}{col 18}{res}{space 2}  .021919{col 30}{space 2} .0057297{col 41}{space 1}    3.83{col 50}{space 3}0.000{col 58}{space 4} .0106851{col 71}{space 3} .0331529
+{txt}{space 11}_cons {c |}{col 18}{res}{space 2}-8.098086{col 30}{space 2} .1472421{col 41}{space 1}  -55.00{col 50}{space 3}0.000{col 58}{space 4}-8.386774{col 71}{space 3}-7.809397
+{txt}{hline 17}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Absorbed degrees of freedom:
+{col 1}{text}{hline 13}{c TT}{hline 12}{hline 12}{hline 14}{hline 1}{c TRC}
+{col 1}{text} Absorbed FE{col 14}{c |} Categories{col 27} - Redundant{col 39}  = Num. Coefs{col 54}{c |}
+{col 1}{text}{hline 13}{c +}{hline 12}{hline 12}{hline 14}{hline 1}{c RT}
+{col 1}{text}         age{col 14}{c |}{space 1}       40{col 27}{space 1}        0{col 39}{result}{space 1}       40{col 53}{text} {col 54}{c |}
+{col 1}{text}       edu_g{col 14}{c |}{space 1}        3{col 27}{space 1}        1{col 39}{result}{space 1}        2{col 53}{text} {col 54}{c |}
+{col 1}{text}      gender{col 14}{c |}{space 1}        2{col 27}{space 1}        1{col 39}{result}{space 1}        1{col 53}{text}?{col 54}{c |}
+{col 1}{text}{hline 13}{c BT}{hline 12}{hline 12}{hline 14}{hline 1}{c BRC}
+? = number of redundant parameters may be higher
+({res}est4{txt} stored)
+
+{com}. 
+. esttab using "${c -(}sum_table_folder{c )-}/ind/extrapolation_earning_risk_ind.csv", label mtitles se r2 ///
+> drop(_cons) replace
+{res}{txt}(output written to {browse  `"/Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/ind/extrapolation_earning_risk_ind.csv"'})
+
+{com}. eststo clear
+{txt}
+{com}. 
+. 
+. ************************************************
+. ** spending decisions and perceived risks **
+. ************************************************
+. eststo clear
+{txt}
+{com}. xtset ID date
+{res}{txt}{col 8}panel variable:  {res}ID (unbalanced)
+{txt}{col 9}time variable:  {res}{col 25}date, 2013m6 to 2021m7, but with gaps
+{txt}{col 17}delta:  {res}1 month
+{txt}
+{com}. 
+. label var rincvar "perceived earning risk"
+{txt}
+{com}. label var incvar "perceived earning risk (nominal)"
+{txt}
+{com}. label var exp_s "perceived ue risk next 4m"
+{txt}
+{com}. label var exp_s_1y "perceived ue risk next 1y"
+{txt}
+{com}. 
+. eststo: reg spending rincvar
+
+      {txt}Source {c |}       SS       df       MS              Number of obs ={res}   60577
+{txt}{hline 13}{char +}{hline 30}           F(  1, 60575) ={res}   61.91
+    {txt}   Model {char |} {res} 12.1680258     1  12.1680258           {txt}Prob > F      = {res} 0.0000
+    {txt}Residual {char |} {res} 11906.5112 60575  .196558171           {txt}R-squared     = {res} 0.0010
+{txt}{hline 13}{char +}{hline 30}           Adj R-squared = {res} 0.0010
+    {txt}   Total {char |} {res} 11918.6793 60576  .196755799           {txt}Root MSE      = {res} .44335
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    spending{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}rincvar {c |}{col 14}{res}{space 2} 7.948102{col 26}{space 2}  1.01018{col 37}{space 1}    7.87{col 46}{space 3}0.000{col 54}{space 4} 5.968145{col 67}{space 3} 9.928058
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .0343591{col 26}{space 2} .0022236{col 37}{space 1}   15.45{col 46}{space 3}0.000{col 54}{space 4} .0300009{col 67}{space 3} .0387173
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}({res}est1{txt} stored)
+
+{com}. 
+. estadd local hast "No",replace
+
+{txt}added macro:
+               e(hast) : "{res:No}"
+
+{com}. estadd local hasid "No",replace
+
+{txt}added macro:
+              e(hasid) : "{res:No}"
+
+{com}. 
+. eststo: areg spending rincvar, a(date)
+{res}
+{txt}Linear regression, absorbing indicators{col 51}Number of obs{col 67}= {res}     60577
+{txt}{col 51}F({res}   1{txt},{res}  60478{txt}){col 67}= {res}     62.26
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.0031
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0015
+{txt}{col 51}Root MSE{col 67}= {res}    0.4432
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    spending{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}rincvar {c |}{col 14}{res}{space 2} 7.988712{col 26}{space 2} 1.012462{col 37}{space 1}    7.89{col 46}{space 3}0.000{col 54}{space 4} 6.004283{col 67}{space 3} 9.973142
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .0343067{col 26}{space 2} .0022249{col 37}{space 1}   15.42{col 46}{space 3}0.000{col 54}{space 4} .0299458{col 67}{space 3} .0386675
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+        date {c |}      F(97, 60478) = {res}     1.323   0.018          {txt}(98 categories)
+({res}est2{txt} stored)
+
+{com}. 
+. estadd local hast "Yes",replace
+
+{txt}added macro:
+               e(hast) : "{res:Yes}"
+
+{com}. estadd local hasid "No",replace
+
+{txt}added macro:
+              e(hasid) : "{res:No}"
+
+{com}. 
+. eststo: areg spending rincvar, a(ID)
+{res}
+{txt}Linear regression, absorbing indicators{col 51}Number of obs{col 67}= {res}     60577
+{txt}{col 51}F({res}   1{txt},{res}  50447{txt}){col 67}= {res}     49.75
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.9244
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.9093
+{txt}{col 51}Root MSE{col 67}= {res}    0.1336
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    spending{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}rincvar {c |}{col 14}{res}{space 2} 3.318916{col 26}{space 2} .4705405{col 37}{space 1}    7.05{col 46}{space 3}0.000{col 54}{space 4} 2.396651{col 67}{space 3}  4.24118
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} .0403331{col 26}{space 2} .0008145{col 37}{space 1}   49.52{col 46}{space 3}0.000{col 54}{space 4} .0387366{col 67}{space 3} .0419296
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+          ID {c |}   F(10128, 50447) = {res}    60.872   0.000       {txt}(10129 categories)
+({res}est3{txt} stored)
+
+{com}. 
+. estadd local hast "No",replace
+
+{txt}added macro:
+               e(hast) : "{res:No}"
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. 
+. eststo: areg spending rincvar i.year, a(ID)
+{res}
+{txt}Linear regression, absorbing indicators{col 51}Number of obs{col 67}= {res}     60577
+{txt}{col 51}F({res}   9{txt},{res}  50439{txt}){col 67}= {res}     12.40
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.9245
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.9094
+{txt}{col 51}Root MSE{col 67}= {res}    0.1335
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    spending{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}rincvar {c |}{col 14}{res}{space 2} 3.016445{col 26}{space 2} .4734934{col 37}{space 1}    6.37{col 46}{space 3}0.000{col 54}{space 4} 2.088392{col 67}{space 3} 3.944497
+{txt}{space 12} {c |}
+{space 8}year {c |}
+{space 7}2014  {c |}{col 14}{res}{space 2} -.004969{col 26}{space 2} .0043152{col 37}{space 1}   -1.15{col 46}{space 3}0.250{col 54}{space 4}-.0134269{col 67}{space 3} .0034889
+{txt}{space 7}2015  {c |}{col 14}{res}{space 2}-.0194418{col 26}{space 2} .0060264{col 37}{space 1}   -3.23{col 46}{space 3}0.001{col 54}{space 4}-.0312536{col 67}{space 3}  -.00763
+{txt}{space 7}2016  {c |}{col 14}{res}{space 2}-.0369044{col 26}{space 2} .0073423{col 37}{space 1}   -5.03{col 46}{space 3}0.000{col 54}{space 4}-.0512953{col 67}{space 3}-.0225135
+{txt}{space 7}2017  {c |}{col 14}{res}{space 2}-.0553858{col 26}{space 2}  .008384{col 37}{space 1}   -6.61{col 46}{space 3}0.000{col 54}{space 4}-.0718186{col 67}{space 3} -.038953
+{txt}{space 7}2018  {c |}{col 14}{res}{space 2} -.064761{col 26}{space 2} .0093548{col 37}{space 1}   -6.92{col 46}{space 3}0.000{col 54}{space 4}-.0830964{col 67}{space 3}-.0464255
+{txt}{space 7}2019  {c |}{col 14}{res}{space 2}-.0687908{col 26}{space 2} .0102354{col 37}{space 1}   -6.72{col 46}{space 3}0.000{col 54}{space 4}-.0888523{col 67}{space 3}-.0487293
+{txt}{space 7}2020  {c |}{col 14}{res}{space 2}-.0720908{col 26}{space 2} .0110545{col 37}{space 1}   -6.52{col 46}{space 3}0.000{col 54}{space 4}-.0937578{col 67}{space 3}-.0504238
+{txt}{space 7}2021  {c |}{col 14}{res}{space 2} -.064072{col 26}{space 2} .0118419{col 37}{space 1}   -5.41{col 46}{space 3}0.000{col 54}{space 4}-.0872823{col 67}{space 3}-.0408618
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0842317{col 26}{space 2} .0068732{col 37}{space 1}   12.26{col 46}{space 3}0.000{col 54}{space 4} .0707601{col 67}{space 3} .0977033
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+          ID {c |}   F(10128, 50439) = {res}    60.911   0.000       {txt}(10129 categories)
+({res}est4{txt} stored)
+
+{com}. 
+. estadd local hast "Yes",replace
+
+{txt}added macro:
+               e(hast) : "{res:Yes}"
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. eststo: areg spending incvar i.year, a(ID)
+{res}
+{txt}Linear regression, absorbing indicators{col 51}Number of obs{col 67}= {res}     63043
+{txt}{col 51}F({res}   9{txt},{res}  52626{txt}){col 67}= {res}     15.81
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.9360
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.9234
+{txt}{col 51}Root MSE{col 67}= {res}    0.1178
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    spending{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}incvar {c |}{col 14}{res}{space 2} 3.114929{col 26}{space 2} .8876028{col 37}{space 1}    3.51{col 46}{space 3}0.000{col 54}{space 4}  1.37522{col 67}{space 3} 4.854639
+{txt}{space 12} {c |}
+{space 8}year {c |}
+{space 7}2014  {c |}{col 14}{res}{space 2}-.0077015{col 26}{space 2} .0037157{col 37}{space 1}   -2.07{col 46}{space 3}0.038{col 54}{space 4}-.0149844{col 67}{space 3}-.0004186
+{txt}{space 7}2015  {c |}{col 14}{res}{space 2}-.0281696{col 26}{space 2} .0051914{col 37}{space 1}   -5.43{col 46}{space 3}0.000{col 54}{space 4}-.0383448{col 67}{space 3}-.0179944
+{txt}{space 7}2016  {c |}{col 14}{res}{space 2}-.0458277{col 26}{space 2} .0063177{col 37}{space 1}   -7.25{col 46}{space 3}0.000{col 54}{space 4}-.0582104{col 67}{space 3}-.0334449
+{txt}{space 7}2017  {c |}{col 14}{res}{space 2}-.0652944{col 26}{space 2} .0072046{col 37}{space 1}   -9.06{col 46}{space 3}0.000{col 54}{space 4}-.0794155{col 67}{space 3}-.0511732
+{txt}{space 7}2018  {c |}{col 14}{res}{space 2}-.0730631{col 26}{space 2} .0080246{col 37}{space 1}   -9.10{col 46}{space 3}0.000{col 54}{space 4}-.0887915{col 67}{space 3}-.0573347
+{txt}{space 7}2019  {c |}{col 14}{res}{space 2}-.0758645{col 26}{space 2} .0087724{col 37}{space 1}   -8.65{col 46}{space 3}0.000{col 54}{space 4}-.0930584{col 67}{space 3}-.0586706
+{txt}{space 7}2020  {c |}{col 14}{res}{space 2}-.0944116{col 26}{space 2} .0094759{col 37}{space 1}   -9.96{col 46}{space 3}0.000{col 54}{space 4}-.1129844{col 67}{space 3}-.0758388
+{txt}{space 7}2021  {c |}{col 14}{res}{space 2} -.088197{col 26}{space 2}   .01015{col 37}{space 1}   -8.69{col 46}{space 3}0.000{col 54}{space 4}-.1080912{col 67}{space 3}-.0683029
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0960788{col 26}{space 2} .0058534{col 37}{space 1}   16.41{col 46}{space 3}0.000{col 54}{space 4} .0846062{col 67}{space 3} .1075514
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+          ID {c |}   F(10407, 52626) = {res}    73.952   0.000       {txt}(10408 categories)
+({res}est5{txt} stored)
+
+{com}. 
+. estadd local hast "Yes",replace
+
+{txt}added macro:
+               e(hast) : "{res:Yes}"
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. eststo: areg spending exp_s i.year, a(ID)
+{res}
+{txt}Linear regression, absorbing indicators{col 51}Number of obs{col 67}= {res}      6269
+{txt}{col 51}F({res}   6{txt},{res}   2520{txt}){col 67}= {res}      7.68
+{txt}{col 51}Prob > F{col 67}= {res}    0.0000
+{txt}{col 51}R-squared{col 67}= {res}    0.6327
+{txt}{col 51}Adj R-squared{col 67}= {res}    0.0865
+{txt}{col 51}Root MSE{col 67}= {res}    0.2038
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}    spending{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 7}exp_s {c |}{col 14}{res}{space 2} .3530927{col 26}{space 2} .0553248{col 37}{space 1}    6.38{col 46}{space 3}0.000{col 54}{space 4}  .244606{col 67}{space 3} .4615794
+{txt}{space 12} {c |}
+{space 8}year {c |}
+{space 7}2015  {c |}{col 14}{res}{space 2} .0001617{col 26}{space 2} .0190614{col 37}{space 1}    0.01{col 46}{space 3}0.993{col 54}{space 4}-.0372159{col 67}{space 3} .0375393
+{txt}{space 7}2016  {c |}{col 14}{res}{space 2}-.0432982{col 26}{space 2} .0273991{col 37}{space 1}   -1.58{col 46}{space 3}0.114{col 54}{space 4}-.0970253{col 67}{space 3}  .010429
+{txt}{space 7}2017  {c |}{col 14}{res}{space 2}-.0555205{col 26}{space 2} .0332908{col 37}{space 1}   -1.67{col 46}{space 3}0.095{col 54}{space 4}-.1208007{col 67}{space 3} .0097597
+{txt}{space 7}2018  {c |}{col 14}{res}{space 2}-.0651334{col 26}{space 2} .0384579{col 37}{space 1}   -1.69{col 46}{space 3}0.090{col 54}{space 4}-.1405458{col 67}{space 3}  .010279
+{txt}{space 7}2019  {c |}{col 14}{res}{space 2}-.0614008{col 26}{space 2} .0434352{col 37}{space 1}   -1.41{col 46}{space 3}0.158{col 54}{space 4}-.1465731{col 67}{space 3} .0237715
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0657521{col 26}{space 2} .0235141{col 37}{space 1}    2.80{col 46}{space 3}0.005{col 54}{space 4} .0196431{col 67}{space 3} .1118611
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+          ID {c |}     F(3742, 2520) = {res}     1.155   0.000        {txt}(3743 categories)
+({res}est6{txt} stored)
+
+{com}. 
+. estadd local hast "Yes",replace
+
+{txt}added macro:
+               e(hast) : "{res:Yes}"
+
+{com}. estadd local hasid "Yes",replace
+
+{txt}added macro:
+              e(hasid) : "{res:Yes}"
+
+{com}. 
+. esttab using "${c -(}sum_table_folder{c )-}/ind/spending_reg_fe.csv", ///
+>               label mtitles se  stats(r2 N hast hasid, label("R-squared" "Sample Size" "Time FE" "Individual FE"))  ///
+>              drop(_cons *.year) replace
+{res}{txt}(output written to {browse  `"/Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/ind/spending_reg_fe.csv"'})
+
+{com}. eststo clear
+{txt}
+{com}. 
+. 
+. ************************************************
+. ** pesistence of the individual perceived risks **
+. ************************************************
+. 
+. eststo clear
+{txt}
+{com}. 
+. foreach mom in mean var{c -(}
+{txt}  2{com}.     xtset ID date
+{txt}  3{com}.         replace Inc_mom = inc`mom' 
+{txt}  4{com}.     *replace Incmom_ch = Inc`mom'- l1.Inc`mom'
+. 
+.         eststo `mom'1: reg Inc_mom l(1/3).Inc_mom, vce(cluster date)
+{txt}  5{com}.         eststo `mom'2: reg Inc_mom l(1/6).Inc_mom, vce(cluster date)
+{txt}  6{com}.         eststo `mom'3: reg Inc_mom l(1/8).Inc_mom, vce(cluster date)
+{txt}  7{com}.         
+.         replace Inc_mom = rinc`mom'
+{txt}  8{com}.         eststo r`mom'1: reg Inc_mom l(1/3).Inc_mom, vce(cluster date)
+{txt}  9{com}.         eststo r`mom'2: reg Inc_mom l(1/6).Inc_mom, vce(cluster date)
+{txt} 10{com}.         eststo r`mom'3: reg Inc_mom l(1/8).Inc_mom, vce(cluster date)
+{txt} 11{com}.  {c )-}
+{res}{txt}{col 8}panel variable:  {res}ID (unbalanced)
+{txt}{col 9}time variable:  {res}{col 25}date, 2013m6 to 2021m7, but with gaps
+{txt}{col 17}delta:  {res}1 month
+{txt}(65515 real changes made)
+
+Linear regression                                      Number of obs ={res}   28869
+                                                       {txt}F(  3,    94) ={res} 5713.54
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.5356
+                                                       {txt}Root MSE      = {res} .01414
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:95} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .3881232{col 26}{space 2} .0093637{col 37}{space 1}   41.45{col 46}{space 3}0.000{col 54}{space 4} .3695314{col 67}{space 3}  .406715
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .2584477{col 26}{space 2} .0093119{col 37}{space 1}   27.75{col 46}{space 3}0.000{col 54}{space 4} .2399587{col 67}{space 3} .2769367
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1803145{col 26}{space 2} .0076849{col 37}{space 1}   23.46{col 46}{space 3}0.000{col 54}{space 4}  .165056{col 67}{space 3}  .195573
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0042807{col 26}{space 2}  .000148{col 37}{space 1}   28.92{col 46}{space 3}0.000{col 54}{space 4} .0039869{col 67}{space 3} .0045746
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression                                      Number of obs ={res}   13761
+                                                       {txt}F(  6,    91) ={res} 2038.35
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.5755
+                                                       {txt}Root MSE      = {res} .01289
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:92} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .3385112{col 26}{space 2} .0137584{col 37}{space 1}   24.60{col 46}{space 3}0.000{col 54}{space 4} .3111818{col 67}{space 3} .3658406
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .2119286{col 26}{space 2} .0146776{col 37}{space 1}   14.44{col 46}{space 3}0.000{col 54}{space 4} .1827733{col 67}{space 3} .2410839
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1217185{col 26}{space 2} .0121411{col 37}{space 1}   10.03{col 46}{space 3}0.000{col 54}{space 4} .0976017{col 67}{space 3} .1458353
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2} .1134538{col 26}{space 2} .0122623{col 37}{space 1}    9.25{col 46}{space 3}0.000{col 54}{space 4} .0890963{col 67}{space 3} .1378113
+{txt}{space 9}L5. {c |}{col 14}{res}{space 2} .0558588{col 26}{space 2} .0128671{col 37}{space 1}    4.34{col 46}{space 3}0.000{col 54}{space 4} .0302999{col 67}{space 3} .0814177
+{txt}{space 9}L6. {c |}{col 14}{res}{space 2} .0458898{col 26}{space 2} .0093201{col 37}{space 1}    4.92{col 46}{space 3}0.000{col 54}{space 4} .0273766{col 67}{space 3} .0644031
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0026877{col 26}{space 2} .0001954{col 37}{space 1}   13.75{col 46}{space 3}0.000{col 54}{space 4} .0022995{col 67}{space 3} .0030759
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression                                      Number of obs ={res}    7622
+                                                       {txt}F(  8,    89) ={res}  852.83
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.5819
+                                                       {txt}Root MSE      = {res} .01243
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:90} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2}   .34682{col 26}{space 2} .0189736{col 37}{space 1}   18.28{col 46}{space 3}0.000{col 54}{space 4} .3091198{col 67}{space 3} .3845202
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .2077527{col 26}{space 2}  .017101{col 37}{space 1}   12.15{col 46}{space 3}0.000{col 54}{space 4} .1737733{col 67}{space 3}  .241732
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1484896{col 26}{space 2} .0157991{col 37}{space 1}    9.40{col 46}{space 3}0.000{col 54}{space 4} .1170972{col 67}{space 3} .1798821
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2} .0818887{col 26}{space 2} .0160093{col 37}{space 1}    5.12{col 46}{space 3}0.000{col 54}{space 4} .0500785{col 67}{space 3} .1136989
+{txt}{space 9}L5. {c |}{col 14}{res}{space 2} .0582911{col 26}{space 2} .0164879{col 37}{space 1}    3.54{col 46}{space 3}0.001{col 54}{space 4}   .02553{col 67}{space 3} .0910523
+{txt}{space 9}L6. {c |}{col 14}{res}{space 2} .0233548{col 26}{space 2} .0129856{col 37}{space 1}    1.80{col 46}{space 3}0.075{col 54}{space 4}-.0024472{col 67}{space 3} .0491568
+{txt}{space 9}L7. {c |}{col 14}{res}{space 2} .0044882{col 26}{space 2} .0121647{col 37}{space 1}    0.37{col 46}{space 3}0.713{col 54}{space 4}-.0196827{col 67}{space 3} .0286591
+{txt}{space 9}L8. {c |}{col 14}{res}{space 2} .0184616{col 26}{space 2} .0129481{col 37}{space 1}    1.43{col 46}{space 3}0.157{col 54}{space 4} -.007266{col 67}{space 3} .0441892
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0026728{col 26}{space 2} .0002554{col 37}{space 1}   10.46{col 46}{space 3}0.000{col 54}{space 4} .0021653{col 67}{space 3} .0031804
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}(64046 real changes made, 5623 to missing)
+
+Linear regression                                      Number of obs ={res}   24528
+                                                       {txt}F(  3,    94) ={res} 4035.17
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.4656
+                                                       {txt}Root MSE      = {res} .01893
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:95} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .3735094{col 26}{space 2} .0090815{col 37}{space 1}   41.13{col 46}{space 3}0.000{col 54}{space 4} .3554777{col 67}{space 3}  .391541
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .2400303{col 26}{space 2} .0074228{col 37}{space 1}   32.34{col 46}{space 3}0.000{col 54}{space 4} .2252921{col 67}{space 3} .2547684
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1654997{col 26}{space 2} .0057446{col 37}{space 1}   28.81{col 46}{space 3}0.000{col 54}{space 4} .1540937{col 67}{space 3} .1769057
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-.0006708{col 26}{space 2} .0001784{col 37}{space 1}   -3.76{col 46}{space 3}0.000{col 54}{space 4} -.001025{col 67}{space 3}-.0003167
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression                                      Number of obs ={res}   11214
+                                                       {txt}F(  6,    91) ={res} 1246.59
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.5140
+                                                       {txt}Root MSE      = {res}  .0171
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:92} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .3309264{col 26}{space 2} .0124858{col 37}{space 1}   26.50{col 46}{space 3}0.000{col 54}{space 4} .3061249{col 67}{space 3}  .355728
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .2172998{col 26}{space 2} .0123964{col 37}{space 1}   17.53{col 46}{space 3}0.000{col 54}{space 4}  .192676{col 67}{space 3} .2419237
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1125895{col 26}{space 2} .0122054{col 37}{space 1}    9.22{col 46}{space 3}0.000{col 54}{space 4} .0883449{col 67}{space 3} .1368342
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2} .0815035{col 26}{space 2} .0116177{col 37}{space 1}    7.02{col 46}{space 3}0.000{col 54}{space 4} .0584264{col 67}{space 3} .1045805
+{txt}{space 9}L5. {c |}{col 14}{res}{space 2}  .061117{col 26}{space 2} .0114807{col 37}{space 1}    5.32{col 46}{space 3}0.000{col 54}{space 4}  .038312{col 67}{space 3} .0839219
+{txt}{space 9}L6. {c |}{col 14}{res}{space 2} .0519682{col 26}{space 2} .0098819{col 37}{space 1}    5.26{col 46}{space 3}0.000{col 54}{space 4}  .032339{col 67}{space 3} .0715974
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-.0005978{col 26}{space 2} .0002112{col 37}{space 1}   -2.83{col 46}{space 3}0.006{col 54}{space 4}-.0010174{col 67}{space 3}-.0001782
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression                                      Number of obs ={res}    6037
+                                                       {txt}F(  8,    89) ={res}  553.57
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.5389
+                                                       {txt}Root MSE      = {res} .01624
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:90} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .3228997{col 26}{space 2} .0178538{col 37}{space 1}   18.09{col 46}{space 3}0.000{col 54}{space 4} .2874245{col 67}{space 3} .3583749
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .2075604{col 26}{space 2} .0158249{col 37}{space 1}   13.12{col 46}{space 3}0.000{col 54}{space 4} .1761167{col 67}{space 3}  .239004
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1312726{col 26}{space 2} .0161881{col 37}{space 1}    8.11{col 46}{space 3}0.000{col 54}{space 4} .0991072{col 67}{space 3} .1634379
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2} .0585596{col 26}{space 2} .0153377{col 37}{space 1}    3.82{col 46}{space 3}0.000{col 54}{space 4}  .028084{col 67}{space 3} .0890352
+{txt}{space 9}L5. {c |}{col 14}{res}{space 2} .0856993{col 26}{space 2} .0163209{col 37}{space 1}    5.25{col 46}{space 3}0.000{col 54}{space 4}   .05327{col 67}{space 3} .1181287
+{txt}{space 9}L6. {c |}{col 14}{res}{space 2} .0510067{col 26}{space 2} .0173676{col 37}{space 1}    2.94{col 46}{space 3}0.004{col 54}{space 4} .0164976{col 67}{space 3} .0855158
+{txt}{space 9}L7. {c |}{col 14}{res}{space 2}-.0001699{col 26}{space 2} .0142842{col 37}{space 1}   -0.01{col 46}{space 3}0.991{col 54}{space 4}-.0285523{col 67}{space 3} .0282124
+{txt}{space 9}L8. {c |}{col 14}{res}{space 2} .0174395{col 26}{space 2} .0105787{col 37}{space 1}    1.65{col 46}{space 3}0.103{col 54}{space 4}-.0035802{col 67}{space 3} .0384591
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-.0005906{col 26}{space 2} .0002594{col 37}{space 1}   -2.28{col 46}{space 3}0.025{col 54}{space 4} -.001106{col 67}{space 3}-.0000752
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}{col 8}panel variable:  {res}ID (unbalanced)
+{txt}{col 9}time variable:  {res}{col 25}date, 2013m6 to 2021m7, but with gaps
+{txt}{col 17}delta:  {res}1 month
+{txt}(68992 real changes made, 5926 to missing)
+
+Linear regression                                      Number of obs ={res}   25388
+                                                       {txt}F(  3,    94) ={res} 1786.57
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.4582
+                                                       {txt}Root MSE      = {res} .00053
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:95} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .3339077{col 26}{space 2} .0124915{col 37}{space 1}   26.73{col 46}{space 3}0.000{col 54}{space 4} .3091056{col 67}{space 3} .3587099
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .2592995{col 26}{space 2} .0125109{col 37}{space 1}   20.73{col 46}{space 3}0.000{col 54}{space 4} .2344589{col 67}{space 3} .2841401
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1798687{col 26}{space 2} .0113253{col 37}{space 1}   15.88{col 46}{space 3}0.000{col 54}{space 4}  .157382{col 67}{space 3} .2023554
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0000725{col 26}{space 2} 3.79e-06{col 37}{space 1}   19.13{col 46}{space 3}0.000{col 54}{space 4} .0000649{col 67}{space 3}   .00008
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression                                      Number of obs ={res}   11209
+                                                       {txt}F(  6,    91) ={res}  475.11
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.5199
+                                                       {txt}Root MSE      = {res} .00048
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:92} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .2819033{col 26}{space 2} .0198277{col 37}{space 1}   14.22{col 46}{space 3}0.000{col 54}{space 4}  .242518{col 67}{space 3} .3212887
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .2191255{col 26}{space 2} .0206526{col 37}{space 1}   10.61{col 46}{space 3}0.000{col 54}{space 4} .1781017{col 67}{space 3} .2601494
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1588186{col 26}{space 2}  .015294{col 37}{space 1}   10.38{col 46}{space 3}0.000{col 54}{space 4} .1284389{col 67}{space 3} .1891982
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2} .0991507{col 26}{space 2} .0175806{col 37}{space 1}    5.64{col 46}{space 3}0.000{col 54}{space 4} .0642289{col 67}{space 3} .1340724
+{txt}{space 9}L5. {c |}{col 14}{res}{space 2} .0677914{col 26}{space 2} .0163008{col 37}{space 1}    4.16{col 46}{space 3}0.000{col 54}{space 4} .0354118{col 67}{space 3}  .100171
+{txt}{space 9}L6. {c |}{col 14}{res}{space 2} .0574705{col 26}{space 2} .0141019{col 37}{space 1}    4.08{col 46}{space 3}0.000{col 54}{space 4} .0294587{col 67}{space 3} .0854822
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}  .000031{col 26}{space 2} 5.24e-06{col 37}{space 1}    5.91{col 46}{space 3}0.000{col 54}{space 4} .0000206{col 67}{space 3} .0000414
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression                                      Number of obs ={res}    5931
+                                                       {txt}F(  8,    89) ={res}  208.18
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.5199
+                                                       {txt}Root MSE      = {res} .00046
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:90} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2}  .254857{col 26}{space 2} .0304548{col 37}{space 1}    8.37{col 46}{space 3}0.000{col 54}{space 4} .1943439{col 67}{space 3} .3153701
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .1896255{col 26}{space 2} .0274457{col 37}{space 1}    6.91{col 46}{space 3}0.000{col 54}{space 4} .1350915{col 67}{space 3} .2441595
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1825306{col 26}{space 2} .0244139{col 37}{space 1}    7.48{col 46}{space 3}0.000{col 54}{space 4} .1340208{col 67}{space 3} .2310404
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2} .0413174{col 26}{space 2} .0266975{col 37}{space 1}    1.55{col 46}{space 3}0.125{col 54}{space 4}  -.01173{col 67}{space 3} .0943647
+{txt}{space 9}L5. {c |}{col 14}{res}{space 2} .0682949{col 26}{space 2} .0253094{col 37}{space 1}    2.70{col 46}{space 3}0.008{col 54}{space 4} .0180056{col 67}{space 3} .1185842
+{txt}{space 9}L6. {c |}{col 14}{res}{space 2} .0619121{col 26}{space 2} .0189427{col 37}{space 1}    3.27{col 46}{space 3}0.002{col 54}{space 4} .0242733{col 67}{space 3} .0995509
+{txt}{space 9}L7. {c |}{col 14}{res}{space 2} .0449715{col 26}{space 2} .0173117{col 37}{space 1}    2.60{col 46}{space 3}0.011{col 54}{space 4} .0105735{col 67}{space 3} .0793695
+{txt}{space 9}L8. {c |}{col 14}{res}{space 2} .0419216{col 26}{space 2} .0147433{col 37}{space 1}    2.84{col 46}{space 3}0.006{col 54}{space 4} .0126269{col 67}{space 3} .0712162
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0000235{col 26}{space 2} 6.74e-06{col 37}{space 1}    3.49{col 46}{space 3}0.001{col 54}{space 4} .0000101{col 67}{space 3} .0000369
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}(64478 real changes made, 3883 to missing)
+
+Linear regression                                      Number of obs ={res}   23769
+                                                       {txt}F(  3,    94) ={res} 1841.23
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.4386
+                                                       {txt}Root MSE      = {res} .00107
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:95} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .3706363{col 26}{space 2} .0108751{col 37}{space 1}   34.08{col 46}{space 3}0.000{col 54}{space 4} .3490435{col 67}{space 3}  .392229
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .2289481{col 26}{space 2} .0099818{col 37}{space 1}   22.94{col 46}{space 3}0.000{col 54}{space 4}  .209129{col 67}{space 3} .2487673
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1400404{col 26}{space 2} .0086384{col 37}{space 1}   16.21{col 46}{space 3}0.000{col 54}{space 4} .1228886{col 67}{space 3} .1571922
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0001996{col 26}{space 2} 9.10e-06{col 37}{space 1}   21.93{col 46}{space 3}0.000{col 54}{space 4} .0001815{col 67}{space 3} .0002176
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression                                      Number of obs ={res}   10369
+                                                       {txt}F(  6,    91) ={res}  688.77
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.5004
+                                                       {txt}Root MSE      = {res} .00093
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:92} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .3164821{col 26}{space 2} .0171579{col 37}{space 1}   18.45{col 46}{space 3}0.000{col 54}{space 4}    .2824{col 67}{space 3} .3505641
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .1933277{col 26}{space 2}  .020499{col 37}{space 1}    9.43{col 46}{space 3}0.000{col 54}{space 4}  .152609{col 67}{space 3} .2340463
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1409525{col 26}{space 2} .0159764{col 37}{space 1}    8.82{col 46}{space 3}0.000{col 54}{space 4} .1092175{col 67}{space 3} .1726876
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2}  .113368{col 26}{space 2} .0143272{col 37}{space 1}    7.91{col 46}{space 3}0.000{col 54}{space 4} .0849087{col 67}{space 3} .1418273
+{txt}{space 9}L5. {c |}{col 14}{res}{space 2} .0416789{col 26}{space 2} .0146694{col 37}{space 1}    2.84{col 46}{space 3}0.006{col 54}{space 4}   .01254{col 67}{space 3} .0708179
+{txt}{space 9}L6. {c |}{col 14}{res}{space 2}  .045336{col 26}{space 2} .0119233{col 37}{space 1}    3.80{col 46}{space 3}0.000{col 54}{space 4} .0216519{col 67}{space 3} .0690202
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0000912{col 26}{space 2} .0000126{col 37}{space 1}    7.23{col 46}{space 3}0.000{col 54}{space 4} .0000661{col 67}{space 3} .0001162
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}
+{txt}Linear regression                                      Number of obs ={res}    5416
+                                                       {txt}F(  8,    89) ={res}  235.43
+                                                       {txt}Prob > F      = {res} 0.0000
+                                                       {txt}R-squared     = {res} 0.5046
+                                                       {txt}Root MSE      = {res} .00089
+
+{txt}{ralign 78:(Std. Err. adjusted for {res:90} clusters in date)}
+{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}     Inc_mom{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 5}Inc_mom {c |}
+{space 9}L1. {c |}{col 14}{res}{space 2} .2862758{col 26}{space 2} .0252423{col 37}{space 1}   11.34{col 46}{space 3}0.000{col 54}{space 4} .2361199{col 67}{space 3} .3364318
+{txt}{space 9}L2. {c |}{col 14}{res}{space 2} .1805951{col 26}{space 2}  .027107{col 37}{space 1}    6.66{col 46}{space 3}0.000{col 54}{space 4}  .126734{col 67}{space 3} .2344562
+{txt}{space 9}L3. {c |}{col 14}{res}{space 2} .1476676{col 26}{space 2} .0268905{col 37}{space 1}    5.49{col 46}{space 3}0.000{col 54}{space 4} .0942368{col 67}{space 3} .2010984
+{txt}{space 9}L4. {c |}{col 14}{res}{space 2} .1048096{col 26}{space 2} .0244796{col 37}{space 1}    4.28{col 46}{space 3}0.000{col 54}{space 4} .0561691{col 67}{space 3} .1534501
+{txt}{space 9}L5. {c |}{col 14}{res}{space 2} .0724549{col 26}{space 2} .0281291{col 37}{space 1}    2.58{col 46}{space 3}0.012{col 54}{space 4}  .016563{col 67}{space 3} .1283467
+{txt}{space 9}L6. {c |}{col 14}{res}{space 2} .0616526{col 26}{space 2}  .018322{col 37}{space 1}    3.36{col 46}{space 3}0.001{col 54}{space 4} .0252471{col 67}{space 3} .0980581
+{txt}{space 9}L7. {c |}{col 14}{res}{space 2} .0161156{col 26}{space 2} .0150214{col 37}{space 1}    1.07{col 46}{space 3}0.286{col 54}{space 4}-.0137317{col 67}{space 3} .0459628
+{txt}{space 9}L8. {c |}{col 14}{res}{space 2} -.007235{col 26}{space 2} .0113172{col 37}{space 1}   -0.64{col 46}{space 3}0.524{col 54}{space 4}-.0297222{col 67}{space 3} .0152521
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} .0000905{col 26}{space 2} .0000191{col 37}{space 1}    4.74{col 46}{space 3}0.000{col 54}{space 4} .0000526{col 67}{space 3} .0001285
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}.  
+.   
+. esttab using "${c -(}sum_table_folder{c )-}/ind/autoregIndM.csv", mtitles se  r2 replace
+{res}{txt}(output written to {browse  `"/Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/ind/autoregIndM.csv"'})
+
+{com}. eststo clear
+{txt}
+{com}. 
+. 
+. log close 
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/Users/Myworld/Dropbox/PIR/WorkingFolder/indSCE_log.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}27 May 2022, 17:13:13
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

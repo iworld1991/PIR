@@ -7,59 +7,23 @@
     <list default="true" id="f290b72f-8ca8-4172-8aff-a339b0e03e62" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../DoFile/Step02_IndSCEAnalysis.do" beforeDir="false" afterPath="$PROJECT_DIR$/../DoFile/Step02_IndSCEAnalysis.do" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../DoFile/Step05c_SIPPAnalysis-Dev.do" beforeDir="false" afterPath="$PROJECT_DIR$/../DoFile/Step05c_SIPPAnalysis-Dev.do" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/comparison1.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/comparison1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/distribution_a_compare_ge.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/distribution_a_compare_ge.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/distribution_a_eq.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/distribution_a_eq.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/distribution_a_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/distribution_a_test.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/distribution_c_eq.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/distribution_c_eq.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/distribution_c_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/distribution_c_test.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_compare_ge.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_compare_ge.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_compare_pe.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_compare_pe.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_eq.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_eq.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/life_cycle_a_test.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/lorenz_a_compare_pe.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/lorenz_a_compare_pe.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/lorenz_a_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/lorenz_a_test.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/lorenz_c_test.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/lorenz_c_test.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/lorenz_curve_a_compare_ge.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/lorenz_curve_a_compare_ge.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/model/lorenz_curve_a_eq.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/model/lorenz_curve_a_eq.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/age_profile.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/age_profile.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/hist_wage.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/hist_wage.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/hist_wage_Q.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/hist_wage_Q.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/hist_wage_Y.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/hist_wage_Y.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/log_wage_av.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/log_wage_av.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/log_wage_av_by_edu.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/log_wage_av_by_edu.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/log_wage_sd.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/log_wage_sd.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/log_wage_sd_by_edu.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/log_wage_sd_by_edu.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr_by_edu.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr_by_edu.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr_sd.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr_sd.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr_sd_bar_by_edu.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr_sd_bar_by_edu.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr_sd_by_edu.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/log_wage_shk_gr_sd_by_edu.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/permanent-transitory-risk.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/permanent-transitory-risk.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/real_log_wage_shk_gr_by_age_edu_gender_compare.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/real_log_wage_shk_gr_by_age_edu_gender_compare.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/real_log_wage_shk_gr_level_by_age_edu_gender_compare.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/real_log_wage_shk_gr_level_by_age_edu_gender_compare.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/real_log_wage_shk_gr_nlevel_by_age_edu_gender_compare.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/real_log_wage_shk_gr_nlevel_by_age_edu_gender_compare.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Graphs/sipp/real_realized_perceived_risks_by_age_edu_gender.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sipp/real_realized_perceived_risks_by_age_edu_gender.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/ind/boxplot_rvar_ue_peperience.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/ind/boxplot_rvar_ue_peperience.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/ind/boxplot_rvar_ue_peperience_m12.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/ind/boxplot_rvar_ue_peperience_m12.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Graphs/sce/markov_example.png" beforeDir="false" afterPath="$PROJECT_DIR$/../Graphs/sce/markov_example.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../OtherData/age_profile.dta" beforeDir="false" afterPath="$PROJECT_DIR$/../OtherData/age_profile.dta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../OtherData/macroM.dta" beforeDir="false" afterPath="$PROJECT_DIR$/../OtherData/macroM.dta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OtherData/sipp/sipp_history_vol_decomposed.dta" beforeDir="false" afterPath="$PROJECT_DIR$/../OtherData/sipp/sipp_history_vol_decomposed.dta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../OtherData/sipp/sipp_history_vol_decomposed_annual.dta" beforeDir="false" afterPath="$PROJECT_DIR$/../OtherData/sipp/sipp_history_vol_decomposed_annual.dta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OtherData/sipp/sipp_history_vol_decomposed_edu_gender_age5.dta" beforeDir="false" afterPath="$PROJECT_DIR$/../OtherData/sipp/sipp_history_vol_decomposed_edu_gender_age5.dta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../OtherData/sipp/sipp_history_vol_decomposed_edu_gender_age5_annual.dta" beforeDir="false" afterPath="$PROJECT_DIR$/../OtherData/sipp/sipp_history_vol_decomposed_edu_gender_age5_annual.dta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OtherData/sipp/sipp_vol_edu_gender_age5.dta" beforeDir="false" afterPath="$PROJECT_DIR$/../OtherData/sipp/sipp_vol_edu_gender_age5.dta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/IncomeRisksEst-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/IncomeRisksEst-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/OLG-GE-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/OLG-GE-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/PrepareParameters-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/PrepareParameters-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IncomeRisksEst.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/IncomeRisksEst.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/IncomeRisksEst.py" beforeDir="false" afterPath="$PROJECT_DIR$/IncomeRisksEst.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OLG-GE-MAShock.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/OLG-GE-MAShock.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OLG-GE.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/OLG-GE.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/OLG-GE.py" beforeDir="false" afterPath="$PROJECT_DIR$/OLG-GE.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PrepareParameters.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/PrepareParameters.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PrepareParameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/PrepareParameters.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/SolveLifeCycle.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/SolveLifeCycle.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Tables/calibration.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/../Tables/calibration.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Tables/risks_compare.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../Tables/risks_compare.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SubjectiveProfileEst.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/SubjectiveProfileEst.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/subjective_profile_est_q.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/data/subjective_profile_est_q.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/subjective_profile_est_y.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/data/subjective_profile_est_y.pkl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Tables/ind/extrapolation_earning_risk.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../Tables/ind/extrapolation_earning_risk.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Tables/ind/extrapolation_ue_risk.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../Tables/ind/extrapolation_ue_risk.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Tables/latex/PRMarkovEst.tex" beforeDir="false" afterPath="$PROJECT_DIR$/../Tables/latex/PRMarkovEst.tex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Tables/latex/PRMarkovEst_y.tex" beforeDir="false" afterPath="$PROJECT_DIR$/../Tables/latex/PRMarkovEst_y.tex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../indSCE_log.smcl" beforeDir="false" afterPath="$PROJECT_DIR$/../indSCE_log.smcl" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -150,6 +114,11 @@
       <workItem from="1652361783142" duration="3505000" />
       <workItem from="1652380532987" duration="2424000" />
       <workItem from="1653211032491" duration="657000" />
+      <workItem from="1653415989780" duration="1062000" />
+      <workItem from="1653486886589" duration="7648000" />
+      <workItem from="1653501390297" duration="1563000" />
+      <workItem from="1653504541695" duration="1049000" />
+      <workItem from="1653575557643" duration="112000" />
     </task>
     <servers />
   </component>
