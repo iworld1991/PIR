@@ -70,12 +70,14 @@
      
     \clearpage
     \begin{figure}[!ht]
-      \caption{Expected and Realized Job-separation Rate}
+      \caption{Expected and Realized Job-separation/finding Rate}
     \label{fig:srate_compare}
-    	\begin{center}\adjustimage{max size=0.7\linewidth}{figures/seperation_rate_1y.png}\end{center}
-    \begin{flushleft}Note: realized job separation rate is computed from CPS. Both are expressed as Poisson arrival rates in continuous time with one month as the unit of time. The 5-month moving average expected rate is plotted.\end{flushleft}
+    	\begin{center}\adjustimage{max size=0.7\linewidth}{figures/separation_rate_1y.png} \\
+    	\medskip
+    	\adjustimage{max size=0.7\linewidth}{figures/job_finding_rate.png}
+    	\end{center}
+    \begin{flushleft}Note: realized job separation/finding rates are computed from CPS. Both are expressed as Poisson point rates in continuous time with one month as the unit of time. The 3-month moving average expected rate is plotted.\end{flushleft}
     \end{figure}
-    
     
  \newpage
  
@@ -207,7 +209,7 @@ $t$ and the quarterly growth rate in hourly earning at $t,t-1,...,t-k$.
 
 				\begin{flushleft}
 					\item *** p$<$0.001, ** p$<$0.01 and * p$<$0.05.
-					\item This table reports regression coefficient of the average perceived income risk of each state in different times on current labor market indicators, i.e. wage growth and unemployment rate. Montly state wage series is from Local Area Unemployment Statistics (LAUS) of BLS. Quarterly state unemployment rate is from Quarterly Census of Employment and Wage (QCEW) of BLS. 
+					\item This table reports regression coefficient of the average perceived income risk of each state in different times on current labor market indicators, i.e. wage growth and unemployment rate. Monthly state wage series is from Local Area Unemployment Statistics (LAUS) of BLS. Quarterly state unemployment rate is from Quarterly Census of Employment and Wage (QCEW) of BLS. 
 				\end{flushleft}
 			\end{threeparttable}
 		\end{adjustbox}
@@ -333,7 +335,6 @@ R2                  &     0.01 &      0.02 &       0.04 &        0.04 &         
 
 \clearpage
 
-\begin{comment}
 
 \begin{table}[p]
 \centering
@@ -341,28 +342,25 @@ R2                  &     0.01 &      0.02 &       0.04 &        0.04 &         
 \caption{Estimated subjective risk perceptions}
 \label{tab:PRMarkovEst}
 \begin{tabular}{lr}
-\hline 
-&  baseline \\
+\toprule
+{} &  baseline \\
 \midrule
-$q$                     &     0.792 \\
-$p$                     &     0.792 \\
-$\tilde\sigma_\psi^l$   &     0.456 \\
-$\tilde\sigma_\theta^l$ &     0.089 \\
-$\tilde\sigma_\psi^h$   &     0.456 \\
-$\tilde\sigma_\theta^l$ &     0.089 \\
-$\tilde \mho^l$         &     0.072 \\
-$\tilde E^l$            &     0.703 \\
-$\tilde \mho^h$        &     0.359 \\
-$\tilde E^h$ &     0.514 \\
-\hline 
+
+$std(\tilde\sigma)$&     1.203 \\
+$q$                     &     0.565 \\
+$p$                     &     0.565 \\
+$\tilde \sigma^l_\psi$   &     0.897 \\
+$\tilde \sigma^l_\theta$ &     0.021 \\
+$\tilde \sigma^h_\psi$   &     1.140 \\
+$\tilde \sigma^h_\theta$  &     0.027 \\
+\bottomrule
 \end{tabular}
 	\begin{flushleft}
-		{\footnotesize This table reports estimates of the parameters for the 2-state Markov switching model of subjective risk perceptions. Risks are at the monthly frequency.  }
+		{\footnotesize This table reports estimates of the parameters for the 2-state Markov switching model of subjective risk perceptions. Risks are at the annual frequency. }
 			\end{flushleft}
 \end{threeparttable}
 \end{table}
 
-\end{comment}
 
 \clearpage\begin{table}[p]
 \begin{threeparttable}
