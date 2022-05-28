@@ -81,16 +81,6 @@
     
  \newpage
  
-\begin{figure}[!ht]
-	\caption{Experience and Perceived Income Risk}
-	\label{fig:var_experience_data}
-	\begin{center}
-		\adjustimage{max size={0.7\linewidth}{0.4\paperheight}}{figures/experience_var_var_data.png}
-	\adjustimage{max size={0.7\linewidth}{0.4\paperheight}}{figures/experience_ue_var_data.png}
-\end{center}
-\begin{flushleft}Note: the experienced income volatility is the cross-sectional variance of log change in income residuals estimated using a sub sample restricted to the lifetime of a particular group. For instance, the life experience of a 25-year old till 2015 spans from 1990-2015. The perceived income risk is the average across all individuals from the cohort in that year. Cohorts are time/year-of-birth specific and all cohort sized 30 or smaller are excluded.\end{flushleft}
-\end{figure}
-
 
 
  \newpage
@@ -155,107 +145,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
 
-\begin{table}[ht]
-\centering
-\begin{adjustbox}{width={\textwidth}}
-\begin{threeparttable}
-\caption{Current Labor Market Conditions and Perceived Income Risks}
-\label{macro_corr_he}
-\begin{tabular}{ccccccl}
-\toprule
-{} &  mean:var &  mean:iqr & mean:rvar & median:var & median:iqr & median:rvar \\
-\midrule
-0 &   -0.28** &  -0.42*** &  -0.48*** &      -0.16 &      -0.16 &    -0.53*** \\
-1 &  -0.44*** &  -0.54*** &  -0.51*** &      -0.02 &      -0.02 &    -0.53*** \\
-2 &  -0.39*** &  -0.44*** &  -0.43*** &      -0.05 &        0.0 &    -0.45*** \\
-3 &  -0.44*** &  -0.47*** &  -0.41*** &      -0.09 &      -0.06 &     -0.5*** \\
-4 &   -0.29** &  -0.38*** &  -0.32*** &      -0.19 &      -0.14 &     -0.5*** \\
-\bottomrule
-\end{tabular}
-\begin{flushleft}
-\item *** p$<$0.001, ** p$<$0.01 and * p$<$0.05.
-\item This table reports correlation coefficients between different perceived income moments(inc for nominal
-and rinc for real) at time
-$t$ and the quarterly growth rate in hourly earning at $t,t-1,...,t-k$.
-\end{flushleft}
-\end{threeparttable}
-\end{adjustbox}
-\end{table}
-\clearpage
-
-	
-	\begin{table}[ht]
-		\centering
-		\begin{adjustbox}{width=0.9\textwidth}
-			\begin{threeparttable}
-			\caption{Average Perceived Risks and Local Labor Market Conditions}
-			\label{macro_corr_he_state}
-			\begin{tabular}{lllll}
-					\hline 
-				& (1)                & (2)                & (3)               & (4)               \\
-				& log perceived risk & log perceived risk & log perceived iqr & log perceived iqr \\
-				\hline 
-				Wage Growth (Median) & -0.05***           &                    & -0.03***          &                   \\
-				& (0.01)             &                    & (0.01)            &                   \\
-				&                    &                    &                   &                   \\
-				UE (Median)          &                    & 0.04*              &                   & 0.04***           \\
-				&                    & (0.02)             &                   & (0.01)            \\
-				&                    &                    &                   &                   \\
-					\hline 
-				Observations         & 3589               & 3589               & 3596              & 3596              \\
-				R-squared            & 0.021              & 0.019              & 0.025             & 0.027             \\
-				\hline      
-			\end{tabular}
-
-				\begin{flushleft}
-					\item *** p$<$0.001, ** p$<$0.01 and * p$<$0.05.
-					\item This table reports regression coefficient of the average perceived income risk of each state in different times on current labor market indicators, i.e. wage growth and unemployment rate. Monthly state wage series is from Local Area Unemployment Statistics (LAUS) of BLS. Quarterly state unemployment rate is from Quarterly Census of Employment and Wage (QCEW) of BLS. 
-				\end{flushleft}
-			\end{threeparttable}
-		\end{adjustbox}
-	\end{table}
-
-
-\clearpage
-
-\begin{table}
-	\centering
-	\caption{Extrapolation from Recent Experience}
-	\label{extrapolation}
-	\adjustbox{max height=0.5\textheight, max width=\textwidth}{ 
-	\begin{tabular}{lllllllllll}
-		\hline 
-		& (1)       & (2)       & (3)       & (4)       & (5)        & (6)        & (7)        & (8)        & (9)        & (10)       \\
-		\hline 
-		income shock squared                  & 0.0225*** & 0.0222*** & 0.0217*** & 0.0207*** & 0.000773   & 0.00205*** & 0.000566   & 0.00183*** & 0.000614   & 0.00184*** \\
-		& (0.00562) & (0.00570) & (0.00562) & (0.00564) & (0.000743) & (0.000516) & (0.000744) & (0.000515) & (0.000745) & (0.000516) \\
-		&           &           &           &           &            &            &            &            &            &            \\
-		recently unemployed                   &           &           &           & 0.511*    & 0.228***   & 0.0895***  &            &            &            &            \\
-		&           &           &           & (0.260)   & (0.0330)   & (0.0200)   &            &            &            &            \\
-		&           &           &           &           &            &            &            &            &            &            \\
-		unemployed since m-8&           &           &           &           &            &            & 0.161***   & 0.0783***  &            &            \\
-		&           &           &           &           &            &            & (0.0207)   & (0.0121)   &            &            \\
-		&           &           &           &           &            &            &            &            &            &            \\
-		unemployed since y-1&           &           &           &           &            &            &            &            & 0.138***   & 0.0701***  \\
-		&           &           &           &           &            &            &            &            & (0.0193)   & (0.0113)   \\
-		Observations                          & 3662      & 3662      & 3662      & 3662      & 3701       & 1871       & 3701       & 1871       & 3701       & 1871       \\
-		R-squared                             & 0.004     & 0.013     & 0.016     & 0.017     & 0.015      & 0.030      & 0.019      & 0.041      & 0.016      & 0.039      \\
-		\hline 
-	\end{tabular}
-}
-	\begin{flushleft}\item Standard errors are clustered by household. *** p$<$0.001, ** p$<$0.01 and * p$<$0.05. 
-\item This table reports regression of perceived risks and perceived unemployment risks on recent experiences of income volatility and the dummy indicating if the individual has recently experienced an unemployment. 
-\end{flushleft}
-\end{table}
-
-
-\clearpage
 
 \begin{table}[p]
 \centering
 \begin{adjustbox}{width=\textwidth}
 \begin{threeparttable}
-\caption{Perceived Income Risks, Experienced Volatility and Individual Characteristics}
+\caption{Covariants of Perceived Wage Risks}
 \label{micro_reg}\begin{tabular}{lllllll}
 \toprule
 {} & incvar I & incvar II & incvar III & incvar IIII & incvar IIIII & incvar IIIIII \\
