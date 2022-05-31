@@ -10,9 +10,6 @@ global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/sipp/"
 cd ${folder}
 pwd
 set more off 
-capture log close
-log using "${mainfolder}/popSCE_log",replace
-
 
 ***************************
 **  Clean and Merge Data **
@@ -34,7 +31,10 @@ rename _merge hh_info_merge
 **  Collapse to Population Series **
 ************************************
 
-collapse (median)  Q24_mean Q24_rmean Q24_var Q24_rvar Q24_iqr, by(year month date) 
+collapse (median)  Q24_mean Q24_rmean Q24_var Q24_rvar Q24_iqr ///
+         (p25) Q24_rvar_p25 = Q24_rvar  ///
+		 (p75) Q24_rvar_p75 = Q24_rvar  ///
+		 , by(year month date) 
 order date year month
 duplicates report date 
 
@@ -61,6 +61,8 @@ rename Q24_iqr inciqr
 rename Q24_rmean rincmean
 rename Q24_rvar rincvar
 
+rename Q24_rvar_p25 rincvar_p25
+rename Q24_rvar_p75 rincvar_p75
 
 ***********************
 **  Moving  Average  **
@@ -68,7 +70,7 @@ rename Q24_rvar rincvar
 
 tsset date 
 
-foreach mom in incmean incvar inciqr rincmean rincvar prisk2_all_rl trisk2_all_rl rincvar_all_rl{
+foreach mom in incmean incvar inciqr rincmean rincvar rincvar_p25 rincvar_p75 prisk2_all_rl trisk2_all_rl rincvar_all_rl{
 gen `mom'mv3 = (F1.`mom' + `mom' + L1.`mom') / 3
 label var `mom'mv3 "`mom' (3-month average)"
 }
@@ -123,5 +125,3 @@ twoway (tsline rincvarmv3,lwidth(thick)  lcolor(navy) lpattern(dash)) ///
 	   
 graph export "${graph_folder}/real_transitory_compare.png",as(png) replace   
 
-
-log close 

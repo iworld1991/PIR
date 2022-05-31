@@ -55,7 +55,7 @@ sort ID year month
 ** Exclude extreme outliers 
 ******************************
 
-keep if Q32 <= 60 & Q32 >= 20
+keep if Q32 <= 65 & Q32 >= 20
 
 *****************************************
 ****  Renaming so that more consistent **
@@ -279,12 +279,12 @@ collapse `SCEgroup', by(byear_5yr edu_g gender)
 save "${folder}/SCE/incvar_by_byear_5yr_edu_gender.dta",replace
 restore 
 
-
+/*
 **********************************
 *** tables and hists of Vars *****
 **********************************
 
-/*
+
 local Moments incmean incvar inciqr rincmean rincvar incskew
 
 foreach gp in `group_vars' {
@@ -359,7 +359,7 @@ graph export "${sum_graph_folder}/hist/hist_`mom'_`gp'.png",as(png) replace
 
 }
 }
-
+*/
 
 
 *******************************************
@@ -368,62 +368,6 @@ graph export "${sum_graph_folder}/hist/hist_`mom'_`gp'.png",as(png) replace
 
 gen YM = year*100+month
 
-
-** full sample
-preserve
-
-merge m:1 YM using "${otherdata_folder}/sipp/sipp_history_vol_decomposed_annual.dta", keep(master match)
-drop _merge 
-xtset ID date
-
-collapse (median) incvar rincvar prisk2_all trisk2_all prisk2_all_rl trisk2_all_rl rincvar_all_now rincvar_all_rl, by(date year month) 
-
-tsset date 
-
-table date if prisk2_all!=.
-
-reg rincvar prisk2_all trisk2_all 
-reg rincvar f1.trisk2_all f1.trisk2_all 
-reg rincvar f12.prisk2_all f12.trisk2_all 
-reg rincvar rincvar_all_now 
-reg rincvar rincvar_all_rl 
-reg rincvar prisk2_all_rl trisk2_all_rl
-
-corr rincvar rincvar_all_rl prisk2_all_rl trisk2_all_rl prisk2_all trisk2_all rincvar_all_now 
-
-egen pvarmv3 = filter(prisk2_all), coef(1 1 1) lags(-1/1) normalise 
-egen tvarmv3 = filter(trisk2_all), coef(1 1 1) lags(-1/1) normalise
-egen rincvarmv3 = filter(rincvar), coef(1 1 1) lags(-1/1) normalise
-
-twoway (tsline rincvar,lp(solid) lwidth(thick) lcolor(navy)) ///
-       (tsline trisk2_all_rl, yaxis(2) lp(dash) lwidth(thick) lcolor(red)), ///
-       xtitle("date") ///
-	   ytitle("perceived risk") ///	   
-	   ytitle("transitory risk", axis(2)) ///
-	   title("Perceived and realized transitory risk") ///
-	   legend(label(1 "perceived") label(2 "realized transitory risk(RHS)") col(1))
- graph export "${graph_folder}/sipp/real_transitory_compare.png",as(png) replace  
-
- 
-twoway (tsline rincvar,lp(solid) lwidth(thick) lcolor(navy)) ///
-       (tsline prisk2_all_rl, yaxis(2)  lp(dash) lwidth(thick) lcolor(red)), ///
-       xtitle("date") ///
-	   ytitle("perceived risk") ///
-	   ytitle("permanent risk",axis(2)) ///
-	   title("Perceived and realized permanent risk") ///
-	   legend(label(1 "perceived") label(2 "realized permanent risk(RHS)") col(1))
-graph export "${graph_folder}/sipp/real_permanent_compare.png",as(png) replace
-
-
-twoway (tsline rincvar,lp(solid) lwidth(thick) lcolor(navy)) ///
-       (tsline rincvar_all_rl, yaxis(2) lp(dash) lwidth(thick) lcolor(red)), ///
-       xtitle("date") ///
-	   ytitle("perceived risk") ///
-	   ytitle("volatility",axis(2)) ///
-	   title("Perceived and realized volatility") ///
-	   legend(label(1 "perceived") label(2 "realized volatility(RHS)") col(1))
-graph export "${graph_folder}/sipp/real_volatility_compare.png",as(png) replace    
-restore
 
 
 ** sub sample
@@ -448,33 +392,14 @@ replace `var'=. if `var'<`var'_p5 | `var'>=`var'_p95
 corr rincvar rincvar_sub_rl rincvar_sub_now prisk2_sub trisk2_sub
 
 xtset educ date 
-
+egen rincvar_sub_rlmv3 = filter(rincvar_sub_rl), coef(1 1 1) lags(-1/1) normalise 
 egen pvarmv3 = filter(prisk2_sub), coef(1 1 1) lags(-1/1) normalise 
 egen tvarmv3 = filter(trisk2_sub), coef(1 1 1) lags(-1/1) normalise
 egen rincvarmv3 = filter(rincvar), coef(1 1 1) lags(-1/1) normalise
 
 
-twoway (tsline prisk2_sub if educ==1,lcolor(orange) lwidth(thick) lp(dash)) ///
-       (tsline prisk2_sub if educ==2,lcolor(red) lwidth(thick) lp(dash_dot)) ///
-	   (tsline prisk2_sub if educ==3,lcolor(blue) lwidth(thick)), ///
-	    xtitle("date") ///
-	   ytitle("") ///
-	   legend(label(1 "HS dropout") label(2 "HS") label(3 "above") col(1)) ///
-	   title("Realized permanent risk by education") 
-graph export "${graph_folder}/sipp/real_prisk_by_edu.png",as(png) replace  
-
- 
-twoway (tsline trisk2_sub if educ==1,lcolor(orange) lwidth(thick) lp(dash)) ///
-       (tsline trisk2_sub if educ==2,lcolor(red) lwidth(thick) lp(dash_dot)) ///
-	   (tsline trisk2_sub if educ==3,lcolor(blue) lwidth(thick)), ///
-	   xtitle("date") ///
-	   legend(label(1 "HS dropout") label(2 "HS") label(3 "above") col(1)) ///
-	   title("Realized transitory risk by education") 
-graph export "${graph_folder}/sipp/real_trisk_by_edu.png",as(png) replace  
-
-
 twoway (tsline rincvarmv3 if educ==3,lwidth(thick)) ///
-       (tsline trisk2_sub if educ==3,lcolor(red) lwidth(thick)), ///
+       (tsline tvarmv3 if educ==3,lcolor(red) lwidth(thick) yaxis(2)), ///
 	    xtitle("date") ///
 	   ytitle("") ///
 	   ytitle("") ///
@@ -484,7 +409,7 @@ graph export "${graph_folder}/sipp/real_transitory_by_edu_compare.png",as(png) r
 
  
 twoway (tsline rincvarmv3 if educ==3,lwidth(thick)) ///
-       (tsline prisk2_sub if educ==3,lcolor(red) lwidth(thick)), ///
+       (tsline pvarmv3 if educ==3,lcolor(red) lwidth(thick) yaxis(2)), ///
 	   xtitle("date") ///
 	   ytitle("") ///
 	   ytitle("") ///
@@ -494,7 +419,7 @@ graph export "${graph_folder}/sipp/real_permanent_by_edu_compare.png",as(png) re
 
 
 twoway  (tsline rincvarmv3 if educ==3,lwidth(thick)) ///
-       (tsline rincvar_sub_rl if educ==3,lcolor(red) lwidth(thick)), ///
+       (tsline rincvar_sub_rlmv3 if educ==3,lcolor(red) lwidth(thick) yaxis(2)), ///
 	    xtitle("date") ///
 	   ytitle("") ///
 	   legend(label(1 "perceived") label(2 "realized volatility (RHS)") col(2)) ///
