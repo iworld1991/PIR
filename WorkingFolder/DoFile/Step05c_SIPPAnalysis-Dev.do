@@ -41,6 +41,8 @@ unique uniqueid
 
 by uniqueid: gen tenure = _N if TJB1_MSUM!=.
 
+by uniqueid: gen tenure_m = _N if TJB1_MSUM!=. & month==1
+
 ************************
 *** merge macro data **
 ************************
@@ -65,9 +67,19 @@ label var tot_hours_jb1 "average hours worked per week in the month"
 ** deal with SEAM problem
 ****************************
 
-*replace ntot_earning_jb1 = (l1.ntot_earning_jb1+f1.ntot_earning_jb1)/2 if month==1 & ntot_earning_jb1!=.
-*replace rtot_earning_jb1 = (l1.rtot_earning_jb1+f1.rtot_earning_jb1)/2 if month==1 & rtot_earning_jb1!=.
-*replace tot_hours_jb1 = (l1.tot_hours_jb1+f1.tot_hours_jb1)/2 if month==1 & tot_hours_jb1!=.
+** find the entry date of each uniqueid
+
+by uniqueid: gen show_counts = _n if TJB1_MSUM!=.
+gen start_survey = cond(show_counts==1,1,0)
+label var start_survey "the indicator if the person just enters the survey"
+gen end_survey = cond(show_counts==tenure,1,0)
+label var end_survey "the indicator if the person just finishes the survey"
+
+by uniqueid: egen start_month = sum(start_survey*month)
+label var start_month "the month of year entering the survey"
+by uniqueid: egen end_month = sum(end_survey*month)
+label var end_month "the month of year exiting the survey"
+
 
 ** monthly 
 gen wage = ntot_earning_jb1/tot_hours_jb1
@@ -91,18 +103,35 @@ label var wage "real monthly wage rate of the primary job"
 ** other frequency **
 **********************
 
+*Create some adjusted date for calculating quarterly and yearly wages 
+** Q1 is month =2 to month 4 Q4 is month = 11 to month 1 next year 
+** year is month =2 to month =2 next year 
+
+gen year_adj = year 
+replace year_adj = year-1 if month==1 
+label var year_adj "year nb starting from Feb every year"
+
+gen quarter_adj = . 
+replace quarter_adj = 1 if month==2 | month==3 | month==4 
+replace quarter_adj = 2 if month==5 | month==6 | month==7 
+replace quarter_adj = 3 if month==8 | month==9 | month==10 
+replace quarter_adj = 4 if month==11 | month==12 | month==1
+
+label var quarter_adj "quarter nb starting from Feb every year"
+
+
 
 ***********
 ** quarterly 
 ***********
 
-egen ntot_earning_jb1_q = sum(ntot_earning_jb1), by(uniqueid year quarter)
+egen ntot_earning_jb1_q = sum(ntot_earning_jb1), by(uniqueid year_adj quarter_adj)
 label var ntot_earning_jb1_q "quarterly nominal total earning"
 
-egen rtot_earning_jb1_q = sum(rtot_earning_jb1), by(uniqueid year quarter)
+egen rtot_earning_jb1_q = sum(rtot_earning_jb1), by(uniqueid year_adj quarter_adj)
 label var rtot_earning_jb1_q "quarterly real total earning from primary job"
 
-egen tot_hours_jb1_q = sum(tot_hours_jb1), by(uniqueid year quarter) 
+egen tot_hours_jb1_q = sum(tot_hours_jb1), by(uniqueid year_adj quarter_adj) 
 label var tot_hours_jb1_q "quarterly total hours of working for primary job"
 
 gen wage_Q =  rtot_earning_jb1_q/tot_hours_jb1_q				
@@ -115,13 +144,13 @@ label var wage_n_Q "nominal yearly wage rate of primary job"
 ** yearly 
 ***********
 
-egen ntot_earning_jb1_y = sum(ntot_earning_jb1), by(uniqueid year)
+egen ntot_earning_jb1_y = sum(ntot_earning_jb1), by(uniqueid year_adj)
 label var ntot_earning_jb1 "nominal total monthly earning"
 
-egen rtot_earning_jb1_y = sum(rtot_earning_jb1), by(uniqueid year)
+egen rtot_earning_jb1_y = sum(rtot_earning_jb1), by(uniqueid year_adj)
 label var rtot_earning_jb1_y "yearly real total earning from primary job"
 
-egen tot_hours_jb1_y = sum(tot_hours_jb1), by(uniqueid year) 
+egen tot_hours_jb1_y = sum(tot_hours_jb1), by(uniqueid year_adj) 
 label var tot_hours_jb1_y "yearly total hours of working for primary job"
 
 gen wage_Y =  rtot_earning_jb1_y/tot_hours_jb1_y				
@@ -348,12 +377,13 @@ restore
 
 ***********************************************************************************
 ** mincer regressions 
+
 ** monthly 
-reghdfe lwage age age2 age3 end_yr beg_yr, a(i.race i.gender i.educ i.TJB1_IND) resid
+reghdfe lwage age age2 age3 end_yr beg_yr, a(i.month i.race i.gender i.educ i.TJB1_IND) resid
 predict lwage_shk, residuals
  
 * including aggregate shock
-reghdfe lwage age age2 age3 end_yr beg_yr, a(i.date i.race i.gender i.educ i.TJB1_IND) resid
+reghdfe lwage age age2 age3 end_yr beg_yr, a(i.month i.date i.race i.gender i.educ i.TJB1_IND) resid
 predict lwage_id_shk, residuals
 
 gen lwage_ag_shk = lwage_shk- lwage_id_shk
@@ -363,11 +393,27 @@ label var lwage_id_shk "log wage idiosyncratic shock"
 label var lwage_ag_shk "log wage aggregate shock"
 
 
+** monthly nominal
+
+reghdfe lwage_n age age2 age3 end_yr beg_yr, a(i.month i.race i.gender i.educ i.TJB1_IND) resid
+predict lwage_n_shk, residuals
+ 
+* including aggregate shock
+reghdfe lwage_n age age2 age3 end_yr beg_yr, a(i.month i.date i.race i.gender i.educ i.TJB1_IND) resid
+predict lwage_n_id_shk, residuals
+
+gen lwage_n_ag_shk = lwage_n_shk- lwage_n_id_shk
+
+label var lwage_n_shk "log nominal wage shock"
+label var lwage_n_id_shk "log nominal wage idiosyncratic shock"
+label var lwage_n_ag_shk "log nominal wage aggregate shock"
+
+
 *************************************************************************************
 ** quarterly  
 *************************************************************************************
 
-reghdfe lwage_Q age age2 age3, a(i.year#i.quarter i.race i.gender i.educ i.TJB1_IND) resid
+reghdfe lwage_Q age age2 age3, a(i.quarter_adj i.year_adj#i.quarter_adj i.race i.gender i.educ i.TJB1_IND) resid
 predict lwage_Q_id_shk, residuals
 label var lwage_Q_id_shk "log yearly wage idiosyncratic shock"
 
@@ -385,12 +431,12 @@ label var lwage_Q_id_shk_gr "log quarterly growth of idiosyncratic unexplained w
 ** yearly 
 *************************************************************************************
 
-reghdfe lwage_Y age age2 age3, a(i.year i.race i.gender i.educ i.TJB1_IND) resid
+reghdfe lwage_Y age age2 age3, a(i.year_adj i.race i.gender i.educ i.TJB1_IND) resid
 predict lwage_Y_id_shk, residuals
 label var lwage_Y_id_shk "log yearly wage idiosyncratic shock"
 
 ** first difference for monthly 
-foreach var in lwage lwage_n lwage_shk lwage_id_shk lwage_ag_shk{
+foreach var in lwage lwage_n lwage_shk lwage_id_shk lwage_ag_shk lwage_n_id_shk lwage_n_ag_shk{
 gen `var'_gr = `var'- l1.`var'
 }
 label var lwage_n_gr "log growth of nominal wage"
@@ -398,6 +444,13 @@ label var lwage_gr "log growth of real wage"
 label var lwage_shk_gr "log growth of unexplained wage"
 label var lwage_id_shk_gr "log growth of idiosyncratic unexplained wage"
 label var lwage_ag_shk_gr "log growth of aggregate unexplained wage"
+label var lwage_n_id_shk_gr "log nominal growth of idiosyncratic unexplained wage"
+label var lwage_n_ag_shk_gr "log nominal growth of idiosyncratic unexplained wage"
+
+foreach var in lwage_id_shk{
+gen `var'_y2y_gr = `var'- l12.`var'
+}
+label var lwage_id_shk_y2y_gr "log YoY growth of unexplained wage"
 
 ** first difference for yearly 
 foreach var in lwage_Y lwage_n_Y lwage_Y_id_shk{
@@ -409,7 +462,6 @@ label var lwage_Y_id_shk_gr "log yearly growth of idiosyncratic unexplained wage
 
 
 **  volatility 
-
 foreach wvar in lwage lwage_Q lwage_Y{
 egen `wvar'_id_shk_gr_sd = sd(`wvar'_id_shk_gr), by(date)
 label var `wvar'_id_shk_gr_sd "standard deviation of log idiosyncratic shocks"
@@ -495,12 +547,18 @@ tabout year educ gender using "${table_folder}sum_table_sipp.csv", ///
 ** summary chart of conditional wages ********
 ************************************************
 
+
+* monthly 
 preserve
 
-collapse (mean) lwage_id_shk_gr lwage_id_shk_gr_sd, by(year month date) 
+replace lwage_id_shk_gr=. if start_month==1 & end_month ==12 & month==1 
 
-replace lwage_id_shk_gr=. if month==1 | month==2 
-replace lwage_id_shk_gr_sd=. if month==1| month==2
+collapse (mean) lwage_id_shk_gr ///
+          (sd) lwage_id_shk_gr_sd = lwage_id_shk_gr ///
+		  lwage_id_shk_y2y_gr_sd = lwage_id_shk_y2y_gr, by(year month date) 
+
+*replace lwage_id_shk_gr=. if month==1 | month==2 
+*replace lwage_id_shk_gr_sd=. if month==1| month==2
 
 ** average log wage shock whole sample
 twoway  (connected lwage_id_shk_gr date) if lwage_id_shk_gr!=., title("The mean of log real wage shocks") 
@@ -509,7 +567,14 @@ graph export "${graph_folder}/log_wage_shk_gr.png", as(png) replace
 ** std log wage whole sample
 twoway  (connected lwage_id_shk_gr_sd date) if lwage_id_shk_gr_sd!=., title("The standard deviation of log real wage shocks") 
 graph export "${graph_folder}/log_wage_shk_gr_sd.png", as(png) replace
+
+
+** std log wage whole sample
+twoway  (connected lwage_id_shk_y2y_gr_sd date, lpattern(dot)) if lwage_id_shk_y2y_gr_sd!=., title("The standard deviation of log real wage shocks (y2y)") 
+graph export "${graph_folder}/log_y2y_wage_shk_gr_sd.png", as(png) replace
+
 restore 
+
 
 * education profile bar
 preserve 
@@ -524,6 +589,24 @@ graph bar lwage_shk_gr_sd_edu, over(educ) ///
                                title("Gross volatility and education") 							   
 graph export "${graph_folder}/log_wage_shk_gr_sd_bar_by_edu.png", as(png) replace 
 restore 
+
+
+* quarterly 
+preserve
+keep if quarter_adj!=.
+
+collapse (sd) lwage_id_shk_gr_sd = lwage_Q_id_shk_gr, by(year_adj quarter_adj) 
+
+gen date_str=string(year_adj)+"Q"+string(quarter_adj)
+gen dateq = quarterly(date_str,"YQ")
+drop date_str
+format date %tq
+
+** std log wage whole sample
+twoway  (connected lwage_id_shk_gr_sd date) if lwage_id_shk_gr_sd!=., title("The standard deviation of log real wage shocks") 
+graph export "${graph_folder}/log_wage_shk_gr_sd_quarterly.png", as(png) replace
+restore 
+
 
 * education profile: time series 
 
@@ -585,12 +668,13 @@ restore
 ** Prepare the matrix for GMM estimation
 *****************************************
 
+
 preserve 
 tsset uniqueid date 
 tsfill,full						
 replace year=year(dofm(date)) if year==.
 replace month=month(dofm(date)) if month==.
-replace lwage_id_shk_gr=. if month==1		    
+replace lwage_id_shk_gr=. if month==1
 keep uniqueid year month lwage_id_shk_gr educ gender age_5yr
 gen date_temp = year*100+month
 drop if date_temp==.
@@ -600,37 +684,63 @@ save "${datafolder}sipp_matrix.dta",replace
 restore 
 
 
+preserve 
+tsset uniqueid date 
+tsfill,full						
+replace year=year(dofm(date)) if year==.
+replace month=month(dofm(date)) if month==.
+replace lwage_n_id_shk_gr=. if month==1
+keep uniqueid year month lwage_n_id_shk_gr educ gender age_5yr
+gen date_temp = year*100+month
+drop if date_temp==.
+drop year month 
+reshape wide lwage_n_id_shk_gr, i(uniqueid educ gender age_5yr) j(date_temp)
+save "${datafolder}sipp_matrix_nomimal.dta",replace 
+restore 
+
 preserve
-duplicates drop uniqueid year quarter,force
-gen date_str=string(year)+"Q"+string(quarter)
+keep if quarter_adj!=.
+duplicates drop uniqueid year_adj quarter_adj,force
+gen date_str=string(year_adj)+"Q"+string(quarter_adj)
 gen dateq = quarterly(date_str,"YQ")
 drop date_str
 format date %tq
 tsset uniqueid dateq 
 tsfill,full		    
-keep uniqueid year quarter lwage_Q_id_shk_gr educ gender age_5yr
-gen date_temp = year*10+quarter
+keep uniqueid year_adj quarter_adj lwage_Q_id_shk_gr educ gender age_5yr
+gen date_temp = year_adj*10+quarter_adj
 drop if date_temp==.
-drop year quarter 
+drop year_adj quarter_adj
 reshape wide lwage_Q_id_shk_gr, i(uniqueid educ gender age_5yr) j(date_temp)
 save "${datafolder}sipp_matrix_Q.dta",replace 
 restore 
 
 
 preserve
-duplicates drop uniqueid year,force
-tsset uniqueid year 
+duplicates drop uniqueid year_adj,force
+tsset uniqueid year_adj 
 tsfill,full						
 *replace year=year(dofm(date)) if year==.
 *replace month=month(dofm(date)) if month==.
 *replace lwage_id_shk_gr=. if month==1		    
-keep uniqueid year lwage_Y_id_shk_gr educ gender age_5yr
+keep uniqueid year_adj lwage_Y_id_shk_gr educ gender age_5yr
 *gen date_temp = year
-drop if year==.
-reshape wide lwage_Y_id_shk_gr, i(uniqueid educ gender age_5yr) j(year)
+drop if year_adj==.
+reshape wide lwage_Y_id_shk_gr, i(uniqueid educ gender age_5yr) j(year_adj)
 save "${datafolder}sipp_matrix_Y.dta",replace 
 restore 
 
+
+preserve
+keep if month==1 
+tsset uniqueid year
+tsfill,full						
+keep uniqueid year lwage_id_shk_y2y_gr educ gender age_5yr
+*gen date_temp = year
+drop if year==.
+reshape wide lwage_id_shk_y2y_gr, i(uniqueid educ gender age_5yr) j(year)
+save "${datafolder}sipp_matrix_Y2Y.dta",replace 
+restore 
 
 *****************************************************************************
 **** comparison and perceptions and realizations for idiosyncratic shocks ***
@@ -1078,7 +1188,7 @@ graph export "${graph_folder}/real_realized_perceived_risks_by_age_edu_gender.pn
 
 
 restore
-ddd
+
 /*
 ** time series 
 

@@ -7,9 +7,9 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.6.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
@@ -24,9 +24,9 @@
 import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
-#from scipy.optimize import minimize
 import pandas as pd
 import copy as cp
+plt.style.use('ggplot')
 
 from IncomeProcess import IMAProcess as ima
 
@@ -151,12 +151,12 @@ fig = plt.figure(figsize=([10,4]))
 plt.subplot(1,2,1)
 plt.title('Permanent Risk')
 plt.plot(dt_est.para_est[1][0][1:].T**2,'r-',label='Estimation')
-plt.plot(dt_fake.sigmas[0][1:]**2,'-*',label='Truth')
+plt.plot(dt_fake.sigmas[0][1:]**2,'b-*',label='Truth')
 
 plt.subplot(1,2,2)
 plt.title('Transitory Risk')
 plt.plot(dt_est.para_est[1][1][1:].T**2,'r-',label='Estimation')
-plt.plot(dt_fake.sigmas[1][1:]**2,'-*',label='Truth')
+plt.plot(dt_fake.sigmas[1][1:]**2,'b-*',label='Truth')
 plt.legend(loc=0)
 
 
@@ -189,7 +189,204 @@ def estimate_sample(sample):
 
 # -
 
-# ### Estimation using SIPP data
+# ### Estimation using SIPP data (yearly)
+
+## SIPP data 
+SIPP_Y = pd.read_stata('../../../SIPP/sipp_matrix_Y.dta',
+                    convert_categoricals=False)   
+SIPP_Y.index = SIPP_Y['uniqueid']
+SIPP_Y = SIPP_Y.drop(['uniqueid'], axis=1)
+SIPP_Y = SIPP_Y.dropna(axis=0,how='all')
+
+# +
+## different samples 
+
+education_groups = [1, #'HS dropout',
+                   2, # 'HS graduate',
+                   3] #'college graduates/above'
+gender_groups = [1, #'male',
+                2] #'female'
+
+#byear_groups = list(np.array(SIPP.byear_5yr.unique(),dtype='int32'))
+
+age_groups = list(np.array(SIPP_Y.age_5yr.unique(),dtype='int32'))
+
+group_by = ['educ','gender','age_5yr']
+all_drop = group_by #+['age_h','byear_5yr']
+
+## full sample 
+sample_full =  SIPP_Y.drop(all_drop,axis=1)
+
+## sub sample 
+sub_samples = []
+para_est_list = []
+sub_group_names = []
+
+for edu in education_groups:
+    for gender in gender_groups:
+        for age5 in age_groups:
+            belong = (SIPP_Y['educ']==edu) & (SIPP_Y['gender']==gender) & (SIPP_Y['age_5yr']==age5)
+            obs = np.sum(belong)
+            #print(obs)
+            if obs > 1:
+                sample = SIPP_Y.loc[belong].drop(all_drop,axis=1)
+                sub_samples.append(sample)
+                sub_group_names.append((edu,gender,age5))
+
+# +
+## estimation for full sample 
+
+data_para_est_full = estimate_sample(sample_full)
+# -
+
+sample_full.columns
+
+## time stamp 
+year_str = [string.replace('lwage_Y_id_shk_gr','') for string in sample_full.columns if 'lwage_Y_id_shk_gr' in string]
+years = np.array(year_str) 
+
+p_risk
+
+# + {"code_folding": []}
+## plot estimate 
+
+lw = 3
+for i,paras_est in enumerate([data_para_est_full]):
+    print('whole sample')
+    fig = plt.figure(figsize=([13,12]))
+    this_est = paras_est
+    p_risk = this_est[1][0][1:]**2
+    p_risk[p_risk<1e-4]= np.nan ## replace non-identified with nan
+    print('Average permanent risk (std): ',str(np.nanmean(np.sqrt(p_risk))))
+    t_risk = this_est[1][1][1:]**2
+    t_risk[t_risk<1e-4]= np.nan ## replace non-identified with nan
+    print('Average transitory risk (std): ',str(np.nanmean(np.sqrt(t_risk))))
+    plt.subplot(2,1,1)
+    plt.title('Permanent Risk')
+    plt.plot(years,
+             p_risk,
+             'bv',
+             markersize=20,
+             label='Estimation')
+    plt.ylim(0.0,0.2)
+    plt.xticks(years,
+               rotation='vertical')
+    plt.grid(True)
+
+    plt.subplot(2,1,2)
+    plt.title('Transitory Risk')
+    plt.plot(years,
+             t_risk,
+             'bv',
+             markersize=20,
+             label='Estimation')
+    plt.xticks(years,
+               rotation='vertical')
+    plt.ylim(0.0,0.1)
+    #plt.legend(loc=0)
+    plt.grid(True)
+    plt.savefig('../Graphs/sipp/permanent-transitory-risk-yearly.jpg')
+# -
+
+# ### Estimation using SIPP data (quarterly)
+#
+#
+
+## SIPP data 
+SIPP_Q = pd.read_stata('../../../SIPP/sipp_matrix_Q.dta',
+                    convert_categoricals=False)   
+SIPP_Q.index = SIPP_Q['uniqueid']
+SIPP_Q = SIPP_Q.drop(['uniqueid'], axis=1)
+SIPP_Q = SIPP_Q.dropna(axis=0,how='all')
+
+# + {"code_folding": [0, 2, 5]}
+## different samples 
+
+education_groups = [1, #'HS dropout',
+                   2, # 'HS graduate',
+                   3] #'college graduates/above'
+gender_groups = [1, #'male',
+                2] #'female'
+
+#byear_groups = list(np.array(SIPP.byear_5yr.unique(),dtype='int32'))
+
+age_groups = list(np.array(SIPP_Q.age_5yr.unique(),dtype='int32'))
+
+group_by = ['educ','gender','age_5yr']
+all_drop = group_by #+['age_h','byear_5yr']
+
+## full sample 
+sample_full =  SIPP_Q.drop(all_drop,axis=1)
+
+## sub sample 
+sub_samples = []
+para_est_list = []
+sub_group_names = []
+
+for edu in education_groups:
+    for gender in gender_groups:
+        for age5 in age_groups:
+            belong = (SIPP_Q['educ']==edu) & (SIPP_Q['gender']==gender) & (SIPP_Q['age_5yr']==age5)
+            obs = np.sum(belong)
+            #print(obs)
+            if obs > 1:
+                sample = SIPP_Q.loc[belong].drop(all_drop,axis=1)
+                sub_samples.append(sample)
+                sub_group_names.append((edu,gender,age5))
+
+# +
+## estimation for full sample 
+
+data_para_est_full = estimate_sample(sample_full)
+
+## time stamp 
+quarter_str = [string.replace('lwage_Q_id_shk_gr','') for string in sample_full.columns if 'lwage_Q_id_shk_gr' in string]
+quarters = np.array(quarter_str) 
+
+# +
+## plot estimate 
+
+lw = 3
+for i,paras_est in enumerate([data_para_est_full]):
+    print('whole sample')
+    fig = plt.figure(figsize=([13,12]))
+    this_est = paras_est
+    p_risk = this_est[1][0][1:]**2
+    t_risk = this_est[1][1][1:]**2
+
+    plt.subplot(2,1,1)
+    plt.title('Permanent Risk')
+    plt.plot(quarters,
+             p_risk,
+             'r-o',
+             lw=lw,
+             label='Estimation')
+    plt.xticks(quarters,
+               rotation='vertical')
+    plt.grid(True)
+
+    plt.subplot(2,1,2)
+    plt.title('Transitory Risk')
+    plt.plot(quarters,
+             t_risk,
+             'r-o',
+             lw=lw,
+             label='Estimation')
+    plt.xticks(quarters,
+               rotation='vertical')
+    plt.legend(loc=0)
+    plt.grid(True)
+    plt.subplots_adjust(
+                    #left=0.1,
+                    #bottom=0.1, 
+                    #right=0.9, 
+                   # top=0.9, 
+                    #wspace=0.4, 
+                    hspace=0.4)
+    plt.savefig('../Graphs/sipp/permanent-transitory-risk-quarterly.jpg')
+# -
+
+# ### Estimation using SIPP data (monthly)
 
 # + {"code_folding": []}
 ## SIPP data 
@@ -288,6 +485,13 @@ for i,paras_est in enumerate([data_para_est_full]):
                rotation='vertical')
     plt.legend(loc=0)
     plt.grid(True)
+    plt.subplots_adjust(
+                    #left=0.1,
+                    #bottom=0.1, 
+                    #right=0.9, 
+                   # top=0.9, 
+                    #wspace=0.4, 
+                    hspace=0.4)
     plt.savefig('../Graphs/sipp/permanent-transitory-risk.jpg')
 
 # + {"code_folding": []}

@@ -56,3 +56,7 @@
    
 2. [Latex table manipulation](./WorkingFolder/PythonCode/TexTablesMover.ipynb)
 <!-- #endregion -->
+
+```python
+
+```

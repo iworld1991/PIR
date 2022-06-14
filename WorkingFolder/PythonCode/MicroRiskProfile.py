@@ -524,7 +524,7 @@ mom_list = ['incexp',
 
 for i,mom in enumerate(mom_list):
     model = smf.ols(formula = str(mom)
-                    +'~ age+age2+C(parttime) + C(selfemp) + C(gender)+ C(HHinc_gr) + C(nlit_gr)+C(educ_gr)+C(year)',
+                    +'~ age+age2+C(parttime) + C(selfemp) + C(gender)+ C(HHinc_gr) + C(nlit_gr)+C(educ_gr)+C(year)', #
                     data = SCEM)
     result = model.fit()
     SCEM[mom+'_rd']=result.resid

@@ -366,13 +366,21 @@ label var exp_s_1y "expected Poisson separation rate (1 year)"
 *** Variables for overreaction test 
 **************************************
 
+** earing expectation 
+
+gen incexp_rv = incmean - l1.incmean
+label var incexp_rv "revision in nominal wage growth expectation"
+
+gen rincexp_rv = rincmean - l1.rincmean
+label var rincexp_rv "revision in real wage growth expectation"
 
 ** earning risk 
 
+gen incvar_rv = incvar - l1.incvar 
+label var incvar_rv "revision in nominal earning risk"
+
 gen rincvar_rv = rincvar - l1.rincvar
 label var rincvar "revision in earning risk"
-gen incvar_rv = incvar - l1.incvar
-label var incvar "revision in earning risk"
 
 gen rincvar_all_fe = rincvar-rincvar_all_rl
 label var rincvar_all_fe "forecast error in earning risk"
@@ -655,6 +663,83 @@ graph bar rincsd, over(u2em12,relabel(1 "other" 2 "unemployed within past year")
 graph export "${sum_graph_folder}/boxplot_rvar_ue_peperience_m12.png", as(png) replace 
 
 
+
+************************************************
+** exploring seasonal patterns ********
+************************************************
+
+** charts 
+
+graph bar incexp_rv, ///
+           over(month) ///
+		   bar(1, color(navy)) ///
+		   title("Revision in Expected Nominal Wage Growth") ///
+		   b1title("month") ///
+		   ytitle("Average revision in expected wage growth") 
+graph export "${sum_graph_folder}/boxplot_exp_revision_month_of_year.png", as(png) replace 
+
+
+graph bar rincexp_rv, ///
+           over(month) ///
+		   bar(1, color(navy)) ///
+		   title("Revision in Expected Real Wage Growth") ///
+		   b1title("month") ///
+		   ytitle("Average revision in expected wage growth") 
+graph export "${sum_graph_folder}/boxplot_rexp_revision_month_of_year.png", as(png) replace 
+
+
+graph bar incvar_rv, ///
+           over(month) ///
+		   bar(1, color(navy)) ///
+		   title("Revision in Expected Nominal Wage Risks") ///
+		   b1title("month") ///
+		   ytitle("Average perceived risk") 
+graph export "${sum_graph_folder}/boxplot_var_revision_month_of_year.png", as(png) replace 
+
+
+graph bar rincvar_rv, ///
+           over(month) ///
+		   bar(1, color(navy)) ///
+		   title("Revision in Expected Wage Risks") ///
+		   b1title("month") ///
+		   ytitle("Average perceived risk") 
+graph export "${sum_graph_folder}/boxplot_rvar_revision_month_of_year.png", as(png) replace 
+
+
+graph bar rincsd, ///
+           over(month) ///
+		   bar(1, color(navy)) ///
+		   title("Perceived risk by month of the year") ///
+		   b1title("month") ///
+		   ytitle("Average perceived risk (std)") 
+graph export "${sum_graph_folder}/boxplot_rvar_month_of_year.png", as(png) replace 
+
+** regressions
+
+eststo clear
+
+eststo: reghdfe incexp i.month, a(ID)
+estadd local hasid "Yes",replace
+estadd local hastid "Yes",replace
+
+eststo: reghdfe rincexp i.month, a(ID)
+estadd local hasid "Yes",replace
+estadd local hastid "Yes",replace
+
+eststo: reghdfe incvar i.month, a(ID)
+estadd local hasid "Yes",replace
+estadd local hastid "Yes",replace
+
+eststo: reghdfe rincvar i.month, a(ID)
+estadd local hasid "Yes",replace
+estadd local hastid "Yes",replace
+
+esttab using "${sum_table_folder}/ind/month_of_year_effect.csv", ///
+       stats(hasid hastid r2 N, label("Individual FE" "Time FE" "R-squared" "Sample Size")) ///
+	   label mtitles se r2 ///
+	   replace
+
+eststo clear
 
 ************************************************
 ** time series dynamics of risk perceptions ********
