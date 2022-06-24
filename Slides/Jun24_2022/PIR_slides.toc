@@ -1,0 +1,9 @@
+\beamer@sectionintoc {1}{Motivation}{3}{0}{1}
+\beamer@sectionintoc {2}{Empirical evidence}{8}{0}{2}
+\beamer@subsectionintoc {2}{1}{Cross-sectional patterns}{11}{0}{2}
+\beamer@subsectionintoc {2}{2}{Permanent versus transitory risks}{17}{0}{2}
+\beamer@subsectionintoc {2}{3}{Perceived risks and decisions}{20}{0}{2}
+\beamer@subsectionintoc {2}{4}{Summary of empirical findings}{22}{0}{2}
+\beamer@sectionintoc {3}{Model}{31}{0}{3}
+\beamer@sectionintoc {4}{Conclusion}{45}{0}{4}
+\beamer@subsectionintoc {5}{1}{Perceived risks and macroeconomic history}{49}{0}{4}
