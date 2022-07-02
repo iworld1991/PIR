@@ -15,44 +15,17 @@
 # ---
 
 # ## A life-cycle consumption  model under objective/subjective risk perceptions
-#
+#  - this notebook undertakes additional tests the source code
 # - author: Tao Wang
 # - date: March 2022
 # - this is a companion notebook to the paper "Perceived income risks"
 
-# - This notebook builds on a standard life-cycle consumption model with uninsured income risks and extends it to allow subjective beliefs about income risks
-#   - Preference/income process
-#
-#       - CRRA utility 
-#       - During work: labor income risk: permanent + persistent/transitory/2-state Markov between UE and EMP or between low and high risk + i.i.d. unemployment shock
-#        -  a deterministic growth rate of permanent income over the life cycle 
-#       - During retirement: receives a constant pension proportional to permanent income (no permanent/transitory income risks)
-#       - A positive probability of death before terminal age 
-#   
-
 import numpy as np
-import pandas as pd
-from quantecon.optimize import brent_max, brentq
-from interpolation import interp #mlinterp
-from scipy import interpolate
-import numba as nb
-from numba import jit,njit, float64, int64, boolean
-from numba.experimental import jitclass
+from interpolation import interp
 import matplotlib as mp
 import matplotlib.pyplot as plt
 # %matplotlib inline
-from quantecon import MarkovChain
-import quantecon as qe 
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
 from time import time
-from scipy import sparse as sp
-import scipy.sparse.linalg
-from scipy import linalg as lg 
-from numba.typed import List
-from Utility import cal_ss_2markov
-
-from resources_jit import MeanOneLogNormal as lognorm
 
 # + code_folding=[]
 ## figure plotting configurations
@@ -70,7 +43,7 @@ plt.style.use('seaborn')
 
 # ## The Model Class and Solver
 
-from SolveLifeCycle import LifeCycle, EGM, solve_model_backward_iter,compare_2solutions
+from SolveLifeCycle import LifeCycle, solve_model_backward_iter,compare_2solutions
 
 # ## Initialize the model
 
@@ -116,7 +89,7 @@ if __name__ == "__main__":
     ## no persistent state
     b_y = 0.0
 
-    ## wether to have zero borrowing constraint 
+    ## wether to have zero borrowing constraint
     borrowing_cstr = True
 
 # + code_folding=[1]
@@ -133,9 +106,9 @@ if __name__ == "__main__":
 
 # ### Consumption  the last period 
 
-# + code_folding=[1]
+# + code_folding=[]
 if __name__ == "__main__":
-    lc = LifeCycle(sigma_psi = sigma_psi,
+    lc_baseline = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
                    U=U,
                    ρ=ρ,
@@ -151,14 +124,14 @@ if __name__ == "__main__":
                    )
 
 
-# + code_folding=[2]
+# + code_folding=[]
 # Initial the end-of-period consumption policy of σ = consume all assets
 
 if __name__ == "__main__":
 
     ## terminal consumption function
 
-    m_init,σ_init = lc.terminal_solution()
+    m_init,σ_init = lc_baseline.terminal_solution()
 
 # + code_folding=[]
 if __name__ == "__main__":
@@ -244,7 +217,7 @@ if __name__ == "__main__":
                    b_y= 0.0,
                    sigma_psi = lc_paras['σ_ψ_sub'],
                    sigma_eps = lc_paras['σ_θ_sub'],
-                   subjective =True,
+                   subjective = True,
                    ue_markov = True,
                    P = lc_paras['P'],
                    U = lc_paras['U'],
@@ -305,7 +278,7 @@ sub_minus_obj = compare_2solutions(ms_stars,
 
 plt.hist(sub_minus_obj.flatten(),
          bins=50)
-plt.title('Consumption in subjective model minus objective model')
+plt.title('Consumption in subjective model(LPR) minus objective model ((HPR))')
 print('should be positive')
 # -
 
@@ -320,8 +293,8 @@ if __name__ == "__main__":
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
     for x,year in enumerate(years_left):
-        age = lc.L-year
-        i = lc.L-age
+        age = lc_baseline.L-year
+        i = lc_baseline.L-age
         for k,model_name in enumerate(model_names):
             m_plt,c_plt = ms_stars[k][i,:,0,0],σs_stars[k][i,:,0,0]
             c_func = lambda m: interp(m_plt,c_plt,m)
@@ -338,7 +311,7 @@ if __name__ == "__main__":
 
 # ## low versus high risks 
 
-# + code_folding=[]
+# + code_folding=[0, 10]
 if __name__ == "__main__":
 
     t_start = time()
@@ -350,18 +323,17 @@ if __name__ == "__main__":
     σs_stars = []
     
     for i,sigma_psi in enumerate(sigma_psi_ls):
-        lc.sigma_psi = sigma_psi
-        lc.sigma_eps = sigma_eps_ls[i]
+        lc_baseline.sigma_psi = sigma_psi
+        lc_baseline.sigma_eps = sigma_eps_ls[i]
         ### this line is very important!!!!
         #### need to regenerate shock draws for new sigmas
-        lc.update_parameter()
-        lc.prepare_shocks()
+        lc_baseline.prepare_shocks()
         
         ## terminal solution
-        m_init,σ_init = lc.terminal_solution()
+        m_init,σ_init = lc_baseline.terminal_solution()
         
         ## solve backward
-        ms_star, σs_star = solve_model_backward_iter(lc,
+        ms_star, σs_star = solve_model_backward_iter(lc_baseline,
                                                      m_init,
                                                      σ_init)
         ms_stars.append(ms_star)
@@ -388,15 +360,15 @@ if __name__ == "__main__":
 
     m_grid = np.linspace(0.0,10.0,200)
     ## plot c func at different age /asset grid
-    years_left = [0,1,30,40]
+    years_left = [0,21,30,40]
 
     n_sub = len(years_left)
 
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
     for x,year in enumerate(years_left):
-        age = lc.L-year
-        i = lc.L-age
+        age = lc_baseline.L-year
+        i = lc_baseline.L-age
         model_names = ['low PR','high PR']
         for k,model_name in enumerate(model_names):
             m_plt,c_plt = ms_stars[k][i,:,0,0],σs_stars[k][i,:,0,0]
@@ -419,12 +391,14 @@ if __name__ == "__main__":
 #
 #
 
-# + code_folding=[2]
+# + code_folding=[]
 if __name__ == "__main__":
+    
+    U_prb = 0.2
 
     lc_trans_ue =  LifeCycle(sigma_psi = sigma_psi,
                        sigma_eps = sigma_eps,
-                       U=0.1,
+                       U= U_prb,
                        ρ=ρ,
                        R=R,
                        T=T,
@@ -441,7 +415,7 @@ if __name__ == "__main__":
                        sigma_eps = sigma_eps,
                        U=U0,
                        ue_markov=True,
-                       P=np.array([[0.1,0.9],[0.1,0.9]]),
+                       P= np.array([[U_prb,1-U_prb],[U_prb,1-U_prb]]),
                        ρ=ρ,
                        R=R,
                        T=T,
@@ -478,20 +452,31 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# +
+# compare solutions
+
+trans_mkv_diff = compare_2solutions(ms_stars,
+                                  σs_stars)
+
+plt.hist(trans_mkv_diff.flatten(),
+         bins=50)
+plt.title('Differences in Consumption Policy between two cases')
+print('should be positive')
+
+# + code_folding=[] pycharm={"name": "#%%\n"}
 if __name__ == "__main__":
 
 
     ## plot c func at different age /asset grid
-    years_left = [0,1,30,40]
+    years_left = [0,21,30,40]
 
     n_sub = len(years_left)
 
     fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
 
     for x,year in enumerate(years_left):
-        age = lc.L-year
-        i = lc.L-age
+        age = lc_baseline.L-year
+        i = lc_baseline.L-age
         for k,model_name in enumerate(model_names):
             m_plt,c_plt = ms_stars[k][i,:,0,0],σs_stars[k][i,:,0,0]
             axes[x].plot(m_plt,
@@ -504,6 +489,3 @@ if __name__ == "__main__":
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
-# -
-
-
