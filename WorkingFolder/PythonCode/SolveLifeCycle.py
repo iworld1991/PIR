@@ -112,7 +112,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[6, 148, 198]
+# + code_folding=[1, 6, 131, 148, 198]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -328,7 +328,7 @@ class LifeCycle:
         return m_init,σ_init
 
 
-# + code_folding=[]
+# + code_folding=[0, 7]
 ## This function takes the consumption values at different 
 ## grids of state variables from period t+1, and
 ## the model class, then generates the consumption values at t.
@@ -478,7 +478,7 @@ def EGM(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[]
+# + code_folding=[5]
 ## the operator under markov stochastic risks 
 ## now the permanent and transitory risks are 
 ## different between markov states. 
@@ -661,7 +661,7 @@ def solve_model_backward_iter(model,        # Class with model information
     return mϵs_new, σs_new
 
 
-# + code_folding=[1]
+# + code_folding=[]
 ## for infinite horizon problem 
 def solve_model_iter(model,        # Class with model information
                      me_vec,        # Initial condition for assets and MA shocks
@@ -671,6 +671,11 @@ def solve_model_iter(model,        # Class with model information
                       verbose=True,
                       print_skip=50,
                       sv = False):
+    
+    
+    # Test stability assuming {R_t} is IID and adopts the lognormal
+    # specification given below.  The test is then β E R_t < 1.
+    assert model.β * model.R < 1, "Stability condition failed."
 
     # Set up loop
     i = 0
@@ -678,20 +683,28 @@ def solve_model_iter(model,        # Class with model information
 
     ## plot
     fig,ax = plt.subplots()
+    ax.plot(me_vec[:,0,0],
+            σ_vec[:,0,0])
     ## memories for life-cycle solutions
     while i < max_iter and error > tol:
         if sv ==False:
-            me_new, σ_new = EGM(me_vec, σ_vec, 0,model)
+            me_new, σ_new = EGM(me_vec, 
+                                σ_vec, 
+                                0,
+                                model)
         else:
             #print('objective model with stochastic risk')
-            mϵ_new, σ_new = EGM_sv(me_vec, σ_vec, 0, model)
+            mϵ_new, σ_new = EGM_sv(me_vec, 
+                                   σ_vec, 
+                                   0, 
+                                   model)
 
         error = np.max(np.abs(σ_vec - σ_new))
         i += 1
         if verbose and i % print_skip == 0:
             print(f"Error at iteration {i} is {error}.")
-            ax.plot(me_vec[:,0,0],
-                     σ_vec[:,0,0])
+            ax.plot(me_new[:,0,0],
+                     σ_new[:,0,0])
         me_vec, σ_vec = np.copy(me_new), np.copy(σ_new)
 
     if i == max_iter:
@@ -747,7 +760,7 @@ def compare_2solutions(ms_stars,
 
 # ## Initialize the model
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -807,7 +820,7 @@ if __name__ == "__main__":
 
 # ### Consumption  the last period
 
-# + code_folding=[]
+# + code_folding=[1]
 if __name__ == "__main__":
     lc = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
@@ -853,7 +866,7 @@ if __name__ == "__main__":
     m_init,σ_init = lc.terminal_solution()
 
     ## solve backward
-    ms_star, σs_star = solve_model_backward_iter(lc,
+    ms_star_baseline, σs_star_baseline = solve_model_backward_iter(lc,
                                                  m_init,
                                                  σ_init)
 
@@ -882,7 +895,9 @@ if __name__ == "__main__":
 
 # + pycharm={"name": "#%%\n"}
 if __name__ == "__main__":
+    #########################
     ## test the iteration
+    #########################
 
     m_vec,σ_vec = lc_basic.terminal_solution()
 
@@ -898,7 +913,9 @@ if __name__ == "__main__":
                                0,
                                lc_basic)
         if it >15:
-            ax.plot(m_next[:,0,0],σ_next[:,0,0],label='T-'+str(it+1))
+            ax.plot(m_next[:,0,0],
+                    σ_next[:,0,0],
+                    label='T-'+str(it+1))
         m_vec = np.copy(m_next)
         σ_vec = np.copy(σ_next)
 
@@ -991,7 +1008,7 @@ if __name__ == "__main__":
     ax.set_xlabel('age')
     #ax.grid(False)
     ax.set_ylabel('wealth')
-    ax.view_init(15, 30)
+    ax.view_init(10, 30)
 # -
 
 #
@@ -1023,7 +1040,7 @@ if __name__ == "__main__":
     ## solve the model for different persistence 
     t_start = time()
     
-    P = np.array([(0.8, 0.2),
+    P = np.array([(0.9, 0.1),
                   (0.05, 0.95)])
     
     P_ls = [P]
@@ -1060,7 +1077,7 @@ if __name__ == "__main__":
 
     ## compare two markov states good versus bad 
 
-    years_left = [1,2,20,25]
+    years_left = [1,2,30,40]
 
     n_sub = len(years_left)
 
@@ -1231,13 +1248,11 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
-
 
     ## compare subjective and objective models 
     years_left = [1,20,30,50]
-
 
     n_sub = len(years_left)
 
@@ -1251,7 +1266,7 @@ if __name__ == "__main__":
         z_h = 1
 
         ## baseline: no ma shock 
-        m_plt,c_plt = ms_star[i,:,z_l,0],σs_star[i,:,z_l,0]
+        m_plt,c_plt = ms_star_baseline[i,:,z_l,0],σs_star_baseline[i,:,z_l,0]
         axes[x].plot(m_plt,
                      c_plt,
                      label = 'objective',
@@ -1303,7 +1318,7 @@ if __name__ == "__main__":
     #                    (0.05, 0.95)])   # markov transition matrices
 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## initialize another 
@@ -1322,7 +1337,7 @@ if __name__ == "__main__":
                          unemp_insurance = 0.3,
                          ue_markov = True)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## solve the model for different transition matrices of UE markov
@@ -1352,7 +1367,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1394,7 +1409,7 @@ if __name__ == "__main__":
 # - unemployed perceive higher risks
 #
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1424,7 +1439,7 @@ if __name__ == "__main__":
     ## again, zero loading from z
     b_y = 0.0
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     ## compute steady state 
     av_sigma_psi_cr = np.sqrt(np.dot(P_uemkv[0,:],sigma_psi_2mkv_cr**2))
@@ -1435,7 +1450,7 @@ if __name__ == "__main__":
     print('average permanent risk is '+str(av_sigma_psi_cr)+' compared to objective model '+str(lc_uemkv.sigma_psi))
     print('average transitory risk is '+str(av_sigma_eps_cr)+' compared to objective model '+str(lc_uemkv.sigma_eps))
 
-# + code_folding=[]
+# + code_folding=[0, 4]
 if __name__ == "__main__":
 
 
@@ -1458,7 +1473,7 @@ if __name__ == "__main__":
                      b_y = b_y,
                      ue_markov = True)
 
-# + code_folding=[]
+# + code_folding=[0, 11]
 if __name__ == "__main__":
 
 
@@ -1490,7 +1505,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1528,7 +1543,7 @@ if __name__ == "__main__":
 
 # ### Objective and subject state-dependent profile
 
-# + code_folding=[]
+# + code_folding=[11]
 if __name__ == "__main__":
 
     ## compare subjective and objective models 
@@ -1586,7 +1601,7 @@ if __name__ == "__main__":
 
 # ## Infinite horizon problem
 
-# + code_folding=[0, 30]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1599,7 +1614,7 @@ if __name__ == "__main__":
                        R=R,
                        T=T,
                        L=L,
-                       β=β,
+                       β=0.8,
                        x=x,
                        theta=theta,
                        ue_markov= True,
@@ -1609,22 +1624,26 @@ if __name__ == "__main__":
 
     ## initial guess of consumption functions 
 
-    m_init,σ_init = lc_basic.terminal_solution()
+    m_init,σ_init = inf_liv.terminal_solution()
    
 
     t_start = time()
 
-    m_inf_star, σ_inf_star = solve_model_iter(lc_basic,
+    m_inf_star, σ_inf_star = solve_model_iter(inf_liv,
                                               m_init,
-                                              σ_init)
+                                              σ_init,
+                                              tol=1e-6,
+                                             )
 
 
     t_finish = time()
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))   
 
-    ## plot c func 
+# -
 
+if __name__ == "__main__":
+    ## plot c func 
     plt.plot(m_inf_star[:,0,0],
              σ_inf_star[:,0,0],
              lw=3)
@@ -1632,13 +1651,11 @@ if __name__ == "__main__":
     plt.ylabel('c')
     plt.title('Infinite horizon solution')
 
-# -
-
 # ## Infinite horizon with adjustment inertia
 #
 #
 
-# + code_folding=[0, 5]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1651,7 +1668,7 @@ if __name__ == "__main__":
                        R=R,
                        T=T,
                        L=L,
-                       β=β,
+                       β=0.9,
                        x=x,
                        theta=theta,
                        borrowing_cstr = borrowing_cstr,
@@ -1664,8 +1681,6 @@ if __name__ == "__main__":
 
     t_start = time()
 
-    x_ls = [0.0]
-
     ## set different ma parameters
     m_imp_star, σ_imp_star = solve_model_iter(imp_adjust,
                                               m_init,
@@ -1673,11 +1688,10 @@ if __name__ == "__main__":
 
     t_finish = time()
 
-    print("Time taken, in seconds: "+ str(t_finish - t_start))   
-
-
+    print("Time taken, in seconds: "+ str(t_finish - t_start))       
+# -
+if __name__ == "__main__":
     ## plot c func at different age /asset grid
-
 
     plt.plot(m_imp_star[:,0,0],
              σ_imp_star[:,0,0],
@@ -1685,18 +1699,13 @@ if __name__ == "__main__":
              label = 'imperfect adjustment',
              lw=3
             )
-    plt.plot(m_inf_star[:,0,0],
-             σ_inf_star[:,0,0],
-             '--',
-             label = 'perfect adjustment',
-             lw=3
-            )
+    #plt.plot(m_inf_star[:,0,0],
+    #         σ_inf_star[:,0,0],
+    #         '--',
+    #         label = 'perfect adjustment',
+    #         lw=3
+    #        )
     plt.legend()
     plt.xlabel('asset')
     plt.ylabel('c')
     plt.title('Infinite horizon solution')
-# + [markdown] pycharm={"name": "#%% md\n"}
-# # 
-# -
-
-
