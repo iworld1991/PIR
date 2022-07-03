@@ -447,6 +447,7 @@ label var lwage_ag_shk_gr "log growth of aggregate unexplained wage"
 label var lwage_n_id_shk_gr "log nominal growth of idiosyncratic unexplained wage"
 label var lwage_n_ag_shk_gr "log nominal growth of idiosyncratic unexplained wage"
 
+
 foreach var in lwage_id_shk{
 gen `var'_y2y_gr = `var'- l12.`var'
 }
@@ -455,17 +456,49 @@ label var lwage_id_shk_y2y_gr "log YoY growth of unexplained wage"
 ** first difference for yearly 
 foreach var in lwage_Y lwage_n_Y lwage_Y_id_shk{
 gen `var'_gr = `var'- l12.`var'
+gen `var'_gr2 = `var'- l24.`var'
+gen `var'_gr3 = `var'- l36.`var'
 }
 label var lwage_Y_gr "log yearly growth of nominal wage"
 label var lwage_n_Y_gr "log yearly growth of real wage"
 label var lwage_Y_id_shk_gr "log yearly growth of idiosyncratic unexplained wage"
+
+label var lwage_Y_gr2 "log 2-year growth of nominal wage"
+label var lwage_n_Y_gr2 "log 2-year  growth of real wage"
+label var lwage_Y_id_shk_gr2 "log yearly 2-year  of idiosyncratic unexplained wage"
+
+label var lwage_Y_gr3 "log 3-year  growth of nominal wage"
+label var lwage_n_Y_gr3 "log 3-year  growth of real wage"
+label var lwage_Y_id_shk_gr3 "log 3-year growth of idiosyncratic unexplained wage"
 
 
 **  volatility 
 foreach wvar in lwage lwage_Q lwage_Y{
 egen `wvar'_id_shk_gr_sd = sd(`wvar'_id_shk_gr), by(date)
 label var `wvar'_id_shk_gr_sd "standard deviation of log idiosyncratic shocks"
+
 }
+
+
+foreach wvar in lwage_Y{
+egen `wvar'_id_shk_gr_sd_all = sd(`wvar'_id_shk_gr) if `wvar'_id_shk_gr!=. & `wvar'_id_shk_gr2!=. & `wvar'_id_shk_gr3!=.
+gen `wvar'_id_shk_gr_var_all = `wvar'_id_shk_gr_sd_all^2
+egen `wvar'_id_shk_gr_sd2_all = sd(`wvar'_id_shk_gr2) if `wvar'_id_shk_gr!=. & `wvar'_id_shk_gr2!=. & `wvar'_id_shk_gr3!=.
+gen `wvar'_id_shk_gr_var2_all = `wvar'_id_shk_gr_sd2_all^2
+egen `wvar'_id_shk_gr_sd3_all = sd(`wvar'_id_shk_gr3) if `wvar'_id_shk_gr!=. & `wvar'_id_shk_gr2!=. & `wvar'_id_shk_gr3!=.
+gen `wvar'_id_shk_gr_var3_all = `wvar'_id_shk_gr_sd3_all^2
+}
+
+** estimate permanent risks for the whole sample 
+gen pvar_est_all1 = lwage_Y_id_shk_gr_var2_all- lwage_Y_id_shk_gr_var_all
+label var pvar_est_all1 "Yearly permanent risks in variance"
+
+gen pvar_est_all2 = lwage_Y_id_shk_gr_var3_all- lwage_Y_id_shk_gr_var2_all
+label var pvar_est_all2 "Yearly permanent risks in variance"
+
+gen pvar_est_all3 = (lwage_Y_id_shk_gr_var3_all- lwage_Y_id_shk_gr_var_all)/2
+label var pvar_est_all3 "Yearly permanent risks in variance"
+
 
 ***********************************************
 ** summary chart of unconditional wages ********
@@ -668,6 +701,50 @@ restore
 ** Prepare the matrix for GMM estimation
 *****************************************
 
+
+preserve 
+tsset uniqueid date 
+tsfill,full						
+replace year=year(dofm(date)) if year==.
+replace month=month(dofm(date)) if month==.
+*replace lwage_n_gr=. if month==1
+keep uniqueid year month lwage_n_gr educ gender age_5yr
+gen date_temp = year*100+month
+drop if date_temp==.
+drop year month 
+reshape wide lwage_n_gr, i(uniqueid educ gender age_5yr) j(date_temp)
+save "${datafolder}sipp_nwage_growth_matrix.dta",replace 
+restore 
+
+preserve 
+tsset uniqueid date 
+tsfill,full						
+replace year=year(dofm(date)) if year==.
+replace month=month(dofm(date)) if month==.
+*replace lwage_n_gr=. if month==1
+keep uniqueid year month lwage_n_gr educ gender age_5yr
+gen date_temp = year*100+month
+drop if date_temp==.
+drop year month 
+reshape wide lwage_n_gr, i(uniqueid educ gender age_5yr) j(date_temp)
+save "${datafolder}sipp_nwage_growth_matrix.dta",replace 
+restore 
+
+
+
+preserve 
+tsset uniqueid date 
+tsfill,full						
+replace year=year(dofm(date)) if year==.
+replace month=month(dofm(date)) if month==.
+*replace lwage_gr=. if month==1
+keep uniqueid year month lwage_gr educ gender age_5yr
+gen date_temp = year*100+month
+drop if date_temp==.
+drop year month 
+reshape wide lwage_gr, i(uniqueid educ gender age_5yr) j(date_temp)
+save "${datafolder}sipp_wage_growth_matrix.dta",replace 
+restore 
 
 preserve 
 tsset uniqueid date 
