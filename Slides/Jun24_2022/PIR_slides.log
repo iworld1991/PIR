@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  24 JUN 2022 15:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  29 JUN 2022 15:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -915,594 +915,478 @@ Dictionary: translator-theorem-dictionary, Language: English
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
  (./PIR_slides.nav)
-Overfull \hbox (12.61324pt too wide) in paragraph at lines 113--113
- [][]|  []\OT1/cmr/m/n/6 0/48|  
+Overfull \hbox (68.24582pt too wide) in paragraph at lines 113--113
+ [][]|  []\OT1/cmr/m/n/6 0/37|  
  []
 
 
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 1/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 1/37|  
  []
 
 [1
 
 {/usr/local/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 (./PIR_slides.toc)
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 2/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 2/37|  
  []
 
 [2
 
 ]
-LaTeX Font Info:    Trying to load font information for U+msa on input line 151
+LaTeX Font Info:    Trying to load font information for U+msa on input line 155
 .
  (/usr/local/texlive/2020/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 151
+LaTeX Font Info:    Trying to load font information for U+msb on input line 155
 .
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 3/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 3/37|  
  []
 
 [3
 
 ]
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 4/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 4/37|  
  []
 
 [4
 
 ]
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 5/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 5/37|  
  []
 
 [5
 
 ]
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 5/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 5/37|  
  []
 
 [6
 
 ]
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 6/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 6/37|  
  []
 
 [7
 
 ]
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 7/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 7/37|  
  []
 
 [8
 
 ]
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 8/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 8/37|  
  []
 
 [9
 
 ]
-<figures/dens_est_illutration.png, id=403, 433.62pt x 289.08pt>
+<figures/dens_est_illutration.png, id=390, 433.62pt x 289.08pt>
 File: figures/dens_est_illutration.png Graphic file (type png)
 <use figures/dens_est_illutration.png>
 Package pdftex.def Info: figures/dens_est_illutration.png  used on input line 3
-02.
+06.
 (pdftex.def)             Requested size: 205.37926pt x 136.92184pt.
 
-Overfull \hbox (12.61324pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 9/48|  
+Overfull \hbox (68.24582pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 9/37|  
  []
 
 [10
 
  <./figures/dens_est_illutration.png>]
-<figures/boxplot_rvar_compare_educ.png, id=433, 585.18625pt x 425.59pt>
+<figures/boxplot_rvar_compare_educ.png, id=421, 585.18625pt x 425.59pt>
 File: figures/boxplot_rvar_compare_educ.png Graphic file (type png)
 <use figures/boxplot_rvar_compare_educ.png>
 Package pdftex.def Info: figures/boxplot_rvar_compare_educ.png  used on input l
-ine 322.
+ine 326.
 (pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 10/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 10/37|  
  []
 
 [11
 
  <./figures/boxplot_rvar_compare_educ.png>]
-<figures/boxplot_rvar_compare_age.png, id=467, 585.18625pt x 425.59pt>
+<figures/boxplot_rvar_compare_age.png, id=455, 585.18625pt x 425.59pt>
 File: figures/boxplot_rvar_compare_age.png Graphic file (type png)
 <use figures/boxplot_rvar_compare_age.png>
 Package pdftex.def Info: figures/boxplot_rvar_compare_age.png  used on input li
-ne 333.
+ne 337.
 (pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 11/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 11/37|  
  []
 
 [12
 
  <./figures/boxplot_rvar_compare_age.png>]
-<figures/joy_rincstd.jpg, id=499, 433.62pt x 505.89pt>
+<figures/joy_rincstd.jpg, id=487, 433.62pt x 505.89pt>
 File: figures/joy_rincstd.jpg Graphic file (type jpg)
 <use figures/joy_rincstd.jpg>
-Package pdftex.def Info: figures/joy_rincstd.jpg  used on input line 346.
+Package pdftex.def Info: figures/joy_rincstd.jpg  used on input line 350.
 (pdftex.def)             Requested size: 136.91603pt x 159.73442pt.
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 12/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 12/37|  
  []
 
 [13
 
  <./figures/joy_rincstd.jpg>]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 13/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 13/37|  
  []
 
 [14
 
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 14/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 14/37|  
  []
 
 [15
 
 ] Excluding 'comment' comment.
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 15/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 15/37|  
  []
 
 [16
 
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 16/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 15/37|  
  []
 
 [17
 
 ]
-<figures/real_permanent_compare.png, id=647, 585.18625pt x 425.59pt>
-File: figures/real_permanent_compare.png Graphic file (type png)
-<use figures/real_permanent_compare.png>
-Package pdftex.def Info: figures/real_permanent_compare.png  used on input line
- 503.
-(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
-<figures/real_transitory_compare.png, id=648, 585.18625pt x 425.59pt>
-File: figures/real_transitory_compare.png Graphic file (type png)
-<use figures/real_transitory_compare.png>
-Package pdftex.def Info: figures/real_transitory_compare.png  used on input lin
-e 503.
-(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
-<figures/real_volatility_compare.png, id=649, 585.18625pt x 425.59pt>
-File: figures/real_volatility_compare.png Graphic file (type png)
-<use figures/real_volatility_compare.png>
-Package pdftex.def Info: figures/real_volatility_compare.png  used on input lin
-e 503.
-(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
-
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 17/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 15/37|  
  []
 
 [18
 
- <./figures/real_permanent_compare.png> <./figures/real_transitory_compare.png>
- <./figures/real_volatility_compare.png>]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 18/48|  
+]
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 16/37|  
  []
 
 [19
 
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 19/48|  
+<figures/real_permanent_compare.png, id=691, 585.18625pt x 425.59pt>
+File: figures/real_permanent_compare.png Graphic file (type png)
+<use figures/real_permanent_compare.png>
+Package pdftex.def Info: figures/real_permanent_compare.png  used on input line
+ 521.
+(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
+<figures/real_transitory_compare.png, id=692, 585.18625pt x 425.59pt>
+File: figures/real_transitory_compare.png Graphic file (type png)
+<use figures/real_transitory_compare.png>
+Package pdftex.def Info: figures/real_transitory_compare.png  used on input lin
+e 521.
+(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
+<figures/real_volatility_compare.png, id=693, 585.18625pt x 425.59pt>
+File: figures/real_volatility_compare.png Graphic file (type png)
+<use figures/real_volatility_compare.png>
+Package pdftex.def Info: figures/real_volatility_compare.png  used on input lin
+e 521.
+(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
+
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 17/37|  
  []
 
 [20
 
-]
-<figures/separation_rate_1y.png, id=744, 585.18625pt x 425.59pt>
-File: figures/separation_rate_1y.png Graphic file (type png)
-<use figures/separation_rate_1y.png>
-Package pdftex.def Info: figures/separation_rate_1y.png  used on input line 607
-.
-(pdftex.def)             Requested size: 154.03183pt x 112.02101pt.
-<figures/job_finding_rate.png, id=745, 585.18625pt x 425.59pt>
-File: figures/job_finding_rate.png Graphic file (type png)
-<use figures/job_finding_rate.png>
-Package pdftex.def Info: figures/job_finding_rate.png  used on input line 607.
-(pdftex.def)             Requested size: 154.03183pt x 112.02101pt.
-
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 20/48|  
+ <./figures/real_permanent_compare.png> <./figures/real_transitory_compare.png>
+ <./figures/real_volatility_compare.png>] Excluding 'comment' comment.
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 18/37|  
  []
 
 [21
 
- <./figures/separation_rate_1y.png> <./figures/job_finding_rate.png>]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 21/48|  
+]
+<figures/separation_rate_1y.png, id=757, 585.18625pt x 425.59pt>
+File: figures/separation_rate_1y.png Graphic file (type png)
+<use figures/separation_rate_1y.png>
+Package pdftex.def Info: figures/separation_rate_1y.png  used on input line 625
+.
+(pdftex.def)             Requested size: 154.03183pt x 112.02101pt.
+<figures/job_finding_rate.png, id=758, 585.18625pt x 425.59pt>
+File: figures/job_finding_rate.png Graphic file (type png)
+<use figures/job_finding_rate.png>
+Package pdftex.def Info: figures/job_finding_rate.png  used on input line 625.
+(pdftex.def)             Requested size: 154.03183pt x 112.02101pt.
+
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 19/37|  
  []
 
 [22
 
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 21/48|  
+ <./figures/separation_rate_1y.png> <./figures/job_finding_rate.png>]
+Excluding 'comment' comment. Excluding 'comment' comment.
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 20/37|  
  []
 
 [23
 
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 21/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 20/37|  
  []
 
 [24
 
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 21/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 20/37|  
  []
 
 [25
 
-] Excluding 'comment' comment.
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 22/48|  
+]
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 21/37|  
  []
 
 [26
 
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 22/48|  
+<figures/lorenz_a_compare_pe.png, id=906, 361.35pt x 361.35pt>
+File: figures/lorenz_a_compare_pe.png Graphic file (type png)
+<use figures/lorenz_a_compare_pe.png>
+Package pdftex.def Info: figures/lorenz_a_compare_pe.png  used on input line 75
+2.
+(pdftex.def)             Requested size: 361.34912pt x 361.34912pt.
+<figures/life_cycle_a_compare_pe.png, id=907, 722.7pt x 361.35pt>
+File: figures/life_cycle_a_compare_pe.png Graphic file (type png)
+<use figures/life_cycle_a_compare_pe.png>
+Package pdftex.def Info: figures/life_cycle_a_compare_pe.png  used on input lin
+e 752.
+(pdftex.def)             Requested size: 722.69823pt x 361.34912pt.
+<figures/lorenz_curve_a_compare_ge.png, id=908, 361.35pt x 361.35pt>
+File: figures/lorenz_curve_a_compare_ge.png Graphic file (type png)
+<use figures/lorenz_curve_a_compare_ge.png>
+Package pdftex.def Info: figures/lorenz_curve_a_compare_ge.png  used on input l
+ine 752.
+(pdftex.def)             Requested size: 361.34912pt x 361.34912pt.
+<figures/life_cycle_a_compare_ge.png, id=909, 722.7pt x 361.35pt>
+File: figures/life_cycle_a_compare_ge.png Graphic file (type png)
+<use figures/life_cycle_a_compare_ge.png>
+Package pdftex.def Info: figures/life_cycle_a_compare_ge.png  used on input lin
+e 752.
+(pdftex.def)             Requested size: 722.69823pt x 361.34912pt.
+
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 22/37|  
  []
 
 [27
 
+ <./figures/lorenz_a_compare_pe.png> <./figures/life_cycle_a_compare_pe.png> <.
+/figures/lorenz_curve_a_compare_ge.png> <./figures/life_cycle_a_compare_ge.png>
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 22/48|  
+LaTeX Font Info:    Trying to load font information for U+bbm on input line 781
+.
+ (/usr/local/texlive/2020/texmf-dist/tex/latex/bbm-macros/ubbm.fd
+File: ubbm.fd 1999/03/15 V 1.2 Font definition for bbm font - TH
+)
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 23/37|  
  []
 
 [28
 
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 22/48|  
+] Excluding 'comment' comment.
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 24/37|  
  []
 
 [29
 
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 22/48|  
+<figures/joy_incstd.jpg, id=1007, 433.62pt x 505.89pt>
+File: figures/joy_incstd.jpg Graphic file (type jpg)
+<use figures/joy_incstd.jpg>
+Package pdftex.def Info: figures/joy_incstd.jpg  used on input line 1023.
+(pdftex.def)             Requested size: 136.91603pt x 159.73442pt.
+
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 25/37|  
  []
 
 [30
 
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 23/48|  
- []
-
-[31
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 24/48|  
- []
-
-[32
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 25/48|  
- []
-
-[33
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 26/48|  
- []
-
-[34
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 27/48|  
- []
-
-[35
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 28/48|  
- []
-
-[36
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 28/48|  
- []
-
-[37
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 28/48|  
- []
-
-[38
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 28/48|  
- []
-
-[39
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 29/48|  
- []
-
-[40
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 30/48|  
- []
-
-[41
-
-]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 31/48|  
- []
-
-[42
-
-] Excluding 'comment' comment.
-<figures/lorenz_curve_a_eq.png, id=1386, 361.35pt x 361.35pt>
-File: figures/lorenz_curve_a_eq.png Graphic file (type png)
-<use figures/lorenz_curve_a_eq.png>
-Package pdftex.def Info: figures/lorenz_curve_a_eq.png  used on input line 939.
-
-(pdftex.def)             Requested size: 102.68962pt x 102.68808pt.
-<figures/life_cycle_a_eq.png, id=1387, 722.7pt x 361.35pt>
-File: figures/life_cycle_a_eq.png Graphic file (type png)
-<use figures/life_cycle_a_eq.png>
-Package pdftex.def Info: figures/life_cycle_a_eq.png  used on input line 939.
-(pdftex.def)             Requested size: 205.37926pt x 102.68808pt.
-
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 32/48|  
- []
-
-[43
-
- <./figures/lorenz_curve_a_eq.png> <./figures/life_cycle_a_eq.png>]
-LaTeX Font Info:    Trying to load font information for U+bbm on input line 968
-.
-
-(/usr/local/texlive/2020/texmf-dist/tex/latex/bbm-macros/ubbm.fd
-File: ubbm.fd 1999/03/15 V 1.2 Font definition for bbm font - TH
-)
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 33/48|  
- []
-
-[44
-
-] Excluding 'comment' comment.
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 34/48|  
- []
-
-[45
-
-]
-<figures/joy_incstd.jpg, id=1483, 433.62pt x 505.89pt>
-File: figures/joy_incstd.jpg Graphic file (type jpg)
-<use figures/joy_incstd.jpg>
-Package pdftex.def Info: figures/joy_incstd.jpg  used on input line 1047.
-(pdftex.def)             Requested size: 136.91603pt x 159.73442pt.
-
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 35/48|  
- []
-
-[46
-
  <./figures/joy_incstd.jpg>]
-<figures/real_log_wage_gr_level_by_age_edu_gender_compare.png, id=1513, 585.186
+<figures/real_log_wage_gr_level_by_age_edu_gender_compare.png, id=1036, 585.186
 25pt x 425.59pt>
 File: figures/real_log_wage_gr_level_by_age_edu_gender_compare.png Graphic file
  (type png)
 <use figures/real_log_wage_gr_level_by_age_edu_gender_compare.png>
 Package pdftex.def Info: figures/real_log_wage_gr_level_by_age_edu_gender_compa
-re.png  used on input line 1059.
+re.png  used on input line 1035.
 (pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 36/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 26/37|  
  []
 
-[47
+[31
 
  <./figures/real_log_wage_gr_level_by_age_edu_gender_compare.png>]
-<figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png, id=1542, 585.18
+<figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png, id=1068, 585.18
 625pt x 425.59pt>
 File: figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png Graphic fil
 e (type png)
 <use figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png>
 Package pdftex.def Info: figures/real_log_wage_gr_nlevel_by_age_edu_gender_comp
-are.png  used on input line 1072.
+are.png  used on input line 1048.
 (pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 37/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 27/37|  
  []
 
-[48
+[32
 
  <./figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png>]
-<figures/experience_var_var_data.png, id=1572, 585.18625pt x 425.59pt>
+<figures/experience_var_var_data.png, id=1099, 585.18625pt x 425.59pt>
 File: figures/experience_var_var_data.png Graphic file (type png)
 <use figures/experience_var_var_data.png>
 Package pdftex.def Info: figures/experience_var_var_data.png  used on input lin
-e 1094.
+e 1067.
 (pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 38/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 28/37|  
  []
 
-[49
+[33
 
  <./figures/experience_var_var_data.png>]
-<figures/experience_ue_var_data.png, id=1606, 585.18625pt x 425.59pt>
+<figures/experience_ue_var_data.png, id=1130, 585.18625pt x 425.59pt>
 File: figures/experience_ue_var_data.png Graphic file (type png)
 <use figures/experience_ue_var_data.png>
 Package pdftex.def Info: figures/experience_ue_var_data.png  used on input line
- 1106.
+ 1079.
 (pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 39/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 29/37|  
  []
 
-[50
+[34
 
  <./figures/experience_ue_var_data.png>]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 40/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 30/37|  
  []
 
-[51
+[35
 
 ]
-<figures/tsMean3mvrexp_he.jpg, id=1666, 5781.6pt x 2890.8pt>
+<figures/tsMean3mvrexp_he.jpg, id=1189, 5781.6pt x 2890.8pt>
 File: figures/tsMean3mvrexp_he.jpg Graphic file (type jpg)
 <use figures/tsMean3mvrexp_he.jpg>
-Package pdftex.def Info: figures/tsMean3mvrexp_he.jpg  used on input line 1157.
+Package pdftex.def Info: figures/tsMean3mvrexp_he.jpg  used on input line 1130.
 
 (pdftex.def)             Requested size: 308.06367pt x 154.03212pt.
 
-Overfull \vbox (3.14047pt too high) detected at line 1157
+Overfull \vbox (3.14047pt too high) detected at line 1130
  []
 
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 41/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 31/37|  
  []
 
-[52
+[36
 
  <./figures/tsMean3mvrexp_he.jpg>]
-Overfull \hbox (13.6674pt too wide) in alignment at lines 1192--1192
+Overfull \hbox (13.6674pt too wide) in alignment at lines 1165--1165
  [][][] []
  []
 
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 42/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 32/37|  
  []
 
-[53
+[37
 
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 43/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 33/37|  
  []
 
-[54
+[38
 
 ]
-<figures/log_wage_sd_by_edu.png, id=1766, 585.18625pt x 425.59pt>
+<figures/log_wage_sd_by_edu.png, id=1287, 585.18625pt x 425.59pt>
 File: figures/log_wage_sd_by_edu.png Graphic file (type png)
 <use figures/log_wage_sd_by_edu.png>
-Package pdftex.def Info: figures/log_wage_sd_by_edu.png  used on input line 124
-2.
+Package pdftex.def Info: figures/log_wage_sd_by_edu.png  used on input line 121
+5.
 (pdftex.def)             Requested size: 157.45813pt x 114.5147pt.
-<figures/log_wage_shk_gr_sd_by_edu.png, id=1767, 585.18625pt x 425.59pt>
+<figures/log_wage_shk_gr_sd_by_edu.png, id=1288, 585.18625pt x 425.59pt>
 File: figures/log_wage_shk_gr_sd_by_edu.png Graphic file (type png)
 <use figures/log_wage_shk_gr_sd_by_edu.png>
 Package pdftex.def Info: figures/log_wage_shk_gr_sd_by_edu.png  used on input l
-ine 1242.
+ine 1215.
 (pdftex.def)             Requested size: 157.45813pt x 114.5147pt.
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 44/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 34/37|  
  []
 
-[55
+[39
 
  <./figures/log_wage_sd_by_edu.png> <./figures/log_wage_shk_gr_sd_by_edu.png>]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 45/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 35/37|  
  []
 
-[56
+[40
 
 ]
-Overfull \vbox (7.96545pt too high) detected at line 1309
+Overfull \vbox (7.96545pt too high) detected at line 1282
  []
 
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 46/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 36/37|  
  []
 
-[57
+[41
 
 ]
-<figures/lorenz_a_test.png, id=1860, 361.35pt x 361.35pt>
-File: figures/lorenz_a_test.png Graphic file (type png)
-<use figures/lorenz_a_test.png>
-Package pdftex.def Info: figures/lorenz_a_test.png  used on input line 1328.
-(pdftex.def)             Requested size: 102.68962pt x 102.68808pt.
-<figures/life_cycle_a_test.png, id=1861, 722.7pt x 361.35pt>
-File: figures/life_cycle_a_test.png Graphic file (type png)
-<use figures/life_cycle_a_test.png>
-Package pdftex.def Info: figures/life_cycle_a_test.png  used on input line 1328
-.
-(pdftex.def)             Requested size: 205.37926pt x 102.68808pt.
-
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 47/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 37/37|  
  []
 
-[58
-
- <./figures/lorenz_a_test.png> <./figures/life_cycle_a_test.png>]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 48/48|  
- []
-
-[59
+[42
 
 ] (./PIR_slides.bbl
 
@@ -1510,38 +1394,38 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\translate ' on input line 1.
 
 
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 48/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 37/37|  
  []
 
-[60
+[43
 
 ]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 48/48|  
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 37/37|  
  []
 
-[61]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 48/48|  
+[44]
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 37/37|  
  []
 
-[62]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 48/48|  
+[45]
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 37/37|  
  []
 
-[63]
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 48/48|  
+[46]
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 37/37|  
  []
 
-[64])
-Overfull \hbox (16.27985pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 48/48|  
+[47])
+Overfull \hbox (71.91243pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 37/37|  
  []
 
-[65]
+[48]
 \tf@nav=\write7
 \openout7 = `PIR_slides.nav'.
 
@@ -1551,28 +1435,31 @@ Overfull \hbox (16.27985pt too wide) has occurred while \output is active
 \tf@snm=\write9
 \openout9 = `PIR_slides.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1359.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1359.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1315.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1315.
  (./PIR_slides.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1359.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1359.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1315.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1315.
 
 Package rerunfilecheck Info: File `PIR_slides.out' has not changed.
-(rerunfilecheck)             Checksum: 0CD4B351B980BD8D551E918DB1D69AB3;679.
+(rerunfilecheck)             Checksum: 7D8BD1D35E71EE0FAA83B2F82DE5A09B;507.
  ) 
 Here is how much of TeX's memory you used:
- 21427 strings out of 480608
- 409801 string characters out of 5903631
- 659368 words of memory out of 5000000
- 36558 multiletter control sequences out of 15000+600000
+ 21363 strings out of 480608
+ 409514 string characters out of 5903631
+ 657755 words of memory out of 5000000
+ 36534 multiletter control sequences out of 15000+600000
  544590 words of font info for 75 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 58i,30n,106p,1007b,771s stack positions out of 5000i,500n,10000p,200000b,80000s
-pdfTeX warning (dest): name{tsMean3mvrvar_he} has been referenced but does no
-t exist, replaced by a fixed one
+ 58i,30n,106p,1007b,810s stack positions out of 5000i,500n,10000p,200000b,80000s
+pdfTeX warning (dest): name{objectivemodelresults} has been referenced but do
+es not exist, replaced by a fixed one
 
-pdfTeX warning (dest): name{appendix:monthly_decomposition_compare_psid} has be
-en referenced but does not exist, replaced by a fixed one
+pdfTeX warning (dest): name{tsMean3mvrvar_he} has been referenced but does not 
+exist, replaced by a fixed one
+
+pdfTeX warning (dest): name{appendix:partial_eq} has been referenced but does n
+ot exist, replaced by a fixed one
 
  </Users/tao/Library/texlive/2020/texmf-var/fonts/pk/ljfour/public/bbm/bbm10.65
 7pk></usr/local/texlive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.p
@@ -1591,15 +1478,14 @@ ive/2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive
 /2020/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/20
 20/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2020/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2020/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2020/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2020/texmf
--dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2020/texmf-d
-ist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2020/texmf-di
-st/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on PIR_slides.pdf (65 pages, 2334278 bytes).
+exmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2020/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2020/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2020/texmf-
+dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on PIR_slides.pdf (48 pages, 2297722 bytes).
 PDF statistics:
- 2211 PDF objects out of 2487 (max. 8388607)
- 2052 compressed objects within 21 object streams
- 210 named destinations out of 1000 (max. 500000)
- 254 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1685 PDF objects out of 1728 (max. 8388607)
+ 1549 compressed objects within 16 object streams
+ 170 named destinations out of 1000 (max. 500000)
+ 238 words of extra memory for PDF output out of 10000 (max. 10000000)
 
