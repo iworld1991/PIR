@@ -43,15 +43,28 @@ from Utility import cal_ss_2markov,mean_preserving_spread
 from resources_jit import MeanOneLogNormal as lognorm
 
 # + code_folding=[]
-## figure plotting configurations
-
-mp.rc('xtick', labelsize=11) 
-mp.rc('ytick', labelsize=11) 
-
-mp.rc('legend',fontsize=11)
-plt.rc('font',size=11) 
+## plot configuration 
 
 plt.style.use('seaborn')
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['axes.labelweight'] = 'bold'
+
+## Set the 
+plt.rc('font', size=25)
+# Set the axes title font size
+plt.rc('axes', titlesize=20)
+# Set the axes labels font size
+plt.rc('axes', labelsize=20)
+# Set the font size for x tick labels
+plt.rc('xtick', labelsize=20)
+# Set the font size for y tick labels
+plt.rc('ytick', labelsize=20)
+# Set the legend font size
+plt.rc('legend', fontsize=20)
+# Set the font size of the figure title
+plt.rc('figure', titlesize=20)
 
 
 # -
@@ -138,9 +151,9 @@ class LifeCycle:
                  T = 40,             ## work age, from 25 to 65 (including 65)
                  L = 60,             ## life length 85
                  G = np.ones(60),    ## growth factor list of permanent income 
-                 shock_draw_size = 8,
-                 grid_max = 10.0,
-                 grid_size = 80,
+                 shock_draw_size = 7,
+                 grid_max = 5.0,
+                 grid_size = 50,
                  ## subjective state dependent 
                  subjective = False,
                  state_dependent_belief = False,
@@ -552,8 +565,8 @@ def EGM_sv(mϵ_in,
     # Obtain c_i at each s_i, z, store in σ_out[i, z], computing
     # the expectation term by averaging over different equally probable discrete points of shocks
     for i, a in enumerate(a_grid):
-        for f in range(n_z):
-            for z in range(n_f):
+        for f in range(n_f):
+            for z in range(n_z):
                 # Compute expectation
                 Ez = 0.0
                 for z_hat in range(n_z):
@@ -650,7 +663,7 @@ def solve_model_backward_iter(model,        # Class with model information
         mϵ_vec_next, σ_vec_next = mϵs_new[year2L-1,:,:,:],σs_new[year2L-1,:,:,:]
         if sv ==False:
             #print('objective model without stochastic risk')
-            mϵ_new, σ_new =EGM(mϵ_vec_next, σ_vec_next, age_id, model)
+            mϵ_new, σ_new = EGM(mϵ_vec_next, σ_vec_next, age_id, model)
         else:
             #print('objective model with stochastic risk')
             mϵ_new, σ_new = EGM_sv(mϵ_vec_next, σ_vec_next, age_id, model)
@@ -661,7 +674,7 @@ def solve_model_backward_iter(model,        # Class with model information
     return mϵs_new, σs_new
 
 
-# + code_folding=[]
+# + code_folding=[1, 24]
 ## for infinite horizon problem 
 def solve_model_iter(model,        # Class with model information
                      me_vec,        # Initial condition for assets and MA shocks
@@ -760,7 +773,7 @@ def compare_2solutions(ms_stars,
 
 # ## Initialize the model
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -820,63 +833,6 @@ if __name__ == "__main__":
 
 # ### Consumption  the last period
 
-# + code_folding=[1]
-if __name__ == "__main__":
-    lc = LifeCycle(sigma_psi = sigma_psi,
-                   sigma_eps = sigma_eps,
-                   U=U,
-                   ρ=ρ,
-                   R=R,
-                   T=T,
-                   L=L,
-                   G=G,
-                   β=β,
-                   x=x,
-                   borrowing_cstr = borrowing_cstr,
-                   b_y= b_y,
-                   unemp_insurance = unemp_insurance,
-                   )
-
-
-# +
-# Initial the end-of-period consumption policy of σ = consume all assets
-
-if __name__ == "__main__":
-
-    ## initial consumption functions 
-    
-    m_init,σ_init = lc.terminal_solution()
-    z_l = 0
-    z_h = 1
-    plt.title('Consumption in the last period')
-    plt.plot(m_init[:,z_l,0],
-             σ_init[:,z_l,0])
-# -
-
-if __name__ == "__main__":
-
-    t_start = time()
-
-
-    ### this line is very important!!!!
-    #### need to regenerate shock draws for new sigmas
-    lc.prepare_shocks()
-
-    ## terminal solution
-    m_init,σ_init = lc.terminal_solution()
-
-    ## solve backward
-    ms_star_baseline, σs_star_baseline = solve_model_backward_iter(lc,
-                                                 m_init,
-                                                 σ_init)
-
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))
-
-# ### Different permanent/transitory risk (no MA)
-
 if __name__ == "__main__":
     lc_basic = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
@@ -893,6 +849,20 @@ if __name__ == "__main__":
                    unemp_insurance = unemp_insurance,
                    )
 
+# +
+# Initial the end-of-period consumption policy of σ = consume all assets
+
+if __name__ == "__main__":
+
+    ## initial consumption functions 
+    
+    m_init,σ_init = lc_basic.terminal_solution()
+    z_l = 0
+    z_h = 1
+    plt.title('Consumption in the last period')
+    plt.plot(m_init[:,z_l,0],
+             σ_init[:,z_l,0])
+
 # + pycharm={"name": "#%%\n"}
 if __name__ == "__main__":
     #########################
@@ -903,23 +873,137 @@ if __name__ == "__main__":
 
     ### plot each iteration
     fig,ax = plt.subplots()
-    #ax.plot(m_vec[:,0,0],σ_vec[:,0,0],label='T')
+    plt.title('Consumption policy from each iteration')
+    ax.plot(m_vec[:,0,0],
+            σ_vec[:,0,0],
+            label='T')
 
     ## solve backward
 
-    for it in range(30):
+    for it in range(100):
         m_next, σ_next = EGM(m_vec,
-                               σ_vec,
-                               0,
-                               lc_basic)
-        if it >15:
+                             σ_vec,
+                             0,
+                             lc_basic)
+        if it <5:
             ax.plot(m_next[:,0,0],
                     σ_next[:,0,0],
                     label='T-'+str(it+1))
+        error = np.max(abs(σ_next-σ_vec))
         m_vec = np.copy(m_next)
         σ_vec = np.copy(σ_next)
+    ax.legend(loc=0)
+# -
 
-    #ax.legend(loc=1)
+# ## Infinite horizon 
+
+# + code_folding=[]
+if __name__ == "__main__":
+
+
+    ## initialize a model instance
+
+    inf_liv1 = LifeCycle(sigma_psi = sigma_psi,
+                       sigma_eps = sigma_eps,
+                       U=U,
+                       ρ=ρ,
+                       R=R,
+                       T=T,
+                       L=L,
+                       G=G,
+                       β=β,
+                       x=x,
+                       borrowing_cstr = borrowing_cstr,
+                       b_y= b_y,
+                       unemp_insurance = unemp_insurance,
+                       )
+
+
+    ## initial guess of consumption functions 
+
+    m_vec,σ_vec = inf_liv1.terminal_solution()
+   
+    t_start = time()
+
+    m_inf_star, σ_inf_star = solve_model_iter(inf_liv1,
+                                              m_vec,
+                                              σ_vec,
+                                             )
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))   
+# -
+
+
+if __name__ == "__main__":
+    ## plot c func 
+    plt.plot(m_inf_star[:,0,0],
+             σ_inf_star[:,0,0],
+             lw=3)
+    plt.xlabel('asset')
+    plt.ylabel('c')
+    plt.title('Infinite horizon solution')
+
+# ## Infinite horizon with adjustment inertia
+
+# + code_folding=[4]
+if __name__ == "__main__":
+
+    ## Initialize a model instance
+    
+    imp_adjust = LifeCycle(sigma_psi = sigma_psi,
+                           sigma_eps = sigma_eps,
+                               U=U,
+                               ρ=ρ,
+                               R=R,
+                               T=T,
+                               L=L,
+                               G=G,
+                               β=β,
+                               x=x,
+                               borrowing_cstr = borrowing_cstr,
+                               b_y= b_y,
+                               unemp_insurance = unemp_insurance,
+                               adjust_prob = 0.6
+                           )
+    
+    ## initial consumption functions 
+    m_init,σ_init = imp_adjust.terminal_solution()
+
+    t_start = time()
+
+    ## set different ma parameters
+    m_imp_star, σ_imp_star = solve_model_iter(imp_adjust,
+                                              m_init,
+                                              σ_init)
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))       
+# -
+
+if __name__ == "__main__":
+    ## plot c func at different age /asset grid
+
+    plt.plot(m_imp_star[:,0,0],
+             σ_imp_star[:,0,0],
+             '-',
+             label = 'imperfect adjustment',
+             lw=3
+            )
+    plt.plot(m_inf_star[:,0,0],
+             σ_inf_star[:,0,0],
+             '--',
+             label = 'perfect adjustment',
+             lw=3
+            )
+    plt.legend()
+    plt.xlabel('asset')
+    plt.ylabel('c')
+    plt.title('Infinite horizon solution')
+
+# ### Different permanent/transitory risk (no MA)
 
 # + code_folding=[]
 if __name__ == "__main__":
@@ -958,11 +1042,11 @@ if __name__ == "__main__":
 
 
     ## plot c func at different age /asset grid
-    years_left = [0,1,30,56]
+    years_left = [0,1,21,56]
 
     n_sub = len(years_left)
 
-    fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
         age = lc.L-year
@@ -995,7 +1079,7 @@ if __name__ == "__main__":
     xx, yy = np.meshgrid(ages, asset)
     c_stars = np.flip(σs_star[:,:,0,0],axis=0).T
 
-    fig = plt.figure(figsize=(6,6))
+    fig = plt.figure(figsize=(8,8))
     ax = fig.add_subplot(111, 
                          projection='3d')
     dem3d = ax.plot_surface(xx,
@@ -1081,7 +1165,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
         age = lc_ar.L-year
@@ -1217,7 +1301,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
         age = lc.L-year
@@ -1248,7 +1332,7 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## compare subjective and objective models 
@@ -1377,7 +1461,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
         age = lc_uemkv.L-year
@@ -1505,9 +1589,8 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
-
 
     ## compare two markov states low versus high risk 
 
@@ -1515,7 +1598,7 @@ if __name__ == "__main__":
 
     n_sub = len(years_left)
 
-    fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
         age = lc.L-year
@@ -1596,116 +1679,3 @@ if __name__ == "__main__":
 
     fig.savefig('../Graphs/model/comparison2.png')
 
-
-# -
-
-# ## Infinite horizon problem
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ## initialize a model instance
-
-    inf_liv = LifeCycle(sigma_psi=sigma_psi,
-                       sigma_eps = sigma_eps,
-                       U=U,
-                       ρ=ρ,
-                       R=R,
-                       T=T,
-                       L=L,
-                       β=0.8,
-                       x=x,
-                       theta=theta,
-                       ue_markov= True,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y=b_y)
-
-
-    ## initial guess of consumption functions 
-
-    m_init,σ_init = inf_liv.terminal_solution()
-   
-
-    t_start = time()
-
-    m_inf_star, σ_inf_star = solve_model_iter(inf_liv,
-                                              m_init,
-                                              σ_init,
-                                              tol=1e-6,
-                                             )
-
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))   
-
-# -
-
-if __name__ == "__main__":
-    ## plot c func 
-    plt.plot(m_inf_star[:,0,0],
-             σ_inf_star[:,0,0],
-             lw=3)
-    plt.xlabel('asset')
-    plt.ylabel('c')
-    plt.title('Infinite horizon solution')
-
-# ## Infinite horizon with adjustment inertia
-#
-#
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ## Initialize a model instance
-
-    imp_adjust = LifeCycle(sigma_psi=sigma_psi,
-                       sigma_eps = sigma_eps,
-                       U=U,
-                       ρ=ρ,
-                       R=R,
-                       T=T,
-                       L=L,
-                       β=0.9,
-                       x=x,
-                       theta=theta,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y=b_y,
-                       unemp_insurance = unemp_insurance,
-                       adjust_prob = 0.6)
-
-    ## initial consumption functions 
-    m_init,σ_init = imp_adjust.terminal_solution()
-
-    t_start = time()
-
-    ## set different ma parameters
-    m_imp_star, σ_imp_star = solve_model_iter(imp_adjust,
-                                              m_init,
-                                              σ_init)
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))       
-# -
-if __name__ == "__main__":
-    ## plot c func at different age /asset grid
-
-    plt.plot(m_imp_star[:,0,0],
-             σ_imp_star[:,0,0],
-             '-',
-             label = 'imperfect adjustment',
-             lw=3
-            )
-    #plt.plot(m_inf_star[:,0,0],
-    #         σ_inf_star[:,0,0],
-    #         '--',
-    #         label = 'perfect adjustment',
-    #         lw=3
-    #        )
-    plt.legend()
-    plt.xlabel('asset')
-    plt.ylabel('c')
-    plt.title('Infinite horizon solution')
