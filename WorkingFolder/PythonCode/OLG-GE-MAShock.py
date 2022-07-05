@@ -40,20 +40,35 @@ from Utility import mean_preserving_spread
 # + code_folding=[]
 ## figure plotting configurations
 
-mp.rc('xtick', labelsize=14) 
-mp.rc('ytick', labelsize=14) 
-
-fontsize = 14
-legendsize = 12
 
 plt.style.use('seaborn')
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['axes.labelweight'] = 'bold'
 
+## Set the 
+plt.rc('font', size=25)
+# Set the axes title font size
+plt.rc('axes', titlesize=20)
+# Set the axes labels font size
+plt.rc('axes', labelsize=20)
+# Set the font size for x tick labels
+plt.rc('xtick', labelsize=20)
+# Set the font size for y tick labels
+plt.rc('ytick', labelsize=20)
+# Set the legend font size
+plt.rc('legend', fontsize=20)
+# Set the font size of the figure title
+plt.rc('figure', titlesize=20)
 # -
 
 # ### The Life-cycle Model Class and the Solver
 
 # + code_folding=[]
 from SolveLifeCycleMAshock import LifeCycle, EGM, solve_model_backward_iter,compare_2solutions
+
+from Utility import jump_to_grid,jump_to_grid_fast
 # -
 
 # ### Initialize the model
@@ -493,22 +508,25 @@ else:
                       )
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## solve various models
 
 models = [lc_mkv,
           lc_mkv_sub,
-          #lc_mkv_sub_true,
-          lc_mkv_sub_cr]
+          lc_mkv_sub_true,
+          #lc_mkv_sub_cr
+          ]
 specs = ['ob',
          'sub',
-         #'sub_true',
-         'cr']
+         'sub_true'
+         #'cr'
+         ]
 
-model_names=['objective',
-             'subjective',
-         #    'subjective_true',
-             'subjective_sv']
+model_names=['baseline',
+             'SLPR',
+             'LPR'
+             #'subjective_sv'
+             ]
 
 ms_stars = []
 σs_stars = []
@@ -556,7 +574,7 @@ plt.hist(ojb_minus_sub.flatten(),
 plt.title('Consumption in objective model minus subjective model')
 print('should be NEGATIVE!!!!!')
 
-# + code_folding=[0, 12]
+# + code_folding=[]
 ## compare solutions 
 
 m_grid = np.linspace(0.0,10.0,200)
@@ -567,7 +585,7 @@ n_sub = len(years_left)
 
 eps_fix = 0 ## the first eps grid 
 
-fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
+fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
 for x,year in enumerate(years_left):
     age = lc_mkv.L-year
@@ -592,78 +610,6 @@ for x,year in enumerate(years_left):
     axes[x].set_xlabel('asset')
     axes[0].set_ylabel('c')
     axes[x].set_title(r'$age={}$'.format(age))
-
-# + code_folding=[]
-"""
-## 3d graph 
-
-ms_star_mkv_u_2d,cs_star_mkv_u_2d = ms_star_mkv[:,:,eps_fix,0],σs_star_mkv[:,:,eps_fix,0]
-ms_star_mkv_e_2d,cs_star_mkv_e_2d  = ms_star_mkv[:,:,eps_fix,1],σs_star_mkv[:,:,eps_fix,1]
-
-ms_star_mkv_u_sub_2d,cs_star_mkv_u_sub_2d = ms_star_mkv_sub[:,:,eps_fix,0],σs_star_mkv_sub[:,:,eps_fix,0]
-ms_star_mkv_e_sub_2d,cs_star_mkv_e_sub_2d = ms_star_mkv_sub[:,:,eps_fix,1],σs_star_mkv_sub[:,:,eps_fix,1]
-
-## get age grid 
-ages = np.array(range(ms_star_mkv_u_2d.shape[0]))
-
-## objective model 
-m_mkv_u = ms_star_mkv_u_2d[0,:]
-xx_mkv_u, yy_mkv_u = np.meshgrid(ages, m_mkv_u)
-c_mkv_u = np.flip(cs_star_mkv_u_2d,axis=0).T
-
-m_mkv_e = ms_star_mkv_e_2d[0,:]
-xx_mkv_e, yy_mkv_e = np.meshgrid(ages, m_mkv_e)
-c_mkv_e = np.flip(cs_star_mkv_e_2d,axis=0).T
-
-## subjective model 
-m_mkv_u_sub = ms_star_mkv_u_sub_2d[0,:]
-xx_mkv_u_sub, yy_mkv_u_sub = np.meshgrid(ages, m_mkv_u_sub)
-c_mkv_u_sub = np.flip(cs_star_mkv_u_sub_2d,axis=0).T
-
-m_mkv_e_sub = ms_star_mkv_e_sub_2d[0,:]
-xx_mkv_e_sub, yy_mkv_e_sub = np.meshgrid(ages, m_mkv_e_sub)
-c_mkv_e_sub = np.flip(cs_star_mkv_e_sub_2d,axis=0).T
-
-
-## plot 
-fig = plt.figure(figsize=(15,7))
-ax = fig.add_subplot(121, 
-                     projection='3d')
-dem3d = ax.plot_surface(xx_mkv_u,
-                        yy_mkv_u,
-                        c_mkv_u,
-                        cmap="winter"
-                       )
-dem3d_sub = ax.plot_surface(xx_mkv_u_sub,
-                        yy_mkv_u_sub,
-                        c_mkv_u_sub,
-                        cmap="winter"
-                       )
-ax.set_xlim(60,0)
-ax.set_title('Consumption over the life cycle')
-ax.set_xlabel('age')
-#ax.grid(False)
-ax.set_ylabel('wealth')
-ax.view_init(10, 20)
-
-ax2 = fig.add_subplot(122, 
-                     projection='3d')
-dem3d2 = ax2.plot_surface(xx_mkv_e,
-                        yy_mkv_e,
-                        c_mkv_e,
-                        cmap="summer"
-                       )
-dem3d2_sub = ax2.plot_surface(xx_mkv_e_sub,
-                        yy_mkv_e_sub,
-                        c_mkv_e_sub,
-                        cmap="summer"
-                       )
-ax2.set_xlim(60,0)
-ax2.set_xlabel('age')
-#ax.grid(False)
-ax2.set_ylabel('wealth')
-ax2.view_init(10, 20)
-"""
 # -
 
 # ## Aggregate steady state distributions
@@ -682,138 +628,6 @@ from PrepareParameters import production_paras_y as production_paras
 ## general functions used 
 # for computing transition matrix
 ##################################
-
-@njit
-def jump_to_grid(m_vals,
-                 perm_vals, 
-                 probs, 
-                 dist_mGrid, 
-                 dist_pGrid):
-
-    '''
-    Distributes values onto a predefined grid, maintaining the means. m_vals and perm_vals are realizations of market resources and permanent income while 
-    dist_mGrid and dist_pGrid are the predefined grids of market resources and permanent income, respectively. That is, m_vals and perm_vals do not necessarily lie on their
-    respective grids. Returns probabilities of each gridpoint on the combined grid of market resources and permanent income.
-
-
-    Parameters
-    ----------
-    m_vals: np.array
-            Market resource values 
-
-    perm_vals: np.array
-            Permanent income values 
-
-    probs: np.array
-            Shock probabilities associated with combinations of m_vals and perm_vals. 
-            Can be thought of as the probability mass function  of (m_vals, perm_vals).
-
-    dist_mGrid : np.array
-            Grid over normalized market resources
-
-    dist_pGrid : np.array
-            Grid over permanent income 
-
-    Returns
-    -------
-    probGrid.flatten(): np.array
-             Probabilities of each gridpoint on the combined grid of market resources and permanent income
-    '''
-
-    probGrid = np.zeros((len(dist_mGrid),len(dist_pGrid)))
-    mIndex = np.digitize(m_vals,dist_mGrid) - 1 # Array indicating in which bin each values of m_vals lies in relative to dist_mGrid. Bins lie between between point of Dist_mGrid. 
-    #For instance, if mval lies between dist_mGrid[4] and dist_mGrid[5] it is in bin 4 (would be 5 if 1 was not subtracted in the previous line). 
-    mIndex[m_vals <= dist_mGrid[0]] = -1 # if the value is less than the smallest value on dist_mGrid assign it an index of -1
-    mIndex[m_vals >= dist_mGrid[-1]] = len(dist_mGrid)-1 # if value is greater than largest value on dist_mGrid assign it an index of the length of the grid minus 1
-
-    #the following three lines hold the same intuition as above
-    pIndex = np.digitize(perm_vals,dist_pGrid) - 1
-    pIndex[perm_vals <= dist_pGrid[0]] = -1
-    pIndex[perm_vals >= dist_pGrid[-1]] = len(dist_pGrid)-1
-
-    for i in range(len(m_vals)):
-        if mIndex[i]==-1: # if mval is below smallest gridpoint, then assign it a weight of 1.0 for lower weight. 
-            mlowerIndex = 0
-            mupperIndex = 0
-            mlowerWeight = 1.0
-            mupperWeight = 0.0
-        elif mIndex[i]==len(dist_mGrid)-1: # if mval is greater than maximum gridpoint, then assign the following weights
-            mlowerIndex = -1
-            mupperIndex = -1
-            mlowerWeight = 1.0
-            mupperWeight = 0.0
-        else: # Standard case where mval does not lie past any extremes
-        #identify which two points on the grid the mval is inbetween
-            mlowerIndex = mIndex[i] 
-            mupperIndex = mIndex[i]+1
-        #Assign weight to the indices that bound the m_vals point. Intuitively, a mval perfectly between two points on the mgrid will assign a weight of .5 to the gridpoint above and below
-            mlowerWeight = (dist_mGrid[mupperIndex]-m_vals[i])/(dist_mGrid[mupperIndex]-dist_mGrid[mlowerIndex]) #Metric to determine weight of gridpoint/index below. Intuitively, mvals that are close to gridpoint/index above are assigned a smaller mlowerweight.
-            mupperWeight = 1.0 - mlowerWeight # weight of gridpoint/ index above
-
-        #Same logic as above except the weights here concern the permanent income grid
-        if pIndex[i]==-1: 
-            plowerIndex = 0
-            pupperIndex = 0
-            plowerWeight = 1.0
-            pupperWeight = 0.0
-        elif pIndex[i]==len(dist_pGrid)-1:
-            plowerIndex = -1
-            pupperIndex = -1
-            plowerWeight = 1.0
-            pupperWeight = 0.0
-        else:
-            plowerIndex = pIndex[i]
-            pupperIndex = pIndex[i]+1
-            plowerWeight = (dist_pGrid[pupperIndex]-perm_vals[i])/(dist_pGrid[pupperIndex]-dist_pGrid[plowerIndex])
-            pupperWeight = 1.0 - plowerWeight
-
-        # Compute probabilities of each gridpoint on the combined market resources and permanent income grid by looping through each point on the combined market resources and permanent income grid, 
-        # assigning probabilities to each gridpoint based off the probabilities of the surrounding mvals and pvals and their respective weights placed on the gridpoint.
-        # Note* probs[i] is the probability of mval AND pval occurring
-        probGrid[mlowerIndex][plowerIndex] = probGrid[mlowerIndex][plowerIndex] + probs[i]*mlowerWeight*plowerWeight # probability of gridpoint below mval and pval 
-        probGrid[mlowerIndex][pupperIndex] = probGrid[mlowerIndex][pupperIndex] + probs[i]*mlowerWeight*pupperWeight # probability of gridpoint below mval and above pval
-        probGrid[mupperIndex][plowerIndex] = probGrid[mupperIndex][plowerIndex] + probs[i]*mupperWeight*plowerWeight # probability of gridpoint above mval and below pval
-        probGrid[mupperIndex][pupperIndex] = probGrid[mupperIndex][pupperIndex] + probs[i]*mupperWeight*pupperWeight # probability of gridpoint above mval and above pval
-
-    return probGrid.flatten()
-
-@njit
-def jump_to_grid_fast(vals,
-                      probs,
-                      Grid ):
-    '''
-    Distributes values onto a predefined grid, maintaining the means.
-    ''' 
-
-    probGrid = np.zeros(len(Grid))
-    mIndex = np.digitize(vals,Grid) - 1
-    # return the indices of the bins to which each value in input array belongs.
-    mIndex[vals <= Grid[0]] = -1
-    mIndex[vals >= Grid[-1]] = len(Grid)-1
-
-
-    for i in range(len(vals)):
-        if mIndex[i]==-1:
-            mlowerIndex = 0
-            mupperIndex = 0
-            mlowerWeight = 1.0
-            mupperWeight = 0.0
-        elif mIndex[i]==len(Grid)-1:
-            mlowerIndex = -1
-            mupperIndex = -1
-            mlowerWeight = 1.0
-            mupperWeight = 0.0
-        else:
-            mlowerIndex = mIndex[i]
-            mupperIndex = mIndex[i]+1
-            mlowerWeight = (Grid[mupperIndex]-vals[i])/(Grid[mupperIndex] - Grid[mlowerIndex])
-            mupperWeight = 1.0 - mlowerWeight
-
-        probGrid[mlowerIndex] = probGrid[mlowerIndex] + probs[i]*mlowerWeight
-        probGrid[mupperIndex] = probGrid[mupperIndex] + probs[i]*mupperWeight
-
-    return probGrid.flatten()
-
 
 ## compute the list of transition matrix from age t to t+1 for all age 
 
@@ -1285,7 +1099,7 @@ def calc_ergodic_dist(transition_matrix = None):
 """
 
 
-# + code_folding=[5, 17]
+# + code_folding=[0, 5, 17, 113, 278, 299, 338, 383, 408]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1381,7 +1195,7 @@ class HH_OLG_Markov:
                     else:
                         std_p = 1e-2
                     max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
-                    right_sided_grid = make_grid_exp_mult(1.0+1e-3, np.exp(max_p), num_pointsP, 2)
+                    right_sided_grid = make_grid_exp_mult(1.05+1e-3, np.exp(max_p), num_pointsP, 2)
                     left_sided_gird = np.append(1.0/np.fliplr([right_sided_grid])[0],np.ones(1))
                     left_sided_gird = 1.0/np.fliplr([right_sided_grid])[0]
                     this_dist_pGrid = np.append(left_sided_gird,
@@ -1907,7 +1721,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[1]
+# + code_folding=[0, 1]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1922,37 +1736,39 @@ n_p = 40
 
 # ## compare different models 
 
-# + code_folding=[0]
+# + code_folding=[0, 97]
 def solve_models(model_list,
                    ms_star_list,
                    σs_star_list):
     
     ## create lists to save results 
-    C_list = []
+    #C_list = []
     A_list = []
-    C_ge_list = []
+    #C_ge_list = []
     A_ge_list = []
     
     
     ### life cycle 
     A_life_list = []
-    C_life_list = []
+    #C_life_list = []
     A_life_ge_list = []
-    C_life_ge_list = []
+    #C_life_ge_list = []
     
     ## for lorenz curves 
-    share_agents_cp_list =[]
-    share_cp_list = []    
+    #share_agents_cp_list =[]
+    #share_cp_list = []
     share_agents_ap_list =[]
     share_ap_list = []   
     
-    share_agents_cp_ge_list =[]
-    share_cp_ge_list = []    
+    #share_agents_cp_ge_list =[]
+    #share_cp_ge_list = []
     share_agents_ap_ge_list =[]
     share_ap_ge_list = []  
     
     
     ## distribution 
+    ap_grid_dist_pe_list = []
+    ap_pdfs_dist_pe_list = []
     ap_grid_dist_ge_list = []
     ap_pdfs_dist_ge_list = []
     
@@ -1964,15 +1780,15 @@ def solve_models(model_list,
         HH_this.ComputeSSDist(ms_star = ms_star_list[k],
                               σs_star = σs_star_list[k])
         HH_this.Aggregate()
-        C_list.append(HH_this.C)
+        #C_list.append(HH_this.C)
         A_list.append(HH_this.A)
-        print('aggregate consumption under stationary distribution:', str(HH_this.C))
+        #print('aggregate consumption under stationary distribution:', str(HH_this.C))
         print('aggregate savings under stationary distribution:', str(HH_this.A))
         
-        share_agents_cp_this,share_cp_this = HH_this.Lorenz(variable='c')
+        #share_agents_cp_this,share_cp_this = HH_this.Lorenz(variable='c')
         share_agents_ap_this,share_ap_this = HH_this.Lorenz(variable='a')
-        share_agents_cp_list.append(share_agents_cp_this)
-        share_cp_list.append(share_cp_this)
+        #share_agents_cp_list.append(share_agents_cp_this)
+        #share_cp_list.append(share_cp_this)
         share_agents_ap_list.append(share_agents_ap_this)
         share_ap_list.append(share_ap_this)
         
@@ -1982,10 +1798,13 @@ def solve_models(model_list,
         HH_this.AggregatebyAge()
 
         A_life_this = HH_this.A_life
-        C_life_this = HH_this.C_life
+        #C_life_this = HH_this.C_life
         A_life_list.append(A_life_this)
-        C_life_list.append(C_life_this)
+        #C_life_list.append(C_life_this)
         
+        ## distribution 
+        ap_grid_dist_pe_list.append(HH_this.ap_grid_dist)
+        ap_pdfs_dist_pe_list.append(HH_this.ap_pdfs_dist) 
         
         ## general equilibrium 
 
@@ -1997,38 +1816,40 @@ def solve_models(model_list,
         
         ## aggregate 
         A_ge_list.append(market_OLG_mkv_this.households.A)
-        C_ge_list.append(market_OLG_mkv_this.households.C)
+        #C_ge_list.append(market_OLG_mkv_this.households.C)
         
         ## life cycle 
         A_life_ge_list.append(market_OLG_mkv_this.households.A_life)
-        C_life_ge_list.append(market_OLG_mkv_this.households.C_life)
+        #C_life_ge_list.append(market_OLG_mkv_this.households.C_life)
         
         ## lorenz 
         share_agents_ap_ge_this, share_ap_ge_this = market_OLG_mkv_this.households.Lorenz(variable='a')
         share_agents_ap_ge_list.append(share_agents_ap_ge_this)
         share_ap_ge_list.append(share_ap_ge_this)
-        share_agents_cp_ge_this, share_cp_ge_this = market_OLG_mkv_this.households.Lorenz(variable='c')
-        share_agents_cp_ge_list.append(share_agents_cp_ge_this)
-        share_cp_ge_list.append(share_cp_ge_this)
+        #share_agents_cp_ge_this, share_cp_ge_this = market_OLG_mkv_this.households.Lorenz(variable='c')
+        #share_agents_cp_ge_list.append(share_agents_cp_ge_this)
+        #share_cp_ge_list.append(share_cp_ge_this)
         
         ## distribution 
         ap_grid_dist_ge_list.append(market_OLG_mkv_this.households.ap_grid_dist)
         ap_pdfs_dist_ge_list.append(market_OLG_mkv_this.households.ap_pdfs_dist)  
         
-    return {'C_pe':C_list,
+    return {#'C_pe':C_list,
            'A_pe':A_list,
             'A_life_pe':A_life_list,
-            'C_life_pe':C_life_list,
-            'share_agents_cp_pe':share_agents_cp_list,
-            'share_cp_pe':share_cp_list,    
+            #'C_life_pe':C_life_list,
+            #'share_agents_cp_pe':share_agents_cp_list,
+            #'share_cp_pe':share_cp_list,
             'share_agents_ap_pe':share_agents_ap_list,
             'share_ap_pe':share_ap_list,
-            'C_ge':C_ge_list,
+           'ap_grid_dist_pe':ap_grid_dist_pe_list,
+            'ap_pdfs_dist_pe':ap_pdfs_dist_pe_list,
+            #'C_ge':C_ge_list,
             'A_ge':A_ge_list,
             'A_life_ge':A_life_ge_list,
-            'C_life_ge':C_life_ge_list,
-            'share_agents_cp_ge':share_agents_cp_ge_list,
-            'share_cp_ge':share_cp_ge_list,    
+            #'C_life_ge':C_life_ge_list,
+            #'share_agents_cp_ge':share_agents_cp_ge_list,
+            #'share_cp_ge':share_cp_ge_list,
             'share_agents_ap_ge':share_agents_ap_ge_list,
             'share_ap_ge':share_ap_ge_list,
             'ap_grid_dist_ge':ap_grid_dist_ge_list,
@@ -2049,17 +1870,19 @@ model_results = solve_models(models,
 share_agents_ap_pe_list,share_ap_pe_list = model_results['share_agents_ap_pe'],model_results['share_ap_pe']
 
 A_life_list =  model_results['A_life_pe']
-C_life_list =  model_results['C_life_pe']
+#C_life_list =  model_results['C_life_pe']
+
+ap_grid_dist_pe_list, ap_pdfs_dist_pe_list = model_results['ap_grid_dist_pe'],model_results['ap_pdfs_dist_pe']
 
 ## GE
 share_agents_ap_ge_list,share_cp_ge_list = model_results['share_agents_ap_ge'],model_results['share_ap_ge']
 
 A_life_ge_list =  model_results['A_life_ge']
-C_life_ge_list =  model_results['C_life_ge']
+#C_life_ge_list =  model_results['C_life_ge']
 
 ap_grid_dist_ge_list, ap_pdfs_dist_ge_list = model_results['ap_grid_dist_ge'],model_results['ap_pdfs_dist_ge']
 
-# + code_folding=[0] pycharm={"is_executing": true}
+# + code_folding=[]
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
@@ -2083,20 +1906,21 @@ SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
 
 SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
-# + code_folding=[0] pycharm={"is_executing": true}
-## plot results from different models 
+# + pycharm={"name": "#%%\n"}
+## plot results from different models
 
 line_patterns =['g-v',
                 'r-.',
                 'b--',
-                'y.']
+                #'y.'
+                ]
 
 ## Lorenz curve of steady state wealth distribution
 
-fig, ax = plt.subplots(figsize=(5,5))
+fig, ax = plt.subplots(figsize=(8,8))
 for k,model in enumerate(models):
     ax.plot(share_agents_ap_pe_list[k],
-            share_ap_pe_list[k], 
+            share_ap_pe_list[k],
             line_patterns[k],
             label = model_names[k])
 ax.plot(SCF_share_agents_ap,
@@ -2109,11 +1933,11 @@ plt.ylim([0,1])
 plt.savefig('../Graphs/model/lorenz_a_compare_pe.png')
 
 
-## life cycle 
+## life cycle
 
 age_lc = SCF_profile.index
 
-fig, ax = plt.subplots(figsize=(10,5))
+fig, ax = plt.subplots(figsize=(16,8))
 plt.title('Life cycle profile of wealth')
 
 for k,model in enumerate(models):
@@ -2121,17 +1945,18 @@ for k,model in enumerate(models):
            np.log(A_life_list[k]),
            line_patterns[k],
            label=model_names[k])
-    
-ax.vlines(lc_mkv.T+25,
-          np.min(np.log(A_life_list[k])),
-          np.max(np.log(A_life_list[k])),
-          color='k',
-          label='retirement'
-         )
-ax.set_ylim([-2.0,3.0])
+
+
+ax.set_ylim([-0.5,3.5])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
+ax2.vlines(lc_mkv.T+25,
+          10.5,
+          15,
+          color='k',
+          label='retirement'
+         )
 ax2.bar(age_lc[1:],
         np.log(SCF_profile['mv_wealth'][1:]),
        label='SCF (RHS)')
@@ -2149,15 +1974,32 @@ ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_compare_pe.png')
 
 
+
+## wealth distributions in pe
+
+fig, ax = plt.subplots(figsize=(8,6))
+ax.set_title('Wealth distribution')
+for k, model in enumerate(models):
+    ax.plot(np.log(ap_grid_dist_pe_list[k]+1e-5),
+            ap_pdfs_dist_pe_list[k],
+            label=model_names[k])
+#ax.set_xlim((-8,8))
+ax.set_xlabel(r'$a$')
+ax.legend(loc=0)
+ax.set_ylabel(r'$prob(a)$')
+
+fig.savefig('../Graphs/model/distribution_a_compare_pe.png')
+
+
 ## lorenz curve in ge
 
 fig, ax = plt.subplots(figsize=(5,5))
 for k,model in enumerate(models):
     ax.plot(share_agents_ap_ge_list[k],
-            share_cp_ge_list[k], 
+            share_cp_ge_list[k],
             line_patterns[k],
             label = model_names[k])
-    
+
 ax.plot(SCF_share_agents_ap,
         SCF_share_ap, 'k-.',label='SCF')
 ax.plot(share_agents_ap_ge_list[k],
@@ -2170,7 +2012,7 @@ fig.savefig('../Graphs/model/lorenz_curve_a_compare_ge.png')
 
 ## life cycle profile in ge
 
-fig, ax = plt.subplots(figsize=(10,5))
+fig, ax = plt.subplots(figsize=(16,8))
 plt.title('Life cycle profile of wealth')
 
 for k, model in enumerate(models):
@@ -2178,16 +2020,16 @@ for k, model in enumerate(models):
             np.log(A_life_ge_list[k])[:-1],
             line_patterns[k],
            label = model_names[k])
-ax.vlines(lc_mkv.T+25,
-          np.min(np.log(A_life_ge_list[k])[:-1]),
-          np.max(np.log(A_life_ge_list[k])[:-1]),
-          color='k',
-          label='retirement')
 
+ax.set_ylim([-0.5,3.5])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
-
+ax2.vlines(lc_mkv.T+25,
+          10.5,
+          15,
+          color='k',
+          label='retirement')
 ax2.bar(age_lc,
         np.log(SCF_profile['mv_wealth']),
        #'k--',
@@ -2208,13 +2050,13 @@ fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
 
 ## wealth distributions in ge
 
-fig, ax = plt.subplots(figsize=(6,4))
+fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 for k, model in enumerate(models):
-    ax.plot(np.log(ap_grid_dist_ge_list[k]+0.0000000001),
+    ax.plot(np.log(ap_grid_dist_ge_list[k]+1e-5),
             ap_pdfs_dist_ge_list[k],
             label=model_names[k])
-ax.set_xlim((-8,8))
+#ax.set_xlim((-8,8))
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
@@ -2225,7 +2067,7 @@ fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
 
 # ## Analysis of the baseline model 
 
-# + code_folding=[] pycharm={"is_executing": true}
+# + code_folding=[0]
 ## testing of the household class 
 
 HH = HH_OLG_Markov(model=lc_mkv)
@@ -2241,7 +2083,7 @@ HH.ComputeSSDist(ms_star = ms_star_mkv,
                   σs_star = σs_star_mkv)
 
 
-# + code_folding=[] pycharm={"is_executing": true}
+# + code_folding=[]
 ## plot the initial distribution in the first period of life 
 
 plt.title('Initial distributions over m and p given u')
@@ -2250,7 +2092,7 @@ plt.spy(HH.initial_dist_u.reshape(n_m,-1),
 plt.xlabel('p')
 plt.ylabel('m')
 
-# + code_folding=[] pycharm={"is_executing": true}
+# + code_folding=[]
 ## plot the initial distribution in the first period of life 
 
 plt.title('Initial distributions over m and p given e')
@@ -2258,23 +2100,21 @@ plt.spy(HH.initial_dist_e.reshape(n_m,-1),
        markersize = 2)
 plt.xlabel('p')
 plt.ylabel('m')
+# -
 
-# + pycharm={"is_executing": true}
 HH.Aggregate()
 print('aggregate consumption under stationary distribution:', str(HH.C))
 print('aggregate savings under stationary distribution:', str(HH.A))
-# -
 
 # ### Stationary wealth/consumption distribution
 
-# + pycharm={"is_executing": true}
 share_agents_cp,share_cp = HH.Lorenz(variable='c')
 share_agents_ap,share_ap = HH.Lorenz(variable='a')
 
-# + code_folding=[] pycharm={"is_executing": true}
+# + code_folding=[]
 ## Lorenz curve of steady state wealth distribution
 
-fig, ax = plt.subplots(figsize=(5,5))
+fig, ax = plt.subplots(figsize=(8,8))
 ax.plot(share_agents_cp,share_cp, 'r--',label='Lorenz curve of consumption')
 ax.plot(share_agents_cp,share_agents_cp, 'k-',label='equality curve')
 ax.legend()
@@ -2284,7 +2124,7 @@ plt.savefig('../Graphs/model/lorenz_c_test.png')
 
 ## Lorenz curve of steady state wealth distribution
 
-fig, ax = plt.subplots(figsize=(5,5))
+fig, ax = plt.subplots(figsize=(8,8))
 ax.plot(share_agents_ap,share_ap, 'r--',label='Lorenz curve of wealth: model')
 ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve of wealth: SCF')
 ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
@@ -2293,7 +2133,7 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 plt.savefig('../Graphs/model/lorenz_a_test.png')
 
-# + code_folding=[0] pycharm={"is_executing": true}
+# + code_folding=[]
 ## Wealth distribution 
 
 ap_grid_dist = HH.ap_grid_dist
@@ -2302,17 +2142,17 @@ cp_grid_dist = HH.cp_grid_dist
 cp_pdfs_dist = HH.cp_pdfs_dist
 
 
-fig, ax = plt.subplots(figsize=(6,4))
+fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
-ax.plot(np.log(ap_grid_dist+0.0000000001), 
+ax.plot(np.log(ap_grid_dist+1e-5),
          ap_pdfs_dist)
-ax.set_xlim(-30,10)
+#ax.set_xlim(-10,10)
 
 ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_a_test.png')
 
-fig, ax = plt.subplots(figsize=(6,4))
+fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Consumption distribution')
 ax.plot(np.log(cp_grid_dist), 
          cp_pdfs_dist)
@@ -2320,39 +2160,44 @@ ax.set_xlabel(r'$c$')
 ax.set_ylabel(r'$prob(a)$')
 ax.set_xlim(-15,10)
 fig.savefig('../Graphs/model/distribution_c_test.png')
+
+# + pycharm={"name": "#%%\n"}
+zero_wealth_id = np.where(ap_grid_dist<=1e-1)
+zero_wealth_share = ap_pdfs_dist[zero_wealth_id].sum()
+print('Share of zero wealth',str(zero_wealth_share))
 # -
 
 # ### Life-cycle profile and wealth distribution
 
-# + code_folding=[] pycharm={"is_executing": true}
+# + code_folding=[]
 HH.AggregatebyAge()
 
 A_life = HH.A_life
 C_life = HH.C_life
 
 
-# + code_folding=[11] pycharm={"is_executing": true}
+# + code_folding=[]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
 
-fig, ax = plt.subplots(figsize=(10,5))
+fig, ax = plt.subplots(figsize=(16,8))
 plt.title('Life cycle profile of wealth')
 ax.plot(age_lc[1:],
        np.log(A_life),
        'r-o',
        label='model')
 
-ax.vlines(lc_mkv.T+25,
-          np.min(np.log(A_life)),
-          np.max(np.log(A_life)),
-          color='k',
-          label='retirement'
-         )
-#ax.set_ylim([-2.0,2.0])
+#ax.set_ylim([-0.5,3.5])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
+ax2.vlines(lc_mkv.T+25,
+          10.5,
+          15,
+          color='k',
+          label='retirement'
+         )
 ax2.bar(age_lc[1:],
         np.log(SCF_profile['mv_wealth'][1:]),
        label='SCF (RHS)')
@@ -2369,7 +2214,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_test.png')
 
-# + code_folding=[0] pycharm={"is_executing": true}
+# + code_folding=[0]
 ## get the within-age distribution 
 
 HH.get_lifecycle_dist()
@@ -2377,7 +2222,7 @@ HH.get_lifecycle_dist()
 ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
 cp_grid_dist_life,cp_pdfs_dist_life = HH.cp_grid_dist_life,HH.cp_pdfs_dist_life
 
-# + code_folding=[0] pycharm={"is_executing": true}
+# + code_folding=[0]
 ## create the dataframe to plot distributions over the life cycle 
 ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
 cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
@@ -2387,7 +2232,7 @@ cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
 ap_range = list(ap_pdfs_life.index)
 cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[1, 2, 11, 21] pycharm={"is_executing": true}
+# + code_folding=[1, 2, 11, 21]
 joy = False
 if joy == True:
     fig, axes = joypy.joyplot(ap_pdfs_life, 
@@ -2415,31 +2260,30 @@ else:
 
 # ### General Equilibrium 
 
-# + code_folding=[] pycharm={"is_executing": true}
+# + code_folding=[]
 ## initialize a market and solve the equilibrium 
-
-
 
 market_OLG_mkv = Market_OLG_mkv(households = HH,
                                 production = production)
 
 market_OLG_mkv.get_equilibrium_k()
 
+# -
 
-# + pycharm={"is_executing": true}
 market_OLG_mkv.get_equilibrium_dist()
 
-# + code_folding=[0] pycharm={"is_executing": true}
+# + code_folding=[]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
 
-fig, ax = plt.subplots(figsize=(10,5))
+fig, ax = plt.subplots(figsize=(16,8))
 plt.title('Life cycle profile of wealth')
 ax.plot(age_lc[:-2],
         np.log(market_OLG_mkv.households.A_life)[:-1],
        'r-o',
        label='model')
+ax.set_ylim([-0.5,3.5])
 
 
 ax2 = ax.twinx()
@@ -2467,14 +2311,14 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_eq.png')
 
-# + code_folding=[0] pycharm={"is_executing": true}
+# + code_folding=[]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_ap, share_ap = market_OLG_mkv.households.Lorenz(variable='a')
 
 ## Lorenz curve of steady state wealth distribution
 
-fig, ax = plt.subplots(figsize=(5,5))
+fig, ax = plt.subplots(figsize=(6,6))
 ax.plot(share_agents_ap,share_cp, 'r--',label='Lorenz curve of level of wealth')
 ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='Lorenz curve from SCF')
 ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
@@ -2485,217 +2329,25 @@ fig.savefig('../Graphs/model/lorenz_curve_a_eq.png')
 
 
 
-# + code_folding=[0] pycharm={"is_executing": true}
+# + code_folding=[] pycharm={"name": "#%%\n"}
 ## Wealth distribution 
 
-fig, ax = plt.subplots(figsize=(6,4))
+fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
-ax.plot(np.log(market_OLG_mkv.households.ap_grid_dist+0.0000000001), 
+ax.plot(np.log(market_OLG_mkv.households.ap_grid_dist+1e-5), 
          market_OLG_mkv.households.ap_pdfs_dist)
-ax.set_xlim((-15,15))
-ax.set_xlabel(r'$a$')
+ax.set_xlabel(r'$log(a)$')
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_a_eq.png')
 
-fig, ax = plt.subplots(figsize=(6,4))
+fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Consumption distribution')
 ax.plot(np.log(market_OLG_mkv.households.cp_grid_dist), 
          market_OLG_mkv.households.cp_pdfs_dist)
 ax.set_xlabel(r'$c$')
-ax.set_xlim((-20,20))
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_c_eq.png')
-# -
-# ## Compare different models
-
-# + code_folding=[0] pycharm={"is_executing": true}
-
-
-# + pycharm={"is_executing": true}
-model_results = solve_models(models[0:1],
-                               ms_stars[0:1],
-                               σs_stars[0:1])
-
-# + code_folding=[] pycharm={"is_executing": true}
-## create a new subjective household block 
-
-HH_sub = HH_OLG_Markov(model=lc_mkv_sub)
-
-HH_sub.define_distribution_grid(num_pointsM = n_m, 
-                            num_pointsP = n_p)
-HH_sub.ComputeSSDist(ms_star = ms_star_mkv_sub,
-                      σs_star = σs_star_mkv_sub)
-
-
-HH_sub.Aggregate()
-print('aggregate consumption under stationary distribution:', str(HH_sub.C))
-print('aggregate savings under stationary distribution:', str(HH_sub.A))
-
-share_agents_cp_sub,share_cp_sub = HH_sub.Lorenz(variable='c')
-share_agents_ap_sub,share_ap_sub = HH_sub.Lorenz(variable='a')
-
-## Lorenz curve of steady state wealth distribution
-
-fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(share_agents_cp_sub,share_cp_sub, 'r--',label='Lorenz curve of consumption')
-ax.plot(share_agents_cp_sub,share_agents_cp_sub, 'k-',label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
-plt.savefig('../Graphs/model/lorenz_c_sub_test.png')
-
-## Lorenz curve of steady state wealth distribution
-
-fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(share_agents_ap,share_ap, 'r--',label='Objective model')
-ax.plot(share_agents_ap_sub,share_ap_sub, 'g-',label='Subjective model')
-ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='SCF')
-ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
-plt.savefig('../Graphs/model/lorenz_a_sub_test.png')
-
-## life cycle 
-
-HH_sub.AggregatebyAge()
-
-A_life_sub = HH_sub.A_life
-C_life_sub = HH_sub.C_life
-
-
-age_lc = SCF_profile.index
-
-fig, ax = plt.subplots(figsize=(10,5))
-plt.title('Life cycle profile of wealth')
-ax.plot(age_lc[1:],
-       np.log(A_life),
-       'r-o',
-       label='objective model')
-
-ax.plot(age_lc[1:],
-       np.log(A_life_sub),
-       'g-o',
-       label='subjective model')
-
-ax.vlines(lc_mkv.T+25,
-          np.min(np.log(A_life)),
-          np.max(np.log(A_life)),
-          color='k',
-          label='retirement'
-         )
-ax.set_ylim([-2.0,3.0])
-
-ax2 = ax.twinx()
-ax2.set_ylim([10.5,15])
-ax2.bar(age_lc[1:],
-        np.log(SCF_profile['mv_wealth'][1:]),
-       label='SCF (RHS)')
-
-#ax2.plot(age,
-#        C_life,
-#        'b--',
-#        label='consumption (RHS)')
-
-ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth in model')
-ax2.set_ylabel('Log wealth SCF')
-ax.legend(loc=1)
-ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_sub_test.png')
-
-
-## general equilibrium 
-
-
-market_OLG_mkv_sub = Market_OLG_mkv(households = HH_sub,
-                                    production = production)
-
-market_OLG_mkv_sub.get_equilibrium_k()
-market_OLG_mkv_sub.get_equilibrium_dist()
-
-
-
-## plot life cycle profile
-
-age_lc = SCF_profile.index
-
-fig, ax = plt.subplots(figsize=(10,5))
-plt.title('Life cycle profile of wealth')
-ax.plot(age_lc[:-2],
-        np.log(market_OLG_mkv.households.A_life)[:-1],
-       'r-o',
-       label='objective model')
-
-ax.plot(age_lc[:-2],
-        np.log(market_OLG_mkv_sub.households.A_life)[:-1],
-       'g-o',
-       label='subjective model')
-
-
-ax2 = ax.twinx()
-ax2.set_ylim([10.5,15])
-ax2.vlines(lc_mkv.T+25,
-          10.5,
-          15,
-          color='k',
-          label='retirement')
-
-ax2.bar(age_lc,
-        np.log(SCF_profile['mv_wealth']),
-       #'k--',
-       label='SCF (RHS)')
-
-#ax2.plot(age,
-#        C_life,
-#        'b--',
-#        label='consumption (RHS)')
-
-ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth')
-ax2.set_ylabel('Log wealth SCF')
-ax.legend(loc=1)
-ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_sub_eq.png')
-
-###################################
-## lorenz curve 
-###################################
-
-## compute things needed for lorenz curve plot of asset accumulation 
-
-share_agents_ap_sub, share_ap_sub = market_OLG_mkv_sub.households.Lorenz(variable='a')
-
-## Lorenz curve of steady state wealth distribution
-
-fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(share_agents_ap,share_cp, 'r--',label='Objective model')
-ax.plot(share_agents_ap_sub,share_ap_sub, 'g--',label='Subjective model')
-
-ax.plot(SCF_share_agents_ap,SCF_share_ap, 'b-.',label='SCF')
-ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
-fig.savefig('../Graphs/model/lorenz_curve_a_sub_eq.png')
-
-
-# + pycharm={"is_executing": true}
-## wealth distributions 
-
-fig, ax = plt.subplots(figsize=(6,4))
-ax.set_title('Wealth distribution')
-ax.plot(np.log(market_OLG_mkv.households.ap_grid_dist+0.0000000001), 
-         market_OLG_mkv.households.ap_pdfs_dist,
-       label='objective')
-ax.plot(np.log(market_OLG_mkv_sub.households.ap_grid_dist+0.0000000001), 
-         market_OLG_mkv_sub.households.ap_pdfs_dist,
-       label='subjective')
-ax.set_xlim((-8,8))
-ax.set_xlabel(r'$a$')
-ax.legend(loc=0)
-ax.set_ylabel(r'$prob(a)$')
-
-fig.savefig('../Graphs/model/distribution_a_sub_eq.png')
-
-
+# + pycharm={"name": "#%%\n"}
+zero_wealth_id = np.where(market_OLG_mkv.households.ap_grid_dist<=1e-2)
+zero_wealth_share = market_OLG_mkv.households.ap_pdfs_dist[zero_wealth_id].sum()
+print('Share of zero wealth',str(zero_wealth_share))
