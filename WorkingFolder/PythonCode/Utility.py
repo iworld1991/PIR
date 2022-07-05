@@ -329,7 +329,7 @@ def mean_preserving_spread(mean,
 # ## Tools for the economy and market 
 
 
-# + code_folding=[31]
+# + code_folding=[31, 34]
 class CDProduction:
     ## An economy class that saves market and production parameters 
     
@@ -459,6 +459,26 @@ def SS2tax(SS, ## social security /pension replacement ratio
     ## social security tax rate on labor income of employed 
     
     return λ_SS
+
+
+# -
+
+def gini(value_share):
+    """
+    input
+    =====
+    agents_share: an array of fraction the agents from 0 to 1
+    value_share: an array of value (wealth) share of the corresponding fraction of agents 
+    
+    output
+    ======
+    gini coefficients = B/(A+B) in lorenz curve where A+B = 1/2
+    
+    """
+    A = np.sum(value_share)*1/len(value_share)
+    B = 1/2-A
+    gini = B/0.5
+    return gini 
 
 
 # + code_folding=[2, 96]
