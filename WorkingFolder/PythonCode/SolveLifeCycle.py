@@ -906,7 +906,7 @@ if __name__ == "__main__":
     for it in range(100):
         m_next, σ_next = EGM(m_vec,
                              σ_vec,
-                             0,
+                             30,
                              lc_basic)
         if it <5:
             ax.plot(m_next[:,0,0],
@@ -1065,7 +1065,7 @@ if __name__ == "__main__":
 
 
     ## plot c func at different age /asset grid
-    years_left = [0,1,21,56]
+    years_left = [0,1,30,40]
 
     n_sub = len(years_left)
 
@@ -1184,7 +1184,7 @@ if __name__ == "__main__":
 
     ## compare two markov states good versus bad 
 
-    years_left = [1,2,30,40]
+    years_left = [1,2,21,50]
 
     n_sub = len(years_left)
 
