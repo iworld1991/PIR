@@ -35,6 +35,7 @@ import joypy
 from copy import copy
 from Utility import cal_ss_2markov,lorenz_curve
 from Utility import mean_preserving_spread
+from Utility import jump_to_grid,jump_to_grid_fast
 
 
 # + code_folding=[]
@@ -68,7 +69,7 @@ plt.rc('figure', titlesize=20)
 # + code_folding=[]
 from SolveLifeCycleMAshock import LifeCycle, EGM, solve_model_backward_iter,compare_2solutions
 
-from Utility import jump_to_grid,jump_to_grid_fast
+
 # -
 
 # ### Initialize the model
@@ -623,7 +624,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[6, 100, 140, 452, 467, 502, 525, 538, 552]
+# + code_folding=[8, 316, 331, 366, 402]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -719,19 +720,15 @@ def calc_transition_matrix(model,
             fix_epsGrid = 1.0 ## can be anything because c is not a function of eps
             
             for m_id,m in enumerate(this_dist_mGrid):
-                this_Cnow_u = mlinterp((ms_star[year_left,:,0,0],   
+                Cnow_u[m_id] = mlinterp((ms_star[year_left,:,0,0],   
                                         model.eps_grid),
                                        σs_star[year_left,:,:,0],
                                        (m,fix_epsGrid))
-                Cnow_u[m_id] = this_Cnow_u
                 
-                #Cnow_u_list.append(this_Cnow_u)
-                this_Cnow_e = mlinterp((ms_star[year_left,:,0,1],
+                Cnow_e[m_id] = mlinterp((ms_star[year_left,:,0,1],
                                         model.eps_grid),
                                        σs_star[year_left,:,:,1],
                                        (m,fix_epsGrid))
-                Cnow_e[m_id] = this_Cnow_e
-                #Cnow_e_list.append(this_Cnow_e)
                 
             
             ## more generally, depending on the nb of markov states 
