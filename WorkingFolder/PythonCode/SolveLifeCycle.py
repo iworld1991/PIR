@@ -773,7 +773,7 @@ def compare_2solutions(ms_stars,
 
 # ## Initialize the model
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -833,6 +833,7 @@ if __name__ == "__main__":
 
 # ### Consumption  the last period
 
+# + code_folding=[1]
 if __name__ == "__main__":
     lc_basic = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
@@ -862,6 +863,28 @@ if __name__ == "__main__":
     plt.title('Consumption in the last period')
     plt.plot(m_init[:,z_l,0],
              σ_init[:,z_l,0])
+
+# +
+## Solve the basic model 
+
+if __name__ == "__main__":
+
+
+    t_start = time()
+
+
+    ## terminal solution
+    m_init,σ_init = lc_basic.terminal_solution()
+
+    ## solve backward
+    ms_star_basic, σs_star_basic = solve_model_backward_iter(lc_basic,
+                                                 m_init,
+                                                 σ_init)
+
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))   
 
 # + pycharm={"name": "#%%\n"}
 if __name__ == "__main__":
@@ -897,7 +920,7 @@ if __name__ == "__main__":
 
 # ## Infinite horizon 
 
-# + code_folding=[]
+# + code_folding=[0, 5]
 if __name__ == "__main__":
 
 
@@ -1049,8 +1072,8 @@ if __name__ == "__main__":
     fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
-        age = lc.L-year
-        i = lc.L-age
+        age = lc_basic.L-year
+        i = lc_basic.L-age
         for k,sigma_psi in enumerate(sigma_psi_ls):
             m_plt,c_plt = ms_stars[k][i,:,1,1],σs_stars[k][i,:,1,1]
             axes[x].plot(m_plt,
@@ -1193,7 +1216,7 @@ if __name__ == "__main__":
 
 # ### State-dependent risks 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## transition matrix between low and high risk state
@@ -1209,7 +1232,7 @@ if __name__ == "__main__":
      
     sigma_psi_2mkv = np.sqrt(
         mean_preserving_spread(
-            mean = lc.sigma_psi**2,
+            mean = lc_basic.sigma_psi**2,
             probs = np.array([prob_l,prob_h]),
             l2mean_ratio = 0.1)
     )
@@ -1218,7 +1241,7 @@ if __name__ == "__main__":
     
     sigma_eps_2mkv = np.sqrt(
         mean_preserving_spread(
-            mean = lc.sigma_eps**2,
+            mean = lc_basic.sigma_eps**2,
             probs = np.array([prob_l,prob_h]),
             l2mean_ratio = 0.1)
     )
@@ -1233,8 +1256,8 @@ if __name__ == "__main__":
     av_sigma_eps = np.sqrt(np.dot(P[0,:],sigma_eps_2mkv**2))
     print('steady state is '+str(ss_P))
     print('transitory probability is '+str(P[0,:]))
-    print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(lc.sigma_psi))
-    print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(lc.sigma_eps))
+    print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(lc_basic.sigma_psi))
+    print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(lc_basic.sigma_eps))
 
 if __name__ == "__main__":
 
@@ -1304,8 +1327,8 @@ if __name__ == "__main__":
     fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
-        age = lc.L-year
-        i = lc.L-age
+        age = lc_basic.L-year
+        i = lc_basic.L-age
         z_l = 0
         z_h = 1
         m_plt_l,c_plt_l = ms_stars_sv[0][i,:,z_l,0],σs_stars_sv[0][i,:,z_l,0]
@@ -1343,14 +1366,14 @@ if __name__ == "__main__":
     fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
-        age = lc.L-year
-        i = lc.L-age
+        age = lc_basic.L-year
+        i = lc_basic.L-age
 
         z_l = 0
         z_h = 1
 
         ## baseline: no ma shock 
-        m_plt,c_plt = ms_star_baseline[i,:,z_l,0],σs_star_baseline[i,:,z_l,0]
+        m_plt,c_plt = ms_star_basic[i,:,z_l,0],σs_star_basic[i,:,z_l,0]
         axes[x].plot(m_plt,
                      c_plt,
                      label = 'objective',
@@ -1601,8 +1624,8 @@ if __name__ == "__main__":
     fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
-        age = lc.L-year
-        i = lc.L-age
+        age = lc_basic.L-year
+        i = lc_basic.L-age
         m_plt_l,c_plt_l = ms_stars_cr[0][i,:,z_l,0],\
                           σs_stars_cr[0][i,:,z_l,0]
         m_plt_h,c_plt_h = ms_stars_cr[0][i,:,z_h,0],\
@@ -1626,7 +1649,7 @@ if __name__ == "__main__":
 
 # ### Objective and subject state-dependent profile
 
-# + code_folding=[11]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## compare subjective and objective models 
@@ -1639,8 +1662,8 @@ if __name__ == "__main__":
     fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
-        age = lc.L-year
-        i = lc.L-age
+        age = lc_basic.L-year
+        i = lc_basic.L-age
         ## persistent
         m_plt_u, c_plt_u = ms_stars_uemkv[0][i,:,z_l,0],σs_stars_uemkv[0][i,:,z_l,0]
         m_plt_e, c_plt_e = ms_stars_uemkv[0][i,:,z_h,0],σs_stars_uemkv[0][i,:,z_h,0]
