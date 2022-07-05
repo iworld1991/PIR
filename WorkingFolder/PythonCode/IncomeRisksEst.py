@@ -30,10 +30,10 @@ plt.style.use('ggplot')
 
 from IncomeProcess import IMAProcess as ima
 
-# + {"code_folding": [0]}
+# + {"code_folding": []}
 ## debugging test of the data 
 
-t = 100
+t = 10
 ma_nosa = np.array([1])  ## ma coefficient without serial correlation
 p_sigmas = np.arange(t)  # sizes of the time-varying permanent volatility 
 p_sigmas_rw = np.ones(t) # a special case of time-invariant permanent volatility, random walk 
@@ -96,7 +96,7 @@ plt.plot(autovarb1,label='simulated')
 plt.plot(autovarb1_comp,label='computed')
 plt.legend(loc = 0)
 
-# + {"code_folding": []}
+# + {"code_folding": [0]}
 ## robustness check if the transitory risks is approximately equal to the assigned level
 
 sigma_t_est = np.array(np.sqrt(abs(autovarb1)))
