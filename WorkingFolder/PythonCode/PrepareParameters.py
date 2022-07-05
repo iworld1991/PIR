@@ -192,6 +192,9 @@ P_sub_q = np.array([[SCE_est_q.loc['$q$'],1-SCE_est_q.loc['$q$']],
                     [1-SCE_est_q.loc['$p$'],SCE_est_q.loc['$p$']]])
 P_sub_y = np.array([[SCE_est_y.loc['$q$'],1-SCE_est_y.loc['$q$']],
                     [1-SCE_est_y.loc['$p$'],SCE_est_y.loc['$p$']]])
+# -
+
+SCE_est_q
 
 # + code_folding=[]
 ## create a dictionary of parameters 
@@ -225,12 +228,16 @@ life_cycle_paras_q = {'ρ': 2.0,
                     'σ_ψ_2mkv':np.array([SCE_est_q.loc['$\tilde\sigma^l_\psi$'],
                                        SCE_est_q.loc['$\tilde\sigma^h_\psi$']]),
                     'σ_θ_2mkv':np.array([SCE_est_q.loc['$\tilde\sigma^l_\theta$'],
-                                       SCE_est_q.loc['$\tilde\sigma^h_\theta$']]),
-                    'mho_2mkv':np.array([SCE_est_q.loc['$\tilde \mho^l$'],
-                                         SCE_est_q.loc['$\tilde \mho^h$']]),
-                    'E_2mkv':np.array([SCE_est_q.loc['$\tilde E^l$'],
-                                      SCE_est_q.loc['$\tilde E^h$']])
+                                       SCE_est_q.loc['$\tilde\sigma^h_\theta$']])
                 }
+
+
+if '$\tilde \mho^l$' in SCE_est_q.index:
+
+    life_cycle_paras_q['mho_2mkv'] = np.array([SCE_est_q.loc['$\tilde \mho^l$'],
+                                             SCE_est_q.loc['$\tilde \mho^h$']])
+    life_cycle_paras_q['E_2mkv'] = np.array([SCE_est_q.loc['$\tilde E^l$'],
+                                          SCE_est_q.loc['$\tilde E^h$']])
 # -
 
 life_cycle_paras_q
@@ -267,12 +274,16 @@ life_cycle_paras_y = {'ρ': 2.0,
                     'σ_ψ_2mkv':np.array([SCE_est_y.loc['$\tilde\sigma^l_\psi$'],
                                        SCE_est_y.loc['$\tilde\sigma^h_\psi$']]),
                     'σ_θ_2mkv':np.array([SCE_est_y.loc['$\tilde\sigma^l_\theta$'],
-                                       SCE_est_y.loc['$\tilde\sigma^h_\theta$']]),
-                    'mho_2mkv':np.array([SCE_est_y.loc['$\tilde \mho^l$'],
-                                         SCE_est_y.loc['$\tilde \mho^h$']]),
-                    'E_2mkv':np.array([SCE_est_y.loc['$\tilde E^l$'],
-                                      SCE_est_y.loc['$\tilde E^h$']])
+                                       SCE_est_y.loc['$\tilde\sigma^h_\theta$']])
                 }
+
+
+if '$\tilde \mho^l$' in SCE_est_y.index:
+
+    life_cycle_paras_y['mho_2mkv'] = np.array([SCE_est_y.loc['$\tilde \mho^l$'],
+                                             SCE_est_y.loc['$\tilde \mho^h$']])
+    life_cycle_paras_y['E_2mkv'] = np.array([SCE_est_y.loc['$\tilde E^l$'],
+                                          SCE_est_y.loc['$\tilde E^h$']])
 # -
 
 life_cycle_paras_y
@@ -296,10 +307,13 @@ life_cycle_paras_y_copy = copy(life_cycle_paras_y)
 
 # +
 del life_cycle_paras_y_copy['G']  
-del life_cycle_paras_y_copy['σ_ψ_2mkv']  
-del life_cycle_paras_y_copy['σ_θ_2mkv']  
-del life_cycle_paras_y_copy['mho_2mkv']  
-del life_cycle_paras_y_copy['E_2mkv']  
+del life_cycle_paras_y_copy['σ_ψ_2mkv']
+del life_cycle_paras_y_copy['σ_θ_2mkv']
+
+if 'mho_2mkv' in life_cycle_paras_y_copy.keys():
+    del life_cycle_paras_y_copy['mho_2mkv']  
+if 'E_2mkv' in life_cycle_paras_y_copy.keys():
+    del life_cycle_paras_y_copy['E_2mkv']  
 del life_cycle_paras_y_copy['P']  
 del life_cycle_paras_y_copy['z_val']  
 del life_cycle_paras_y_copy['U']  
