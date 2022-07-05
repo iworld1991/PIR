@@ -459,3 +459,137 @@ def SS2tax(SS, ## social security /pension replacement ratio
     ## social security tax rate on labor income of employed 
     
     return λ_SS
+
+
+# + code_folding=[2, 96]
+@njit
+def jump_to_grid(m_vals,
+                 perm_vals, 
+                 probs, 
+                 dist_mGrid, 
+                 dist_pGrid):
+
+    '''
+    Distributes values onto a predefined grid, maintaining the means. m_vals and perm_vals are realizations of market resources and permanent income while 
+    dist_mGrid and dist_pGrid are the predefined grids of market resources and permanent income, respectively. That is, m_vals and perm_vals do not necesarily lie on their 
+    respective grids. Returns probabilities of each gridpoint on the combined grid of market resources and permanent income.
+
+
+    Parameters
+    ----------
+    m_vals: np.array
+            Market resource values 
+
+    perm_vals: np.array
+            Permanent income values 
+
+    probs: np.array
+            Shock probabilities associated with combinations of m_vals and perm_vals. 
+            Can be thought of as the probability mass function  of (m_vals, perm_vals).
+
+    dist_mGrid : np.array
+            Grid over normalized market resources
+
+    dist_pGrid : np.array
+            Grid over permanent income 
+
+    Returns
+    -------
+    probGrid.flatten(): np.array
+             Probabilities of each gridpoint on the combined grid of market resources and permanent income
+    '''
+
+    probGrid = np.zeros((len(dist_mGrid),len(dist_pGrid)))
+    mIndex = np.digitize(m_vals,dist_mGrid) - 1 # Array indicating in which bin each values of m_vals lies in relative to dist_mGrid. Bins lie between between point of Dist_mGrid. 
+    #For instance, if mval lies between dist_mGrid[4] and dist_mGrid[5] it is in bin 4 (would be 5 if 1 was not subtracted in the previous line). 
+    mIndex[m_vals <= dist_mGrid[0]] = -1 # if the value is less than the smallest value on dist_mGrid assign it an index of -1
+    mIndex[m_vals >= dist_mGrid[-1]] = len(dist_mGrid)-1 # if value if greater than largest value on dist_mGrid assign it an index of the length of the grid minus 1
+
+    #the following three lines hold the same intuition as above
+    pIndex = np.digitize(perm_vals,dist_pGrid) - 1
+    pIndex[perm_vals <= dist_pGrid[0]] = -1
+    pIndex[perm_vals >= dist_pGrid[-1]] = len(dist_pGrid)-1
+
+    for i in range(len(m_vals)):
+        if mIndex[i]==-1: # if mval is below smallest gridpoint, then assign it a weight of 1.0 for lower weight. 
+            mlowerIndex = 0
+            mupperIndex = 0
+            mlowerWeight = 1.0
+            mupperWeight = 0.0
+        elif mIndex[i]==len(dist_mGrid)-1: # if mval is greater than maximum gridpoint, then assign the following weights
+            mlowerIndex = -1
+            mupperIndex = -1
+            mlowerWeight = 1.0
+            mupperWeight = 0.0
+        else: # Standard case where mval does not lie past any extremes
+        #identify which two points on the grid the mval is inbetween
+            mlowerIndex = mIndex[i] 
+            mupperIndex = mIndex[i]+1
+        #Assign weight to the indices that bound the m_vals point. Intuitively, a mval perfectly between two points on the mgrid will assign a weight of .5 to the gridpoint above and below
+            mlowerWeight = (dist_mGrid[mupperIndex]-m_vals[i])/(dist_mGrid[mupperIndex]-dist_mGrid[mlowerIndex]) #Metric to determine weight of gridpoint/index below. Intuitively, mvals that are close to gridpoint/index above are assigned a smaller mlowerweight.
+            mupperWeight = 1.0 - mlowerWeight # weight of gridpoint/ index above
+
+        #Same logic as above except the weights here concern the permanent income grid
+        if pIndex[i]==-1: 
+            plowerIndex = 0
+            pupperIndex = 0
+            plowerWeight = 1.0
+            pupperWeight = 0.0
+        elif pIndex[i]==len(dist_pGrid)-1:
+            plowerIndex = -1
+            pupperIndex = -1
+            plowerWeight = 1.0
+            pupperWeight = 0.0
+        else:
+            plowerIndex = pIndex[i]
+            pupperIndex = pIndex[i]+1
+            plowerWeight = (dist_pGrid[pupperIndex]-perm_vals[i])/(dist_pGrid[pupperIndex]-dist_pGrid[plowerIndex])
+            pupperWeight = 1.0 - plowerWeight
+
+        # Compute probabilities of each gridpoint on the combined market resources and permanent income grid by looping through each point on the combined market resources and permanent income grid, 
+        # assigning probabilities to each gridpoint based off the probabilities of the surrounding mvals and pvals and their respective weights placed on the gridpoint.
+        # Note* probs[i] is the probability of mval AND pval occurring
+        probGrid[mlowerIndex][plowerIndex] += probs[i]*mlowerWeight*plowerWeight # probability of gridpoint below mval and pval
+        probGrid[mlowerIndex][pupperIndex] += probs[i]*mlowerWeight*pupperWeight # probability of gridpoint below mval and above pval
+        probGrid[mupperIndex][plowerIndex] += probs[i]*mupperWeight*plowerWeight # probability of gridpoint above mval and below pval
+        probGrid[mupperIndex][pupperIndex] += probs[i]*mupperWeight*pupperWeight # probability of gridpoint above mval and above pval
+
+    return probGrid.flatten()
+
+@njit
+def jump_to_grid_fast(vals,
+                      probs,
+                      Grid ):
+    """
+    Distributes values onto a predefined grid, maintaining the means.
+    """
+
+    probGrid = np.zeros(len(Grid))
+    mIndex = np.digitize(vals,Grid) - 1
+    # return the indices of the bins to which each value in input array belongs.
+    mIndex[vals <= Grid[0]] = -1
+    mIndex[vals >= Grid[-1]] = len(Grid)-1
+
+    for i in range(len(vals)):
+        if mIndex[i]==-1:
+            mlowerIndex = 0
+            mupperIndex = 0
+            mlowerWeight = 1.0
+            mupperWeight = 0.0
+        elif mIndex[i]==len(Grid)-1:
+            mlowerIndex = -1
+            mupperIndex = -1
+            mlowerWeight = 1.0
+            mupperWeight = 0.0
+        else:
+            mlowerIndex = mIndex[i]
+            mupperIndex = mIndex[i]+1
+            mlowerWeight = (Grid[mupperIndex]-vals[i])/(Grid[mupperIndex] - Grid[mlowerIndex])
+            mupperWeight = 1.0 - mlowerWeight
+
+        probGrid[mlowerIndex] += probs[i]*mlowerWeight
+        probGrid[mupperIndex] += probs[i]*mupperWeight
+
+    return probGrid.flatten()
+
+
