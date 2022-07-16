@@ -463,7 +463,18 @@ def SS2tax(SS, ## social security /pension replacement ratio
 
 # -
 
-def gini(value_share):
+# ## Gini coefficient 
+#
+# \begin{equation}
+# \text{Gini} = 1- 2G\int^1_0 L(x)dx  
+# \end{equation}
+#
+# where $L(x)$ is the lorenz function for x between $0$ to $1$.
+#
+
+# + code_folding=[]
+def gini(agents_share,
+         value_share):
     """
     input
     =====
@@ -475,13 +486,12 @@ def gini(value_share):
     gini coefficients = B/(A+B) in lorenz curve where A+B = 1/2
     
     """
-    A = np.sum(value_share)*1/len(value_share)
-    B = 1/2-A
-    gini = B/0.5
+    agents_share_grid = agents_share[1:]-agents_share[:-1]
+    gini = 1- 2*np.dot(value_share[1:],agents_share_grid)
     return gini 
 
 
-# + code_folding=[2, 96]
+# + code_folding=[1, 95]
 @njit
 def jump_to_grid(m_vals,
                  perm_vals, 
