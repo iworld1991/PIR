@@ -15,7 +15,7 @@
 # ---
 
 # ## A life-cycle consumption  model under objective/subjective risk perceptions
-#  - this notebook undertakes additional tests the source code
+#  - this notebook undertakes various sanity checks for the source code, the SolveLifeCycle class.
 # - author: Tao Wang
 # - date: March 2022
 # - this is a companion notebook to the paper "Perceived income risks"
@@ -28,15 +28,28 @@ import matplotlib.pyplot as plt
 from time import time
 
 # + code_folding=[]
-## figure plotting configurations
-
-mp.rc('xtick', labelsize=11) 
-mp.rc('ytick', labelsize=11) 
-
-mp.rc('legend',fontsize=11)
-plt.rc('font',size=11) 
+## plot configuration 
 
 plt.style.use('seaborn')
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['axes.labelweight'] = 'bold'
+
+## Set the 
+plt.rc('font', size=25)
+# Set the axes title font size
+plt.rc('axes', titlesize=20)
+# Set the axes labels font size
+plt.rc('axes', labelsize=20)
+# Set the font size for x tick labels
+plt.rc('xtick', labelsize=20)
+# Set the font size for y tick labels
+plt.rc('ytick', labelsize=20)
+# Set the legend font size
+plt.rc('legend', fontsize=20)
+# Set the font size of the figure title
+plt.rc('figure', titlesize=20)
 
 
 # -
@@ -47,7 +60,7 @@ from SolveLifeCycle import LifeCycle, solve_model_backward_iter,compare_2solutio
 
 # ## Initialize the model
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## parameters 
@@ -70,10 +83,6 @@ if __name__ == "__main__":
 
     T = 40
     L = 60
-    TGPos = int(L/3) ## one third of life sees income growth 
-    GPos = 1.01*np.ones(TGPos)
-    GNeg= 0.99*np.ones(L-TGPos)
-    #G = np.concatenate([GPos,GNeg])
     G = np.ones(L)
     YPath = np.cumprod(G)
 
@@ -92,7 +101,7 @@ if __name__ == "__main__":
     ## wether to have zero borrowing constraint
     borrowing_cstr = True
 
-# + code_folding=[1]
+# + code_folding=[]
 ## a deterministic income profile 
 if __name__ == "__main__":
 
@@ -106,7 +115,7 @@ if __name__ == "__main__":
 
 # ### Consumption  the last period 
 
-# + code_folding=[]
+# + code_folding=[0, 1]
 if __name__ == "__main__":
     lc_baseline = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
@@ -139,10 +148,8 @@ if __name__ == "__main__":
     plt.title('Consumption in the last period')
     plt.plot(m_init[:,0,0],
              σ_init[:,0,0])
-# -
 
-# ## subjective (low risk) versus objective (high risk)
-
+# + code_folding=[]
 if __name__ == "__main__":
 
     from copy import copy
@@ -150,6 +157,101 @@ if __name__ == "__main__":
     ## make a copy of the imported parameters 
     lc_paras_y = copy(lc_paras_Y)
     lc_paras = lc_paras_y
+    print(lc_paras)
+# -
+
+# ## A special case of no retirement 
+#
+# - the consumption function should be non-linear throughout life cycle because of income risks 
+
+if __name__ == "__main__":
+    lc_no_ret = LifeCycle(
+        ## primitives
+                   ρ = lc_paras['ρ'],     ## relative risk aversion  
+                   β = lc_paras['β'],     ## discount factor
+                   borrowing_cstr = borrowing_cstr,
+        
+        ## prices 
+                   R = lc_paras['R'],           ## interest factor
+                   W = lc_paras['W'],           ## Wage rate
+        
+        ## life cycle 
+        ##############################
+                   T = lc_paras['L'],   ### let the retirement age be equal to life length!!!
+        ################################
+                   L = lc_paras['L'],
+                   G = lc_paras['G'],
+                   LivPrb = lc_paras['LivPrb'],       ## living probability 
+        
+        ## income risks 
+                   x = 0.0,
+                   b_y= 0.0,
+                   sigma_psi = lc_paras['σ_ψ'],
+                   sigma_eps = lc_paras['σ_θ'],
+                   #ue_markov = True,
+                   P = lc_paras['P'],
+                   U = lc_paras['U'],
+                   z_val = lc_paras['z_val'], ## markov state from low to high 
+                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+        
+        ## initial conditions 
+                    sigma_p_init = lc_paras['σ_ψ_init'],
+                    init_b = lc_paras['init_b'],
+
+        ## policy 
+                   unemp_insurance = lc_paras['unemp_insurance'],
+                   pension = lc_paras['pension'], ## pension
+                   λ = lc_paras['λ'],  ## tax rate
+                   λ_SS = lc_paras['λ_SS'], ## social tax rate
+                   transfer = lc_paras['transfer'],  ## transfer 
+                   bequest_ratio = lc_paras['bequest_ratio'],
+         ## solutions 
+                   grid_max = 10
+                   )
+
+if __name__ == "__main__":
+    
+    t_start = time()
+    
+   
+    ## terminal solution
+    m_init,σ_init = lc_no_ret.terminal_solution()
+
+    ## solve backward
+    ms_star_no_ret, σs_star_no_ret = solve_model_backward_iter(lc_no_ret,
+                                                                 m_init,
+                                                                 σ_init)
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
+
+if __name__ == "__main__":
+
+    ## plot c func at different age /asset grid
+    years_left = [1,13,20,21]
+
+    n_sub = len(years_left)
+
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
+
+    for x,year in enumerate(years_left):
+        age = lc_baseline.L-year
+        i = lc_baseline.L-age
+        m_plt,c_plt = ms_star_no_ret[i,:,0,0],σs_star_no_ret[i,:,0,0]
+        axes[x].plot(m_plt,
+                     c_plt,
+                     label = 'No retirement',
+                     lw = 3
+                    )
+        axes[x].legend()
+        axes[x].set_xlim(0.0,np.max(m_grid))
+        axes[x].set_xlabel('asset')
+        axes[0].set_ylabel('c')
+        axes[x].set_title(r'$age={}$'.format(age))
+
+# ## subjective (low risk) versus objective (high risk)
 
 # + code_folding=[]
 if __name__ == "__main__":
@@ -158,7 +260,6 @@ if __name__ == "__main__":
                    ρ = lc_paras['ρ'],     ## relative risk aversion  
                    β = lc_paras['β'],     ## discount factor
                    borrowing_cstr = borrowing_cstr,
-                   adjust_prob = 1.0,
         
         ## prices 
                    R = lc_paras['R'],           ## interest factor
@@ -194,7 +295,6 @@ if __name__ == "__main__":
                    transfer = lc_paras['transfer'],  ## transfer 
                    bequest_ratio = lc_paras['bequest_ratio'],
          ## solutions 
-                   shock_draw_size = 10.0,
                    grid_max = 10
                    )
     lc_sub = LifeCycle(
@@ -202,7 +302,6 @@ if __name__ == "__main__":
                    ρ = lc_paras['ρ'],     ## relative risk aversion  
                    β = lc_paras['β'],     ## discount factor
                    borrowing_cstr = borrowing_cstr,
-                   adjust_prob = 1.0,
         ## prices 
                    R = lc_paras['R'],           ## interest factor
                    W = lc_paras['W'],            ## Wage rate
@@ -239,7 +338,6 @@ if __name__ == "__main__":
                    transfer = lc_paras['transfer'],  ## transfer 
                    bequest_ratio = lc_paras['bequest_ratio'],
         ## solutions 
-                  shock_draw_size =  10.0,
                   grid_max = 10
                    )
     
@@ -286,11 +384,11 @@ if __name__ == "__main__":
 
     m_grid = np.linspace(0.0,10.0,200)
     ## plot c func at different age /asset grid
-    years_left = [1,21,30,59]
+    years_left = [1,20,21,59]
 
     n_sub = len(years_left)
 
-    fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
         age = lc_baseline.L-year
@@ -360,11 +458,11 @@ if __name__ == "__main__":
 
     m_grid = np.linspace(0.0,10.0,200)
     ## plot c func at different age /asset grid
-    years_left = [0,21,30,40]
+    years_left = [0,20,21,40]
 
     n_sub = len(years_left)
 
-    fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
         age = lc_baseline.L-year
@@ -468,11 +566,11 @@ if __name__ == "__main__":
 
 
     ## plot c func at different age /asset grid
-    years_left = [0,21,30,40]
+    years_left = [1,20,21,40]
 
     n_sub = len(years_left)
 
-    fig,axes = plt.subplots(1,n_sub,figsize=(4*n_sub,4))
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
 
     for x,year in enumerate(years_left):
         age = lc_baseline.L-year
