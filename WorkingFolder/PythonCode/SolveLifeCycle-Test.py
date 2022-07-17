@@ -14,7 +14,7 @@
 #     name: python3
 # ---
 
-# ## A life-cycle consumption  model under objective/subjective risk perceptions
+# ## Test of the life-cycle consumption model solutions
 #  - this notebook undertakes various sanity checks for the source code, the SolveLifeCycle class.
 # - author: Tao Wang
 # - date: March 2022
@@ -58,7 +58,7 @@ plt.rc('figure', titlesize=20)
 
 from SolveLifeCycle import LifeCycle, solve_model_backward_iter,compare_2solutions
 
-# ## Initialize the model
+# ## Parameters
 
 # + code_folding=[]
 if __name__ == "__main__":
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
 # ### Consumption  the last period 
 
-# + code_folding=[0, 1]
+# + code_folding=[]
 if __name__ == "__main__":
     lc_baseline = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
@@ -164,6 +164,7 @@ if __name__ == "__main__":
 #
 # - the consumption function should be non-linear throughout life cycle because of income risks 
 
+# + code_folding=[0]
 if __name__ == "__main__":
     lc_no_ret = LifeCycle(
         ## primitives
@@ -185,8 +186,371 @@ if __name__ == "__main__":
         
         ## income risks 
                    x = 0.0,
+                   b_y = 0.0,
+                   sigma_psi = lc_paras['σ_ψ'],
+                   sigma_eps = lc_paras['σ_θ'],
+                   #ue_markov = True,
+                   P = lc_paras['P'],
+                   U = lc_paras['U'],
+                   z_val = lc_paras['z_val'], ## markov state from low to high 
+        
+        ## initial conditions 
+                    #sigma_p_init = lc_paras['σ_ψ_init'],
+                    #init_b = lc_paras['init_b'],
+
+        ## policy 
+                   unemp_insurance = lc_paras['unemp_insurance'],
+                   pension = lc_paras['pension'], ## pension
+                   λ = lc_paras['λ'],  ## tax rate
+                   λ_SS = lc_paras['λ_SS'], ## social tax rate
+                   transfer = lc_paras['transfer'],  ## transfer 
+                   bequest_ratio = lc_paras['bequest_ratio'],
+         ## solutions 
+                   #grid_max = 10
+                   )
+
+# + code_folding=[0]
+if __name__ == "__main__":
+    
+    t_start = time()
+    
+   
+    ## terminal solution
+    m_init,σ_init = lc_no_ret.terminal_solution()
+
+    ## solve backward
+    ms_star_no_ret, σs_star_no_ret = solve_model_backward_iter(lc_no_ret,
+                                                                 m_init,
+                                                                 σ_init)
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
+
+# + code_folding=[]
+if __name__ == "__main__":
+
+    ## plot c func at different age /asset grid
+    years_left = [1,15,16,25]
+
+    n_sub = len(years_left)
+
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
+
+    for x,year in enumerate(years_left):
+        age = lc_no_ret.L-year
+        i = lc_no_ret.L-age
+        m_plt,c_plt = ms_star_no_ret[i,:,0,0],σs_star_no_ret[i,:,0,0]
+        axes[x].plot(m_plt,
+                     c_plt,
+                     label = 'No retirement',
+                     lw = 3
+                    )
+        axes[x].legend()
+        axes[x].set_xlabel('asset')
+        axes[0].set_ylabel('c')
+        axes[x].set_title(r'$age={}$'.format(age))
+# -
+
+# ## with extremely large grid 
+#
+# - the consumption function should be non-linear throughout life cycle because of income risks 
+
+# + code_folding=[]
+if __name__ == "__main__":
+    lc_a_max = LifeCycle(
+        ## primitives
+                   ρ = lc_paras['ρ'],     ## relative risk aversion  
+                   β = lc_paras['β'],     ## discount factor
+                   borrowing_cstr = borrowing_cstr,
+        
+        ## prices 
+                   R = lc_paras['R'],           ## interest factor
+                   W = lc_paras['W'],           ## Wage rate
+        
+        ## life cycle 
+        ##############################
+                   T = lc_paras['L'],   ### let the retirement age be equal to life length!!!
+        ################################
+                   L = lc_paras['L'],
+                   G = lc_paras['G'],
+                   LivPrb = lc_paras['LivPrb'],       ## living probability 
+        
+        ## income risks 
+                   x = 0.0,
+                   b_y = 0.0,
+                   sigma_psi = lc_paras['σ_ψ'],
+                   sigma_eps = lc_paras['σ_θ'],
+                   #ue_markov = True,
+                   P = lc_paras['P'],
+                   U = lc_paras['U'],
+                   z_val = lc_paras['z_val'], ## markov state from low to high 
+        
+        ## initial conditions 
+                    #sigma_p_init = lc_paras['σ_ψ_init'],
+                    #init_b = lc_paras['init_b'],
+
+        ## policy 
+                   unemp_insurance = lc_paras['unemp_insurance'],
+                   pension = lc_paras['pension'], ## pension
+                   λ = lc_paras['λ'],  ## tax rate
+                   λ_SS = lc_paras['λ_SS'], ## social tax rate
+                   transfer = lc_paras['transfer'],  ## transfer 
+                   bequest_ratio = lc_paras['bequest_ratio'],
+         ## solutions 
+                   grid_max = 20 ###!!!
+                   )
+
+# + code_folding=[]
+if __name__ == "__main__":
+    
+    t_start = time()
+    
+    ## terminal solution
+    m_init,σ_init = lc_a_max.terminal_solution()
+
+    ## solve backward
+    ms_star_a_max, σs_star_a_max = solve_model_backward_iter(lc_a_max,
+                                                             m_init,
+                                                             σ_init)
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
+
+# + code_folding=[]
+if __name__ == "__main__":
+
+    ## plot c func at different age /asset grid
+    years_left = [1,12,15,20]
+
+    n_sub = len(years_left)
+
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
+
+    for x,year in enumerate(years_left):
+        age = lc_a_max.L-year
+        i = lc_no_ret.L-age
+        m_plt,c_plt = ms_star_a_max[i,:,0,0],σs_star_a_max[i,:,0,0]
+        axes[x].plot(m_plt,
+                     c_plt,
+                     label = 'No retirement',
+                     lw = 3
+                    )
+        axes[x].legend()
+        axes[x].set_xlabel('asset')
+        axes[0].set_ylabel('c')
+        axes[x].set_title(r'$age={}$'.format(age))
+# -
+
+# ## A special case of different periods
+#
+
+# + code_folding=[]
+if __name__ == "__main__":
+    lc_2t = LifeCycle(
+        ## primitives
+                   ρ = lc_paras['ρ'],     ## relative risk aversion  
+                   β = lc_paras['β'],     ## discount factor
+                   borrowing_cstr = borrowing_cstr,
+        
+        ## prices 
+                   R = lc_paras['R'],           ## interest factor
+                   W = lc_paras['W'],           ## Wage rate
+        
+        ## life cycle 
+        ##############################
+                   T = 25,   ### let the retirement age be equal to life length!!!
+        ################################
+                   L = 25,
+                   G = lc_paras['G'],
+                   LivPrb = lc_paras['LivPrb'],       ## living probability 
+        
+        ## income risks 
+                   x = 0.0,
+                   b_y = 0.0,
+                   sigma_psi = lc_paras['σ_ψ'],
+                   sigma_eps = lc_paras['σ_θ'],
+                   #ue_markov = True,
+                   P = lc_paras['P'],
+                   U = lc_paras['U'],
+                   z_val = lc_paras['z_val'], ## markov state from low to high 
+        
+        ## initial conditions 
+                    #sigma_p_init = lc_paras['σ_ψ_init'],
+                    #init_b = lc_paras['init_b'],
+
+        ## policy 
+                   unemp_insurance = lc_paras['unemp_insurance'],
+                   pension = lc_paras['pension'], ## pension
+                   λ = lc_paras['λ'],  ## tax rate
+                   λ_SS = lc_paras['λ_SS'], ## social tax rate
+                   transfer = lc_paras['transfer'],  ## transfer 
+                   bequest_ratio = lc_paras['bequest_ratio'],
+         ## solutions 
+                   #grid_max = 10
+                   )
+
+# + code_folding=[]
+if __name__ == "__main__":
+    
+    t_start = time()
+    
+   
+    ## terminal solution
+    m_init,σ_init = lc_2t.terminal_solution()
+
+    ## solve backward
+    ms_star_2t, σs_star_2t = solve_model_backward_iter(lc_2t,
+                                                       m_init,
+                                                       σ_init)
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
+
+# + code_folding=[]
+if __name__ == "__main__":
+
+    ## plot c func at different age /asset grid
+    years_left = [0,14,24]
+
+    n_sub = len(years_left)
+
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
+
+    for x,year in enumerate(years_left):
+        age = lc_2t.L-year
+        i = lc_2t.L-age
+        m_plt,c_plt = ms_star_2t[i,:,0,0],σs_star_2t[i,:,0,0]
+        axes[x].plot(m_plt,
+                     c_plt,
+                     label = 'No retirement',
+                     lw = 3
+                    )
+        axes[x].legend()
+        axes[x].set_xlabel('asset')
+        axes[0].set_ylabel('c')
+        axes[x].set_title(r'$age={}$'.format(age))
+# -
+
+# ## No transitory risks 
+
+# + code_folding=[]
+if __name__ == "__main__":
+    lc_no_trisk = LifeCycle(
+        ## primitives
+                   ρ = lc_paras['ρ'],     ## relative risk aversion  
+                   β = lc_paras['β'],     ## discount factor
+                   borrowing_cstr = borrowing_cstr,
+        
+        ## prices 
+                   R = lc_paras['R'],           ## interest factor
+                   W = lc_paras['W'],           ## Wage rate
+        
+        ## life cycle 
+        ##############################
+                   T = lc_paras['L'],   ### let the retirement age be equal to life length!!!
+        ################################
+                   L = lc_paras['L'],
+                   G = lc_paras['G'],
+                   LivPrb = lc_paras['LivPrb'],       ## living probability 
+        
+        ## income risks 
+                   x = 0.0,
                    b_y= 0.0,
                    sigma_psi = lc_paras['σ_ψ'],
+                   sigma_eps = 0.0,   ###!!!
+                   #ue_markov = True,
+                   P = lc_paras['P'],
+                   U = lc_paras['U'],
+                   z_val = lc_paras['z_val'], ## markov state from low to high 
+                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+        
+        ## initial conditions 
+                    sigma_p_init = lc_paras['σ_ψ_init'],
+                    init_b = lc_paras['init_b'],
+
+        ## policy 
+                   unemp_insurance = lc_paras['unemp_insurance'],
+                   pension = lc_paras['pension'], ## pension
+                   λ = lc_paras['λ'],  ## tax rate
+                   λ_SS = lc_paras['λ_SS'], ## social tax rate
+                   transfer = lc_paras['transfer'],  ## transfer 
+                   bequest_ratio = lc_paras['bequest_ratio'],
+         ## solutions 
+                   #grid_max = 10
+                   )
+
+# + code_folding=[0]
+if __name__ == "__main__":
+    
+    t_start = time()
+    
+   
+    ## terminal solution
+    m_init,σ_init = lc_no_trisk.terminal_solution()
+
+    ## solve backward
+    ms_star_no_trisk, σs_star_no_trisk = solve_model_backward_iter(lc_no_trisk,
+                                                                 m_init,
+                                                                 σ_init)
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
+# -
+
+if __name__ == "__main__":
+
+    ## plot c func at different age /asset grid
+    years_left = [1,15,16,19]
+
+    n_sub = len(years_left)
+
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
+
+    for x,year in enumerate(years_left):
+        age = lc_no_trisk.L-year
+        i = lc_no_trisk.L-age
+        m_plt,c_plt = ms_star_no_trisk[i,:,0,0],σs_star_no_trisk[i,:,0,0]
+        axes[x].plot(m_plt,
+                     c_plt,
+                     label = 'No t risks',
+                     lw = 3
+                    )
+        axes[x].legend()
+        axes[x].set_xlabel('asset')
+        axes[0].set_ylabel('c')
+        axes[x].set_title(r'$age={}$'.format(age))
+
+# ## No permanent risks 
+
+# + code_folding=[]
+if __name__ == "__main__":
+    lc_no_prisk = LifeCycle(
+        ## primitives
+                   ρ = lc_paras['ρ'],     ## relative risk aversion  
+                   β = lc_paras['β'],     ## discount factor
+                   borrowing_cstr = borrowing_cstr,
+        
+        ## prices 
+                   R = lc_paras['R'],           ## interest factor
+                   W = lc_paras['W'],           ## Wage rate
+        
+        ## life cycle 
+        ##############################
+                   T = lc_paras['L'],   ### let the retirement age be equal to life length!!!
+        ################################
+                   L = lc_paras['L'],
+                   G = lc_paras['G'],
+                   LivPrb = lc_paras['LivPrb'],       ## living probability 
+        
+        ## income risks 
+                   x = 0.0,
+                   b_y= 0.0,
+                   sigma_psi = 0.01*lc_paras['σ_ψ'],   ###!!!
                    sigma_eps = lc_paras['σ_θ'],
                    #ue_markov = True,
                    P = lc_paras['P'],
@@ -207,30 +571,31 @@ if __name__ == "__main__":
                    transfer = lc_paras['transfer'],  ## transfer 
                    bequest_ratio = lc_paras['bequest_ratio'],
          ## solutions 
-                   grid_max = 10
+                   #grid_max = 10
                    )
 
+# + code_folding=[]
 if __name__ == "__main__":
     
     t_start = time()
     
-   
     ## terminal solution
-    m_init,σ_init = lc_no_ret.terminal_solution()
+    m_init,σ_init = lc_no_prisk.terminal_solution()
 
     ## solve backward
-    ms_star_no_ret, σs_star_no_ret = solve_model_backward_iter(lc_no_ret,
+    ms_star_no_prisk, σs_star_no_prisk = solve_model_backward_iter(lc_no_prisk,
                                                                  m_init,
                                                                  σ_init)
 
     t_finish = time()
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
+# -
 
 if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
-    years_left = [1,13,20,21]
+    years_left = [1,19,20,30]
 
     n_sub = len(years_left)
 
@@ -239,14 +604,13 @@ if __name__ == "__main__":
     for x,year in enumerate(years_left):
         age = lc_baseline.L-year
         i = lc_baseline.L-age
-        m_plt,c_plt = ms_star_no_ret[i,:,0,0],σs_star_no_ret[i,:,0,0]
+        m_plt,c_plt = ms_star_no_prisk[i,:,0,0],σs_star_no_prisk[i,:,0,0]
         axes[x].plot(m_plt,
                      c_plt,
-                     label = 'No retirement',
+                     label = 'No p risks',
                      lw = 3
                     )
         axes[x].legend()
-        axes[x].set_xlim(0.0,np.max(m_grid))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -266,7 +630,7 @@ if __name__ == "__main__":
                    W = lc_paras['W'],           ## Wage rate
         
         ## life cycle 
-                   T = lc_paras['T'],
+                   T = lc_paras['L'],
                    L = lc_paras['L'],
                    G = lc_paras['G'],
                    LivPrb = lc_paras['LivPrb'],       ## living probability 
@@ -306,7 +670,7 @@ if __name__ == "__main__":
                    R = lc_paras['R'],           ## interest factor
                    W = lc_paras['W'],            ## Wage rate
         ## life cycle 
-                   T = lc_paras['T'],
+                   T = lc_paras['L'], ###!!!
                    L = lc_paras['L'],
                    G = lc_paras['G'],
                    LivPrb = lc_paras['LivPrb'],       ## living probability 
@@ -384,7 +748,7 @@ if __name__ == "__main__":
 
     m_grid = np.linspace(0.0,10.0,200)
     ## plot c func at different age /asset grid
-    years_left = [1,20,21,59]
+    years_left = [1,19,20,21]
 
     n_sub = len(years_left)
 
@@ -409,7 +773,9 @@ if __name__ == "__main__":
 
 # ## low versus high risks 
 
-# + code_folding=[0, 10]
+sigma_eps_ls
+
+# + code_folding=[]
 if __name__ == "__main__":
 
     t_start = time()
@@ -421,6 +787,7 @@ if __name__ == "__main__":
     σs_stars = []
     
     for i,sigma_psi in enumerate(sigma_psi_ls):
+        lc_baseline.T = L
         lc_baseline.sigma_psi = sigma_psi
         lc_baseline.sigma_eps = sigma_eps_ls[i]
         ### this line is very important!!!!
@@ -470,14 +837,13 @@ if __name__ == "__main__":
         model_names = ['low PR','high PR']
         for k,model_name in enumerate(model_names):
             m_plt,c_plt = ms_stars[k][i,:,0,0],σs_stars[k][i,:,0,0]
-            c_func = lambda m: interp(m_plt,c_plt,m)
-            axes[x].plot(m_grid,
-                         c_func(m_grid),
+            #c_func = lambda m: interp(m_plt,c_plt,m)
+            axes[x].plot(m_plt,
+                         c_plt,
                          label = model_name,
                          lw=3
                         )
         axes[x].legend()
-        axes[x].set_xlim(0.0,np.max(m_grid))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
