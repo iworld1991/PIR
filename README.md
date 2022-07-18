@@ -54,7 +54,6 @@
 
 
 1. [Utility](Utility.ipynb)
-   - used for solving the [life-cycle model](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
    
 2. [Latex table manipulation](./WorkingFolder/PythonCode/TexTablesMover.ipynb)
 <!-- #endregion -->
