@@ -36,11 +36,11 @@
   - stored as a dictionary, to be directly imported into model notebooks
 
 
-1. [Life-cycle model](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb) 
+1. [Life-cycle model](./WorkingFolder/PythonCode/SolveLifeCycleMAShock.ipynb) 
    - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycle-ComparisonHARK.ipynb)
    - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
 
-2. [Aggregate dynamics and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
+2. [Aggregate dynamics and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE-MAShock.ipynb) (no aggregate risks)
 
    - a possible extension to allow aggregate risks (Krusell-Smith & life-cycle economy)
 
