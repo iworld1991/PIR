@@ -39,21 +39,29 @@ from statsmodels.graphics import tsaplots as tsplt
 plt.style.use('ggplot')
 plt.rcParams.update({'figure.max_open_warning': 0})
 #from IPython.display import set_matplotlib_formats
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['font.size'] = 15
+plt.rcParams['axes.labelsize'] = 15
+plt.rcParams['axes.labelweight'] = 'bold'
+
+plt.rcParams['xtick.labelsize'] = 15
+plt.rcParams['ytick.labelsize'] = 15
+plt.rcParams['legend.fontsize'] = 15
+plt.rcParams['figure.titlesize'] = 15
+
 #set_matplotlib_formats('pdf','png','jpg')
 #plt.rcParams['savefig.dpi'] = 75
-
 #plt.rcParams['figure.autolayout'] = False
 #plt.rcParams['figure.figsize'] = 10, 6
 #plt.rcParams['axes.labelsize'] = 18
 #plt.rcParams['axes.titlesize'] = 20
-#plt.rcParams['font.size'] = 16
 #plt.rcParams['lines.linewidth'] = 2.0
 #plt.rcParams['lines.markersize'] = 8
 #plt.rcParams['legend.fontsize'] = 14
 
 #plt.rcParams['text.usetex'] = True
-#plt.rcParams['font.family'] = "serif"
-#plt.rcParams['font.serif'] = "cm"
 
 pd.options.display.float_format = '{:,.2f}'.format
 # -
@@ -301,42 +309,7 @@ dt_combIndM
 ## export to stata
 dt_combIndM.to_stata('../SurveyData/SCE/IncExpSCEIndMacroM.dta')
 
-# ### 4. Seasonal adjustment (not used anymore)
-
-# +
-#to_sa_test = ['meanMed']
-#to_sa_list = list(dt_combM.columns.drop('sp500'))
-
-## inspect for seasonal pattern by looking into the autocovariance
-"""
-for sr in to_sa_list:
-    tsplt.plot_acf(dt_combM[sr],
-                   lags = np.arange(T-20),
-                   alpha = 0.03)
-    plt.title('Autocorrelation of '+ sr)
-    plt.savefig('../Graphs/pop/acf_'+str(sr)+'.jpg')
-
-"""
-# -
-
-# - Judging from the acf plots, it seems that only the population mean and median of expected earning growth has seasonal patterns at 12 month frequency, higher moments such as variance, skewness does not have this pattern.
-
-# + {"code_folding": [0, 2]}
-"""
-for sr in to_sa_test:
-    series = dt_combM[sr]
-    samodel = sm.tsa.UnobservedComponents(series,
-                                          level='fixed intercept',
-                                          seasonal = 12)
-    res = samodel.fit(disp = True)
-    print(res.summary())
-    #res_plt = res.plot_components(figsize=(4,11))
-    #plt.plot(res.level.filtered)
-
-"""
-# -
-
-# ### 5. Correlation with labor market outcomes 
+# ### 4. Correlation with labor market outcomes 
 
 corr_table = dt_combM.corr()
 corr_table.to_excel('../Tables/corrM.xlsx')
@@ -514,7 +487,7 @@ for i,moms in enumerate( ['exp','var','iqr','rexp','rvar','skew']):
     plt.savefig('../Graphs/pop/tsMean3mv'+str(moms)+'_he.jpg')
 # -
 
-# ### 5b. Individual regressions
+# ### 5. Individual regressions
 
 """
 for i,moms in enumerate( ['incexp','incvar','inciqr','rincvar','incskew']):
