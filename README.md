@@ -36,7 +36,7 @@
   - stored as a dictionary, to be directly imported into model notebooks
 
 
-1. [Life-cycle model](./WorkingFolder/PythonCode/SolveLifeCycleMAShock.ipynb) 
+1. [Life-cycle model](./WorkingFolder/PythonCode/SolveLifeCycleMAshock.ipynb) 
    - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycle-ComparisonHARK.ipynb)
    - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
 
