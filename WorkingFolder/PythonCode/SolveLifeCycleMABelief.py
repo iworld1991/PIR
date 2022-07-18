@@ -507,7 +507,7 @@ def EGM_combine(mϵ_in,
                     σ_out[0,j,z,f] = 0.0
                     mϵ_out[0,j,z,f] = 0.0
                 else:
-                    if age <=T-1:
+                    if age <=lc.T-1:
                         σ_out[0,j,z,f] = 0.0
                         if state_dependent_belief:
                             self_min_a = - np.exp(np.min(eps_shk_mkv_draws[f,:]))*G/R
@@ -593,7 +593,7 @@ def solve_model_iter(model,        # Class with model information
     return me_vec, σ_vec
 
 
-# + code_folding=[2]
+# + code_folding=[]
 # a function to compare two solutions 
 
 def compare_2solutions(ms_stars,
@@ -611,26 +611,28 @@ def compare_2solutions(ms_stars,
     """
     if len(σs_stars)!=2 or len(σs_stars)!=2:
         print('only the first two solutions are compared!')
-    m_star1, σ_star1 =ms_stars[0],σs_stars[0]
-    m_star2, σ_star2 =ms_stars[1],σs_stars[1]
+    m_star1, σ_star1 = ms_stars[0],σs_stars[0]
+    m_star2, σ_star2 = ms_stars[1],σs_stars[1]
 
     ## get the interpolated c funcs
     c_stars1 = np.empty_like(σ_star1)
     c_stars2 = np.empty_like(σ_star2)
-    n_age,n_m,n_eps,n_z = c_stars1.shape
+    n_age,n_m,n_eps,n_z,n_f = c_stars1.shape
     
     m_grid = np.linspace(0.0,5.0,n_m)
     
     for i in range(n_age):
         for j in range(n_eps):
             for k in range(n_z):
-                c_func1 = lambda m: interp(m_star1[i,:,j,k],σ_star1[i,:,j,k],m)
-                c_stars1[i,:,j,k] = c_func1(m_grid)
-                c_func2 = lambda m: interp(m_star2[i,:,j,k],σ_star2[i,:,j,k],m)
-                c_stars2[i,:,j,k] = c_func2(m_grid)
+                for f in range(n_f):
+                    c_func1 = lambda m: interp(m_star1[i,:,j,k,f],σ_star1[i,:,j,k,f],m)
+                    c_stars1[i,:,j,k,f] = c_func1(m_grid)
+                    c_func2 = lambda m: interp(m_star2[i,:,j,k,f],σ_star2[i,:,j,k,f],m)
+                    c_stars2[i,:,j,k,f] = c_func2(m_grid)
         
     diff12 = c_stars1-c_stars2
     return diff12 
+
 
 
 # -
@@ -1589,7 +1591,7 @@ if __name__ == "__main__":
 #
 #
 
-# + code_folding=[5]
+# + code_folding=[0, 5]
 if __name__ == "__main__":
 
 
