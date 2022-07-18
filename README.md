@@ -36,13 +36,13 @@
   - stored as a dictionary, to be directly imported into model notebooks
 
 
-1. [Life-cycle model with Markov state of belief](./WorkingFolder/PythonCode/SolveLifeCycleMABelief.ipynb) 
-   -  [Baseline model without belief state](./WorkingFolder/PythonCode/SolveLifeCycleMAShock.ipynb)
-   - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleMABelief-ComparisonHARK.ipynb)
-   - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleMABelief-Test.ipynb)
+1. [Life-cycle model with Markov state of belief](./WorkingFolder/PythonCode/SolveLifeCycleBelief.ipynb) 
+   -  [Baseline model without belief state](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
+   - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleBelief-ComparisonHARK.ipynb)
+   - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleBelief-Test.ipynb)
    - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
 
-2. [Aggregate dynamics and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE-MAShock.ipynb) (no aggregate risks)
+2. [Aggregate dynamics and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
 
    - a possible extension to allow aggregate risks (Krusell-Smith & life-cycle economy)
 
