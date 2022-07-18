@@ -67,7 +67,7 @@ plt.rc('figure', titlesize=20)
 # ### The Life-cycle Model Class and the Solver
 
 # + code_folding=[]
-from SolveLifeCycle import LifeCycle, EGM, solve_model_backward_iter,compare_2solutions
+from SolveLifeCycle import LifeCycle, solve_model_backward_iter,compare_2solutions
 
 
 # -
@@ -624,7 +624,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 316, 331, 366, 402, 416]
+# + code_folding=[8, 315, 330, 365, 401, 415]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -693,7 +693,6 @@ def calc_transition_matrix(model,
 
         ## This is for the fast method 
         shk_prbs_ntrl =  np.multiply(shk_prbs,perm_shks)
-        ## not used yet 
                         
         
                         
