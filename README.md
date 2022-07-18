@@ -36,7 +36,8 @@
   - stored as a dictionary, to be directly imported into model notebooks
 
 
-1. [Life-cycle model](./WorkingFolder/PythonCode/SolveLifeCycleMAshock.ipynb) 
+1. [Life-cycle model with Markov state of belief](./WorkingFolder/PythonCode/SolveLifeCycleMABelief.ipynb) 
+   -  [Baseline model without belief state](./WorkingFolder/PythonCode/SolveLifeCycleMAShock.ipynb)
    - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycle-ComparisonHARK.ipynb)
    - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleMABelief-Test.ipynb)
    - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
