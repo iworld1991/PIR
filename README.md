@@ -15,7 +15,7 @@
   - `source ./to_tex.sh`
   
   
-## Structure of codes
+## Structure of code
 
 ## Empirics
 
