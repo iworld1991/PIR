@@ -482,7 +482,7 @@ def EGM(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[5, 62]
+# + code_folding=[]
 ## the operator under markov stochastic risks 
 ## now the permanent and transitory risks are 
 ## different between markov states. 
@@ -609,8 +609,8 @@ def EGM_sv(mϵ_in,
                 if age <=T-1:
                     σ_out[0,j,z] = 0.0
                    
-                    self_min_a = - np.exp(np.min(eps_shk_mkv_draws))*G/R 
-                    ## the lowest among 2 markov states
+                    self_min_a = - np.exp(np.min(eps_shk_mkv_draws[z,:]))*G/R 
+                    ## the lowest transitory draw at state z  
                     self_min_a = min(self_min_a,-unemp_insurance/R)
                     mϵ_out[0,j,z] = self_min_a
                 else:
@@ -1127,57 +1127,11 @@ if __name__ == "__main__":
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
-
-# + code_folding=[]
-## interpolate consumption function on continuous s/eps grid 
-
-#ms_list = []
-
-#for i in range(lc.L):
-#    this_σ= policyfuncMA(lc,
-#                         ms_star[i,:,:,0],
-#                         σs_star[i,:,:,0])
-#    ms_list.append(this_σ)
-
-
-# + code_folding=[]
-"""
-## plot contour for policy function 
-
-m_grid = np.linspace(0.00001,5,20)
-eps_grid = lc.eps_grid
-mm,epss = np.meshgrid(m_grid,
-                      eps_grid)
-
-σ_this = σs_list[3]
-c_stars = σ_this(m_grid,
-                 eps_grid)
-
-cp = plt.contourf(mm,epss,
-                  c_stars)
-plt.title(r'$c$')
-plt.xlabel('wealth')
-plt.ylabel('ma income shock')
-"""
 # -
 
 ## the size of consumption function is  T x nb_a x nb_eps x nb_z 
 if __name__ == "__main__":
     print(σs_star.shape)
-
-# + code_folding=[]
-"""
-## plot 3d consumption function 
-#age,asset,inc_shk =σs_star[:,:,:,0]
-
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(mm, epss, c_stars, zdir='z', c= 'red')
-ax.set_xlabel('wealth')
-ax.set_ylabel('inc shock')
-ax.set_title('consumption at a certain age')
-"""
-
 
 # + code_folding=[]
 if __name__ == "__main__":
