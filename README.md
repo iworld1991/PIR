@@ -38,6 +38,7 @@
 
 1. [Life-cycle model](./WorkingFolder/PythonCode/SolveLifeCycleMAshock.ipynb) 
    - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycle-ComparisonHARK.ipynb)
+   - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleMABelief-Test.ipynb)
    - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
 
 2. [Aggregate dynamics and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE-MAShock.ipynb) (no aggregate risks)
