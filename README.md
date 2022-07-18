@@ -38,7 +38,7 @@
 
 1. [Life-cycle model with Markov state of belief](./WorkingFolder/PythonCode/SolveLifeCycleMABelief.ipynb) 
    -  [Baseline model without belief state](./WorkingFolder/PythonCode/SolveLifeCycleMAShock.ipynb)
-   - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycle-ComparisonHARK.ipynb)
+   - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleMABelief-ComparisonHARK.ipynb)
    - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleMABelief-Test.ipynb)
    - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
 
