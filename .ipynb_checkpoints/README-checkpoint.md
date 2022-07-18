@@ -15,11 +15,11 @@
   - `source ./to_tex.sh`
   
   
-## Structure of codes
+## Structure of code
 
 ## Empirics
 
-1. [Density estimation of the survey answers](./WorkingFolder/PythonCode/DensityEst.ipynb) (under test)
+1. [Density estimation of the survey answers](./WorkingFolder/PythonCode/DoDensityEst.ipynb) that draws from the general code [DensityEst](./WorkingFolder/PythonCode/DensityEst.py)
    
 2. [Income risks decomposition](./WorkingFolder/PythonCode/IncomeRisksEst.ipynb) that draws on the [income process class](./WorkingFolder/PythonCode/IncomeProcess.ipynb)
    - [Estimation allowing for infrequent shocks](IncomeRisksInfrequentEst.ipynb) 
@@ -36,8 +36,10 @@
   - stored as a dictionary, to be directly imported into model notebooks
 
 
-1. [Life-cycle model](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb) 
-   - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycle-ComparisonHARK.ipynb)
+1. [Life-cycle model with Markov state of belief](./WorkingFolder/PythonCode/SolveLifeCycleBelief.ipynb) 
+   -  [Baseline model without belief state](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
+   - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleBelief-ComparisonHARK.ipynb)
+   - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleBelief-Test.ipynb)
    - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
 
 2. [Aggregate dynamics and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
@@ -52,7 +54,6 @@
 
 
 1. [Utility](Utility.ipynb)
-   - used for solving the [life-cycle model](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
    
 2. [Latex table manipulation](./WorkingFolder/PythonCode/TexTablesMover.ipynb)
 <!-- #endregion -->
