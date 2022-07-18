@@ -351,7 +351,7 @@ class LifeCycle:
         return m_init,σ_init
 
 
-# + code_folding=[7]
+# + code_folding=[]
 ## This function takes the consumption values at different 
 ## grids of state variables from period t+1, and
 ## the model class, then generates the consumption values at t.
@@ -483,7 +483,7 @@ def EGM_combine(mϵ_in,
                 σ_out[0,j,z] = 0.0
                 mϵ_out[0,j,z] = 0.0
             else:
-                if age <=T-1:
+                if age <=lc.T-1:
                     σ_out[0,j,z] = 0.0
                     ## the lowest transitory draw at state z  
                     if lc.state_dependent_belief:
@@ -501,7 +501,7 @@ def EGM_combine(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[3]
+# + code_folding=[0, 3]
 ## this function describes asymmetric extrapolation rule from realized income shock to the perceived risk
 
 @njit
@@ -1542,7 +1542,8 @@ if __name__ == "__main__":
                      ue_markov = True,
                      ################################
                      state_dependent_risk = True
-                    ###########################)
+                    ###########################
+                    )
 
 # + code_folding=[0]
 if __name__ == "__main__":
