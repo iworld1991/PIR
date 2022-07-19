@@ -624,7 +624,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 315, 330, 365, 401, 415]
+# + code_folding=[315, 330, 365, 401, 415]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -773,7 +773,7 @@ def calc_transition_matrix(model,
                     if k <=model.T-1:
                         ## work age 
                         perm_shks_G = perm_shks*G[k+1]
-                        mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*tran_shks  
+                        mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*(1-λ_SS)*tran_shks  
                     else:
                         ## retirement 
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
@@ -791,7 +791,7 @@ def calc_transition_matrix(model,
                     if k <=model.T-1:
                         ## work age 
                         perm_shks_G = perm_shks*G[k+1]
-                        mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+ (1-λ)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
+                        mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+ (1-λ)*(1-λ_SS)*tran_shks # Compute next period's market resources given todays bank balances bnext[i]
                     else:
                         ## retirement 
                         perm_shks_none = np.ones_like(perm_shks)*G[k+1]
@@ -856,7 +856,7 @@ def calc_transition_matrix(model,
                         if k <=model.T-1:
                             ## work age 
                             perm_shks_G = perm_shks* G[k+1]
-                            mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*tran_shks # Compute next period's market resources given today's bank balances bnext[i]
+                            mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*(1-λ_SS)*tran_shks # Compute next period's market resources given today's bank balances bnext[i]
                         else:
                             ## retirement
                             perm_shks_none = np.ones_like(perm_shks)*G[k+1]
@@ -898,7 +898,7 @@ def calc_transition_matrix(model,
                         pNext_ij = this_dist_pGrid[j]*perm_shks*G[k+1] # Computes next period's permanent income level by applying permanent income shock
                         if k <=model.T-1:
                             perm_shks_G = perm_shks*G[k+1]
-                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+(1-λ)*tran_shks # Compute next period's market resources given today's bank balances bnext[i]
+                            mNext_ij = bNext_e[i]/perm_shks_G +model.transfer+(1-λ)*(1-λ_SS)*tran_shks # Compute next period's market resources given today's bank balances bnext[i]
                         else:
                             ## retirement
                             perm_shks_none = np.ones_like(perm_shks)*G[k+1]
