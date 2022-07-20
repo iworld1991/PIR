@@ -36,6 +36,7 @@ from copy import copy
 from Utility import cal_ss_2markov,lorenz_curve, gini
 from Utility import mean_preserving_spread
 from Utility import jump_to_grid,jump_to_grid_fast
+import pickle
 
 
 # + code_folding=[]
@@ -509,7 +510,7 @@ else:
                       )
 
 
-# + code_folding=[0]
+# + code_folding=[0, 23]
 ## solve various models
 
 models = [lc_mkv,
@@ -1056,43 +1057,6 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
     
     return grid_array, mp_pdfs_array
 
-
-"""
-def calc_ergodic_dist(transition_matrix = None):
-
-    '''
-    Calculates the ergodic distribution for the transition_matrix, 
-    here it is the distribution (before being reshaped) over normalized market resources and
-    permanent income as the eigenvector associated with the eigenvalue 1.
-    
-
-    Parameters
-    ----------
-    transition_matrix: array 
-                transition matrix whose ergodic distribution is to be solved
-
-    Returns
-    -------
-    ergodic_distr: a vector array 
-    The distribution is stored as a vector 
-    ## reshaping it to (n_m, n_p) gives a reshaped array with the ij'th element representing
-    the probability of being at the i'th point on the mGrid and the j'th
-    point on the pGrid.
-    '''
-
-    #if transition_matrix == None:
-    #    #transition_matrix = [self.tran_matrix]
-    #    print('needs transition_matrix')
-    
-    eigen, ergodic_distr = sp.linalg.eigs(transition_matrix , k=1 , which='LM')  # Solve for ergodic distribution
-    ergodic_distr = ergodic_distr.real/np.sum(ergodic_distr.real)   
-
-    #vec_erg_dstn = ergodic_distr #distribution as a vector
-    #erg_dstn = ergodic_distr.reshape((len(m_dist_grid_list[0]),
-    #                                  len(p_dist_grid_list[0]))) # distribution reshaped into len(mgrid) by len(pgrid) array
-    return ergodic_distr 
-    
-"""
 
 
 # + code_folding=[0, 5, 17, 113, 186, 208, 278, 299, 314, 338, 383, 408]
@@ -1732,177 +1696,100 @@ n_p = 40
 
 # ## compare different models 
 
-# + code_folding=[0]
+# + code_folding=[0, 73]
+def solve_1model(model,
+                m_star,
+                σ_star,
+                n_m=40,
+                n_p=40,
+                model_name = 'model'):
+    HH_this = HH_OLG_Markov(model = model)
+    HH_this.define_distribution_grid(num_pointsM = n_m, 
+                                    num_pointsP = n_p)
+    HH_this.ComputeSSDist(ms_star = m_star,
+                          σs_star = σ_star)
+    HH_this.Aggregate()
+    print('aggregate savings under stationary distribution:', str(HH_this.A))
+
+    ## lorenz 
+    share_agents_ap_this,share_ap_this = HH_this.Lorenz(variable='a')
+
+    ## gini in pe
+    gini_this_pe = gini(share_agents_ap_this,
+                     share_ap_this)
+
+
+    ## life cycle 
+
+    HH_this.AggregatebyAge()
+
+    A_life_this = HH_this.A_life
+
+    ## distribution 
+
+
+    ## general equilibrium 
+
+    market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
+                                        production = production)
+
+    market_OLG_mkv_this.get_equilibrium_k()
+    market_OLG_mkv_this.get_equilibrium_dist()
+
+    ## aggregate 
+
+
+    ## life cycle 
+
+    ## lorenz 
+    share_agents_ap_ge_this, share_ap_ge_this = market_OLG_mkv_this.households.Lorenz(variable='a')
+
+    ## gini in ge
+
+    gini_this_ge = gini(share_agents_ap_ge_this,
+                     share_ap_ge_this)
+
+        
+    model_dct =  {'A_pe':HH_this.A,
+                'A_life_pe': HH_this.A_life,
+                'share_agents_ap_pe':share_agents_ap_this,
+                'share_ap_pe':share_ap_this,
+               'ap_grid_dist_pe':HH_this.ap_grid_dist,
+                'ap_pdfs_dist_pe':HH_this.ap_pdfs_dist,
+                 'gini_pe':gini_this_pe,
+                'A_ge':market_OLG_mkv_this.households.A,
+                'A_life_ge':market_OLG_mkv_this.households.A_life,
+                'share_agents_ap_ge':share_agents_ap_ge_this,
+                'share_ap_ge':share_ap_ge_this,
+                'ap_grid_dist_ge':market_OLG_mkv_this.households.ap_grid_dist,
+                'ap_pdfs_dist_ge':market_OLG_mkv_this.households.ap_pdfs_dist,
+                'gini_ge':gini_this_ge
+               }
+    
+    ## save it as a pkl
+
+    pickle.dump(model_dct,open('./model_solutions/'+model_name+'.pkl','wb'))
+    
 def solve_models(model_list,
                    ms_star_list,
-                   σs_star_list):
+                   σs_star_list,
+                    model_name_list):
     
-    ## create lists to save results 
-    #C_list = []
-    A_list = []
-    #C_ge_list = []
-    A_ge_list = []
-    
-    
-    ### life cycle 
-    A_life_list = []
-    #C_life_list = []
-    A_life_ge_list = []
-    #C_life_ge_list = []
-    
-    ## for lorenz curves 
-    #share_agents_cp_list =[]
-    #share_cp_list = []
-    share_agents_ap_list =[]
-    share_ap_list = []   
-    
-    #share_agents_cp_ge_list =[]
-    #share_cp_ge_list = []
-    share_agents_ap_ge_list =[]
-    share_ap_ge_list = []  
-    
-    
-    ## distribution 
-    ap_grid_dist_pe_list = []
-    ap_pdfs_dist_pe_list = []
-    ap_grid_dist_ge_list = []
-    ap_pdfs_dist_ge_list = []
-    
-    ## gini
-    gini_pe_list = []
-    gini_ge_list = []
     
     ## loop over different models 
     for k, model in enumerate(model_list):
-        HH_this = HH_OLG_Markov(model = model)
-        HH_this.define_distribution_grid(num_pointsM = n_m, 
-                            num_pointsP = n_p)
-        HH_this.ComputeSSDist(ms_star = ms_star_list[k],
-                              σs_star = σs_star_list[k])
-        HH_this.Aggregate()
-        #C_list.append(HH_this.C)
-        A_list.append(HH_this.A)
-        #print('aggregate consumption under stationary distribution:', str(HH_this.C))
-        print('aggregate savings under stationary distribution:', str(HH_this.A))
-        
-        ## lorenz 
-        #share_agents_cp_this,share_cp_this = HH_this.Lorenz(variable='c')
-        share_agents_ap_this,share_ap_this = HH_this.Lorenz(variable='a')
-        #share_agents_cp_list.append(share_agents_cp_this)
-        #share_cp_list.append(share_cp_this)
-        share_agents_ap_list.append(share_agents_ap_this)
-        share_ap_list.append(share_ap_this)
-        
-        ## gini in pe
-        gini_this = gini(share_agents_ap_this,
-                         share_ap_this)
-        gini_pe_list.append(gini_this)
-        print(gini_this)
+        solve_1model(model,
+                    ms_star_list[k],
+                    σs_star_list[k],
+                     model_name = model_name_list[k])
 
+# + code_folding=[2]
+## solve a list of models and save all solutions as pickles 
 
-        ## life cycle 
-
-        HH_this.AggregatebyAge()
-
-        A_life_this = HH_this.A_life
-        #C_life_this = HH_this.C_life
-        A_life_list.append(A_life_this)
-        #C_life_list.append(C_life_this)
-        
-        ## distribution 
-        ap_grid_dist_pe_list.append(HH_this.ap_grid_dist)
-        ap_pdfs_dist_pe_list.append(HH_this.ap_pdfs_dist) 
-        
-        
-        ## general equilibrium 
-
-        market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
-                                            production = production)
-
-        market_OLG_mkv_this.get_equilibrium_k()
-        market_OLG_mkv_this.get_equilibrium_dist()
-        
-        ## aggregate 
-        A_ge_list.append(market_OLG_mkv_this.households.A)
-        #C_ge_list.append(market_OLG_mkv_this.households.C)
-        
-        
-        
-        ## life cycle 
-        A_life_ge_list.append(market_OLG_mkv_this.households.A_life)
-        #C_life_ge_list.append(market_OLG_mkv_this.households.C_life)
-        
-        ## lorenz 
-        share_agents_ap_ge_this, share_ap_ge_this = market_OLG_mkv_this.households.Lorenz(variable='a')
-        share_agents_ap_ge_list.append(share_agents_ap_ge_this)
-        share_ap_ge_list.append(share_ap_ge_this)
-        #share_agents_cp_ge_this, share_cp_ge_this = market_OLG_mkv_this.households.Lorenz(variable='c')
-        #share_agents_cp_ge_list.append(share_agents_cp_ge_this)
-        #share_cp_ge_list.append(share_cp_ge_this)
-        
-        ## gini in ge
-        
-        gini_this = gini(share_agents_ap_ge_this,
-                         share_ap_ge_this)
-        print(gini_this)
-        gini_ge_list.append(gini_this)
-        
-        ## distribution 
-        ap_grid_dist_ge_list.append(market_OLG_mkv_this.households.ap_grid_dist)
-        ap_pdfs_dist_ge_list.append(market_OLG_mkv_this.households.ap_pdfs_dist)  
-        
-    return {#'C_pe':C_list,
-           'A_pe':A_list,
-            'A_life_pe':A_life_list,
-            #'C_life_pe':C_life_list,
-            #'share_agents_cp_pe':share_agents_cp_list,
-            #'share_cp_pe':share_cp_list,
-            'share_agents_ap_pe':share_agents_ap_list,
-            'share_ap_pe':share_ap_list,
-           'ap_grid_dist_pe':ap_grid_dist_pe_list,
-            'ap_pdfs_dist_pe':ap_pdfs_dist_pe_list,
-             'gini_pe':gini_pe_list,
-            #'C_ge':C_ge_list,
-            'A_ge':A_ge_list,
-            'A_life_ge':A_life_ge_list,
-            #'C_life_ge':C_life_ge_list,
-            #'share_agents_cp_ge':share_agents_cp_ge_list,
-            #'share_cp_ge':share_cp_ge_list,
-            'share_agents_ap_ge':share_agents_ap_ge_list,
-            'share_ap_ge':share_ap_ge_list,
-            'ap_grid_dist_ge':ap_grid_dist_ge_list,
-            'ap_pdfs_dist_ge':ap_pdfs_dist_ge_list,
-            'gini_ge':gini_ge_list
-           }
-
-
-# + code_folding=[]
-## solve a list of models 
 model_results = solve_models(models,
                              ms_stars,
-                             σs_stars)
-
-# + code_folding=[]
-## get list of model outputs from the results dictionary 
-
-## PE 
-share_agents_ap_pe_list,share_ap_pe_list = model_results['share_agents_ap_pe'],model_results['share_ap_pe']
-
-A_life_list =  model_results['A_life_pe']
-#C_life_list =  model_results['C_life_pe']
-
-ap_grid_dist_pe_list, ap_pdfs_dist_pe_list = model_results['ap_grid_dist_pe'],model_results['ap_pdfs_dist_pe']
-gini_pe_list = model_results['gini_pe']
-
-## GE
-share_agents_ap_ge_list,share_cp_ge_list = model_results['share_agents_ap_ge'],model_results['share_ap_ge']
-
-A_life_ge_list =  model_results['A_life_ge']
-#C_life_ge_list =  model_results['C_life_ge']
-
-ap_grid_dist_ge_list, ap_pdfs_dist_ge_list = model_results['ap_grid_dist_ge'],model_results['ap_pdfs_dist_ge']
-gini_ge_list = model_results['gini_ge']
-
+                             σs_stars,
+                             model_name_list = model_names)
 
 # + code_folding=[0]
 ## get the wealth distribution from SCF (net worth)
@@ -1928,7 +1815,7 @@ SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
 
 SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
-# + pycharm={"name": "#%%\n"} code_folding=[0]
+# + pycharm={"name": "#%%\n"} code_folding=[0, 2, 11, 37, 70, 86]
 ## plot results from different models
 
 line_patterns =['g-v',
@@ -1941,15 +1828,18 @@ line_patterns =['g-v',
 
 fig, ax = plt.subplots(figsize=(6,6))
 for k,model in enumerate(models):
-    ax.plot(share_agents_ap_pe_list[k],
-            share_ap_pe_list[k],
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
+    ax.plot(model_solution['share_agents_ap_pe'],
+            model_solution['share_ap_pe'],
             line_patterns[k],
-            label = model_names[k]+', Gini={:.2f}'.format(gini_ge_list[k]))
+            label = model_names[k]+', Gini={:.2f}'.format(model_solution['gini_pe']))
 ax.plot(SCF_share_agents_ap,
         SCF_share_ap, 'k-.',
         label='SCF')
-ax.plot(share_agents_ap_pe_list[k],
-        share_agents_ap_pe_list[k], 'k-',label='equality curve')
+ax.plot(model_solution['share_agents_ap_pe'],
+        model_solution['share_agents_ap_pe'], 
+        'k-',
+        label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
@@ -1964,12 +1854,11 @@ fig, ax = plt.subplots(figsize=(16,8))
 plt.title('Life cycle profile of wealth')
 
 for k,model in enumerate(models):
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
     ax.plot(age_lc[1:],
-           np.log(A_life_list[k]),
+           np.log(model_solution['A_life_pe']),
            line_patterns[k],
-           label=model_names[k])
-
-
+           label= model_names[k])
 ax.set_ylim([-0.5,3.5])
 
 ax2 = ax.twinx()
@@ -1983,11 +1872,6 @@ ax2.vlines(lc_mkv.T+25,
 ax2.bar(age_lc[1:],
         np.log(SCF_profile['mv_wealth'][1:]),
        label='SCF (RHS)')
-
-#ax2.plot(age,
-#        C_life,
-#        'b--',
-#        label='consumption (RHS)')
 
 ax.set_xlabel('Age')
 ax.set_ylabel('Log wealth in model')
@@ -2003,11 +1887,11 @@ fig.savefig('../Graphs/model/life_cycle_a_compare_pe.png')
 fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 for k, model in enumerate(models):
-    ax.plot(np.log(ap_grid_dist_pe_list[k]+1e-5),
-            ap_pdfs_dist_pe_list[k],
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
+    ax.plot(np.log(model_solution['ap_grid_dist_pe']+1e-5),
+            model_solution['ap_pdfs_dist_pe'],
             label=model_names[k],
            alpha = 0.8)
-ax.set_xlim((-10,8))
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
@@ -2019,16 +1903,18 @@ fig.savefig('../Graphs/model/distribution_a_compare_pe.png')
 
 fig, ax = plt.subplots(figsize=(6,6))
 for k,model in enumerate(models):
-    ax.plot(share_agents_ap_ge_list[k],
-            share_cp_ge_list[k],
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
+    ax.plot(model_solution['share_agents_ap_ge'],
+            model_solution['share_ap_ge'],
             line_patterns[k],
-            label = model_names[k]+', Gini={:.2f}'.format(gini_ge_list[k]))
+            label = model_names[k]+', Gini={:.2f}'.format(model_solution['gini_ge']))
 
 ax.plot(SCF_share_agents_ap,
         SCF_share_ap, 'k-.',
         label='SCF')
-ax.plot(share_agents_ap_ge_list[k],
-        share_agents_ap_ge_list[k], 'k-',
+ax.plot(model_solution['share_agents_ap_ge'],
+        model_solution['share_agents_ap_ge'], 
+        'k-',
         label='equality curve')
 ax.legend()
 plt.xlim([0,1])
@@ -2042,8 +1928,9 @@ fig, ax = plt.subplots(figsize=(16,8))
 plt.title('Life cycle profile of wealth')
 
 for k, model in enumerate(models):
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
     ax.plot(age_lc[:-2],
-            np.log(A_life_ge_list[k])[:-1],
+            np.log(model_solution['A_life_ge'])[:-1],
             line_patterns[k],
            label = model_names[k])
 
@@ -2061,11 +1948,6 @@ ax2.bar(age_lc,
        #'k--',
        label='SCF (RHS)')
 
-#ax2.plot(age,
-#        C_life,
-#        'b--',
-#        label='consumption (RHS)')
-
 ax.set_xlabel('Age')
 ax.set_ylabel('Log wealth')
 ax2.set_ylabel('Log wealth SCF')
@@ -2079,11 +1961,11 @@ fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
 fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 for k, model in enumerate(models):
-    ax.plot(np.log(ap_grid_dist_ge_list[k]+1e-5),
-            ap_pdfs_dist_ge_list[k],
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
+    ax.plot(np.log(model_solution['ap_grid_dist_ge']+1e-5),
+            model_solution['ap_pdfs_dist_ge'],
             label=model_names[k],
             alpha = 0.8)
-ax.set_xlim((-10,8))
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
@@ -2094,7 +1976,7 @@ fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
 
 # ## Analysis of the baseline model 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## testing of the household class 
 
 HH = HH_OLG_Markov(model=lc_mkv)
@@ -2134,24 +2016,26 @@ print('aggregate savings under stationary distribution:', str(HH.A))
 
 # ### Stationary wealth/consumption distribution
 
-#share_agents_cp,share_cp = HH.Lorenz(variable='c')
 share_agents_ap,share_ap = HH.Lorenz(variable='a')
 
 # + code_folding=[]
-gini_this = gini(share_agents_ap,share_ap)
+gini_this = gini(share_agents_ap,
+                 share_ap)
 print('gini from model:'+str(gini_this))
 gini_SCE = gini(SCF_share_agents_ap,
                  SCF_share_ap)
 print('gini from SCE:'+str(gini_SCE))
 
-# + code_folding=[]
+# + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(8,8))
-ax.plot(share_agents_ap,share_ap, 
+ax.plot(share_agents_ap,
+        share_ap, 
         'r--',
         label='Model'+', Gini={:.2f}'.format(gini_this))
-ax.plot(SCF_share_agents_ap,SCF_share_ap, 
+ax.plot(SCF_share_agents_ap,
+        SCF_share_ap, 
         'b-.',
         label='SCF')
 ax.plot(share_agents_ap,share_agents_ap, 
@@ -2162,7 +2046,7 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 plt.savefig('../Graphs/model/lorenz_a_test.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## Wealth distribution 
 
 ap_grid_dist = HH.ap_grid_dist
@@ -2172,7 +2056,6 @@ fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 ax.plot(np.log(ap_grid_dist+1e-5),
          ap_pdfs_dist)
-#ax.set_xlim(-10,10)
 
 ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
@@ -2191,10 +2074,9 @@ print('Share of zero wealth',str(zero_wealth_share))
 HH.AggregatebyAge()
 
 A_life = HH.A_life
-#C_life = HH.C_life
 
 
-# + code_folding=[0]
+# + code_folding=[0, 13]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -2205,8 +2087,6 @@ ax.plot(age_lc[1:],
        np.log(A_life),
        'r-o',
        label='model')
-
-#ax.set_ylim([-0.5,3.5])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
@@ -2220,10 +2100,6 @@ ax2.bar(age_lc[1:],
         np.log(SCF_profile['mv_wealth'][1:]),
        label='SCF (RHS)')
 
-#ax2.plot(age,
-#        C_life,
-#        'b--',
-#        label='consumption (RHS)')
 
 ax.set_xlabel('Age')
 ax.set_ylabel('Log wealth in model')
@@ -2238,39 +2114,24 @@ fig.savefig('../Graphs/model/life_cycle_a_test.png')
 HH.get_lifecycle_dist()
 
 ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
-#cp_grid_dist_life,cp_pdfs_dist_life = HH.cp_grid_dist_life,HH.cp_pdfs_dist_life
+
 
 # + code_folding=[]
 ## create the dataframe to plot distributions over the life cycle 
 ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
-#cp_pdfs_life = pd.DataFrame(cp_pdfs_dist_life).T
-
-#ap_pdfs_life.index = np.log(ap_grid_dist_life[0]+1e-4)
-
 ap_range = list(ap_pdfs_life.index)
-#cp_range = list(cp_pdfs_life.index)
 
-# + code_folding=[1, 2, 11, 21]
+
+# + code_folding=[1, 10]
 joy = False
 if joy == True:
     fig, axes = joypy.joyplot(ap_pdfs_life, 
                               kind="values", 
-                              x_range=ap_range,
+                              x_range= ap_range,
                               figsize=(6,10),
                               title="Wealth distribution over life cycle",
                              colormap=cm.winter)
     fig.savefig('../Graphs/model/life_cycle_distribution_a_test.png')
-    #axes[-1].set_xticks(a_values);
-
-    fig, axes = joypy.joyplot(cp_pdfs_life, 
-                              kind="values", 
-                              x_range=cp_range,
-                              figsize=(6,10),
-                              title="Consumption distribution over life cycle",
-                             colormap=cm.winter)
-    fig.savefig('../Graphs/model/life_cycle_distribution_c_test.png')
-
-    #axes[-1].set_xticks(a_values);
     
 else:
     pass
@@ -2278,7 +2139,7 @@ else:
 
 # ### General Equilibrium 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## initialize a market and solve the equilibrium 
 
 market_OLG_mkv = Market_OLG_mkv(households = HH,
@@ -2369,3 +2230,6 @@ fig.savefig('../Graphs/model/distribution_a_eq.png')
 zero_wealth_id = np.where(market_OLG_mkv.households.ap_grid_dist<=1e-2)
 zero_wealth_share = market_OLG_mkv.households.ap_pdfs_dist[zero_wealth_id].sum()
 print('Share of zero wealth',str(zero_wealth_share))
+# -
+
+
