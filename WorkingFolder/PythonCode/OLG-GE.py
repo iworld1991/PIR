@@ -625,7 +625,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 315, 330, 365, 401, 415]
+# + code_folding=[0, 8, 315, 330, 365, 401, 415]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1059,7 +1059,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 17, 113, 186, 208, 278, 299, 314, 338, 383, 408]
+# + code_folding=[0, 5, 17, 113, 128, 292, 307, 331, 376, 401]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1339,18 +1339,11 @@ class HH_OLG_Markov:
     ### Aggregate C or A
 
     def Aggregate(self):
-        ## compute aggregate C 
-        # #!cp_PolGrid_list = self.cp_PolGrid_list
+        ## compute aggregate A 
         ap_PolGrid_list = self.ap_PolGrid_list
         mp_pdfs_2d_lists = self.mp_pdfs_2d_lists
         ss_dstn = self.ss_dstn
         age_dist = self.age_dist
-
-
-        # #!self.C = AggregateDist(cp_PolGrid_list,
-        # #!                     mp_pdfs_2d_lists,
-        # #!                     ss_dstn,
-        # #!                      age_dist)
 
         self.A = AggregateDist(ap_PolGrid_list,
                               mp_pdfs_2d_lists,
@@ -1480,7 +1473,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0, 24, 146, 158]
+# + code_folding=[5, 24, 131, 143]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1592,21 +1585,6 @@ class Market_OLG_mkv:
                                  σs_star = σs_star)
 
         households.Aggregate()
-        #m_dist_grid_list,p_dist_grid_list = define_distribution_grid(model,
-        #                                                         num_pointsM = n_m,
-        #                                                         num_pointsP = n_p)
-
-        #tran_matrix_lists, dist_lists,mp_pdfs_2d_lists,mp_pdfs_lists,cp_PolGrid_list,ap_PolGrid_list = SSDist(model,
-        #                                                                                                      as_star,
-        #                                                                                                      σs_star,
-        #                                                                                                      m_dist_grid_list,
-        #                                                                                                   p_dist_grid_list)    
-
-
-        #A = Aggregate(ap_PolGrid_list,
-        #              mp_pdfs_2d_lists,
-        #              ss_dstn,
-        #              age_dist)
 
         K_d = households.A*model.W  ## no population growth otherwise diluted by (1+n)
 
@@ -1992,7 +1970,7 @@ HH.ComputeSSDist(ms_star = ms_star_mkv,
                   σs_star = σs_star_mkv)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot the initial distribution in the first period of life 
 
 plt.title('Initial distributions over m and p given u')
@@ -2001,7 +1979,7 @@ plt.spy(HH.initial_dist_u.reshape(n_m,-1),
 plt.xlabel('p')
 plt.ylabel('m')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot the initial distribution in the first period of life 
 
 plt.title('Initial distributions over m and p given e')
