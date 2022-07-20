@@ -529,7 +529,7 @@ else:
                       )
 
 
-# + code_folding=[0]
+# + code_folding=[0, 2]
 ## solve various models
 
 models = [lc_mkv,
@@ -543,7 +543,7 @@ specs = ['ob',
          'cr'
         ]
 
-model_names=['basline',
+model_names=['baseline',
              'SLPR',
              'LPR',
              'SLPR_sv'
@@ -1971,11 +1971,8 @@ class Market_OLG_mkv:
         
         
         self.households = households
-# -
 
-# ## Analysis of the baseline model 
-
-# + code_folding=[0, 1]
+# +
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1985,7 +1982,9 @@ production = CDProduction(α = production_paras['α'],
 ## nb of grids used for transition matrix  
 n_m = 30
 n_p = 40
+# -
 
+# ## Analysis of the baseline model 
 
 # + code_folding=[]
 ## testing of the household class 
@@ -2048,8 +2047,6 @@ SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
                                                  SCF_weights_sort_norm,
                                                  nb_share_grid = 200)
 
-
-import pandas as pd
 SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
 
 SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
@@ -2133,7 +2130,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_test.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## get the within-age distribution 
 
 HH.get_lifecycle_dist()
@@ -2219,7 +2216,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_eq.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_ap, share_ap = market_OLG_mkv.households.Lorenz(variable='a')
@@ -2253,13 +2250,14 @@ fig.savefig('../Graphs/model/distribution_a_eq.png')
 
 # ## compare different models 
 
-# + code_folding=[0, 71]
+# + code_folding=[0, 53, 69, 70, 84]
 def solve_1model(model,
                 m_star,
                 σ_star,
                 n_m = 40,
                 n_p = 40,
-                model_name = 'model'):
+                model_name = 'model',
+                ge = False):
     HH_this = HH_OLG_Markov(model = model)
     HH_this.define_distribution_grid(num_pointsM = n_m, 
                                     num_pointsP = n_p)
@@ -2282,47 +2280,59 @@ def solve_1model(model,
     A_life_this = HH_this.A_life
 
     ## distribution 
+    
+    if ge:
 
-    ## general equilibrium 
+        ## general equilibrium 
 
-    market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
-                                        production = production)
+        market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
+                                            production = production)
 
-    market_OLG_mkv_this.get_equilibrium_k()
-    market_OLG_mkv_this.get_equilibrium_dist()
+        market_OLG_mkv_this.get_equilibrium_k()
+        market_OLG_mkv_this.get_equilibrium_dist()
 
-    ## aggregate 
+        ## aggregate 
 
 
-    ## life cycle 
+        ## life cycle 
 
-    ## lorenz 
-    share_agents_ap_ge_this, share_ap_ge_this = market_OLG_mkv_this.households.Lorenz(variable='a')
+        ## lorenz 
+        share_agents_ap_ge_this, share_ap_ge_this = market_OLG_mkv_this.households.Lorenz(variable='a')
 
-    ## gini in ge
+        ## gini in ge
 
-    gini_this_ge = gini(share_agents_ap_ge_this,
-                     share_ap_ge_this)
-
+        gini_this_ge = gini(share_agents_ap_ge_this,
+                         share_ap_ge_this)
         
-    model_dct =  {'A_pe':HH_this.A,
-                'A_life_pe': HH_this.A_life,
-                'share_agents_ap_pe':share_agents_ap_this,
-                'share_ap_pe':share_ap_this,
-               'ap_grid_dist_pe':HH_this.ap_grid_dist,
-                'ap_pdfs_dist_pe':HH_this.ap_pdfs_dist,
-                 'gini_pe':gini_this_pe,
-                'A_ge':market_OLG_mkv_this.households.A,
-                'A_life_ge':market_OLG_mkv_this.households.A_life,
-                'share_agents_ap_ge':share_agents_ap_ge_this,
-                'share_ap_ge':share_ap_ge_this,
-                'ap_grid_dist_ge':market_OLG_mkv_this.households.ap_grid_dist,
-                'ap_pdfs_dist_ge':market_OLG_mkv_this.households.ap_pdfs_dist,
-                'gini_ge':gini_this_ge
-               }
+        model_dct =  {'A_pe':HH_this.A,
+                    'A_life_pe': HH_this.A_life,
+                    'share_agents_ap_pe':share_agents_ap_this,
+                    'share_ap_pe':share_ap_this,
+                   'ap_grid_dist_pe':HH_this.ap_grid_dist,
+                    'ap_pdfs_dist_pe':HH_this.ap_pdfs_dist,
+                     'gini_pe':gini_this_pe,
+                    'A_ge':market_OLG_mkv_this.households.A,
+                    'A_life_ge':market_OLG_mkv_this.households.A_life,
+                    'share_agents_ap_ge':share_agents_ap_ge_this,
+                    'share_ap_ge':share_ap_ge_this,
+                    'ap_grid_dist_ge':market_OLG_mkv_this.households.ap_grid_dist,
+                    'ap_pdfs_dist_ge':market_OLG_mkv_this.households.ap_pdfs_dist,
+                    'gini_ge':gini_this_ge
+                   }
+    
+    else:
+        model_dct =  {'A_pe':HH_this.A,
+                    'A_life_pe': HH_this.A_life,
+                    'share_agents_ap_pe':share_agents_ap_this,
+                    'share_ap_pe':share_ap_this,
+                   'ap_grid_dist_pe':HH_this.ap_grid_dist,
+                    'ap_pdfs_dist_pe':HH_this.ap_pdfs_dist,
+                     'gini_pe':gini_this_pe
+                   }
+
     
     ## save it as a pkl
-
+    import pickle
     pickle.dump(model_dct,open('./model_solutions/'+model_name+'.pkl','wb'))
     
 def solve_models(model_list,
@@ -2340,18 +2350,19 @@ def solve_models(model_list,
 
 # + code_folding=[] pycharm={"is_executing": true}
 ## solve a list of models 
-solve_1model(models[0],
-             ms_stars[0],
-             σs_stars[0],
-            model_name = model_names[0])
+solve_models(models,
+             ms_stars,
+             σs_stars,
+            model_name_list = model_names
+            )
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot results from different models
 
 line_patterns =['g-v',
                 'r-.',
                 'b--',
-                #'y.'
+                'y.'
                 ]
 
 ## Lorenz curve of steady state wealth distribution
@@ -2501,6 +2512,4 @@ ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
 
 fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
-
-
 
