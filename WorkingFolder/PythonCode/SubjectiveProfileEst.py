@@ -32,10 +32,9 @@
 import numpy as np
 from scipy.optimize import minimize 
 import matplotlib.pyplot as plt 
-import pandas as pd
 import statsmodels.api as sm
 
-from Utility import mkv2_M2Q, mkv2_Q2Y, mkv2_Y2M, mkv2_Y2Q
+from Utility import mkv2_M2Q, mkv2_Y2Q
 
 
 # + code_folding=[0, 15, 47, 62, 75, 79, 83, 105, 125, 136]
@@ -88,7 +87,7 @@ class Markov2Switching:
     ### pdf function of normal distribution 
     def norm_pdf(self,
                  x,    ## value of the rm 
-                 μ,    ## mean of the nromal
+                 μ,    ## mean of the normal
                  σ):   ## std of the normal 
         """
         pdf of normal distribution mean μ and variance σ^2
@@ -99,13 +98,13 @@ class Markov2Switching:
         return temp1*temp2 
     
     ## The functions below are help functions 
-    ## that turn a hard constraint for parameters to an unconstrainted problem
+    ## that turn a hard constraint for parameters to an unconstrained problem
     ## prob_func  from R -> [0,1]
     def prob_func(self,
                    x):
         """
-        this bound function maps unconstrained x to y between 0 and 1
-        and it increases with x
+        this bound function maps unconstrained x to y between 0, and 1
+        , and it increases with x
         """
         return np.exp(x)/(1+np.exp(x))     
     
@@ -182,8 +181,8 @@ class Markov2Switching:
         """
         inputs
         ======
-        Y: a list of independent univariate/multivariate (a vector) time series for which the log-likilihood is computed jointly
-        para: parameters of the process sized of nb of vairalbes x nb of parameters, with the strict order of α,β,σ,q,p,ϕ1
+        Y: a list of independent univariate/multivariate (a vector) time series for which the log-likelihood is computed jointly
+        para: parameters of the process sized of nb of variables x nb of parameters, with the strict order of α,β,σ,q,p,ϕ1
         
         outputs
         =======
@@ -202,7 +201,6 @@ class Markov2Switching:
         ## starting from zero loglikelihood 
         
         llh_tot = 0.0
-        
 
         q = qs[0]
         p = ps[0]
@@ -220,7 +218,7 @@ class Markov2Switching:
             prdict1 = np.empty(T)
             f1 = np.empty(T)
 
-            ## initilize the first period 
+            ## initialize the first period
             update0[0], update1[0] = self.steady_state(q,   #p(s=0|Y_0) and  # p(s=1|Y_1)
                                                        p)   
             
@@ -230,7 +228,7 @@ class Markov2Switching:
                 pdf_t_1 = prdict1[t]
                 pdf_t_0 = (1-prdict1[t])
                 
-                ## loop over differen time series 
+                ## loop over different time series
                 for x in range(self.nb_var):
                     pdf_t_1 =pdf_t_1*self.norm_pdf(Y[x,t]-ϕ1s[x]*Y[x,t-1],αs[x]+βs[x],σs[x])  # f(y_t|s_t=1,Y_t-1)
                     pdf_t_0 =pdf_t_0*self.norm_pdf(Y[x,t]-ϕ1s[x]*Y[x,t-1],αs[x],σs[x]) # f(y_t|s_t=0,Y_t-1)
@@ -571,12 +569,12 @@ SCEM['E2E_prob_e'] =  SCEM['E2E_prob_truc'].apply(prob_inv_func)
 
 ## filter by basic/necessary criteria  
 print('nb of observations before:',str(len(SCEM)))
-SCEM =SCEM[SCEM['tenure']>=3]
+SCEM =SCEM[SCEM['tenure']>=6]
 SCEM = SCEM[SCEM['fulltime']==1]
 SCEM = SCEM[SCEM['selfemp']==1]  ## working for someone 
 SCEM =SCEM[(SCEM['age']<=65) & (SCEM['age']>=25) ]
-#SCEM =SCEM[SCEM['nlit']>=2.0]
-#SCEM =SCEM[SCEM['educ']>=2]
+SCEM =SCEM[SCEM['nlit']>=2.0]
+SCEM =SCEM[SCEM['educ']>=2]
 print('nb of observations after dropping low numeracy/low education sample:',str(len(SCEM)))
 
 # + code_folding=[6]
@@ -585,16 +583,30 @@ print('nb of observations after dropping low numeracy/low education sample:',str
 vars_list = ['lrincvar',
             'U2U_prob_e',
             'E2E_prob_e']  
+var_name = ['wage risk',
+            'U2U',
+            'E2E']
 
-for var in vars_list:
+sd_fe_list = []
+
+fig,axes = plt.subplots(3,1)
+
+
+for i,var in enumerate(vars_list):
     ## demeaned 
     SCEM[var+'_dm'] = SCEM[var]-SCEM.groupby('userid')[var].transform('mean')
-    
+    sd_fe_list.append(SCEM.groupby('userid')[var].transform('mean').std())
+
+    ## plot initial fixed effects
+    axes[i].hist(SCEM.groupby('userid')[var].transform('mean'),
+                 label=var_name[i],
+                 density=True)
+    axes[i].legend()
     ## run a panel regression to get the residuls 
-    model = smf.ols(formula = var+'~ C(date)+C(HHinc)+C(gender)+age2+age3+age4+C(educ_gr)',
-                data = SCEM)
-    #model = smf.ols(formula = var+'_dm~ C(date)',
+    #model = smf.ols(formula = var+'~ C(date)+C(HHinc)+C(gender)+age2+age3+age4+C(educ_gr)',
     #            data = SCEM)
+    model = smf.ols(formula = var+'_dm~ C(date)',
+                data = SCEM)
     result = model.fit()
     residuls = result.resid
     SCEM[var+'_rd'] = residuls
@@ -605,11 +617,20 @@ for var in vars_list:
 print('unconditional correlation')
 SCEM[vars_list].corr()
 
+# + pycharm={"name": "#%%\n"}
+## individual fixed effects
+
+print('std of ex-ante wage risks',sd_fe_list[0])
+print('std of ex-ante U2E',sd_fe_list[1])
+print('std of ex-ante E2E',sd_fe_list[2])
+
+
 # + code_folding=[]
 ## convert the panel data of rincvar into a list of time series sequence
 vars_rd_list = ['lrincvar_rd',
                 'U2U_prob_e_rd',
-                'E2E_prob_e_rd']  
+                'E2E_prob_e_rd'
+                ]
 # -
 
 
@@ -653,27 +674,26 @@ fig.savefig('../Graphs/sce/markov_example.png')
 # + code_folding=[]
 ## initialize the model based on the SCE  
 
-AR = 0
-nb_var = 3
-
+AR = 1
+nb_var = 1
 
 ## impose bounds on some parameters with sensible priors
 
 ## the size of the shock cannot exceed the sample variation
 sigma_ub0 = np.mean([np.std(np.array(x[0,:])) for x in SCE_list])
-sigma_inv_ub0 = SCE_mkv2.exp_func_inv(sigma_ub0)
+sigma_inv_ub0 = mkv2.exp_func_inv(sigma_ub0)
 
 sigma_ub1 = np.mean([np.std(np.array(x[1,:])) for x in SCE_list])
-sigma_inv_ub1 = SCE_mkv2.exp_func_inv(sigma_ub1)
+sigma_inv_ub1 = mkv2.exp_func_inv(sigma_ub1)
 
 sigma_ub2 = np.mean([np.std(np.array(x[2,:])) for x in SCE_list])
-sigma_inv_ub2 = SCE_mkv2.exp_func_inv(sigma_ub1)
+sigma_inv_ub2 = mkv2.exp_func_inv(sigma_ub1)
 
 ## staying probabilities of both 2 states are above half 
 q_lb = 0.5  ## persistent 
-q_inv_lb = SCE_mkv2.prob_func_inv(q_lb) 
+q_inv_lb = mkv2.prob_func_inv(q_lb)
 p_lb = 0.5 ## persistent 
-p_inv_lb = SCE_mkv2.prob_func_inv(p_lb)
+p_inv_lb = mkv2.prob_func_inv(p_lb)
 
 
 
@@ -693,7 +713,7 @@ if AR ==0:
         
     elif nb_var ==1:
         paras_init = np.array([0.1,0.1,0.1,0.7,0.7])
-        guess = np.array([0.2,0.4,-0.5,0.1,0.4,0.8])
+        guess = np.array([0.2,0.4,-0.5,0.4,0.8])
         bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),)
 
 elif AR==1:
@@ -712,14 +732,17 @@ elif AR==1:
     elif nb_var==1:
         paras_init= np.array([0.1,0.1,0.1,0.7,0.7,0.8])
         
-        guess = np.array([0.2,0.4,-0.5,0.1,0.4,0.8,0.8])
+        guess = np.array([0.2,0.4,-0.5,0.1,0.4,0.8])
         
         bounds = ((None,None),(0.0,None),(-1,sigma_inv_ub0),(q_lb,None),(p_inv_lb,None),(None,None),)
-    
-    
+
+
+
+## model instance
 SCE_mkv2 = Markov2Switching(AR=AR,
-                            paras = paras_init,
-                            nb_var = nb_var)
+                            paras=paras_init,
+                            nb_var=nb_var)
+
 
 ## objective func
 SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
@@ -730,7 +753,7 @@ SCE_obj = lambda para: -SCE_mkv2.log_likelihood(SCE_list,
 
 result = minimize(SCE_obj,
                   x0 = guess,
-                  method='SLSQP',   #SLSQP
+                  method='trust-constr',   #SLSQP
                   bounds = bounds,
                   options={'disp': True,
                             'maxiter':20000}
@@ -755,7 +778,9 @@ risks_est = pd.read_stata('../OtherData/sipp/sipp_history_vol_decomposed.dta')
 ## p/t ratio 
 kappas_sipp  = risks_est['permanent']/risks_est['transitory']
 kappa_sipp = np.median(kappas_sipp.dropna())
-kappa = kappa_sipp ## ratio of permanent and transitory risks 
+kappa = kappa_sipp ## ratio of permanent and transitory risks
+
+print(kappa)
 
 
 # + code_folding=[0, 8, 75]
@@ -764,38 +789,50 @@ kappa = kappa_sipp ## ratio of permanent and transitory risks
 model_para_q_est = {}
 
 ############################################
-## from yeraly to monthly risk then to quarterly 
+## from yearly to monthly risk then to quarterly
 ############################################
 
+## ex-ante heterogeneity
+model_para_q_est['\tilde\sigma_std'] = sd_fe_list[0]
+
+if nb_var>1:
+    model_para_q_est['\tilde \mho^l_std'] = sd_fe_list[1]
+    model_para_q_est['\tilde E^l_std'] = sd_fe_list[2]
+else:
+    pass
+
+## stochastic heterogeneity
 model_para_q_est['q'],model_para_q_est['p'] = mkv2_M2Q(SCE_para_model_est['q'],
                                                    SCE_para_model_est['p'])
 
 alpha = SCE_para_model_est['α'][0]
 beta = SCE_para_model_est['β'][0]
 
+
 model_para_q_est['\tilde\sigma_\psi^l'] = np.sqrt(3*np.exp(alpha)/(12+1/(12*kappa**2)))
 model_para_q_est['\tilde\sigma_\theta^l'] =  1/3*model_para_q_est['\tilde\sigma_\psi^l']/kappa
 model_para_q_est['\tilde\sigma_\psi^h'] =  np.sqrt(3*np.exp(alpha+beta)/(12+1/(12*kappa**2)))
 model_para_q_est['\tilde\sigma_\theta^h'] =  1/3*model_para_q_est['\tilde\sigma_\psi^h']/kappa
 
-alpha_q = SCE_para_model_est['α'][1]
-beta_q = SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1]
+if nb_var>1:
+    alpha_q = SCE_para_model_est['α'][1]
+    beta_q = SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1]
 
-alpha_p = SCE_para_model_est['α'][2]
-beta_p = SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2]
+    alpha_p = SCE_para_model_est['α'][2]
+    beta_p = SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2]
 
+    model_para_q_est['\tilde \mho^l'],model_para_q_est['\tilde E^l'] = mkv2_Y2Q(SCE_mkv2.prob_func(alpha_q),
+                                                                            SCE_mkv2.prob_func(alpha_p))
 
-model_para_q_est['\tilde \mho^l'],model_para_q_est['\tilde E^l'] = mkv2_Y2Q(SCE_mkv2.prob_func(alpha_q),
-                                                                        SCE_mkv2.prob_func(alpha_p))
+    model_para_q_est['\tilde \mho^h'], model_para_q_est['\tilde E^h']=  mkv2_Y2Q(SCE_mkv2.prob_func(alpha_q+beta_q),
+                                                                             SCE_mkv2.prob_func(alpha_p+beta_p))
 
-model_para_q_est['\tilde \mho^h'], model_para_q_est['\tilde E^h']=  mkv2_Y2Q(SCE_mkv2.prob_func(alpha_q+beta_q),
-                                                                         SCE_mkv2.prob_func(alpha_p+beta_p))
-
+else:
+    pass
 print('quarterly SCE parameters\n',model_para_q_est)
 
 
 ## convert to a dataframe 
-
 
 SCE_para_est_q_df = pd.DataFrame.from_dict(model_para_q_est,
                                          orient='index',
@@ -833,17 +870,33 @@ f.close()
 
 ## presentable tables 
 
-
-index_names = ['$q$',
-              '$p$',
-              '$\tilde\sigma^l_\psi$',
-              '$\tilde\sigma^l_\theta$',
-              '$\tilde\sigma^h_\psi$',
-              '$\tilde\sigma^h_\theta$',
-              '$\tilde \mho^l$',
-              '$\tilde \mho^h$',
-              '$\tilde E^l$',
-              '$\tilde E^h$']
+if nb_var>1:
+    index_names = ['$std(\tilde\sigma)$',
+                   '$std(\tilde\mho)$',
+                   '$std(\tilde E)$',
+                   '$q$',
+                  '$p$',
+                  '$\tilde\sigma^l_\psi$',
+                  '$\tilde\sigma^l_\theta$',
+                  '$\tilde\sigma^h_\psi$',
+                  '$\tilde\sigma^h_\theta$',
+                  '$\tilde \mho^l$',
+                  '$\tilde \mho^h$',
+                  '$\tilde E^l$',
+                  '$\tilde E^h$']
+else:
+    index_names = ['$std(\tilde\sigma)$',
+                   '$q$',
+                  '$p$',
+                  '$\tilde\sigma^l_\psi$',
+                  '$\tilde\sigma^l_\theta$',
+                  '$\tilde\sigma^h_\psi$',
+                  '$\tilde\sigma^h_\theta$',
+                  #'$\tilde \mho^l$',
+                  #'$\tilde \mho^h$',
+                  #'$\tilde E^l$',
+                  #'$\tilde E^h$'
+                   ]
 
 
 SCE_para_est_q_df.index = index_names
@@ -867,6 +920,15 @@ model_para_y_est = {}
 
 ###!!!! Here you need to transform montly mkv to 1 year
 
+## ex-ante heterogeneity
+model_para_y_est['\tilde\sigma_std'] = sd_fe_list[0]
+
+if nb_var>1:
+    model_para_y_est['\tilde \mho^l_std'] = sd_fe_list[1]
+    model_para_y_est['\tilde E^l_std'] = sd_fe_list[2]
+else:
+    pass
+
 model_para_y_est['q'],model_para_y_est['p'] = mkv2_M2Q(SCE_para_model_est['q'],
                                                    SCE_para_model_est['p'])
 
@@ -878,17 +940,20 @@ model_para_y_est['\tilde\sigma_\theta^l'] =  1/12*model_para_q_est['\tilde\sigma
 model_para_y_est['\tilde\sigma_\psi^h'] =  np.sqrt(12*np.exp(alpha+beta)/(12+1/(12*kappa**2)))
 model_para_y_est['\tilde\sigma_\theta^h'] =  1/12*model_para_q_est['\tilde\sigma_\psi^h']/kappa
 
+if nb_var>1:
+    alpha_q = SCE_para_model_est['α'][1]
+    beta_q = SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1]
 
-alpha_q = SCE_para_model_est['α'][1]
-beta_q = SCE_para_model_est['α'][1]+SCE_para_model_est['β'][1]
-
-alpha_p = SCE_para_model_est['α'][2]
-beta_p = SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2]
+    alpha_p = SCE_para_model_est['α'][2]
+    beta_p = SCE_para_model_est['α'][2]+SCE_para_model_est['β'][2]
 
 
-model_para_y_est['\tilde \mho^l'],model_para_y_est['\tilde E^l'] = SCE_mkv2.prob_func(alpha_q),SCE_mkv2.prob_func(alpha_p)
+    model_para_y_est['\tilde \mho^l'],model_para_y_est['\tilde E^l'] = SCE_mkv2.prob_func(alpha_q),SCE_mkv2.prob_func(alpha_p)
 
-model_para_y_est['\tilde \mho^h'], model_para_y_est['\tilde E^h']=  SCE_mkv2.prob_func(alpha_q+beta_q),SCE_mkv2.prob_func(alpha_p+beta_p)
+    model_para_y_est['\tilde \mho^h'], model_para_y_est['\tilde E^h']=  SCE_mkv2.prob_func(alpha_q+beta_q),SCE_mkv2.prob_func(alpha_p+beta_p)
+
+else:
+    pass
 
 print('yearly SCE parameters\n',model_para_y_est)
 
@@ -929,18 +994,7 @@ f.write(endtex)
 f.close()
 
 
-## presentable tables 
-
-index_names = ['$q$',
-              '$p$',
-              '$\tilde\sigma^l_\psi$',
-              '$\tilde\sigma^l_\theta$',
-              '$\tilde\sigma^h_\psi$',
-              '$\tilde\sigma^h_\theta$',
-              '$\tilde \mho^l$',
-              '$\tilde \mho^h$',
-              '$\tilde E^l$',
-              '$\tilde E^h$']
+## presentable tables
 
 SCE_para_est_y_df.index = index_names
 
@@ -950,25 +1004,8 @@ SCE_para_est_y_df.to_pickle('data/subjective_profile_est_y.pkl')
 
 SCE_para_est_y_df
 
-
-
-# + code_folding=[5]
-"""
-import pickle
-
-with open("parameters.txt", "rb") as fp:
-    lc_paras = pickle.load(fp)
-    
-for key in model_para_est.keys():
-    lc_paras[key] = model_para_est[key]
-    
-print(lc_paras)
-with open("parameters.txt", "wb") as fp:
-    pickle.dump(lc_paras, fp)
-"""
 # -
 
-# ## Other tests of the code
 
 # ### test using macro time series: U.S.  real GDP growth rate 
 #
@@ -1112,3 +1149,6 @@ if __name__ == "__main__":
                     alpha=0.1)
     ax2.legend(loc = 1,
               fontsize = fontsize)
+
+# + pycharm={"name": "#%%\n"}
+
