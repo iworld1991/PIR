@@ -528,7 +528,7 @@ def EGM_combine(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[1]
+# + code_folding=[]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
                               mϵ_vec,        # Initial condition for assets and MA shocks
@@ -549,7 +549,7 @@ def solve_model_backward_iter(model,        # Class with model information
     for year2L in range(1,model.L): ## nb of years till L from 0 to Model.L-2
         age = model.L-year2L
         age_id = age-1
-        print("at work age of "+str(age))
+        #print("at work age of "+str(age))
         mϵ_vec_next, σ_vec_next = mϵs_new[year2L-1,:,:,:,:],σs_new[year2L-1,:,:,:,:]
         
         mϵ_new, σ_new = EGM_combine(mϵ_vec_next, σ_vec_next, age_id, model)

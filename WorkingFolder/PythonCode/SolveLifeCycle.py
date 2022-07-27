@@ -351,7 +351,7 @@ class LifeCycle:
         return m_init,σ_init
 
 
-# + code_folding=[]
+# + code_folding=[7]
 ## This function takes the consumption values at different 
 ## grids of state variables from period t+1, and
 ## the model class, then generates the consumption values at t.
@@ -673,7 +673,7 @@ def EGM_br(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[1]
+# + code_folding=[]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
                               mϵ_vec,        # Initial condition for assets and MA shocks
@@ -693,7 +693,7 @@ def solve_model_backward_iter(model,        # Class with model information
     for year2L in range(1,model.L): ## nb of years till L from 0 to Model.L-2
         age = model.L-year2L
         age_id = age-1
-        print("at work age of "+str(age))
+        #print("at work age of "+str(age))
         mϵ_vec_next, σ_vec_next = mϵs_new[year2L-1,:,:,:],σs_new[year2L-1,:,:,:]
         if br==False:
             mϵ_new, σ_new = EGM_combine(mϵ_vec_next, σ_vec_next, age_id, model)
