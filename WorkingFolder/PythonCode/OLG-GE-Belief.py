@@ -36,6 +36,8 @@ from copy import copy
 from Utility import cal_ss_2markov,lorenz_curve,combine_ind_markov,gini
 from Utility import mean_preserving_spread
 from Utility import jump_to_grid, jump_to_grid_fast
+from scipy import sparse 
+import pickle
 
 
 # + code_folding=[]
@@ -640,7 +642,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[]
+# + code_folding=[8, 501, 536, 571, 585]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1243,7 +1245,7 @@ def flatten_dist(grid_lists,      ## (nb.z x nb.f) x L x nb x nm x np
 
 
 
-# + code_folding=[]
+# + code_folding=[20]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1380,6 +1382,17 @@ class HH_OLG_Markov:
                                                                  p_dist_grid_list,
                                                                  fast = False)
         
+        # storing as sparse matrix
+        tran_matrix_lists = [[sparse.csr_matrix(tran_matrix_lists[0][i]) 
+                              for i in range(len(tran_matrix_lists[0]))],
+                             [sparse.csr_matrix(tran_matrix_lists[1][i]) 
+                              for i in range(len(tran_matrix_lists[1]))],
+                              [sparse.csr_matrix(tran_matrix_lists[2][i]) 
+                              for i in range(len(tran_matrix_lists[2]))],
+                              [sparse.csr_matrix(tran_matrix_lists[3][i]) 
+                              for i in range(len(tran_matrix_lists[3]))],
+                            ]
+        
         ## save the output into the model 
         self.tran_matrix_lists = tran_matrix_lists
         
@@ -1411,13 +1424,6 @@ class HH_OLG_Markov:
         dist_e_f1_lists.append(initial_dist_e)
 
 
-        ## policy grid lists 
-        ap_u_f0_PolGrid_list = []
-        ap_e_f0_PolGrid_list = []
-        ap_u_f1_PolGrid_list = []
-        ap_e_f1_PolGrid_list = []
-
-
         ## m/p distribution in the first period in life (newborns)
         this_dist_u_f0 = initial_dist_u
         this_dist_e_f0 = initial_dist_e
@@ -1427,49 +1433,39 @@ class HH_OLG_Markov:
         ## iterate forward for all periods in life 
         for k in range(model.L-1): ## no transition matrix in the last period !
             ## uemp for belief state 0 
-            this_dist_u_f0 = np.matmul(tran_matrix_lists[0][k],
-                                    this_dist_u_f0)
+            this_dist_u_f0 = tran_matrix_lists[0][k]@this_dist_u_f0
             dist_u_f0_lists.append(this_dist_u_f0)
             
             ##emp for belief state 0 
-            this_dist_e_f0 = np.matmul(tran_matrix_lists[1][k],
-                                     this_dist_e_f0)
+            this_dist_e_f0 = tran_matrix_lists[1][k]@this_dist_e_f0
             dist_e_f0_lists.append(this_dist_e_f0)
         
             ## uemp for belief state 1 
-            this_dist_u_f1 = np.matmul(tran_matrix_lists[2][k],
-                                    this_dist_u_f1)
+            this_dist_u_f1 = tran_matrix_lists[2][k]@this_dist_u_f1
             dist_u_f1_lists.append(this_dist_u_f1)
 
         
             ##emp for belief state 1 
-            this_dist_e_f1 = np.matmul(tran_matrix_lists[3][k],
-                                     this_dist_e_f1)
+            this_dist_e_f1 = tran_matrix_lists[3][k]@this_dist_e_f1
             dist_e_f1_lists.append(this_dist_e_f1)
     
-        for k in range(model.L):
 
             ## c and a for u for belief 0 (index 0)
-            ap_PolGrid = np.multiply.outer(a_PolGrid_list[0][k],
-                                           p_dist_grid_list[k]).flatten()
-            ap_u_f0_PolGrid_list.append(ap_PolGrid)
+            ap_u_f0_PolGrid_list = [np.multiply.outer(a_PolGrid_list[0][k],
+                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
 
             ## c and a for e for belief 0 (index 1)
 
-            ap_PolGrid = np.multiply.outer(a_PolGrid_list[1][k],
-                                           p_dist_grid_list[k]).flatten()
-            ap_e_f0_PolGrid_list.append(ap_PolGrid)
+            ap_e_f0_PolGrid_list = [np.multiply.outer(a_PolGrid_list[1][k],
+                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
             
-            ap_PolGrid = np.multiply.outer(a_PolGrid_list[2][k],
-                                           p_dist_grid_list[k]).flatten()
-            ap_u_f1_PolGrid_list.append(ap_PolGrid)
-
-
-            ap_PolGrid = np.multiply.outer(a_PolGrid_list[3][k],
-                                           p_dist_grid_list[k]).flatten()
-            ap_e_f1_PolGrid_list.append(ap_PolGrid)
+            ## c and a for u for belief 1 (index 2)
+            ap_u_f1_PolGrid_list = [np.multiply.outer(a_PolGrid_list[2][k],
+                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
             
-
+            ## c and a for e for belief 1 (index 3)
+            ap_e_f1_PolGrid_list = [np.multiply.outer(a_PolGrid_list[3][k],
+                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
 
         ## stack the distribution lists 
         dist_lists = [dist_u_f0_lists,
@@ -1486,7 +1482,7 @@ class HH_OLG_Markov:
 
 
         time_end = time()
-        print('time taken:'+str(time_end-time_start))
+        print('time taken to get SS dist:'+str(time_end-time_start))
         
         self.dist_lists = dist_lists
         self.ap_PolGrid_list = ap_PolGrid_list
@@ -1970,7 +1966,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_test.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## get the within-age distribution 
 
 HH.get_lifecycle_dist()
@@ -2074,7 +2070,7 @@ fig.savefig('../Graphs/model/lorenz_curve_a_eq.png')
 
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## Wealth distribution 
 
 fig, ax = plt.subplots(figsize=(8,6))
@@ -2090,14 +2086,14 @@ fig.savefig('../Graphs/model/distribution_a_eq.png')
 
 # ## compare different models 
 
-# + code_folding=[0, 53, 69, 70, 84]
+# + code_folding=[0, 30, 53, 70, 84]
 def solve_1model(model,
                 m_star,
                 σ_star,
-                n_m = 40,
+                n_m = 30,
                 n_p = 40,
                 model_name = 'model',
-                ge = False):
+                ge = True):
     HH_this = HH_OLG_Markov(model = model)
     HH_this.define_distribution_grid(num_pointsM = n_m, 
                                     num_pointsP = n_p)
@@ -2183,6 +2179,8 @@ def solve_models(model_list,
     
     ## loop over different models 
     for k, model in enumerate(model_list):
+        print('Solving Model '+str(k))
+        print('\n')
         solve_1model(model,
                     ms_star_list[k],
                     σs_star_list[k],
@@ -2196,7 +2194,7 @@ solve_models(models,
             model_name_list = model_names
             )
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot results from different models
 
 line_patterns =['g-v',
@@ -2240,7 +2238,7 @@ for k,model in enumerate(models):
            np.log(model_solution['A_life_pe']),
            line_patterns[k],
            label= model_names[k])
-ax.set_ylim([-0.5,3.5])
+#ax.set_ylim([-0.5,3.5])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
@@ -2315,7 +2313,7 @@ for k, model in enumerate(models):
             line_patterns[k],
            label = model_names[k])
 
-ax.set_ylim([-0.5,3.5])
+#ax.set_ylim([-0.5,3.5])
 
 ax2 = ax.twinx()
 ax2.set_ylim([10.5,15])
