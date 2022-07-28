@@ -640,7 +640,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 511, 525, 560, 595, 609]
+# + code_folding=[]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -691,11 +691,7 @@ def calc_transition_matrix(model,
         G = model.G
         
         ## grid holders
-        # #!cPol_Grid_u_f0_list = [] # List of consumption policy grids for each period in T_cycle
-        # #!cPol_Grid_e_f0_list = [] # List of consumption policy grids for each period in T_cycle
-        # #!cPol_Grid_u_f1_list = [] # List of consumption policy grids for each period in T_cycle
-        # #!cPol_Grid_e_f1_list = [] # List of consumption policy grids for each period in T_cycle
-
+    
         aPol_Grid_u_f0_list = [] # List of asset policy grids for each period in T_cycle
         aPol_Grid_e_f0_list = [] # List of asset policy grids for each period in T_cycle
         aPol_Grid_u_f1_list = [] # List of asset policy grids for each period in T_cycle
@@ -773,13 +769,7 @@ def calc_transition_matrix(model,
             
             ## more generally, depending on the nb of markov states 
         
-            # #!cPol_Grid_u_f0_list.append(Cnow_u_f0)  # List of consumption policy grids for each age
-            # #!cPol_Grid_e_f0_list.append(Cnow_e_f0)  # List of consumption policy grids for each age
-            # #!cPol_Grid_u_f1_list.append(Cnow_u_f1)  # List of consumption policy grids for each age
-            # #!cPol_Grid_e_f1_list.append(Cnow_e_f1)  # List of consumption policy grids for each age
-
-
-
+       
             aNext_u_f0 = this_dist_mGrid - Cnow_u_f0 # Asset policy grid in each age
             aNext_e_f0 = this_dist_mGrid - Cnow_e_f0 # Asset policy grid in each age
             aNext_u_f1 = this_dist_mGrid - Cnow_u_f1 # Asset policy grid in each age
@@ -1152,20 +1142,6 @@ def calc_transition_matrix(model,
         return tran_matrix_list, aPol_Grid_list #!cPol_Grid_list
 
 @njit
-def aggregate_transition_matrix(model,
-                                tran_matrix_lists,  ## size model.T 
-                                dstn_0,    ## size n_z x n_f
-                                age_dist): ## size model.T 
-    ## aggregate different ages in the population
-    n1,n2 = tran_matrix_lists[0][0].shape
-    trans_matrix_agg = np.zeros((n1,n2),
-                                dtype=np.float64)
-    for zf in range(len(dstn_0)):
-        for k in range(model.L):
-            trans_matrix_agg = trans_matrix_agg+dstn_0[zf]*age_dist[k]*tran_matrix_lists[zf][k] 
-    return trans_matrix_agg
-
-@njit
 def initial_distribution_u(model,
                          dist_mGrid, ## new, array, grid of m for distribution 
                          dist_pGrid,  ## new, array, grid of p for distribution 
@@ -1267,7 +1243,7 @@ def flatten_dist(grid_lists,      ## (nb.z x nb.f) x L x nb x nm x np
 
 
 
-# + code_folding=[0, 20]
+# + code_folding=[]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1379,8 +1355,6 @@ class HH_OLG_Markov:
             self.m_dist_grid_list = List(dist_mGrid)
             self.p_dist_grid_list = List(dist_pGrid)
 
-            #return self.dist_mGrid, self.dist_pGrid
-        
             
     ## get the distributions of each age by iterating forward over life cycle 
 
@@ -1437,32 +1411,9 @@ class HH_OLG_Markov:
         dist_e_f1_lists.append(initial_dist_e)
 
 
-        mp_pdfs_lists_u_f0_2d = []
-        mp_pdfs_lists_e_f0_2d = []
-        mp_pdfs_lists_u_f0_2d.append(initial_dist_u.reshape(n_m,-1))
-        mp_pdfs_lists_e_f0_2d.append(initial_dist_e.reshape(n_m,-1))
-        mp_pdfs_lists_u_f1_2d = []
-        mp_pdfs_lists_e_f1_2d = []
-        mp_pdfs_lists_u_f1_2d.append(initial_dist_u.reshape(n_m,-1))
-        mp_pdfs_lists_e_f1_2d.append(initial_dist_e.reshape(n_m,-1))
-
-        mp_pdfs_lists_u_f0 = []
-        mp_pdfs_lists_e_f0 = []
-        mp_pdfs_lists_u_f0.append(initial_dist_u.reshape(n_m,-1).sum(axis=1))
-        mp_pdfs_lists_e_f0.append(initial_dist_e.reshape(n_m,-1).sum(axis=1))
-        mp_pdfs_lists_u_f1 = []
-        mp_pdfs_lists_e_f1 = []
-        mp_pdfs_lists_u_f1.append(initial_dist_u.reshape(n_m,-1).sum(axis=1))
-        mp_pdfs_lists_e_f1.append(initial_dist_e.reshape(n_m,-1).sum(axis=1))
-
-
         ## policy grid lists 
-        # #!cp_u_f0_PolGrid_list = []
-        # #!cp_e_f0_PolGrid_list = []
         ap_u_f0_PolGrid_list = []
         ap_e_f0_PolGrid_list = []
-        # #!cp_u_f1_PolGrid_list = []
-        # #!cp_e_f1_PolGrid_list = []
         ap_u_f1_PolGrid_list = []
         ap_e_f1_PolGrid_list = []
 
@@ -1479,82 +1430,43 @@ class HH_OLG_Markov:
             this_dist_u_f0 = np.matmul(tran_matrix_lists[0][k],
                                     this_dist_u_f0)
             dist_u_f0_lists.append(this_dist_u_f0)
-
-            this_dist_u_f0_2d = this_dist_u_f0.reshape(n_m,-1)
-            mp_pdfs_lists_u_f0_2d.append(this_dist_u_f0_2d)
-
-            this_dist_u_f0_2d_marginal = this_dist_u_f0_2d.sum(axis=1)
-            mp_pdfs_lists_u_f0.append(this_dist_u_f0_2d_marginal)
-
+            
             ##emp for belief state 0 
             this_dist_e_f0 = np.matmul(tran_matrix_lists[1][k],
                                      this_dist_e_f0)
             dist_e_f0_lists.append(this_dist_e_f0)
-            this_dist_e_f0_2d = this_dist_e_f0.reshape(n_m,-1)
-            mp_pdfs_lists_e_f0_2d.append(this_dist_e_f0_2d)
-
-            this_dist_e_f0_2d_marginal = this_dist_e_f0_2d.sum(axis=1)
-            mp_pdfs_lists_e_f0.append(this_dist_e_f0_2d_marginal)
-            
+        
             ## uemp for belief state 1 
             this_dist_u_f1 = np.matmul(tran_matrix_lists[2][k],
                                     this_dist_u_f1)
             dist_u_f1_lists.append(this_dist_u_f1)
 
-            this_dist_u_f1_2d = this_dist_u_f1.reshape(n_m,-1)
-            mp_pdfs_lists_u_f1_2d.append(this_dist_u_f1_2d)
-
-            this_dist_u_f1_2d_marginal = this_dist_u_f1_2d.sum(axis=1)
-            mp_pdfs_lists_u_f1.append(this_dist_u_f1_2d_marginal)
-
+        
             ##emp for belief state 1 
             this_dist_e_f1 = np.matmul(tran_matrix_lists[3][k],
                                      this_dist_e_f1)
             dist_e_f1_lists.append(this_dist_e_f1)
-            this_dist_e_f1_2d = this_dist_e_f1.reshape(n_m,-1)
-            mp_pdfs_lists_e_f1_2d.append(this_dist_e_f1_2d)
-
-            this_dist_e_f1_2d_marginal = this_dist_e_f1_2d.sum(axis=1)
-            mp_pdfs_lists_e_f1.append(this_dist_e_f1_2d_marginal)
-
+    
         for k in range(model.L):
 
             ## c and a for u for belief 0 (index 0)
-            # #!cp_PolGrid = np.multiply.outer(c_PolGrid_list[0][k],
-            # #!                               p_dist_grid_list[k])
-            # #!cp_u_f0_PolGrid_list.append(cp_PolGrid)
-
             ap_PolGrid = np.multiply.outer(a_PolGrid_list[0][k],
-                                           p_dist_grid_list[k])
+                                           p_dist_grid_list[k]).flatten()
             ap_u_f0_PolGrid_list.append(ap_PolGrid)
 
             ## c and a for e for belief 0 (index 1)
-            # #!cp_PolGrid = np.multiply.outer(c_PolGrid_list[1][k],
-            # #!                              p_dist_grid_list[k])
-            # #!cp_e_f0_PolGrid_list.append(cp_PolGrid)
-
 
             ap_PolGrid = np.multiply.outer(a_PolGrid_list[1][k],
-                                           p_dist_grid_list[k])
+                                           p_dist_grid_list[k]).flatten()
             ap_e_f0_PolGrid_list.append(ap_PolGrid)
             
-            ## c and a for u for belief 1 (index 2)
-            # #!cp_PolGrid = np.multiply.outer(c_PolGrid_list[2][k],
-            # #!                               p_dist_grid_list[k])
-            # #!cp_u_f1_PolGrid_list.append(cp_PolGrid)
-
             ap_PolGrid = np.multiply.outer(a_PolGrid_list[2][k],
-                                           p_dist_grid_list[k])
+                                           p_dist_grid_list[k]).flatten()
             ap_u_f1_PolGrid_list.append(ap_PolGrid)
-
-            ## c and a for e for belief 1 (index 3)
-            # #!cp_PolGrid = np.multiply.outer(c_PolGrid_list[3][k],
-            # #!                               p_dist_grid_list[k])
-            # #!cp_e_f1_PolGrid_list.append(cp_PolGrid)
 
 
             ap_PolGrid = np.multiply.outer(a_PolGrid_list[3][k],
-                                           p_dist_grid_list[k])
+                                           p_dist_grid_list[k]).flatten()
             ap_e_f1_PolGrid_list.append(ap_PolGrid)
             
 
@@ -1564,25 +1476,6 @@ class HH_OLG_Markov:
                      dist_e_f0_lists,
                      dist_u_f1_lists,
                      dist_e_f1_lists]
-
-        ##  joint pdfs over m and p
-        mp_pdfs_2d_lists = [mp_pdfs_lists_u_f0_2d,
-                           mp_pdfs_lists_e_f0_2d,
-                           mp_pdfs_lists_u_f1_2d,
-                           mp_pdfs_lists_e_f1_2d]
-
-        ## marginalized pdfs over m 
-        mp_pdfs_lists = [mp_pdfs_lists_u_f0,
-                         mp_pdfs_lists_e_f0,
-                        mp_pdfs_lists_u_f1,
-                         mp_pdfs_lists_e_f1]  ## size of n_z x n_f x model.L
-
-
-        ## c policy grid 
-        # #!cp_PolGrid_list = [cp_u_f0_PolGrid_list,
-        # #!                  cp_e_f0_PolGrid_list,
-        # #!                  cp_u_f1_PolGrid_list,
-        # #!                  cp_e_f1_PolGrid_list]
 
         # a policy grid 
 
@@ -1595,46 +1488,27 @@ class HH_OLG_Markov:
         time_end = time()
         print('time taken:'+str(time_end-time_start))
         
-        self.dist_list = dist_lists
-        self.mp_pdfs_2d_lists = mp_pdfs_2d_lists
-        self.mp_pdfs_lists = mp_pdfs_lists
+        self.dist_lists = dist_lists
         self.ap_PolGrid_list = ap_PolGrid_list
-        # #!self.cp_PolGrid_list = cp_PolGrid_list
         
         
         ## also store flatten list of level of a and c
         self.ap_grid_dist, self.ap_pdfs_dist = flatten_dist(ap_PolGrid_list,
-                                                            mp_pdfs_2d_lists,
+                                                            dist_lists,
                                                             ss_dstn_combined,
-                                                            age_dist)
-            
-        # #!self.cp_grid_dist, self.cp_pdfs_dist = flatten_dist(cp_PolGrid_list,
-        # #!                                                    mp_pdfs_2d_lists,
-        # #!                                                    ss_dstn_combined,
-        # #!                                                    age_dist)
+                                                            age_dist)        
 
-        #return tran_matrix_lists,dist_lists,mp_pdfs_2d_lists,mp_pdfs_lists,cp_PolGrid_list,ap_PolGrid_list
-        
-
-    ### Aggregate C or A
+    ### Aggregate A
 
     def Aggregate(self):
-        ## compute aggregate C 
-        # #!cp_PolGrid_list = self.cp_PolGrid_list
         ap_PolGrid_list = self.ap_PolGrid_list
-        mp_pdfs_2d_lists = self.mp_pdfs_2d_lists
+        dist_lists = self.dist_lists
         ss_dstn = self.ss_dstn
         ss_dstn_combined = self.ss_dstn_combined
         age_dist = self.age_dist
 
-
-        # #!self.C = AggregateDist(cp_PolGrid_list,
-        # #!                      mp_pdfs_2d_lists,
-        # #!                      ss_dstn_combined,
-        # #!                      age_dist)
-
         self.A = AggregateDist(ap_PolGrid_list,
-                              mp_pdfs_2d_lists,
+                              dist_lists,
                               ss_dstn_combined,
                               age_dist)
 
@@ -1644,16 +1518,14 @@ class HH_OLG_Markov:
         
         model = self.model 
         
-        # #!cp_PolGrid_list = self.cp_PolGrid_list
         ap_PolGrid_list = self.ap_PolGrid_list
-        mp_pdfs_2d_lists = self.mp_pdfs_2d_lists
+        dist_lists = self.dist_lists
         ss_dstn = self.ss_dstn
         ss_dstn_combined = self.ss_dstn_combined
         age_dist = self.age_dist
         
         ### Aggregate distributions within age
 
-        # #!C_life = []
         A_life = []
 
 
@@ -1661,23 +1533,13 @@ class HH_OLG_Markov:
             age_dist_sparse = np.zeros(model.L)
             age_dist_sparse[t] = 1.0 ## a fake age distribution that gives the age t the total weight
 
-            ## age-specific wealth 
-            # #!C_this_age = AggregateDist(cp_PolGrid_list,
-            # #!                       mp_pdfs_2d_lists,
-            # #!                       ss_dstn_combined,
-            # #!                       age_dist_sparse)
-
-            # #!C_life.append(C_this_age)
-
             A_this_age = AggregateDist(ap_PolGrid_list,
-                                  mp_pdfs_2d_lists,
+                                  dist_lists,
                                   ss_dstn_combined,
                                   age_dist_sparse)
             A_life.append(A_this_age)
             
-        self.A_life = A_life
-        # #!self.C_life = C_life 
-        
+        self.A_life = A_life        
         
     ### Wealth distribution over life cycle 
 
@@ -1685,17 +1547,13 @@ class HH_OLG_Markov:
 
         model = self.model 
         ap_PolGrid_list = self.ap_PolGrid_list
-        # #!cp_PolGrid_list = self.cp_PolGrid_list
-        mp_pdfs_2d_lists = self.mp_pdfs_2d_lists
+        dist_lists = self.dist_lists
         ss_dstn = self.ss_dstn
         ss_dstn_combined = self.ss_dstn_combined
         
         ## Flatten distribution by age
         ap_grid_dist_life = []
         ap_pdfs_dist_life = []
-        # #!cp_grid_dist_life = []
-        # #!cp_pdfs_dist_life = []
-
 
         for t in range(model.L):
 
@@ -1703,27 +1561,15 @@ class HH_OLG_Markov:
             age_dist_sparse[t] = 1.0
 
             ap_grid_dist_this_age, ap_pdfs_dist_this_age = flatten_dist(ap_PolGrid_list,
-                                                                        mp_pdfs_2d_lists,
+                                                                        dist_lists,
                                                                         ss_dstn_combined,
                                                                         age_dist_sparse)
 
             ap_grid_dist_life.append(ap_grid_dist_this_age)
             ap_pdfs_dist_life.append(ap_pdfs_dist_this_age)
 
-            # #!cp_grid_dist_this_age, cp_pdfs_dist_this_age = flatten_dist(cp_PolGrid_list,
-            # #!                                                            mp_pdfs_2d_lists,
-            # #!                                                            ss_dstn_combined,
-            # #!                                                            age_dist_sparse)
-
-            # #!cp_grid_dist_life.append(cp_grid_dist_this_age)
-            # #!cp_pdfs_dist_life.append(cp_pdfs_dist_this_age)
-
-
         self.ap_grid_dist_life = ap_grid_dist_life
         self.ap_pdfs_dist_life = ap_pdfs_dist_life
-
-        # #!self.cp_grid_dist_life = cp_grid_dist_life
-        # #!self.cp_pdfs_dist_life = cp_pdfs_dist_life
             
             
     ### Get lorenz weights  
@@ -1733,10 +1579,7 @@ class HH_OLG_Markov:
         returns the lorenz weights and value 
         """
         ap_grid_dist = self.ap_grid_dist
-        ap_pdfs_dist = self.ap_pdfs_dist
-        # #!cp_grid_dist = self.cp_grid_dist
-        # #!cp_pdfs_dist = self.cp_pdfs_dist
-    
+        ap_pdfs_dist = self.ap_pdfs_dist    
         
         if variable =='a':
             
@@ -1764,7 +1607,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0, 26, 165]
+# + code_folding=[26, 165]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -2026,7 +1869,6 @@ print('aggregate savings under stationary distribution:', str(HH.A))
 
 # ### Stationary wealth/consumption distribution
 
-#share_agents_cp,share_cp = HH.Lorenz(variable='c')
 share_agents_ap,share_ap = HH.Lorenz(variable='a')
 
 # +
@@ -2068,8 +1910,6 @@ plt.savefig('../Graphs/model/lorenz_a_test.png')
 
 ap_grid_dist = HH.ap_grid_dist
 ap_pdfs_dist = HH.ap_pdfs_dist
-#cp_grid_dist = HH.cp_grid_dist
-#cp_pdfs_dist = HH.cp_pdfs_dist
 
 
 fig, ax = plt.subplots(figsize=(8,6))
@@ -2089,10 +1929,10 @@ fig.savefig('../Graphs/model/distribution_a_test.png')
 HH.AggregatebyAge()
 
 A_life = HH.A_life
-#C_life = HH.C_life
 
 
-# + code_folding=[11]
+
+# + code_folding=[0, 11]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -2130,7 +1970,7 @@ ax.legend(loc=1)
 ax2.legend(loc=2)
 fig.savefig('../Graphs/model/life_cycle_a_test.png')
 
-# + code_folding=[0]
+# + code_folding=[]
 ## get the within-age distribution 
 
 HH.get_lifecycle_dist()
@@ -2356,7 +2196,7 @@ solve_models(models,
             model_name_list = model_names
             )
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot results from different models
 
 line_patterns =['g-v',
