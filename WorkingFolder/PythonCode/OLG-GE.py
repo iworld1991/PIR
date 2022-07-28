@@ -1042,7 +1042,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 17, 110, 233, 263, 294, 316]
+# + code_folding=[5, 17, 219, 233, 263, 294, 316]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1187,7 +1187,6 @@ class HH_OLG_Markov:
         initial_dist_u = initial_distribution_u(model,
                                               m_dist_grid_list[0],
                                               p_dist_grid_list[0])
-        print(initial_dist_u.shape)
 
         initial_dist_e = initial_distribution_e(model,
                                                 m_dist_grid_list[0],
