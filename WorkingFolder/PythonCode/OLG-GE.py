@@ -19,6 +19,8 @@
 # - author: Tao Wang
 # - this is a companion notebook to the paper "Perceived income risks"
 
+from psutil import Process 
+
 import numpy as np
 import pandas as pd
 from interpolation import interp, mlinterp
@@ -37,6 +39,7 @@ from Utility import cal_ss_2markov,lorenz_curve, gini
 from Utility import mean_preserving_spread
 from Utility import jump_to_grid,jump_to_grid_fast
 import pickle
+from scipy import sparse 
 
 
 # + code_folding=[]
@@ -625,7 +628,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 311, 346, 360, 382, 396]
+# + code_folding=[8, 310, 345, 381, 395]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -935,7 +938,6 @@ def calc_transition_matrix(model,
         
         return tran_matrix_list, aPol_Grid_list #cPol_Grid_list
 
-
 @njit
 def initial_distribution_u(model,
                          dist_mGrid, ## new, array, grid of m for distribution 
@@ -1040,7 +1042,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[17, 110, 125, 223, 237, 267, 298]
+# + code_folding=[0, 5, 17, 110, 233, 263, 294, 316]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1154,24 +1156,29 @@ class HH_OLG_Markov:
     def ComputeSSDist(self,
               ms_star = None,
               σs_star = None):
-        
+     
         model = self.model
         m_dist_grid_list = self.m_dist_grid_list
         p_dist_grid_list = self.p_dist_grid_list
         ss_dstn = self.ss_dstn
         age_dist = self.age_dist
         
-        
         time_start = time()
 
         ## get the embedded list sized n_z x T x n_m x n_p
-
         tran_matrix_lists, a_PolGrid_list = calc_transition_matrix(model, 
                                                                    ms_star, ## 
                                                                  σs_star,
                                                                  m_dist_grid_list,
                                                                  p_dist_grid_list,
                                                                  fast = False)
+        
+        # storing as sparse matrix
+        tran_matrix_lists = [[sparse.csr_matrix(tran_matrix_lists[0][i]) 
+                              for i in range(len(tran_matrix_lists[0]))],
+                             [sparse.csr_matrix(tran_matrix_lists[1][i]) 
+                              for i in range(len(tran_matrix_lists[1]))]
+                            ]
         
         ## save the output into the model 
         self.tran_matrix_lists = tran_matrix_lists
@@ -1180,19 +1187,17 @@ class HH_OLG_Markov:
         initial_dist_u = initial_distribution_u(model,
                                               m_dist_grid_list[0],
                                               p_dist_grid_list[0])
+        print(initial_dist_u.shape)
 
         initial_dist_e = initial_distribution_e(model,
                                                 m_dist_grid_list[0],
                                                 p_dist_grid_list[0])
         
-        self.initial_dist_u=initial_dist_u
-        self.initial_dist_e=initial_dist_e
+        self.initial_dist_u = initial_dist_u
+        self.initial_dist_e = initial_dist_e
 
 
         ## iterate forward 
-
-        n_m = len(m_dist_grid_list[0])
-
 
         dist_u_lists = []
         dist_e_lists = []
@@ -1212,56 +1217,49 @@ class HH_OLG_Markov:
 
 
         ## iterate forward for all periods in life 
+       
+        
         for k in range(model.L-1): ## no transition matrix in the last period !
+            
             ## uemp 
-            this_dist_u = np.matmul(tran_matrix_lists[0][k],
-                                    this_dist_u)
+            this_dist_u = tran_matrix_lists[0][k]@this_dist_u
             dist_u_lists.append(this_dist_u)
+            
 
             ##emp
-            this_dist_e = np.matmul(tran_matrix_lists[1][k],
-                                     this_dist_e)
+            this_dist_e = tran_matrix_lists[1][k]@this_dist_e
             dist_e_lists.append(this_dist_e)
-
-        for k in range(model.L):
-
-            ## c and a for u 
-
-            ap_PolGrid = np.multiply.outer(a_PolGrid_list[0][k],
-                                           p_dist_grid_list[k]).flatten()
-            ap_u_PolGrid_list.append(ap_PolGrid)
-
-            ## c and a for e 
-
-            ap_PolGrid = np.multiply.outer(a_PolGrid_list[1][k],
-                                           p_dist_grid_list[k]).flatten()
-            ap_e_PolGrid_list.append(ap_PolGrid)
-
+                    
+        ## get level of a over life cycle 
+        ap_u_PolGrid_list = [np.multiply.outer(a_PolGrid_list[0][k],
+                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
+        ap_e_PolGrid_list = [np.multiply.outer(a_PolGrid_list[1][k],
+                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
+   
+        
         ## stack the distribution lists 
         dist_lists = [dist_u_lists,
                      dist_e_lists]
-
-        ##  joint pdfs over m and p
+       
 
         # a policy grid 
-
         ap_PolGrid_list = [ap_u_PolGrid_list,
                           ap_e_PolGrid_list]
 
-
+        
         time_end = time()
-        print('time taken:'+str(time_end-time_start))
+        print('time taken to get SS dist:'+str(time_end-time_start))
+        
+        memory = Process().memory_info().rss/1024/1024/1024
+        print('memory usage: '+str(memory))
         
         self.dist_lists = dist_lists
         self.ap_PolGrid_list = ap_PolGrid_list
-        
-        
         ## also store flatten list of level of a and c
         self.ap_grid_dist, self.ap_pdfs_dist = flatten_list(ap_PolGrid_list,
                                                             dist_lists,
                                                             ss_dstn,
                                                             age_dist)
-            
     ### Aggregate C or A
 
     def Aggregate(self):
@@ -1373,7 +1371,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[143]
+# + code_folding=[0, 5, 24, 143]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1559,7 +1557,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[0, 1]
+# + code_folding=[1]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1567,14 +1565,40 @@ production = CDProduction(α = production_paras['α'],
                          target_W = production_paras['W']) 
 
 ## nb of grids used for transition matrix  
-n_m = 20
+n_m = 40
 n_p = 40
+
+
+# + code_folding=[0]
+## get the wealth distribution from SCF (net worth)
+
+SCF2016 = pd.read_stata('rscfp2016.dta')
+SCF2016 = SCF2016.drop_duplicates(subset=['yy1'])
+
+SCF_wealth, SCF_weights = np.array(SCF2016['networth']), np.array(SCF2016['wgt'])
+
+## get the lorenz curve weights from SCF 
+SCF_wealth_sort_id = SCF_wealth.argsort()
+SCF_wealth_sort = SCF_wealth[SCF_wealth_sort_id]
+SCF_weights_sort = SCF_weights[SCF_wealth_sort_id]
+SCF_weights_sort_norm = SCF_weights_sort/SCF_weights_sort.sum()
+
+SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
+                                                 SCF_weights_sort_norm,
+                                                 nb_share_grid = 200)
+
+
+import pandas as pd
+SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
+
+SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
+
 
 # -
 
 # ## compare different models 
 
-# + code_folding=[0]
+# + code_folding=[0, 73]
 def solve_1model(model,
                 m_star,
                 σ_star,
@@ -1663,37 +1687,13 @@ def solve_models(model_list,
                     σs_star_list[k],
                      model_name = model_name_list[k])
 
-# + code_folding=[]
+# + code_folding=[0]
 ## solve a list of models and save all solutions as pickles 
 
 model_results = solve_models(models,
                              ms_stars,
                              σs_stars,
                              model_name_list = model_names)
-
-# + code_folding=[0]
-## get the wealth distribution from SCF (net worth)
-
-SCF2016 = pd.read_stata('rscfp2016.dta')
-SCF2016 = SCF2016.drop_duplicates(subset=['yy1'])
-
-SCF_wealth, SCF_weights = np.array(SCF2016['networth']), np.array(SCF2016['wgt'])
-
-## get the lorenz curve weights from SCF 
-SCF_wealth_sort_id = SCF_wealth.argsort()
-SCF_wealth_sort = SCF_wealth[SCF_wealth_sort_id]
-SCF_weights_sort = SCF_weights[SCF_wealth_sort_id]
-SCF_weights_sort_norm = SCF_weights_sort/SCF_weights_sort.sum()
-
-SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
-                                                 SCF_weights_sort_norm,
-                                                 nb_share_grid = 200)
-
-
-import pandas as pd
-SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
-
-SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # + pycharm={"name": "#%%\n"} code_folding=[0, 2, 11, 37, 70, 86]
 ## plot results from different models
@@ -1856,7 +1856,7 @@ fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
 
 # ## Analysis of the baseline model 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## testing of the household class 
 
 HH = HH_OLG_Markov(model=lc_mkv)
@@ -1996,15 +1996,12 @@ HH.get_lifecycle_dist()
 ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
 
 
-# + code_folding=[]
-## create the dataframe to plot distributions over the life cycle 
-ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
-ap_range = list(ap_pdfs_life.index)
-
-
-# + code_folding=[1, 10]
+# + code_folding=[1, 13]
 joy = False
 if joy == True:
+    ## create the dataframe to plot distributions over the life cycle 
+    ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
+    ap_range = list(ap_pdfs_life.index)
     fig, axes = joypy.joyplot(ap_pdfs_life, 
                               kind="values", 
                               x_range= ap_range,
@@ -2110,6 +2107,3 @@ fig.savefig('../Graphs/model/distribution_a_eq.png')
 zero_wealth_id = np.where(market_OLG_mkv.households.ap_grid_dist<=1e-2)
 zero_wealth_share = market_OLG_mkv.households.ap_pdfs_dist[zero_wealth_id].sum()
 print('Share of zero wealth',str(zero_wealth_share))
-# -
-
-
