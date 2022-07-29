@@ -813,13 +813,12 @@ if __name__ == "__main__":
     t_start = time()
 
     sigma_psi_ls = [0.03,0.2]
-    sigma_eps_ls = [0.03,0.2]
     
     ms_stars =[]
     σs_stars = []
     for i,sigma_psi in enumerate(sigma_psi_ls):
-        lc_pt.sigma_psi = sigma_psi
-        lc_pt.sigma_eps = sigma_eps_ls[i]
+        lc_pt.sigma_psi = sigma_psi_ls[i]
+
         ### this line is very important!!!!
         #### need to regenerate shock draws for new sigmas
         lc_pt.prepare_shocks()
@@ -839,7 +838,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1397,6 +1396,130 @@ if __name__ == "__main__":
         axes[0].set_ylabel('c')
         axes[x].set_title(r'c under countercyclical risks at $age={}$'.format(age))
 # -
+
+# ### State-dependent BELIEFS 
+
+if __name__ == "__main__":
+    
+    ## markov tansition probs of belief states 
+    P_sub = np.array(
+        [[0.95,0.05],[0.1,0.9]]
+    )
+
+if __name__ == "__main__":
+    ss_P_sub= cal_ss_2markov(P_sub)
+    prob_h_sub = P_sub[0,0]
+    prob_l_sub = P_sub[0,1]
+
+    ## keep average risks the same 
+    ### notice here I put high risk at the first!!!
+    sigma_psi_2mkv_sub = np.sqrt(mean_preserving_spread(mean = lc_uemkv.sigma_psi**2,
+                                                      probs = np.array([prob_l_sub,prob_h_sub]),
+                                                      l2mean_ratio = 0.1)
+                               )
+    
+    sigma_eps_2mkv_sub = np.sqrt(mean_preserving_spread(mean = lc_uemkv.sigma_eps**2,
+                                                      probs = np.array([prob_l_sub,prob_h_sub]),
+                                                      l2mean_ratio = 0.1)
+                               )
+
+if __name__ == "__main__":
+    ## compute steady state 
+    av_sigma_psi_sub = np.sqrt(np.dot(P_sub[0,:],sigma_psi_2mkv_sub**2))
+    av_sigma_eps_sub = np.sqrt(np.dot(P_sub[0,:],sigma_eps_2mkv_sub**2))
+    print('steady state is '+str(ss_P_sub))
+    print('transitory probability is '+str(P_sub[0,:]))
+    print('markov permanent risks are '+str(sigma_psi_2mkv_sub))
+    print('markov transitionry risks are '+str(sigma_eps_2mkv_sub))
+
+    print('average permanent risk is '+str(av_sigma_psi_sub)+' compared to objective model '+str(lc_uemkv.sigma_psi))
+    print('average transitory risk is '+str(av_sigma_eps_sub)+' compared to objective model '+str(lc_uemkv.sigma_eps))
+
+if __name__ == "__main__":
+
+    ## initialize another 
+    lc_uemkv_sub = LifeCycle(sigma_psi=sigma_psi,
+                         sigma_eps = sigma_eps,
+                         U=U0,
+                         ρ=ρ,
+                         R=R,
+                         T=T,
+                         L=L,
+                         G=G,
+                         β=β,
+                         x= 0.0,  ## shut down ma(1)
+                         borrowing_cstr = borrowing_cstr,
+                         b_y = 0.0, ## markov state loading does not matter any more 
+                         ##########
+                         P = P_uemkv,
+                         #########
+                         unemp_insurance = 0.3,
+                         ue_markov = True,
+                         state_dependent_risk = False,
+                         ####################
+                         ## subjective belief 
+                         ##############
+                         P_sub = P_sub,
+                         state_dependent_belief = True,
+                         sigma_psi_2mkv = sigma_psi_2mkv_sub,   # different 
+                         sigma_eps_2mkv = sigma_eps_2mkv_sub,  # different 
+                          )
+
+if __name__ == "__main__":
+
+
+    ## solve the model for different transition matrices
+
+    t_start = time()
+
+    ## initial guess
+    m_init_sub,σ_init_sub = lc_uemkv_sub.terminal_solution()
+
+    ## solve the model 
+    ms_star_sub, σs_star_sub = solve_model_backward_iter(lc_uemkv_sub,
+                                                       m_init_sub,
+                                                       σ_init_sub)
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
+
+if __name__ == "__main__":
+
+
+    ## compare two markov states low versus high risk 
+
+    years_left = [1,21,25,40]
+
+    n_sub = len(years_left)
+
+    eps_id = 0
+
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
+
+    for x,year in enumerate(years_left):
+        age = lc_basic.L-year
+        i = lc_basic.L-age
+        m_plt_u_l,c_plt_u_l = ms_star_sub[i,:,eps_id,0,0],σs_star_sub[i,:,eps_id,0,0]
+        m_plt_u_h,c_plt_u_h = ms_star_sub[i,:,eps_id,0,1],σs_star_sub[i,:,eps_id,0,1]
+        
+        m_plt_e_l,c_plt_e_l = ms_star_sub[i,:,eps_id,1,0],σs_star_sub[i,:,eps_id,1,0]
+        m_plt_e_h,c_plt_e_h = ms_star_sub[i,:,eps_id,1,1],σs_star_sub[i,:,eps_id,1,1]
+        
+        axes[x].plot(m_plt_u_l, ## 0 indicates the low risk state 
+                     c_plt_u_l,
+                     '--',
+                     label ='uemp+ low risk belief',
+                     lw = 3)
+        axes[x].plot(m_plt_u_h, ## 1 indicates the high risk state 
+                     c_plt_u_h,
+                     '-.',
+                     label ='uemp+ high risk belief',
+                     lw = 3)
+        axes[x].legend()
+        axes[x].set_xlabel('m')
+        axes[0].set_ylabel('c')
+        axes[x].set_title(r'c under markov belief of risks at $age={}$'.format(age))
 
 # ### Objective and subject state-dependent profile
 
