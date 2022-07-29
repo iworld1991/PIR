@@ -528,7 +528,7 @@ def EGM_combine(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[1]
+# + code_folding=[]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
                               mϵ_vec,        # Initial condition for assets and MA shocks
@@ -549,7 +549,7 @@ def solve_model_backward_iter(model,        # Class with model information
     for year2L in range(1,model.L): ## nb of years till L from 0 to Model.L-2
         age = model.L-year2L
         age_id = age-1
-        #print("at work age of "+str(age))
+        print("at work age of "+str(age))
         mϵ_vec_next, σ_vec_next = mϵs_new[year2L-1,:,:,:,:],σs_new[year2L-1,:,:,:,:]
         
         mϵ_new, σ_new = EGM_combine(mϵ_vec_next, σ_vec_next, age_id, model)
@@ -639,7 +639,7 @@ def compare_2solutions(ms_stars,
 
 # ## Initialize the model
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -650,7 +650,7 @@ if __name__ == "__main__":
     U0 = 0.0 ## transitory ue risk
     unemp_insurance = 0.15
     sigma_psi = 0.2 # permanent 
-    sigma_eps = 0.0 # transitory 
+    sigma_eps = 0.1 # transitory 
 
 
     #λ = 0.0  ## tax rate
@@ -717,7 +717,7 @@ if __name__ == "__main__":
                    )
 
 
-# +
+# + code_folding=[0]
 # Initial the end-of-period consumption policy of σ = consume all assets
 
 if __name__ == "__main__":
@@ -735,7 +735,7 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     print(σ_init.shape)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     #########################
     ## test the iteration
@@ -766,7 +766,7 @@ if __name__ == "__main__":
         σ_vec = np.copy(σ_next)
     ax.legend(loc=0)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     t_start = time()
@@ -807,7 +807,7 @@ if __name__ == "__main__":
                    unemp_insurance = unemp_insurance,
                    )
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     t_start = time()
@@ -993,7 +993,7 @@ if __name__ == "__main__":
 
 # ### State-dependent risks 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## transition matrix between low and high risk state
@@ -1024,9 +1024,9 @@ if __name__ == "__main__":
     )
 
     b_y = 0.0  ## set the macro state loading to be zero, i.e. only risks differ across two states
-# -
 
 
+# + code_folding=[0]
 if __name__ == "__main__":
     ## compute steady state 
     av_sigma_psi = np.sqrt(np.dot(P[0,:],sigma_psi_2mkv**2))
@@ -1123,7 +1123,7 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1174,7 +1174,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent unemployment state
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1435,6 +1435,7 @@ if __name__ == "__main__":
     print('average permanent risk is '+str(av_sigma_psi_sub)+' compared to objective model '+str(lc_uemkv.sigma_psi))
     print('average transitory risk is '+str(av_sigma_eps_sub)+' compared to objective model '+str(lc_uemkv.sigma_eps))
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## initialize another 
@@ -1465,6 +1466,7 @@ if __name__ == "__main__":
                          sigma_eps_2mkv = sigma_eps_2mkv_sub,  # different 
                           )
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1484,6 +1486,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1520,6 +1523,7 @@ if __name__ == "__main__":
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'c under markov belief of risks at $age={}$'.format(age))
+# -
 
 # ### Objective and subject state-dependent profile
 
@@ -1741,3 +1745,6 @@ if __name__ == "__main__":
         plt.xlabel('asset')
         plt.ylabel('c')
         plt.title('Infinite horizon solution')
+# -
+
+
