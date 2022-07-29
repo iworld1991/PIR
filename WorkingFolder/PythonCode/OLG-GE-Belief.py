@@ -609,8 +609,8 @@ for x,year in enumerate(years_left):
     z_h = 1
     for k,model_name in enumerate(model_names):
         if k<=3:
-            m_plt_u,c_plt_u = ms_stars[k][i,:,z_l,0,0],σs_stars[k][i,:,z_l,0,0]
-            m_plt_e,c_plt_e = ms_stars[k][i,:,z_h,0,0],σs_stars[k][i,:,z_h,0,0]
+            m_plt_u,c_plt_u = ms_stars[k][i,:,0,z_l,0],σs_stars[k][i,:,0,z_l,0]
+            m_plt_e,c_plt_e = ms_stars[k][i,:,0,z_h,0],σs_stars[k][i,:,0,z_h,0]
             #c_func_u = lambda m: interp(m_plt_u,c_plt_u,m)
             #c_func_e = lambda m: interp(m_plt_e,c_plt_e,m)
             axes[x].plot(m_plt_u,
