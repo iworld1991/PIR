@@ -42,7 +42,7 @@ import pickle
 from scipy import sparse 
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## figure plotting configurations
 
 
@@ -628,7 +628,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 310, 345, 381, 395]
+# + code_folding=[0, 8, 310, 345, 381, 395]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1042,7 +1042,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[5, 17, 219, 233, 263, 294, 316]
+# + code_folding=[0, 5, 17, 110, 218, 232, 262, 293]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1556,7 +1556,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[1]
+# + code_folding=[0, 1]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1564,7 +1564,7 @@ production = CDProduction(α = production_paras['α'],
                          target_W = production_paras['W']) 
 
 ## nb of grids used for transition matrix  
-n_m = 40
+n_m = 60
 n_p = 40
 
 
@@ -1694,7 +1694,7 @@ model_results = solve_models(models,
                              σs_stars,
                              model_name_list = model_names)
 
-# + pycharm={"name": "#%%\n"} code_folding=[0, 2, 11, 37, 70, 86]
+# + pycharm={"name": "#%%\n"} code_folding=[0, 2, 11, 37, 89]
 ## plot results from different models
 
 line_patterns =['g-v',
@@ -1773,6 +1773,9 @@ for k, model in enumerate(models):
            alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
+ax.set_xlim([-10,20])
+
+
 ax.set_ylabel(r'$prob(a)$')
 
 fig.savefig('../Graphs/model/distribution_a_compare_pe.png')
@@ -1848,6 +1851,8 @@ for k, model in enumerate(models):
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
+ax.set_xlim([-10,20])
+
 
 fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
 
@@ -1871,7 +1876,7 @@ HH.ComputeSSDist(ms_star = ms_star_mkv,
                   σs_star = σs_star_mkv)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot the initial distribution in the first period of life 
 
 plt.title('Initial distributions over m and p given u')
@@ -2106,3 +2111,6 @@ fig.savefig('../Graphs/model/distribution_a_eq.png')
 zero_wealth_id = np.where(market_OLG_mkv.households.ap_grid_dist<=1e-2)
 zero_wealth_share = market_OLG_mkv.households.ap_pdfs_dist[zero_wealth_id].sum()
 print('Share of zero wealth',str(zero_wealth_share))
+# -
+
+
