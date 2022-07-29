@@ -639,7 +639,7 @@ def compare_2solutions(ms_stars,
 
 # ## Initialize the model
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -649,7 +649,7 @@ if __name__ == "__main__":
     U = 0.2 ## transitory ue risk
     U0 = 0.0 ## transitory ue risk
     unemp_insurance = 0.15
-    sigma_psi = 0.1 # permanent 
+    sigma_psi = 0.2 # permanent 
     sigma_eps = 0.0 # transitory 
 
 
@@ -766,7 +766,7 @@ if __name__ == "__main__":
         σ_vec = np.copy(σ_next)
     ax.legend(loc=0)
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     t_start = time()
@@ -780,9 +780,9 @@ if __name__ == "__main__":
     m_init,σ_init = lc_basic.terminal_solution()
 
     ## solve backward
-    ms_star, σs_star = solve_model_backward_iter(lc_basic,
-                                                 m_init,
-                                                 σ_init)
+    ms_star_basic, σs_star_basic = solve_model_backward_iter(lc_basic,
+                                                             m_init,
+                                                             σ_init)
 
 
     t_finish = time()
@@ -792,11 +792,9 @@ if __name__ == "__main__":
 
 # ### Different permanent/transitory risk (no MA)
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
-    lc_basic = LifeCycle(sigma_psi = sigma_psi,
-                   sigma_eps = sigma_eps,
-                   U=U,
+    lc_pt = LifeCycle(U=U,
                    ρ=ρ,
                    R=R,
                    T=T,
@@ -809,7 +807,7 @@ if __name__ == "__main__":
                    unemp_insurance = unemp_insurance,
                    )
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     t_start = time()
@@ -820,17 +818,17 @@ if __name__ == "__main__":
     ms_stars =[]
     σs_stars = []
     for i,sigma_psi in enumerate(sigma_psi_ls):
-        lc_basic.sigma_psi = sigma_psi
-        lc_basic.sigma_eps = sigma_eps_ls[i]
+        lc_pt.sigma_psi = sigma_psi
+        lc_pt.sigma_eps = sigma_eps_ls[i]
         ### this line is very important!!!!
         #### need to regenerate shock draws for new sigmas
-        lc_basic.prepare_shocks()
+        lc_pt.prepare_shocks()
         
         ## terminal solution
-        m_init,σ_init = lc_basic.terminal_solution()
+        m_init,σ_init = lc_pt.terminal_solution()
         
         ## solve backward
-        ms_star, σs_star = solve_model_backward_iter(lc_basic,
+        ms_star, σs_star = solve_model_backward_iter(lc_pt,
                                                      m_init,
                                                      σ_init)
         ms_stars.append(ms_star)
@@ -901,7 +899,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent state: good versus bad 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     ## initialize another 
     lc_ar = LifeCycle(sigma_psi=sigma_psi,
@@ -996,7 +994,7 @@ if __name__ == "__main__":
 
 # ### State-dependent risks 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## transition matrix between low and high risk state
@@ -1036,13 +1034,10 @@ if __name__ == "__main__":
     av_sigma_eps = np.sqrt(np.dot(P[0,:],sigma_eps_2mkv**2))
     print('steady state is '+str(ss_P))
     print('transitory probability is '+str(P[0,:]))
-    print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(lc_basic.sigma_psi))
-    print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(lc_basic.sigma_eps))
-
-if __name__ == "__main__":
-
     print('permanent risk state is '+str(sigma_psi_2mkv))
     print('transitory risk state is '+str(sigma_eps_2mkv))
+    print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(lc_basic.sigma_psi))
+    print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(lc_basic.sigma_eps))
 
 # + code_folding=[0]
 if __name__ == "__main__":
@@ -1129,7 +1124,7 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1148,22 +1143,11 @@ if __name__ == "__main__":
         i = lc_basic.L-age
 
         ## baseline: no ma shock 
-        m_plt,c_plt = ms_star[i,:,eps_fix,0,0],σs_star[i,:,eps_fix,0,0]
+        m_plt,c_plt = ms_star_basic[i,:,eps_fix,0,0],σs_star_basic[i,:,eps_fix,0,0]
         axes[x].plot(m_plt,
                      c_plt,
                      label = 'objective',
                      lw=3)
-        ## persistent 
-        #axes[x].plot(ms_stars_ar[0][i,:,eps_fix,0,0],
-        #             σs_stars_ar[0][i,:,eps_fix,0,0],
-        #             '--',
-        #             label ='bad',
-        #             lw=3)
-        #axes[x].plot(ms_stars_ar[0][i,:,eps_fix,1,0],
-        #             σs_stars_ar[0][i,:,eps_fix,1,0],
-        #             '-.',
-        #             label ='good',
-        #             lw=3)
          ## stochastic volatility 
         m_plt_l,c_plt_l = ms_star_sv[i,:,eps_fix,0,0],σs_star_sv[i,:,eps_fix,0,0]
         m_plt_h,c_plt_h = ms_star_sv[i,:,eps_fix,1,0],σs_star_sv[i,:,eps_fix,1,0]
@@ -1178,29 +1162,6 @@ if __name__ == "__main__":
                      '-.',
                      label ='subjective: high risk',
                      lw=3)
-        ## countercyclical 
-        #axes[x].plot(ms_stars_cr[0][i,:,eps_fix,0,0], ## 0 indicates the low risk state 
-        #         σs_stars_cr[0][i,:,eps_fix,0],
-        #         '--',
-        #         label ='sv: unemployed + high risk',
-        #         lw=3)
-        #axes[x].plot(ms_stars_cr[0][i,:,eps_fix,1,0], ## 1 indicates the high risk state 
-        #             σs_stars_cr[0][i,:,eps_fix,1,0],
-        #             '-.',
-        #             label ='sv:employed + low risk',
-        #             lw=3)
-        ## subjective 
-        #axes[x].plot(ms_br[i,:,eps_fix,0,0],
-        #             σs_br[i,:,eps_fix,0,0],
-        #             '*-',
-        #             label = 'subjective:'+str(round(lc.eps_grid[eps_fix],2)),
-        #             lw=3)
-        #axes[x].plot(ms_star[i,:,eps_fix,0,0],
-        #             σs_star[i,:,eps_fix,0,0],
-        #             '--',
-        #             label ='objective:'+str(round(lc.eps_grid[eps_fix],2)),
-        #             lw=3)
-
         axes[0].legend()
         axes[x].set_xlim((0.0,np.max(m_plt)))
         axes[x].set_xlabel('m')
@@ -1214,7 +1175,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent unemployment state
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1225,8 +1186,6 @@ if __name__ == "__main__":
     P_uemkv = np.array([(0.2, 0.8),
                         (0.2, 0.8)])   # markov transition matrices
 
-    #P_uemkv = np.array([(0.4, 0.6),
-    #                    (0.05, 0.95)])   # markov transition matrices
 
 
 # + code_folding=[0]
