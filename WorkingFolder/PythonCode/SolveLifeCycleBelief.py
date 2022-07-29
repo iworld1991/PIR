@@ -69,7 +69,7 @@ plt.rc('figure', titlesize=20)
 
 # ## The Model Class and Solver
 
-# + code_folding=[]
+# + code_folding=[0]
 lc_data = [
     ## model paras
     ('ρ', float64),              # utility parameter CRRA
@@ -368,11 +368,11 @@ def EGM_combine(mϵ_in,
     using the endogenous grid method.
 
         * lc is an instance of life cycle model
-        * σ_in is a n1 x n2 x n3 dimension consumption policy 
-          * n1 = dim(s), n2 = dim(eps), n3 = dim(z)
+        * σ_in is a n1 x n2 x n3 x n4 dimension consumption policy 
+          * n1 = dim(s), n2 = dim(eps), n3 = dim(z), n4 = dim(f)
         * mϵ_in is the same sized grid points of the three state variable 
-        * mϵ_in[:,j,z] is the vector of wealth grids corresponding to j-th grid of eps and z-th grid of z 
-        * σ_in[i,j,z] is consumption at aϵ_in[i,j,z]
+        * mϵ_in[:,j,z,f] is the vector of wealth grids corresponding to j-th grid of eps and markov state z and belief state f
+        * σ_in[i,j,z,f] is consumption at aϵ_in[i,j,z,f]
     """    
     # Simplify names
     u_prime, u_prime_inv = lc.u_prime, lc.u_prime_inv
@@ -528,7 +528,7 @@ def EGM_combine(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[]
+# + code_folding=[1]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
                               mϵ_vec,        # Initial condition for assets and MA shocks
@@ -593,7 +593,7 @@ def solve_model_iter(model,        # Class with model information
     return me_vec, σ_vec
 
 
-# + code_folding=[]
+# + code_folding=[2]
 # a function to compare two solutions 
 
 def compare_2solutions(ms_stars,
@@ -918,7 +918,7 @@ if __name__ == "__main__":
                      b_y=0.5)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1044,7 +1044,7 @@ if __name__ == "__main__":
     print('permanent risk state is '+str(sigma_psi_2mkv))
     print('transitory risk state is '+str(sigma_eps_2mkv))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## another model instance 
@@ -1070,7 +1070,7 @@ if __name__ == "__main__":
                       )
 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## solve the model for different transition matricies 
@@ -1214,7 +1214,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent unemployment state
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1517,7 +1517,7 @@ if __name__ == "__main__":
 
 # ## Infinite horizon problem
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 

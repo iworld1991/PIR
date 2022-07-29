@@ -673,7 +673,7 @@ def EGM_br(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[]
+# + code_folding=[0, 1]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
                               mϵ_vec,        # Initial condition for assets and MA shocks
@@ -788,7 +788,7 @@ def compare_2solutions(ms_stars,
 
 # ## Initialize the model
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -919,6 +919,7 @@ if __name__ == "__main__":
 
 # ### Different permanent/transitory risk (no MA)
 
+# + code_folding=[0]
 if __name__ == "__main__":
     lc_basic = LifeCycle(sigma_psi = sigma_psi,
                    sigma_eps = sigma_eps,
@@ -935,7 +936,7 @@ if __name__ == "__main__":
                    unemp_insurance = unemp_insurance,
                    )
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     t_start = time()
@@ -967,7 +968,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1001,7 +1002,7 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     print(σs_star.shape)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## plot 3d functions over life cycle 
@@ -1024,27 +1025,6 @@ if __name__ == "__main__":
     ax.set_xlabel('age')
     ax.set_ylabel('wealth')
     ax.view_init(15, 30)
-
-# + code_folding=[]
-"""
-if __name__ == "__main__":
-    at_age = 4
-    at_asset_id = 20
-
-    for i,psi in enumerate(sigma_psi_ls):
-        this_σs_star = σs_stars[i]
-        plt.plot(lc.eps_grid,
-                 this_σs_star[lc.L-at_age,
-                              at_asset_id,:,0],
-                 '-.',
-                 label = r'$\sigma_\psi={}$'.format(psi),
-                 lw=3)
-    plt.legend(loc=0)
-    plt.xlabel(r'$\epsilon$')
-    plt.ylabel(r'$c(m,\epsilon,age)$')
-    plt.title(r'work age$={}$'.format(at_age))
-    
-"""
 # -
 
 #
@@ -1052,7 +1032,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent state: good versus bad 
 
-# + code_folding=[]
+# + code_folding=[0, 2]
 if __name__ == "__main__":
     ## initialize another 
     lc_ar = LifeCycle(sigma_psi=sigma_psi,
@@ -1069,7 +1049,7 @@ if __name__ == "__main__":
                      b_y=0.5)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1107,7 +1087,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1147,7 +1127,7 @@ if __name__ == "__main__":
 
 # ### State-dependent risks 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## transition matrix between low and high risk state
@@ -1178,9 +1158,9 @@ if __name__ == "__main__":
     )
 
     b_y = 0.0  ## set the macro state loading to be zero, i.e. only risks differ across two states
-# -
 
 
+# + code_folding=[0]
 if __name__ == "__main__":
     ## compute steady state 
     av_sigma_psi = np.sqrt(np.dot(P[0,:],sigma_psi_2mkv**2))
@@ -1189,13 +1169,14 @@ if __name__ == "__main__":
     print('transitory probability is '+str(P[0,:]))
     print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(lc.sigma_psi))
     print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(lc.sigma_eps))
+# -
 
 if __name__ == "__main__":
 
     print('permanent risk state is '+str(sigma_psi_2mkv))
     print('transitory risk state is '+str(sigma_eps_2mkv))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## another model instance 
@@ -1218,7 +1199,7 @@ if __name__ == "__main__":
                    state_dependent_risk = True)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## solve the model for different transition matricies 
@@ -1248,7 +1229,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     ## compare two markov states low versus high risk 
 
@@ -1287,7 +1268,7 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1372,7 +1353,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent unemployment state
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1406,7 +1387,7 @@ if __name__ == "__main__":
                          unemp_insurance = 0.3,
                          ue_markov = True)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## solve the model for different transition matrices of UE markov
@@ -1507,7 +1488,7 @@ if __name__ == "__main__":
     ## again, zero loading from z
     b_y = 0.0
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     ## compute steady state 
     av_sigma_psi_cr = np.sqrt(np.dot(P_uemkv[0,:],sigma_psi_2mkv_cr**2))
@@ -1518,7 +1499,7 @@ if __name__ == "__main__":
     print('average permanent risk is '+str(av_sigma_psi_cr)+' compared to objective model '+str(lc_uemkv.sigma_psi))
     print('average transitory risk is '+str(av_sigma_eps_cr)+' compared to objective model '+str(lc_uemkv.sigma_eps))
 
-# + code_folding=[]
+# + code_folding=[0, 4]
 if __name__ == "__main__":
 
 
@@ -1701,7 +1682,7 @@ if __name__ == "__main__":
 
 # ### Subjective perceptions 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1753,7 +1734,7 @@ if __name__ == "__main__":
         axes[0].set_ylabel('c')
         axes[x].set_title(r'subjective c at $age={}$'.format(age))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1763,7 +1744,7 @@ if __name__ == "__main__":
 
     plt.plot(lc.eps_grid,x_sj)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1787,7 +1768,7 @@ if __name__ == "__main__":
 # -
 # ## Infinite horizon problem
 
-# + code_folding=[30]
+# + code_folding=[0, 30]
 if __name__ == "__main__":
 
 
@@ -1929,5 +1910,3 @@ if __name__ == "__main__":
         plt.xlabel('asset')
         plt.ylabel('c')
         plt.title('Infinite horizon solution')
-# -
-
