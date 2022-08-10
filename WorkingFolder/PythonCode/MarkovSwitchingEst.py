@@ -23,7 +23,46 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
 
-# + code_folding=[0, 15, 47, 62, 75, 79, 83, 105, 125, 136]
+# + code_folding=[1, 12, 29]
+### pdf function of normal distribution 
+def norm_pdf(x,    ## value of the rm 
+             μ,    ## mean of the normal
+             σ):   ## std of the normal 
+    """
+    pdf of normal distribution mean μ and variance σ^2
+    """
+    x_new = (x-μ)/σ
+    temp1 = 1/(np.sqrt(2*np.pi))
+    temp2 = np.exp(-(x_new**2/2))
+    return temp1*temp2 
+
+def prob_func(x):
+    """
+    this bound function maps unconstrained x to y between 0, and 1
+    , and it increases with x
+    """
+    return np.exp(x)/(1+np.exp(x))     
+
+def prob_func_inv(y):
+    return np.log(y)-np.log(1-y)
+
+## exp_func  from R --> [0,+infinity]
+def exp_func(x):
+    return np.exp(x)
+
+def exp_func_inv(y):
+    return np.log(y)
+
+def steady_state(q,
+                 p):
+    """
+    a function that computes the ss of a 2-state markov 
+    """
+    return ((1-p)/(2-p-q),
+            (1-q)/(2-p-q))
+
+
+# + code_folding=[0, 15, 50, 72, 93]
 class Markov2Switching:
     """
     A class that stores primitives for the Markov Regime Switching Model
@@ -50,9 +89,9 @@ class Markov2Switching:
         self.nb_var = nb_var
         
         if AR==0:
-            assert self.nb_var == int(len(paras)/5),'the nb of parameters needs to be equal to 5 x nb of variables'
+            assert self.nb_var == int(len(paras)/5),'the nb of paras needs to be equal to 5 x nb of variables'
         elif AR==1:
-            assert self.nb_var == int(len(paras)/6),'the nb of parameters needs to be equal to 6 x nb of variables'
+            assert self.nb_var == int(len(paras)/6),'the nb of paras needs to be equal to 6 x nb of variables'
           
         self.paras = paras.reshape(self.nb_var,-1)
         
@@ -70,43 +109,10 @@ class Markov2Switching:
         self.state_dependence = state_dependence
         self.AR = AR 
     
-    ### pdf function of normal distribution 
-    def norm_pdf(self,
-                 x,    ## value of the rm 
-                 μ,    ## mean of the normal
-                 σ):   ## std of the normal 
-        """
-        pdf of normal distribution mean μ and variance σ^2
-        """
-        x_new = (x-μ)/σ
-        temp1 = 1/(np.sqrt(2*np.pi))
-        temp2 = np.exp(-(x_new**2/2))
-        return temp1*temp2 
-    
     ## The functions below are help functions 
-    ## that turn a hard constraint for parameters to an unconstrained problem
+    ## that turn a hard constraint on parameters values to an unconstrained problem
     ## prob_func  from R -> [0,1]
-    def prob_func(self,
-                   x):
-        """
-        this bound function maps unconstrained x to y between 0, and 1
-        , and it increases with x
-        """
-        return np.exp(x)/(1+np.exp(x))     
-    
-    def prob_func_inv(self,
-                     y):
-        return np.log(y)-np.log(1-y)
-    
-    ## exp_func  from R --> [0,+infinity]
-    def exp_func(self,
-                 x):
-        return np.exp(x)
-    
-    def exp_func_inv(self,
-                     y):
-        return np.log(y)
-    
+
     def get_model_para(self,
                       para):
         """
@@ -120,11 +126,11 @@ class Markov2Switching:
         #np.concatenate([self.exp_func(paras[0:2,1]),
         #                     np.array(-self.exp_func([paras[2,1]]))
         #                    ])
-        σs = self.exp_func(paras[:,2])
-        qs = self.prob_func(paras[:,3])
-        ps = self.prob_func(paras[:,4])
+        σs = exp_func(paras[:,2])
+        qs = prob_func(paras[:,3])
+        ps = prob_func(paras[:,4])
         if self.AR==1:
-            ϕ1s = self.prob_func(paras[:,5])
+            ϕ1s = prob_func(paras[:,5])
         else:
             ϕ1s = np.zeros(self.nb_var)
         return αs,βs,σs,qs,ps,ϕ1s
@@ -134,7 +140,7 @@ class Markov2Switching:
         """
         a function that creates a dictionary of parameters with names
         """
-        αs,βs,σs,qs,ps,ϕ1s =self.get_model_para(para)
+        αs,βs,σs,qs,ps,ϕ1s = self.get_model_para(para)
             
         q = qs[0]
         p =ps[0]
@@ -148,16 +154,6 @@ class Markov2Switching:
         model_para['ϕ1']=ϕ1s
                    
         return model_para
-    
-    def steady_state(self,
-                      q,
-                      p):
-        """
-        a function that computes the ss of a 2-state markov 
-        """
-        return ((1-p)/(2-p-q),
-                (1-q)/(2-p-q))
-    
     
     ## The key function that computes log-likelihood for a list of time series of realized data
     def log_likelihood(self,
@@ -205,8 +201,8 @@ class Markov2Switching:
             f1 = np.empty(T)
 
             ## initialize the first period
-            update0[0], update1[0] = self.steady_state(q,   #p(s=0|Y_0) and  # p(s=1|Y_1)
-                                                       p)   
+            update0[0], update1[0] = steady_state(q,   #p(s=0|Y_0) and  # p(s=1|Y_1)
+                                                  p)   
             
             for t in range(1,T-1):
                 prdict1[t] = (1-q)*update0[t-1]+p*update1[t-1]  #p(s_t=1|y_t-1);
@@ -216,8 +212,8 @@ class Markov2Switching:
                 
                 ## loop over different time series
                 for x in range(self.nb_var):
-                    pdf_t_1 =pdf_t_1*self.norm_pdf(Y[x,t]-ϕ1s[x]*Y[x,t-1],αs[x]+βs[x],σs[x])  # f(y_t|s_t=1,Y_t-1)
-                    pdf_t_0 =pdf_t_0*self.norm_pdf(Y[x,t]-ϕ1s[x]*Y[x,t-1],αs[x],σs[x]) # f(y_t|s_t=0,Y_t-1)
+                    pdf_t_1 =pdf_t_1*norm_pdf(Y[x,t]-ϕ1s[x]*Y[x,t-1],αs[x]+βs[x],σs[x])  # f(y_t|s_t=1,Y_t-1)
+                    pdf_t_0 =pdf_t_0*norm_pdf(Y[x,t]-ϕ1s[x]*Y[x,t-1],αs[x],σs[x]) # f(y_t|s_t=0,Y_t-1)
                 
                 f1[t]= pdf_t_1+pdf_t_0     # f1= f(y_t|Y_t-1)
                 #print(f1[t])
@@ -247,7 +243,7 @@ if __name__ == "__main__":
 
 # ### Test using fake simulated data with known parameters
 
-# + code_folding=[0, 16]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     import quantecon as qe
@@ -266,10 +262,10 @@ if __name__ == "__main__":
 
     para_fake = np.array([α_fake,
                           β_fake,
-                          mkv2.exp_func_inv(σ_fake),
-                          mkv2.prob_func_inv(q_fake),
-                          mkv2.prob_func_inv(p_fake),
-                          #mkv2.prob_func_inv(ϕ1_fake)
+                          exp_func_inv(σ_fake),
+                          prob_func_inv(q_fake),
+                          prob_func_inv(p_fake),
+                          #prob_func_inv(ϕ1_fake)
                          ])
     T_fake = 12
     nb_sim = 300
@@ -277,8 +273,8 @@ if __name__ == "__main__":
     fake_regime_h_list=[]
     fake_data_list = []
 
-    prob_ss0, prob_ss1 = mkv2.steady_state(q_fake,
-                                           p_fake)
+    prob_ss0, prob_ss1 = steady_state(q_fake,
+                                      p_fake)
 
     init_sim = (np.random.uniform(0,1,nb_sim)<=prob_ss1)*1
 
@@ -382,11 +378,11 @@ if __name__ == "__main__":
 
     ## tight bounds for some parameters 
     sigma_ub = np.mean([np.std(np.array(x)) for x in fake_data_list])
-    sigma_inv_ub = mkv2.exp_func_inv(sigma_ub)
+    sigma_inv_ub = exp_func_inv(sigma_ub)
     q_lb = 0.5  ## persistent 
-    q_inv_lb = mkv2.prob_func_inv(q_lb) 
+    q_inv_lb = prob_func_inv(q_lb) 
     p_lb = 0.5 ## persistent 
-    p_inv_lb = mkv2.prob_func_inv(p_lb)
+    p_inv_lb = prob_func_inv(p_lb)
 
     ## estimation 
     #guess = (0.2,0.3,0.1,0.1,0.4)
@@ -395,11 +391,11 @@ if __name__ == "__main__":
     bounds = ((None,None),(0.0,None),(-3,sigma_inv_ub),(None,None),(None,None),)
 
     result = minimize(obj,
-                        x0 = guess,
-                        method='SLSQP',   #trust-constr
-                        bounds = bounds,
-                        options={'disp': False,
-                                }
+                    x0 = guess,
+                    method='trust-constr',   #trust-constr
+                    bounds = bounds,
+                    options={'disp': False,
+                            }
                        )
     print('success? ',result['success'])
     para_est = result['x']
@@ -416,7 +412,7 @@ if __name__ == "__main__":
     print("estimated parameters\n",para_est_dict)
 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     #Based on estimates of parameters and data; compute filtered probabilities
@@ -463,3 +459,6 @@ if __name__ == "__main__":
             label='filtered prob with est para')
     ax.legend(loc=1)
     ax2.legend(loc=2)
+# -
+
+
