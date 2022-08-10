@@ -37,7 +37,7 @@ import joypy
 from copy import copy
 from Utility import cal_ss_2markov,lorenz_curve, gini
 from Utility import mean_preserving_spread
-from Utility import jump_to_grid,jump_to_grid_fast
+from Utility import jump_to_grid,jump_to_grid_fast,gen_tran_matrix,gen_tran_matrix_fast
 import pickle
 from scipy import sparse 
 
@@ -628,57 +628,13 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[1]
-@njit(parallel=True)
-def gen_tran_matrix_fast(dist_mGrid, 
-                         bNext, 
-                         shk_prbs,
-                         perm_shks,
-                         tran_shks):
-    TranMatrix = np.zeros((len(dist_mGrid),len(dist_mGrid))) 
-    for i in prange(len(dist_mGrid)):
-        mNext_ij = bNext[i]/perm_shks + tran_shks  
-        # Compute next period's market resources given todays bank balances bnext[i]
-        TranMatrix[:,i] = jump_to_grid_fast(mNext_ij, shk_prbs,dist_mGrid)
-        # this is the transition matrix if given you are unemployed today and unemployed tomorrow so you assume the unemployed consumption policy
-    return TranMatrix
-   
-
-
-# + code_folding=[]
-@njit(parallel=True)
-def gen_tran_matrix(dist_mGrid,
-                   dist_pGrid,
-                   bNext,
-                   shk_prbs,
-                   perm_shks,
-                   tran_shks):
-    
-    TranMatrix  = np.zeros((len(dist_mGrid)*len(dist_pGrid),
-                           len(dist_mGrid)*len(dist_pGrid)))
-
-    for i in prange(len(dist_mGrid)):
-        for j in prange(len(dist_pGrid)):
-            pNext_ij = dist_pGrid[j]*perm_shks # Computes next period's permanent income level by applying permanent income shock    
-            mNext_ij = bNext[i]/perm_shks +tran_shks
-
-            TranMatrix[:,i*len(dist_pGrid)+j] = jump_to_grid(mNext_ij,
-                                                             pNext_ij,
-                                                             shk_prbs,
-                                                             dist_mGrid, 
-                                                            dist_pGrid) 
-    return TranMatrix
-
-
-# + code_folding=[311, 338, 346]
+# + code_folding=[0, 8, 236, 271, 307, 321]
 #################################
 ## general functions used 
 # for computing transition matrix
 ##################################
 
 ## compute the list of transition matrix from age t to t+1 for all age 
-from numba import prange
-
 
 @njit
 def calc_transition_matrix(model, 
@@ -788,20 +744,25 @@ def calc_transition_matrix(model,
             bNext_e = model.R*aNext_e
 
             
+            ## determine income process depending on emp/uemp| work/retirement
+            if k <=model.T-1:
+                ## work age 
+                perm_shks_G_ef = perm_shks* G[k+1]
+                tran_shks_ef_u = np.ones_like(tran_shks)*(model.transfer
+                                                        +(1-λ)*unemp_insurance)
+                tran_shks_ef_e = np.ones_like(tran_shks)*(model.transfer
+                                                        +(1-λ)*(1-λ_SS)*tran_shks)
+
+                #mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
+            else:
+                ## retirement
+                perm_shks_G_ef = np.ones_like(perm_shks)*G[k+1]
+                tran_shks_ef_u = np.ones_like(tran_shks)*(model.transfer
+                                                        + model.pension)
+                tran_shks_ef_e = tran_shks_ef_u
+
             if fast==True:
                 print('warning: the fast method is not fully developed yet!!!')
-
-                ## decide income process depending on work/retired and uemp or emp tomorrow
-                if k <=model.T-1:
-                    ## work age 
-                    perm_shks_G_ef = perm_shks*G[k+1]
-                    tran_shks_ef_e =  model.transfer+(1-λ)*(1-λ_SS)*tran_shks
-                    tran_shks_ef_u =  np.ones_like(tran_shks)*(model.transfer+(1-λ)*unemp_insurance)
-                else:
-                    ## retirement 
-                    perm_shks_G_ef = np.ones_like(perm_shks)*G[k+1]
-                    tran_shks_ef_u = np.ones_like(tran_shks)*(model.transfer+model.pension)
-                    tran_shks_ef_e = tran_shks_ef_u  ## does not matter for retired 
             
                 # Generate Transition Matrix for u2u
                 TranMatrix_uu = gen_tran_matrix_fast(this_dist_mGrid, 
@@ -838,25 +799,6 @@ def calc_transition_matrix(model,
 
             else:  ## slow method  (2-state Markov implemented)
 
-
-                ## determine income process 
-                
-                if k <=model.T-1:
-                    ## work age 
-                    perm_shks_G_ef = perm_shks* G[k+1]
-                    tran_shks_ef_u = np.ones_like(tran_shks)*(model.transfer
-                                                            +(1-λ)*unemp_insurance)
-                    tran_shks_ef_e = np.ones_like(tran_shks)*(model.transfer
-                                                            +(1-λ)*(1-λ_SS)*tran_shks)
-                    
-                    #mNext_ij = bNext_u[i]/perm_shks_G +model.transfer+ (1-λ)*unemp_insurance # Compute next period's market resources given todays bank balances bnext[i]
-                else:
-                    ## retirement
-                    perm_shks_G_ef = np.ones_like(perm_shks)*G[k+1]
-                    tran_shks_ef_u = np.ones_like(tran_shks)*(model.transfer
-                                                            + model.pension)
-                    tran_shks_ef_e = tran_shks_ef_u
-                    
                     
                 # Generate Transition Matrix for u2u 
                 TranMatrix_uu = gen_tran_matrix(this_dist_mGrid,
@@ -1026,7 +968,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 17, 110, 218, 232, 262, 293]
+# + code_folding=[5, 17, 111, 219, 233, 263, 294]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1050,6 +992,7 @@ class HH_OLG_Markov:
                                  m_density = 0, 
                                  num_pointsM = 40,  
                                  num_pointsP = 50, 
+                                 max_m_fac = 100.0,
                                  max_p_fac = 20.0):
 
             '''
@@ -1093,7 +1036,7 @@ class HH_OLG_Markov:
             ## m distribution grid 
             if dist_mGrid == None:
                 aXtra_Grid = make_grid_exp_mult(ming = model.a_grid[0], 
-                                                maxg = model.a_grid[-1]*100, 
+                                                maxg = model.a_grid[-1]*max_m_fac, 
                                                 ng = num_pointsM, 
                                                 timestonest = 3) #Generate Market resources grid given density and number of points
 
@@ -1540,7 +1483,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[0, 1]
+# + code_folding=[1]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1548,8 +1491,8 @@ production = CDProduction(α = production_paras['α'],
                          target_W = production_paras['W']) 
 
 ## nb of grids used for transition matrix  
-n_m = 60
-n_p = 40
+n_m = 100
+n_p = 100
 
 
 # + code_folding=[0]
@@ -1670,7 +1613,7 @@ def solve_models(model_list,
                     σs_star_list[k],
                      model_name = model_name_list[k])
 
-# + code_folding=[0, 2]
+# + code_folding=[2]
 ## solve a list of models and save all solutions as pickles 
 
 model_results = solve_models(models,
@@ -1678,7 +1621,7 @@ model_results = solve_models(models,
                              σs_stars,
                              model_name_list = model_names)
 
-# + pycharm={"name": "#%%\n"} code_folding=[0, 2, 11, 37, 89]
+# + pycharm={"name": "#%%\n"} code_folding=[2, 11, 37, 89]
 ## plot results from different models
 
 line_patterns =['g-v',
@@ -1757,7 +1700,7 @@ for k, model in enumerate(models):
            alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
-ax.set_xlim([-10,20])
+ax.set_xlim([-10,30])
 
 
 ax.set_ylabel(r'$prob(a)$')
@@ -1835,7 +1778,7 @@ for k, model in enumerate(models):
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
-ax.set_xlim([-10,20])
+ax.set_xlim([-10,30])
 
 
 fig.savefig('../Graphs/model/distribution_a_compare_ge.png')

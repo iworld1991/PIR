@@ -16,6 +16,7 @@
 
 import numba as nb
 import numpy as np
+from numba import prange 
 from interpolation import interp, mlinterp
 from numba import jit,njit, float64, int64, boolean
 
@@ -137,7 +138,7 @@ def make_grid_exp_mult(ming, maxg, ng, timestonest=20):
 
 # ## Tools used for wealth distributions 
 
-# + code_folding=[1]
+# + code_folding=[]
 ## lorenz curve
 def lorenz_curve(grid_distribution,
                  pdfs,
@@ -623,3 +624,42 @@ def jump_to_grid_fast(vals,
     return probGrid.flatten()
 
 
+
+# + code_folding=[16]
+@njit(parallel=True)
+def gen_tran_matrix_fast(dist_mGrid, 
+                         bNext, 
+                         shk_prbs,
+                         perm_shks,
+                         tran_shks):
+    TranMatrix = np.zeros((len(dist_mGrid),len(dist_mGrid))) 
+    for i in prange(len(dist_mGrid)):
+        mNext_ij = bNext[i]/perm_shks + tran_shks  
+        # Compute next period's market resources given todays bank balances bnext[i]
+        TranMatrix[:,i] = jump_to_grid_fast(mNext_ij, shk_prbs,dist_mGrid)
+        # this is the transition matrix if given you are unemployed today and unemployed tomorrow so you assume the unemployed consumption policy
+    return TranMatrix
+
+
+@njit(parallel=True)
+def gen_tran_matrix(dist_mGrid,
+                   dist_pGrid,
+                   bNext,
+                   shk_prbs,
+                   perm_shks,
+                   tran_shks):
+    
+    TranMatrix  = np.zeros((len(dist_mGrid)*len(dist_pGrid),
+                           len(dist_mGrid)*len(dist_pGrid)))
+
+    for i in prange(len(dist_mGrid)):
+        for j in prange(len(dist_pGrid)):
+            pNext_ij = dist_pGrid[j]*perm_shks # Computes next period's permanent income level by applying permanent income shock    
+            mNext_ij = bNext[i]/perm_shks +tran_shks
+
+            TranMatrix[:,i*len(dist_pGrid)+j] = jump_to_grid(mNext_ij,
+                                                             pNext_ij,
+                                                             shk_prbs,
+                                                             dist_mGrid, 
+                                                            dist_pGrid) 
+    return TranMatrix
