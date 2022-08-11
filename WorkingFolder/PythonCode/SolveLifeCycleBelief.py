@@ -40,7 +40,7 @@ from Utility import cal_ss_2markov,mean_preserving_spread
 
 from resources_jit import MeanOneLogNormal as lognorm
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot configuration 
 
 plt.style.use('seaborn')
@@ -124,7 +124,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[6, 126, 209]
+# + code_folding=[6, 128, 138, 143, 160, 211]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -160,8 +160,8 @@ class LifeCycle:
                               [0.5,0.5]]), 
                  sigma_psi_2mkv = np.array([0.05,0.2]),  ## permanent risks in 2 markov states
                  sigma_eps_2mkv = np.array([0.08,0.12]),  ## transitory risks in 2 markov states
-                 U2U_2mkv = np.array([0.05,0.1]),         ## U2U in low and high risk mkv state
-                 E2E_2mkv = np.array([0.95,0.9]),         ## E2E in low and high risk mkv state
+                 U2U_2mkv = np.array([0.2,0.2]),         ## U2U in low and high risk mkv state
+                 E2E_2mkv = np.array([0.9,0.9]),         ## E2E in low and high risk mkv state
                  theta = 2,               ## asymmetric extrapolation parameter
                  unemp_insurance = 0.0,   #  unemp_insurance = 0.0,   
                  pension = 1.0,           
@@ -223,7 +223,9 @@ class LifeCycle:
         self.state_dependent_belief = state_dependent_belief
         self.sigma_psi_2mkv = sigma_psi_2mkv
         self.sigma_eps_2mkv = sigma_eps_2mkv
-            
+        self.U2U_2mkv = U2U_2mkv
+        self.E2E_2mkv = E2E_2mkv
+        
         ## shocks 
         
         self.shock_draw_size = shock_draw_size
@@ -351,7 +353,7 @@ class LifeCycle:
         return m_init,σ_init
 
 
-# + code_folding=[7]
+# + code_folding=[]
 ## This function takes the consumption values at different 
 ## grids of state variables from period t+1, and
 ## the model class, then generates the consumption values at t.
@@ -389,6 +391,8 @@ def EGM_combine(mϵ_in,
     state_dependent_belief = lc.state_dependent_belief
     psi_shk_mkv_draws = lc.psi_shk_mkv_draws
     eps_shk_mkv_draws  = lc.eps_shk_mkv_draws
+    E2E_2mkv = lc.E2E_2mkv
+    U2U_2mkv = lc.U2U_2mkv
 
     ## grid
     a_grid = lc.a_grid
@@ -441,6 +445,8 @@ def EGM_combine(mϵ_in,
                     else:
                         psi_shk_draws = psi_shk_mkv_draws[f,:]
                         eps_shk_draws = eps_shk_mkv_draws[f,:]
+                        P = np.array([[U2U_2mkv[f],1-U2U_2mkv[f]],
+                                     [1-E2E_2mkv[f],E2E_2mkv[f]]])
                     ##########################################
                     # Compute expectation
                     Ez = 0.0
@@ -452,6 +458,9 @@ def EGM_combine(mϵ_in,
                         else:
                             psi_shk_draws = psi_shk_mkv_draws[z_hat,:]
                             eps_shk_draws = eps_shk_mkv_draws[z_hat,:]
+                            P = np.array([[U2U_2mkv[z_hat],1-U2U_2mkv[z_hat]],
+                                     [1-E2E_2mkv[z_hat],E2E_2mkv[z_hat]]])
+                            
                         ########################################
                         for f_hat in range(n_f):
                             for eps_shk in eps_shk_draws:
@@ -528,7 +537,7 @@ def EGM_combine(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[]
+# + code_folding=[1]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
                               mϵ_vec,        # Initial condition for assets and MA shocks
@@ -792,7 +801,7 @@ if __name__ == "__main__":
 
 # ### Different permanent/transitory risk (no MA)
 
-# + code_folding=[]
+# + code_folding=[1]
 if __name__ == "__main__":
     lc_pt = LifeCycle(U=U,
                    ρ=ρ,
