@@ -1934,7 +1934,7 @@ solve_models(models,
             model_name_list = model_names
             )
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot results from different models
 
 line_patterns =['g-v',
@@ -1962,7 +1962,7 @@ ax.plot(model_solution['share_agents_ap_pe'],
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
-plt.savefig('../Graphs/model/lorenz_a_compare_pe.png')
+plt.savefig('../Graphs/Belief/model/lorenz_a_compare_pe.png')
 
 
 ## life cycle
@@ -1997,7 +1997,7 @@ ax.set_ylabel('Log wealth in model')
 ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_compare_pe.png')
+fig.savefig('../Graphs/model/Belief/life_cycle_a_compare_pe.png')
 
 
 
@@ -2015,7 +2015,7 @@ ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
 
-fig.savefig('../Graphs/model/distribution_a_compare_pe.png')
+fig.savefig('../Graphs/model/Belief/distribution_a_compare_pe.png')
 
 
 ## lorenz curve in ge
@@ -2038,7 +2038,7 @@ ax.plot(model_solution['share_agents_ap_ge'],
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
-fig.savefig('../Graphs/model/lorenz_a_compare_ge.png')
+fig.savefig('../Graphs/model/Belief/lorenz_a_compare_ge.png')
 
 
 ## life cycle profile in ge
@@ -2072,7 +2072,7 @@ ax.set_ylabel('Log wealth')
 ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
+fig.savefig('../Graphs/model/Belief/life_cycle_a_compare_ge.png')
 
 
 ## wealth distributions in ge
@@ -2089,7 +2089,7 @@ ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
 
-fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
+fig.savefig('../Graphs/model/Belief/distribution_a_compare_ge.png')
 # -
 
 # ## Analysis of the baseline model 
@@ -2136,7 +2136,7 @@ print('aggregate savings under stationary distribution:', str(HH.A))
 
 share_agents_ap,share_ap = HH.Lorenz(variable='a')
 
-# + code_folding=[0]
+# + code_folding=[]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(7,7))
@@ -2146,9 +2146,9 @@ ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
-plt.savefig('../Graphs/model/lorenz_a_test.png')
+plt.savefig('../Graphs/model/Belief/lorenz_a_test.png')
 
-# + code_folding=[0]
+# + code_folding=[]
 ## Wealth distribution 
 
 ap_grid_dist = HH.ap_grid_dist
@@ -2162,7 +2162,7 @@ ax.plot(np.log(ap_grid_dist+1e-5),
 
 ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
-fig.savefig('../Graphs/model/distribution_a_test.png')
+fig.savefig('../Graphs/model/Belief/distribution_a_test.png')
 
 # -
 
@@ -2175,7 +2175,7 @@ A_life = HH.A_life
 
 
 
-# + code_folding=[0, 11]
+# + code_folding=[11]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -2211,7 +2211,7 @@ ax.set_ylabel('Log wealth in model')
 ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_test.png')
+fig.savefig('../Graphs/model/Belief/life_cycle_a_test.png')
 
 # + code_folding=[0]
 ## get the within-age distribution 
@@ -2261,7 +2261,7 @@ market_OLG_mkv.get_equilibrium_k()
 
 market_OLG_mkv.get_equilibrium_dist()
 
-# + code_folding=[0]
+# + code_folding=[]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -2297,9 +2297,9 @@ ax.set_ylabel('Log wealth')
 ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_eq.png')
+fig.savefig('../Graphs/model/Belief/life_cycle_a_eq.png')
 
-# + code_folding=[0]
+# + code_folding=[]
 ## compute things needed for lorenz curve plot of asset accumulation 
 
 share_agents_ap, share_ap = market_OLG_mkv.households.Lorenz(variable='a')
@@ -2313,7 +2313,7 @@ ax.plot(share_agents_ap,share_agents_ap, 'k-',label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
-fig.savefig('../Graphs/model/lorenz_curve_a_eq.png')
+fig.savefig('../Graphs/model/Belief/lorenz_curve_a_eq.png')
 
 
 
