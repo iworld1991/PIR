@@ -699,7 +699,7 @@ if __name__ == "__main__":
     lc_basic = LifeCycle(**lc_paras)
 
 
-# + code_folding=[0]
+# + code_folding=[]
 # Initial the end-of-period consumption policy of σ = consume all assets
 
 if __name__ == "__main__":
@@ -717,7 +717,7 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     print(σ_init.shape)
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     #########################
     ## test the iteration
@@ -748,7 +748,7 @@ if __name__ == "__main__":
         σ_vec = np.copy(σ_next)
     ax.legend(loc=0)
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     t_start = time()
@@ -987,7 +987,6 @@ if __name__ == "__main__":
             l2mean_ratio = 0.1)
     )
 
-    b_y = 0.0  ## set the macro state loading to be zero, i.e. only risks differ across two states
 
 
 # + code_folding=[0]
