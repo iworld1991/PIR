@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.13.0
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -59,56 +59,55 @@ from PrepareParameters import life_cycle_paras_y
 
 # ### parameters 
 
-# +
 inf_paras = copy(life_cycle_paras_y)
 inf_paras['G'] =  np.ones_like(inf_paras['G'])
 inf_paras['unemp_insurance'] = 0.0
 inf_paras['P'] = np.array([[0.9,0.1],[0.2,0.8]])
 
-grid_max = 10.0
-grid_size = 100
 
 # + code_folding=[0]
-inf_mkv = LifeCycle(U = inf_paras['U'], ## transitory ue risk
-                    unemp_insurance = inf_paras['unemp_insurance'],
-                    pension = inf_paras['pension'], ## pension
-                    sigma_psi = inf_paras['σ_ψ'], # permanent 
-                    sigma_eps = inf_paras['σ_θ'], # transitory 
-                    P = inf_paras['P'],   ## transitory probability of markov state z
-                    z_val = inf_paras['z_val'], ## markov state from low to high  
-                    x = 0.0,           ## MA(1) coefficient of non-permanent inocme shocks
-                    ue_markov = True,   
-                    adjust_prob = 1.0,
-                    sigma_p_init = inf_paras['σ_ψ_init'],
-                    init_b = inf_paras['init_b'],
+inf_mkv_paras_dict = { 'U':inf_paras['U'], ## transitory ue risk
+                    'unemp_insurance':inf_paras['unemp_insurance'],
+                    'pension':inf_paras['pension'], ## pension
+                    'sigma_psi':inf_paras['σ_ψ'], # permanent 
+                    'sigma_eps':inf_paras['σ_θ'], # transitory 
+                    'P':inf_paras['P'],   ## transitory probability of markov state z
+                    'z_val':inf_paras['z_val'], ## markov state from low to high  
+                    'x': 0.0,           ## MA(1) coefficient of non-permanent inocme shocks
+                    'ue_markov':True,   
+                    'adjust_prob':1.0,
+                    'sigma_p_init':inf_paras['σ_ψ_init'],
+                    'init_b':inf_paras['init_b'],
                     ## subjective risk prifile 
-                    sigma_psi_2mkv = inf_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                    sigma_eps_2mkv = inf_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                    λ = inf_paras['λ'],  ## tax rate
-                    λ_SS = inf_paras['λ_SS'], ## social tax rate
-                    transfer = inf_paras['transfer'],  ## transfer 
-                    bequest_ratio = inf_paras['bequest_ratio'],
-                    LivPrb = inf_paras['LivPrb'],       ## living probability 
+                    'sigma_psi_2mkv':inf_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                    'sigma_eps_2mkv':inf_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+                    'λ':inf_paras['λ'],  ## tax rate
+                    'λ_SS':inf_paras['λ_SS'], ## social tax rate
+                    'transfer':inf_paras['transfer'],  ## transfer 
+                    'bequest_ratio':inf_paras['bequest_ratio'],
+                    'LivPrb':inf_paras['LivPrb'],       ## living probability 
                     ## life cycle 
-                    T = inf_paras['T'],
-                    L = inf_paras['L'],
-                    G = inf_paras['G'],
-                    #YPath = np.cumprod(G),
+                    'T': inf_paras['T'],
+                    'L': inf_paras['L'],
+                    'G':inf_paras['G'],
                     ## other parameters 
-                    ρ = inf_paras['ρ'],     ## relative risk aversion  
-                    β = inf_paras['β'],    ## discount factor
-                    R = inf_paras['R'],           ## interest factor 
-                    W = inf_paras['W'],            ## Wage rate
+                    'ρ':inf_paras['ρ'],     ## relative risk aversion  
+                    'β': inf_paras['β'],    ## discount factor
+                    'R':inf_paras['R'],           ## interest factor 
+                    'W':inf_paras['W'],            ## Wage rate
                     ## subjective models 
-                    theta = 0.0, ## extrapolation parameter 
+                    'theta':0.0, ## extrapolation parameter 
                     ## no persistent state
-                    b_y = 0.0,
+                    'b_y': 0.0,
                     ## wether to have zero borrowing constraint 
-                    borrowing_cstr = True,
+                    'borrowing_cstr':True,
                     ## a grids 
-                    grid_max = grid_max,
-                    grid_size = grid_size,
-    )
+                    'grid_max': 10.0,
+                    'grid_size': 100}
+
+
+
+inf_mkv = LifeCycle(**inf_mkv_paras_dict)
 
 # + code_folding=[0]
 ## initial consumption functions 
