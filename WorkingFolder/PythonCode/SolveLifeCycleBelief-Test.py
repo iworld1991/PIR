@@ -26,6 +26,7 @@ import matplotlib as mp
 import matplotlib.pyplot as plt
 # %matplotlib inline
 from time import time
+from copy import copy
 
 # + code_folding=[0]
 ## plot configuration 
@@ -60,7 +61,7 @@ from SolveLifeCycleBelief import LifeCycle, solve_model_backward_iter,compare_2s
 
 # ## Parameters
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## parameters 
@@ -68,16 +69,6 @@ if __name__ == "__main__":
 
     U = 0.2 ## transitory ue risk
     U0 = 0.0 ## transitory ue risk
-    unemp_insurance = 0.15
-    sigma_psi = 0.1 # permanent 
-    sigma_eps = 0.0 # transitory 
-
-
-    #λ = 0.0  ## tax rate
-    #λ_SS = 0.0 ## social tax rate
-    #transfer = 0.0  ## transfer 
-    #pension = 1.0 ## pension
-
 
     ## life cycle 
 
@@ -86,22 +77,17 @@ if __name__ == "__main__":
     G = np.ones(L)
     YPath = np.cumprod(G)
 
+# -
 
-    ## other parameters 
+if __name__ == "__main__":
 
-    ρ = 2
-    R = 1.01
-    β = 0.97
-    x = 0.0
-    theta = 0.0 ## extrapolation parameter 
+    from PrepareParameters import life_cycle_paras_y as lc_paras_Y
+    ## make a copy of the imported parameters 
+    lc_paras_y = copy(lc_paras_Y)
+    lc_paras = lc_paras_y
+    print(lc_paras)
 
-    ## no persistent state
-    b_y = 0.0
-
-    ## wether to have zero borrowing constraint
-    borrowing_cstr = True
-
-# + code_folding=[0]
+# + code_folding=[]
 ## a deterministic income profile 
 if __name__ == "__main__":
 
@@ -113,27 +99,49 @@ if __name__ == "__main__":
 
 # ## Life-Cycle Problem 
 
-# ### Consumption  the last period 
-
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
-    lc_baseline = LifeCycle(sigma_psi = sigma_psi,
-                   sigma_eps = sigma_eps,
-                   U=U,
-                   ρ=ρ,
-                   R=R,
-                   T=T,
-                   L=L,
-                   G=G,
-                   β=β,
-                   x=x,
-                   borrowing_cstr = borrowing_cstr,
-                   b_y= b_y,
-                   unemp_insurance = unemp_insurance,
-                   )
+    
+    lc_paras_baseline = {
+        ## primitives
+                   'ρ':lc_paras['ρ'],     ## relative risk aversion  
+                   'β': lc_paras['β'],     ## discount factor
+                   'borrowing_cstr': True,
+        ## prices 
+                   'R':lc_paras['R'],           ## interest factor
+                   'W':lc_paras['W'],           ## Wage rate
+        
+        ## life cycle 
+        ##############################
+                   'T':lc_paras['T'],   ### let the retirement age be equal to life length!!!
+        ################################
+                   'L':lc_paras['L'],
+                   'G':lc_paras['G'],
+                   'LivPrb':lc_paras['LivPrb'],       ## living probability 
+        
+        ## income risks 
+                   'x':0.0,
+                   'b_y':0.0,
+                   'sigma_psi':lc_paras['σ_ψ'],
+                   'sigma_eps':lc_paras['σ_θ'],
+                   'P':lc_paras['P'],
+                   'U':lc_paras['U'],
+                   'z_val':lc_paras['z_val'], ## markov state from low to high 
+        
+        ## policy 
+                   'unemp_insurance':lc_paras['unemp_insurance'],
+                   'pension':lc_paras['pension'], ## pension
+                   'λ':lc_paras['λ'],  ## tax rate
+                   'λ_SS':lc_paras['λ_SS'], ## social tax rate
+                   'transfer':lc_paras['transfer'],  ## transfer 
+                   'bequest_ratio':lc_paras['bequest_ratio']}
+
+# + code_folding=[]
+if __name__ == "__main__":
+    lc_baseline = LifeCycle(**lc_paras_baseline)
 
 
-# + code_folding=[0]
+# + code_folding=[]
 # Initial the end-of-period consumption policy of σ = consume all assets
 
 if __name__ == "__main__":
@@ -148,66 +156,17 @@ if __name__ == "__main__":
     plt.title('Consumption in the last period')
     plt.plot(m_init[:,0,0,0],
              σ_init[:,0,0,0])
-
-# + code_folding=[0]
-if __name__ == "__main__":
-
-    from copy import copy
-    from PrepareParameters import life_cycle_paras_y as lc_paras_Y
-    ## make a copy of the imported parameters 
-    lc_paras_y = copy(lc_paras_Y)
-    lc_paras = lc_paras_y
-    print(lc_paras)
 # -
 
 # ## A special case of no retirement 
 #
 # - the consumption function should be non-linear throughout life cycle because of income risks 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
-    lc_no_ret = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-        
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],           ## Wage rate
-        
-        ## life cycle 
-        ##############################
-                   T = lc_paras['L'],   ### let the retirement age be equal to life length!!!
-        ################################
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
-        
-        ## income risks 
-                   x = 0.0,
-                   b_y = 0.0,
-                   sigma_psi = lc_paras['σ_ψ'],
-                   sigma_eps = lc_paras['σ_θ'],
-                   #ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high 
-        
-        ## initial conditions 
-                    #sigma_p_init = lc_paras['σ_ψ_init'],
-                    #init_b = lc_paras['init_b'],
-
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-         ## solutions 
-                   #grid_max = 10
-                   )
+    lc_no_ret_paras = copy(lc_paras_baseline)
+    lc_no_ret_paras['T']  = lc_no_ret_paras['L']  
+    lc_no_ret = LifeCycle(**lc_no_ret_paras)
 
 # + code_folding=[0]
 if __name__ == "__main__":
@@ -256,50 +215,14 @@ if __name__ == "__main__":
 #
 # - the consumption function should be non-linear throughout life cycle because of income risks 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
-    lc_a_max = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-        
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],           ## Wage rate
-        
-        ## life cycle 
-        ##############################
-                   T = lc_paras['L'],   ### let the retirement age be equal to life length!!!
-        ################################
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
-        
-        ## income risks 
-                   x = 0.0,
-                   b_y = 0.0,
-                   sigma_psi = lc_paras['σ_ψ'],
-                   sigma_eps = lc_paras['σ_θ'],
-                   #ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high 
-        
-        ## initial conditions 
-                    #sigma_p_init = lc_paras['σ_ψ_init'],
-                    #init_b = lc_paras['init_b'],
-
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-         ## solutions 
-                   grid_max = 20 ###!!!
-                   )
+    lc_a_max_paras = copy(lc_paras_baseline)
+    lc_a_max_paras['T'] = lc_a_max_paras['L']
+    lc_a_max_paras['grid_max'] = 20
+    
+    
+    lc_a_max = LifeCycle(**lc_a_max_paras)
 
 # + code_folding=[0]
 if __name__ == "__main__":
@@ -318,7 +241,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
@@ -348,50 +271,13 @@ if __name__ == "__main__":
 
 # + code_folding=[]
 if __name__ == "__main__":
-    lc_2t = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-        
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],           ## Wage rate
-        
-        ## life cycle 
-        ##############################
-                   T = 25,   ### let the retirement age be equal to life length!!!
-        ################################
-                   L = 25,
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
-        
-        ## income risks 
-                   x = 0.0,
-                   b_y = 0.0,
-                   sigma_psi = lc_paras['σ_ψ'],
-                   sigma_eps = lc_paras['σ_θ'],
-                   #ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high 
-        
-        ## initial conditions 
-                    #sigma_p_init = lc_paras['σ_ψ_init'],
-                    #init_b = lc_paras['init_b'],
+    lc_2t_paras = copy(lc_paras_baseline)
+    lc_2t_paras['T'] = 25
+    lc_2t_paras['L'] = 25
+    
+    lc_2t = LifeCycle(**lc_2t_paras)
 
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-         ## solutions 
-                   #grid_max = 10
-                   )
-
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     
     t_start = time()
@@ -409,7 +295,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
@@ -438,50 +324,10 @@ if __name__ == "__main__":
 
 # + code_folding=[]
 if __name__ == "__main__":
-    lc_no_trisk = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-        
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],           ## Wage rate
-        
-        ## life cycle 
-        ##############################
-                   T = lc_paras['L'],   ### let the retirement age be equal to life length!!!
-        ################################
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
-        
-        ## income risks 
-                   x = 0.0,
-                   b_y= 0.0,
-                   sigma_psi = lc_paras['σ_ψ'],
-                   sigma_eps = 0.0,   ###!!!
-                   #ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high 
-                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-        
-        ## initial conditions 
-                    sigma_p_init = lc_paras['σ_ψ_init'],
-                    init_b = lc_paras['init_b'],
-
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-         ## solutions 
-                   #grid_max = 10
-                   )
+    lc_no_triks_paras = copy(lc_paras_baseline)
+    lc_no_triks_paras['sigma_eps'] = 0.0
+    
+    lc_no_trisk = LifeCycle(**lc_no_triks_paras)
 
 # + code_folding=[0]
 if __name__ == "__main__":
@@ -500,8 +346,8 @@ if __name__ == "__main__":
     t_finish = time()
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
-# -
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
@@ -524,57 +370,18 @@ if __name__ == "__main__":
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
+# -
 
 # ## No permanent risks 
 
 # + code_folding=[]
 if __name__ == "__main__":
-    lc_no_prisk = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-        
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],           ## Wage rate
-        
-        ## life cycle 
-        ##############################
-                   T = lc_paras['L'],   ### let the retirement age be equal to life length!!!
-        ################################
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
-        
-        ## income risks 
-                   x = 0.0,
-                   b_y= 0.0,
-                   sigma_psi = 0.01*lc_paras['σ_ψ'],   ###!!!
-                   sigma_eps = lc_paras['σ_θ'],
-                   #ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high 
-                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-        
-        ## initial conditions 
-                    sigma_p_init = lc_paras['σ_ψ_init'],
-                    init_b = lc_paras['init_b'],
+    lc_no_prisk_paras = copy(lc_paras_baseline)
+    lc_no_prisk_paras['sigma_psi'] = 0.001*lc_paras['σ_ψ']
+    
+    lc_no_prisk = LifeCycle(**lc_no_prisk_paras)
 
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-         ## solutions 
-                   #grid_max = 10
-                   )
-
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     
     t_start = time()
@@ -590,8 +397,8 @@ if __name__ == "__main__":
     t_finish = time()
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
-# -
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
@@ -614,103 +421,28 @@ if __name__ == "__main__":
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
+# -
 
 # ## subjective (low risk) versus objective (high risk)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
-    lc_obj = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-        
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],           ## Wage rate
-        
-        ## life cycle 
-                   T = lc_paras['L'],
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
-        
-        ## income risks 
-                   x = 0.0,
-                   b_y= 0.0,
-                   sigma_psi = lc_paras['σ_ψ'],
-                   sigma_eps = lc_paras['σ_θ'],
-                   ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high 
-                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-        
-        ## initial conditions 
-                    sigma_p_init = lc_paras['σ_ψ_init'],
-                    init_b = lc_paras['init_b'],
-
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-         ## solutions 
-                   grid_max = 10
-                   )
-    lc_sub = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],            ## Wage rate
-        ## life cycle 
-                   T = lc_paras['L'], ###!!!
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
-        
-        ## income risks 
-                   x = 0.0,
-                   b_y= 0.0,
-                   sigma_psi = lc_paras['σ_ψ_sub'],
-                   sigma_eps = lc_paras['σ_θ_sub'],
-                   subjective = True,
-                   ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high
-                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                   sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
-                   sigma_eps_true = lc_paras['σ_θ'], ## true transitory
-        
-        ## initial conditions 
-                    sigma_p_init = lc_paras['σ_ψ_init'],
-                    init_b = lc_paras['init_b'],
-
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-        ## solutions 
-                  grid_max = 10
-                   )
+    lc_obj_paras = copy(lc_paras_baseline)
+    lc_obj_paras['grid_max'] = 10
+    lc_obj = LifeCycle(**lc_obj_paras)
+    
+    lc_sub_paras = copy(lc_paras_baseline)
+    lc_sub_paras['sigma_psi'] = lc_paras['σ_ψ_sub']
+    lc_sub_paras['sigma_eps'] = lc_paras['σ_θ_sub']
+    lc_sub_paras['grid_max'] = 10 
+    lc_sub = LifeCycle(**lc_sub_paras)
     
  
     models = [lc_sub,lc_obj]
     model_names = ['subjective','objective']
 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     
     t_start = time()
@@ -742,8 +474,8 @@ plt.hist(sub_minus_obj.flatten(),
          bins=50)
 plt.title('Consumption in subjective model(LPR) minus objective model ((HPR))')
 print('should be positive')
-# -
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
     m_grid = np.linspace(0.0,10.0,200)
@@ -770,10 +502,11 @@ if __name__ == "__main__":
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
+# -
 
 # ## low versus high risks 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     t_start = time()
@@ -858,40 +591,22 @@ if __name__ == "__main__":
     
     U_prb = 0.2
 
-    lc_trans_ue =  LifeCycle(sigma_psi = sigma_psi,
-                       sigma_eps = sigma_eps,
-                       U= U_prb,
-                       ρ=ρ,
-                       R=R,
-                       T=T,
-                       L=L,
-                       G=G,
-                       β=β,
-                       x=x,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y= b_y,
-                       unemp_insurance = unemp_insurance
-                       )
-
-    lc_trans_mkv0 =  LifeCycle(sigma_psi = sigma_psi,
-                       sigma_eps = sigma_eps,
-                       U=U0,
-                       ue_markov=True,
-                       P= np.array([[U_prb,1-U_prb],[U_prb,1-U_prb]]),
-                       ρ=ρ,
-                       R=R,
-                       T=T,
-                       L=L,
-                       G=G,
-                       β=β,
-                       x=x,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y= b_y,
-                       unemp_insurance = unemp_insurance
-                       )
+    lc_trans_ue_paras = copy(lc_paras_baseline)
+    lc_trans_ue_paras['U'] = U_prb
+    
+    lc_trans_mkv_paras = copy(lc_paras_baseline)
+    lc_trans_mkv_paras['U'] = U0
+    lc_trans_mkv_paras['P'] = np.array([[U_prb,1-U_prb],
+                                        [U_prb,1-U_prb]]
+                                      )
+    lc_trans_mkv_paras['ue_markov'] = True
+    
+    
+    lc_trans_ue =  LifeCycle(**lc_trans_ue_paras)
+    lc_trans_mkv =  LifeCycle(**lc_trans_mkv_paras)
 
 
-    models = [lc_trans_ue,lc_trans_mkv0] 
+    models = [lc_trans_ue,lc_trans_mkv] 
     model_names = ['transitory UE',
                   'markov UE:special case']
 
@@ -914,7 +629,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# +
+# + code_folding=[0, 2]
 # compare solutions
 
 trans_mkv_diff = compare_2solutions(ms_stars,
@@ -923,9 +638,9 @@ trans_mkv_diff = compare_2solutions(ms_stars,
 plt.hist(trans_mkv_diff.flatten(),
          bins=50)
 plt.title('Differences in Consumption Policy between two cases')
-print('should be positive')
+print('should be close to zero')
 
-# + code_folding=[] pycharm={"name": "#%%\n"}
+# + code_folding=[0] pycharm={"name": "#%%\n"}
 if __name__ == "__main__":
 
 
