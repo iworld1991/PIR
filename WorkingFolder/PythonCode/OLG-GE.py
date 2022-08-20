@@ -172,7 +172,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 20, 76, 130, 231, 256, 284, 311]
+# + code_folding=[7, 135, 137, 162, 190, 217]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -191,168 +191,74 @@ if calibrated_model == True:
         ## yearly parameters 
         lc_paras = lc_paras_q
 
-
-    ## initialize the model with calibrated parameters 
-    lc_mkv = LifeCycle(
+    lc_mkv_paras = { 
         ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-                   adjust_prob = 1.0,
+                   'ρ':lc_paras['ρ'],     ## relative risk aversion  
+                   'β':lc_paras['β'],     ## discount factor
+                   'borrowing_cstr':borrowing_cstr,
+                   'adjust_prob':1.0,
         
         ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],           ## Wage rate
+                   'R':lc_paras['R'],           ## interest factor
+                   'W':lc_paras['W'],           ## Wage rate
         
         ## life cycle 
-                   T = lc_paras['T'],
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
+                   'T':lc_paras['T'],
+                   'L':lc_paras['L'],
+                   'G':lc_paras['G'],
+                   'LivPrb':lc_paras['LivPrb'],       ## living probability 
         
         ## income risks 
-                   x = 0.0,
-                   b_y= 0.0,
-                   sigma_psi = lc_paras['σ_ψ'],
-                   sigma_eps = lc_paras['σ_θ'],
-                   #subjective = True,
-                   ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high 
-                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                   sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
-                   sigma_eps_true = lc_paras['σ_θ'], ## true transitory
+                   'x':0.0,
+                   'b_y':0.0,
+                   'sigma_psi':lc_paras['σ_ψ'],
+                   'sigma_eps':lc_paras['σ_θ'],
+                   'ue_markov':True,
+                   'P':lc_paras['P'],
+                   'U':lc_paras['U'],
+                   'z_val':lc_paras['z_val'], ## markov state from low to high 
+                   'sigma_psi_2mkv':lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
+                   'sigma_eps_2mkv':lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+                   'sigma_psi_true':lc_paras['σ_ψ'], ## true permanent
+                   'sigma_eps_true':lc_paras['σ_θ'], ## true transitory
         
         ## initial conditions 
-                    sigma_p_init = lc_paras['σ_ψ_init'],
-                    init_b = lc_paras['init_b'],
+                    'sigma_p_init':lc_paras['σ_ψ_init'],
+                    'init_b':lc_paras['init_b'],
 
         ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
+                   'unemp_insurance':lc_paras['unemp_insurance'],
+                   'pension':lc_paras['pension'], ## pension
+                   'λ':lc_paras['λ'],  ## tax rate
+                   'λ_SS':lc_paras['λ_SS'], ## social tax rate
+                   'transfer':lc_paras['transfer'],  ## transfer 
+                   'bequest_ratio':lc_paras['bequest_ratio'],
          ## solutions 
-                   shock_draw_size = 10.0,
-                   grid_max = 10
-                   )
-    #print(lc_mkv.psi_shk_draws)
-    #print(lc_mkv.eps_shk_draws)
-    #print(lc_mkv.psi_shk_true_draws)
-    #print(lc_mkv.eps_shk_true_draws)
-
+                   'shock_draw_size':10.0,
+                   'grid_max':10}
     
+    ## initialize the model with calibrated parameters 
+    
+    lc_mkv = LifeCycle(**lc_mkv_paras)    
     
     ## for the subjective model, only change the belief 
+    lc_mkv_sub_paras = copy(lc_mkv_paras)
+    lc_mkv_sub_paras['subjective'] = True 
+    lc_mkv_sub_paras['sigma_psi'] = lc_paras['σ_ψ_sub']
+    lc_mkv_sub_paras['sigma_eps'] = lc_paras['σ_θ_sub']
 
-    lc_mkv_sub = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-                   adjust_prob = 1.0,
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],            ## Wage rate
-        ## life cycle 
-                   T = lc_paras['T'],
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
+    lc_mkv_sub = LifeCycle(**lc_mkv_sub_paras)
         
-        ## income risks 
-                   x = 0.0,
-                   b_y= 0.0,
-                   sigma_psi = lc_paras['σ_ψ_sub'],
-                   sigma_eps = lc_paras['σ_θ_sub'],
-                   subjective = True,
-                   ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high
-                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                   sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
-                   sigma_eps_true = lc_paras['σ_θ'], ## true transitory
-        
-        ## initial conditions 
-                    sigma_p_init = lc_paras['σ_ψ_init'],
-                    init_b = lc_paras['init_b'],
-
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-        ## solutions 
-                  shock_draw_size =  10.0,
-                  grid_max = 10
-                   )
-    
-    #print(lc_mkv_sub.psi_shk_draws)
-    #print(lc_mkv_sub.eps_shk_draws)
-    #print(lc_mkv_sub.psi_shk_true_draws)
-    #print(lc_mkv_sub.eps_shk_true_draws)
-    
     
      ## for the subjective model, only change the belief 
-
-    lc_mkv_sub_true = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-                   adjust_prob = 1.0,
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],            ## Wage rate
-        ## life cycle 
-                   T = lc_paras['T'],
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
         
-        ## income risks 
-                   x = 0.0,
-                   b_y= 0.0,
-                   sigma_psi = lc_paras['σ_ψ_sub'],
-                   sigma_eps = lc_paras['σ_θ_sub'],
-                   subjective = False,
-                   ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high
-                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                   sigma_psi_true = lc_paras['σ_ψ_sub'], ## true permanent
-                   sigma_eps_true = lc_paras['σ_θ_sub'], ## true transitory
-        
-        ## initial conditions 
-                    sigma_p_init = lc_paras['σ_ψ_init'],
-                    init_b = lc_paras['init_b'],
-
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-        ## solutions 
-                  shock_draw_size =  10.0,
-                  grid_max = 10
-                   )
+    lc_mkv_sub_true_paras = copy(lc_mkv_sub_paras)
+    lc_mkv_sub_true_paras['subjective'] = False
+    lc_mkv_sub_true_paras['sigma_psi_true'] = lc_mkv_sub_true_paras['sigma_psi']
+    lc_mkv_sub_true_paras['sigma_eps_true'] = lc_mkv_sub_true_paras['sigma_eps']
     
-    #print(lc_mkv_sub_true.psi_shk_draws)
-    #print(lc_mkv_sub_true.eps_shk_draws)
-    #print(lc_mkv_sub_true.psi_shk_true_draws)
-    #print(lc_mkv_sub_true.eps_shk_true_draws)
+    
+    lc_mkv_sub_true = LifeCycle(**lc_mkv_sub_true_paras)
     
     
     lc_mkv_sub_cr = LifeCycle(
@@ -968,7 +874,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[5, 17, 111, 219, 233, 263, 294]
+# + code_folding=[0, 5, 17, 111, 219, 233, 263, 294]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1524,7 +1430,7 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## compare different models 
 
-# + code_folding=[0, 73, 80]
+# + code_folding=[0, 73]
 def solve_1model(model,
                 m_star,
                 σ_star,
