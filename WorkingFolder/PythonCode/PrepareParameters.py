@@ -238,11 +238,17 @@ if '$\tilde \mho^l$' in SCE_est_q.index:
                                              SCE_est_q.loc['$\tilde \mho^h$']])
     life_cycle_paras_q['E_2mkv'] = np.array([SCE_est_q.loc['$\tilde E^l$'],
                                           SCE_est_q.loc['$\tilde E^h$']])
+    
+else:
+    life_cycle_paras_q['mho_2mkv'] = np.array([life_cycle_paras_q['P'][0,0],
+                                               life_cycle_paras_q['P'][0,0]])
+    life_cycle_paras_q['E_2mkv'] = np.array([life_cycle_paras_q['P'][1,1],
+                                           life_cycle_paras_q['P'][1,1]])
 # -
 
 life_cycle_paras_q
 
-# + code_folding=[]
+# + code_folding=[1]
 ## create a dictionary of parameters 
 life_cycle_paras_y = {'ρ': 2.0, 
                     'β': 0.98, 
@@ -284,6 +290,12 @@ if '$\tilde \mho^l$' in SCE_est_y.index:
                                              SCE_est_y.loc['$\tilde \mho^h$']])
     life_cycle_paras_y['E_2mkv'] = np.array([SCE_est_y.loc['$\tilde E^l$'],
                                           SCE_est_y.loc['$\tilde E^h$']])
+    
+else:
+    life_cycle_paras_y['mho_2mkv'] = np.array([life_cycle_paras_y['P'][0,0],
+                                               life_cycle_paras_y['P'][0,0]])
+    life_cycle_paras_y['E_2mkv'] = np.array([life_cycle_paras_y['P'][1,1],
+                                           life_cycle_paras_y['P'][1,1]])
 # -
 
 life_cycle_paras_y
@@ -459,7 +471,3 @@ model_paras_by_block_df=model_paras_by_block_df.reset_index(level=1, drop=True)
 model_paras_by_block_df.to_excel('../Tables/calibration.xlsx')
 
 model_paras_by_block_df
-
-
-
-
