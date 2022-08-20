@@ -37,6 +37,7 @@ from numba.experimental import jitclass
 import matplotlib.pyplot as plt
 from time import time
 from Utility import cal_ss_2markov,mean_preserving_spread
+from copy import copy 
 
 from resources_jit import MeanOneLogNormal as lognorm
 
@@ -648,7 +649,7 @@ def compare_2solutions(ms_stars,
 
 # ## Initialize the model
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -657,44 +658,16 @@ if __name__ == "__main__":
 
     U = 0.2 ## transitory ue risk
     U0 = 0.0 ## transitory ue risk
-    unemp_insurance = 0.15
-    sigma_psi = 0.2 # permanent 
-    sigma_eps = 0.1 # transitory 
-
-
-    #λ = 0.0  ## tax rate
-    #λ_SS = 0.0 ## social tax rate
-    #transfer = 0.0  ## transfer 
-    #pension = 1.0 ## pension
 
 
     ## life cycle 
 
     T = 40
     L = 60
-    TGPos = int(L/3) ## one third of life sees income growth 
-    GPos = 1.01*np.ones(TGPos)
-    GNeg= 0.99*np.ones(L-TGPos)
-    #G = np.concatenate([GPos,GNeg])
     G = np.ones(L)
     YPath = np.cumprod(G)
 
-
-    ## other parameters 
-
-    ρ = 2
-    R = 1.01
-    β = 0.97
-    x = 0.0
-    theta = 0.0 ## extrapolation parameter 
-
-    ## no persistent state
-    b_y = 0.0
-
-    ## whether to have zero borrowing constraint
-    borrowing_cstr = True
-
-# + code_folding=[0]
+# + code_folding=[]
 ## a deterministic income profile 
 if __name__ == "__main__":
 
@@ -706,24 +679,24 @@ if __name__ == "__main__":
 
 # ## Life-Cycle Problem 
 
-# ### Consumption  the last period 
-
-# + code_folding=[0]
 if __name__ == "__main__":
-    lc_basic = LifeCycle(sigma_psi = sigma_psi,
-                   sigma_eps = sigma_eps,
-                   U=U,
-                   ρ=ρ,
-                   R=R,
-                   T=T,
-                   L=L,
-                   G=G,
-                   β=β,
-                   x=x,
-                   borrowing_cstr = borrowing_cstr,
-                   b_y= b_y,
-                   unemp_insurance = unemp_insurance,
-                   )
+    lc_paras = {'sigma_psi':0.2, # permanent 
+                'sigma_eps': 0.1, #transitory
+                'U':U,
+                'ρ':2,
+                'R':1.01,
+                'T':T,
+                'L':L,
+                'G':G,
+                'β':0.97,
+                'x':0.0,  # no MA shock 
+                'borrowing_cstr':True,
+                'b_y':0.0, #no persistent state
+                'unemp_insurance':0.15}
+
+# + code_folding=[]
+if __name__ == "__main__":
+    lc_basic = LifeCycle(**lc_paras)
 
 
 # + code_folding=[0]
@@ -801,20 +774,11 @@ if __name__ == "__main__":
 
 # ### Different permanent/transitory risk (no MA)
 
-# + code_folding=[1]
+# + code_folding=[]
 if __name__ == "__main__":
-    lc_pt = LifeCycle(U=U,
-                   ρ=ρ,
-                   R=R,
-                   T=T,
-                   L=L,
-                   G=G,
-                   β=β,
-                   x=x,
-                   borrowing_cstr = borrowing_cstr,
-                   b_y= b_y,
-                   unemp_insurance = unemp_insurance,
-                   )
+    lc_pt_paras = copy(lc_paras)
+    
+    lc_pt = LifeCycle(**lc_pt_paras)
 
 # + code_folding=[0]
 if __name__ == "__main__":
@@ -909,19 +873,10 @@ if __name__ == "__main__":
 
 # + code_folding=[]
 if __name__ == "__main__":
+    lc_ar_paras = copy(lc_paras)
+    lc_ar_paras['b_y'] = 0.5
     ## initialize another 
-    lc_ar = LifeCycle(sigma_psi=sigma_psi,
-                     sigma_eps = sigma_eps,
-                     U=U0,
-                     ρ=ρ,
-                     R=R,
-                     T=T,
-                     L=L,
-                     G=G,
-                     β=β,
-                     x=0.0,  ## shut down ma(1)
-                     borrowing_cstr = borrowing_cstr,
-                     b_y=0.5)
+    lc_ar = LifeCycle(**lc_ar_paras)
 
 
 # + code_folding=[0]
@@ -1002,7 +957,7 @@ if __name__ == "__main__":
 
 # ### State-dependent risks 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## transition matrix between low and high risk state
@@ -1047,30 +1002,17 @@ if __name__ == "__main__":
     print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(lc_basic.sigma_psi))
     print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(lc_basic.sigma_eps))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
+    
+    lc_sv_paras = copy(lc_paras)
+    lc_sv_paras['sigma_psi_2mkv'] =sigma_psi_2mkv
+    lc_sv_paras['sigma_eps_2mkv'] =sigma_eps_2mkv
+    lc_sv_paras['state_dependent_risk'] = True
 
     ## another model instance 
 
-    lc_sv0 = LifeCycle(sigma_psi = sigma_psi,
-                       sigma_eps = sigma_eps,
-                       U=U,
-                       ρ=ρ,
-                       R=R,
-                       T=T,
-                       L=L,
-                       G=G,
-                       β=β,
-                       x=x,
-                       P = P,
-                       sigma_psi_2mkv = sigma_psi_2mkv,
-                       sigma_eps_2mkv = sigma_eps_2mkv,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y=b_y,
-                       #############################
-                      state_dependent_risk = True
-                      #############################
-                      )
+    lc_sv0 = LifeCycle(**lc_sv_paras)
 
 
 # + code_folding=[0]
@@ -1183,7 +1125,7 @@ if __name__ == "__main__":
 
 # ### With a Markov/persistent unemployment state
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1196,27 +1138,15 @@ if __name__ == "__main__":
 
 
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
-
+    
+    lc_uemkv_paras = copy(lc_paras)
+    lc_uemkv_paras['P'] = P_uemkv
+    lc_uemkv_paras['ue_markov'] = True
+    
     ## initialize another 
-    lc_uemkv = LifeCycle(sigma_psi=sigma_psi,
-                         sigma_eps = sigma_eps,
-                         U=U0,
-                         ρ=ρ,
-                         R=R,
-                         T=T,
-                         L=L,
-                         G=G,
-                         β=β,
-                         x=0.0,  ## shut down ma(1)
-                         borrowing_cstr = borrowing_cstr,
-                         b_y = 0.0, ## markov state loading does not matter any more 
-                         ##########
-                         P = P_uemkv,
-                         #########
-                         unemp_insurance = 0.3,
-                         ue_markov = True)
+    lc_uemkv = LifeCycle(**lc_uemkv_paras)
 
 # + code_folding=[0]
 if __name__ == "__main__":
@@ -1279,7 +1209,7 @@ if __name__ == "__main__":
 # - unemployed perceive higher risks
 #
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1320,34 +1250,18 @@ if __name__ == "__main__":
     print('average permanent risk is '+str(av_sigma_psi_cr)+' compared to objective model '+str(lc_uemkv.sigma_psi))
     print('average transitory risk is '+str(av_sigma_eps_cr)+' compared to objective model '+str(lc_uemkv.sigma_eps))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
-
+    
+    
+    lc_cr_paras = copy(lc_paras)
+    lc_cr_paras['ue_markov'] = True
+    lc_cr_paras['state_dependent_risk'] = True
+    lc_cr_paras['sigma_psi_2mkv'] = sigma_psi_2mkv_cr
+    lc_cr_paras['sigma_eps_2mkv'] = sigma_eps_2mkv_cr
 
     ## model instance 
-    lc_cr= LifeCycle(sigma_psi = sigma_psi,
-                     sigma_eps = sigma_eps,
-                     U=U0,
-                     ρ=ρ,
-                     ########
-                     P=P_uemkv, 
-                     #########
-                     R=R,
-                     T=T,
-                     L=L,
-                     G=G,
-                     β=β,
-                     sigma_psi_2mkv = sigma_psi_2mkv_cr,   # different 
-                     sigma_eps_2mkv = sigma_eps_2mkv_cr,  # different 
-                     shock_draw_size = 30,
-                     borrowing_cstr = borrowing_cstr,
-                     x = x,  ## shut down ma(1)
-                     b_y = b_y,
-                     ue_markov = True,
-                    ################# 
-                    state_dependent_risk = True
-                    ##########################
-                    )
+    lc_cr= LifeCycle(**lc_cr_paras)
 
 # + code_folding=[0]
 if __name__ == "__main__":
@@ -1444,38 +1358,24 @@ if __name__ == "__main__":
     print('average permanent risk is '+str(av_sigma_psi_sub)+' compared to objective model '+str(lc_uemkv.sigma_psi))
     print('average transitory risk is '+str(av_sigma_eps_sub)+' compared to objective model '+str(lc_uemkv.sigma_eps))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
+    
+    lc_uemkv_sub_paras = copy(lc_uemkv_paras)
+    lc_uemkv_sub_paras['state_dependent_risk'] = False
+    ####################
+     ## subjective belief 
+     ####################
+    lc_uemkv_sub_paras['state_dependent_belief'] = True
+    
+    lc_uemkv_sub_paras['P_sub'] = P_sub
+    lc_uemkv_sub_paras['sigma_psi_2mkv'] = sigma_psi_2mkv_sub
+    lc_uemkv_sub_paras['sigma_eps_2mkv'] = sigma_eps_2mkv_sub
 
     ## initialize another 
-    lc_uemkv_sub = LifeCycle(sigma_psi=sigma_psi,
-                         sigma_eps = sigma_eps,
-                         U=U0,
-                         ρ=ρ,
-                         R=R,
-                         T=T,
-                         L=L,
-                         G=G,
-                         β=β,
-                         x= 0.0,  ## shut down ma(1)
-                         borrowing_cstr = borrowing_cstr,
-                         b_y = 0.0, ## markov state loading does not matter any more 
-                         ##########
-                         P = P_uemkv,
-                         #########
-                         unemp_insurance = 0.3,
-                         ue_markov = True,
-                         state_dependent_risk = False,
-                         ####################
-                         ## subjective belief 
-                         ##############
-                         P_sub = P_sub,
-                         state_dependent_belief = True,
-                         sigma_psi_2mkv = sigma_psi_2mkv_sub,   # different 
-                         sigma_eps_2mkv = sigma_eps_2mkv_sub,  # different 
-                          )
+    lc_uemkv_sub = LifeCycle(**lc_uemkv_sub_paras)
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1536,7 +1436,7 @@ if __name__ == "__main__":
 
 # ### Objective and subject state-dependent profile
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## compare subjective and objective models 
@@ -1554,11 +1454,7 @@ if __name__ == "__main__":
         age = lc_basic.L-year
         i = lc_basic.L-age
         for eps in eps_ls:
-            ## baseline: no ma shock 
-            #axes[x].plot(ms_star[i,:,eps,0],
-            #             σs_star[i,:,eps,0],
-            #             label = 'objective',
-            #             lw=3)
+           
             ## persistent 
             m_plt_u, c_plt_u = ms_star_uemkv[i,:,eps,0],σs_star_uemkv[i,:,eps,0]
             m_plt_e, c_plt_e = ms_star_uemkv[i,:,eps,1],σs_star_uemkv[i,:,eps,1]
@@ -1572,17 +1468,7 @@ if __name__ == "__main__":
                          '-.',
                          label ='employed',
                          lw=3)
-             ## stochastic volatility 
-            #axes[x].plot(ms_star_sv[i,:,eps,0], ## 0 indicates the low risk state 
-            #             σs_star_sv[i,:,eps,0],
-            #             '--',
-            #             label ='sv:low risk',
-            #             lw=3)
-            #axes[x].plot(ms_star_sv[i,:,eps,1], ## 1 indicates the high risk state 
-            #             σs_star_sv[i,:,eps,1],
-            #             '-.',
-            #             label ='sv:high risk',
-            #             lw=3)
+           
             ## countercyclical 
             m_plt_l,c_plt_l = ms_star_cr[i,:,eps,0],σs_star_cr[i,:,eps,0]
             m_plt_h,c_plt_h = ms_star_cr[i,:,eps,1],σs_star_cr[i,:,eps,1]
@@ -1612,24 +1498,14 @@ if __name__ == "__main__":
 
 # ## Infinite horizon problem
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
-
+    inf_liv_paras = copy(lc_paras)
+    
     ## initialize a model instance
 
-    inf_liv = LifeCycle(sigma_psi=sigma_psi,
-                       sigma_eps = sigma_eps,
-                       U=U,
-                       ρ=ρ,
-                       R=R,
-                       T=T,
-                       L=L,
-                       β=β,
-                       x=x,
-                       theta=theta,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y=b_y)
+    inf_liv = LifeCycle(**inf_liv_paras)
 
 
     ## initial guess of consumption functions 
@@ -1686,26 +1562,17 @@ if __name__ == "__main__":
 #
 #
 
-# + code_folding=[0, 5]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
     ## Initialize a model instance
+    
+    imp_adjust_paras = copy(inf_liv_paras)
+    imp_adjust_paras['adjust_prob'] = 0.6
+    
 
-    imp_adjust = LifeCycle(sigma_psi=sigma_psi,
-                       sigma_eps = sigma_eps,
-                       U=U,
-                       ρ=ρ,
-                       R=R,
-                       T=T,
-                       L=L,
-                       β=β,
-                       x=x,
-                       theta=theta,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y=b_y,
-                       unemp_insurance = unemp_insurance,
-                       adjust_prob = 0.6)
+    imp_adjust = LifeCycle(**imp_adjust_paras)
 
     ## initial consumption functions 
     m_init,σ_init = imp_adjust.terminal_solution()
@@ -1754,6 +1621,3 @@ if __name__ == "__main__":
         plt.xlabel('asset')
         plt.ylabel('c')
         plt.title('Infinite horizon solution')
-# -
-
-
