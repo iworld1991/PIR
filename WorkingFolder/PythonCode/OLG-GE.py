@@ -172,7 +172,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[7, 135, 137, 162, 190, 217]
+# + code_folding=[95, 97, 122, 150, 177]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -257,55 +257,14 @@ if calibrated_model == True:
     lc_mkv_sub_true_paras['sigma_psi_true'] = lc_mkv_sub_true_paras['sigma_psi']
     lc_mkv_sub_true_paras['sigma_eps_true'] = lc_mkv_sub_true_paras['sigma_eps']
     
-    
     lc_mkv_sub_true = LifeCycle(**lc_mkv_sub_true_paras)
-    
-    
-    lc_mkv_sub_cr = LifeCycle(
-        ## primitives
-                   ρ = lc_paras['ρ'],     ## relative risk aversion  
-                   β = lc_paras['β'],     ## discount factor
-                   borrowing_cstr = borrowing_cstr,
-                   adjust_prob = 1.0,
-        ## prices 
-                   R = lc_paras['R'],           ## interest factor
-                   W = lc_paras['W'],            ## Wage rate
-        ## life cycle 
-                   T = lc_paras['T'],
-                   L = lc_paras['L'],
-                   G = lc_paras['G'],
-                   LivPrb = lc_paras['LivPrb'],       ## living probability 
-        
-        ## income risks 
-                   x = 0.0,
-                   b_y = 0.0,
-                   sigma_psi = lc_paras['σ_ψ_sub'],
-                   sigma_eps = lc_paras['σ_θ_sub'],
-                   subjective = True,
-                   ue_markov = True,
-                   P = lc_paras['P'],
-                   U = lc_paras['U'],
-                   z_val = lc_paras['z_val'], ## markov state from low to high
-                   sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
-                   sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                   sigma_psi_true = lc_paras['σ_ψ'], ## true permanent
-                   sigma_eps_true = lc_paras['σ_θ'], ## true transitory
-        
-        ## initial conditions 
-                    sigma_p_init = lc_paras['σ_ψ_init'],
-                    init_b = lc_paras['init_b'],
 
-        ## policy 
-                   unemp_insurance = lc_paras['unemp_insurance'],
-                   pension = lc_paras['pension'], ## pension
-                   λ = lc_paras['λ'],  ## tax rate
-                   λ_SS = lc_paras['λ_SS'], ## social tax rate
-                   transfer = lc_paras['transfer'],  ## transfer 
-                   bequest_ratio = lc_paras['bequest_ratio'],
-        ## solutions 
-                  shock_draw_size =  10.0,
-                  grid_max = 10
-                  )
+    ## counter-cyclical risks 
+    lc_mkv_sub_cr_paras = copy(lc_mkv_sub_paras)
+    lc_mkv_sub_cr_paras['sigma_psi_2mkv'] = np.flip(lc_paras['σ_ψ_2mkv'])
+    lc_mkv_sub_cr_paras['sigma_eps_2mkv'] = np.flip(lc_paras['σ_θ_2mkv'])
+
+    lc_mkv_sub_cr = LifeCycle(**lc_mkv_sub_cr_paras)
 
 
 else:
