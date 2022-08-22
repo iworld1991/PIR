@@ -3,11 +3,21 @@
 
 \subsection{Baseline model results}
 
-I first examine the wealthy inequality generated from the benchmark objective model with the income risks calibrated following the existing literature such as \cite{krueger2016macroeconomics,carroll2017distribution}. In particular, I use the standard parameterization on permanent and transitory risks at the annual frequency being $\sigma_\psi=0.10$ and $\sigma_\theta =0.15$, and the unemployment risks $U2U=0.18$ and $E2E=0.96$. The upper panel of Figure \ref{fig:StE_dist_objective} reproduces the well-known result\footnote{For a thorough survey on this topic, see \cite{guvenen2011macroeconomics}, \cite{de2015quantitative}, and \cite{kaplan2018microeconomic}. } that a standard incomplete market model, without additional heterogeneity such as that in time discount rates, imply less (either in partial equilibrium or general equilibrium) wealth inequality than that seen in the data. \footnote{I use 2016 vintage of the SCF. }
+I first examine the wealthy inequality generated from the benchmark objective model with the income risks calibrated following the existing literature such as \cite{krueger2016macroeconomics,carroll2017distribution}. In particular, I use the standard parameterization on permanent and transitory risks at the annual frequency being $\sigma_\psi=0.15$ and $\sigma_\theta =0.15$, and the unemployment risks $U2U=0.18$ and $E2E=0.96$. The upper panel of Figure \ref{fig:StE_dist_objective} reproduces the well-known result\footnote{For a thorough survey on this topic, see \cite{guvenen2011macroeconomics}, \cite{de2015quantitative}, and \cite{kaplan2018microeconomic}. } that a standard incomplete market model, without additional heterogeneity such as that in time discount rates, imply less (either in partial equilibrium or general equilibrium) wealth inequality than that seen in the data. \footnote{I use 2016 vintage of the SCF. }
 
-\begin{center}
-[FIGURE \ref{fig:StE_dist_objective} HERE]
+
+\begin{figure}[!ht]
+	\caption{Wealth inequality in Partial and General Equilibrium: baseline model}
+	\label{fig:StE_dist_objective}
+	\begin{center}
+		\adjustimage{max size={0.3\linewidth}{0.4\paperheight}}{figures/lorenz_a_test.png} 
+			\adjustimage{max size={0.6\linewidth}{0.4\paperheight}}{figures/life_cycle_a_test.png}  \\
+			\adjustimage{max size={0.3\linewidth}{0.4\paperheight}}{figures/lorenz_a_eq.png}
+	\adjustimage{max size={0.6\linewidth}{0.4\paperheight}}{figures/life_cycle_a_eq.png}
 \end{center}
+\begin{flushleft}Note: the panel shows, under the baseline objective model, the Lorenz curve of households wealth (left) and the model-generated life-cycle profile of log average wealth compared to that seen in the 2016 vintage of Survey of Consumer Finance (SCF) (right) in the partial equilibrium (upper panel) and in general equilibrium (bottom panel). \end{flushleft}
+\end{figure}
+
 
 The life-cycle profile of wealth is another dimension of the model implications that can be compared to its counterparts seen in the data. The bottom panel of Figure  \ref{fig:StE_dist_objective} plots the hump-shaped average wealth over the life cycle implied by the model against the median net wealth between the age of 25 to 85 from SCF. There are two divergences between the model and the data. First, compared to the data, the model implies a more rapid build-up of buffer-stock wealth before the middle age. This is so because of the precautionary saving motives in the presence of income risks of various kinds in this model. 
 
@@ -27,11 +37,21 @@ Figure \ref{fig:StE_dist_compare} confirms the two straightforward implications 
 
 Second, if it does reflect an objectively lower size of the idiosyncratic risks than the usual estimation in the benchmark model, a lower PR unambiguously leads to \emph{less} wealth inequality than in the benchmark model, as shown in the Lorenz curve in Figure \ref{fig:StE_dist_compare}. This means that the simple LPR extension cannot help explain an additional degree of wealth inequality as seen in the data.
 
-\begin{center}
-[FIGURE \ref{fig:StE_dist_compare} HERE]
-\end{center}
 
-A lower wealth inequality could be either due to an objectively higher income inequality, which is exogenous to the agents in the model, or partly endogenous responses via consumption/saving decisions. In order to separate the two channels, I solve the model above by separately parameterizing the risks as perceived by the agents (subjective) and the level of risks that determine the realized income distributions (objective). In particular, I set the perceived risks that affect agents' consumption/saving decisions to be the low values as reported in the survey, like in LPR, while keeping the objective risk parameters the same as the baseline model. Call this model SLPR (subjective LPR model). % need better names. 
+\begin{figure}[!ht]
+	\caption{Wealth inequality in Partial and General Equilibrium: under Different Model Assumptions}
+	\label{fig:StE_dist_compare}
+	\begin{center}
+		\adjustimage{max size={0.3\linewidth}{0.4\paperheight}}{figures/lorenz_a_compare_pe.png}
+	\adjustimage{max size={0.6\linewidth}{0.4\paperheight}}{figures/life_cycle_a_compare_pe.png} \\
+		\adjustimage{max size={0.3\linewidth}{0.4\paperheight}}{figures/lorenz_a_compare_ge.png}
+	\adjustimage{max size={0.6\linewidth}{0.4\paperheight}}{figures/life_cycle_a_compare_ge.png} \\
+	
+\end{center}
+\begin{flushleft}Note: the panel shows, under different assumptions, the Lorenz curve of households wealth (left) and the model-generated life-cycle profile of log average wealth compared to that seen in the 2016 vintage of Survey of Consumer Finance (SCF) (right) in the partial equilibrium (upper panel) and in general equilibrium (bottom panel). \end{flushleft}
+\end{figure}
+
+A lower wealth inequality could be either due to an objectively lower income inequality, which is exogenous to the agents in the model, or partly endogenous responses via consumption/saving decisions. In order to separate the two channels, I solve the model above by separately parameterizing the risks as perceived by the agents (subjective) and the level of risks that determine the realized income distributions (objective). In particular, I set the perceived risks that affect agents' consumption/saving decisions to be the low values as reported in the survey, like in LPR, while keeping the objective risk parameters the same as the baseline model. Call this model SLPR (subjective LPR model). % need better names. 
 
 SLPR can be thought of as a thought experiment I invoked to disentangle the effects via choices and realizations. It can also be a model which accommodates more general possibilities of discrepancies between perceptions and the objective model counterpart,  which deviates from the assumption of rational expectations. Appendix \ref{appendix:subjective_model} discusses in greater detail on how the consumer problem, the dynamics and stationary distribution of the economy change within a model allowing for subjective risk perceptions and the objective risks to be different. 
 

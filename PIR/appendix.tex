@@ -10,18 +10,23 @@
 
 \import{./}{appendix_density_estimation.tex}
 
-\subsection{Other drivers of PR}
+\subsection{Other facts about PR}
+
+\import{./}{appendix_other_hist}
+\import{./}{appendix_income.tex}
 
 \import{./}{appendix_cyclicality.tex}
 
 \import{./}{appendix_experience.tex}
 
+\import{./}{appendix_covariates.tex}
 
-\subsection{Income risk decomposition using SIPP data}
+\subsection{Wage risk estimation using SIPP data}
 \label{appendix:sipp_data}
+
 \subsubsection{Sample selection}
 
-To estimate the risks to the labor earnings conditional on working for the same hours and staying in the same job, I restrict the universe of the SIPP sample according to this definition for the worker's primary job (JB1). The specific filtering criteria is listed as below, and it is approximately identical to that in \cite{low2010wage} for computing the wage rate of the same job using 1993 panel of SIPP. 
+To estimate the wage risks, or risks to the earning conditional on working for the same hours and staying in the same job, I restrict the universe of the SIPP sample according to this definition for the worker's primary job (JB1). The specific filtering criteria is listed as below, and it is approximately identical to that in \cite{low2010wage} for computing the wage rate of the same job using 1993 panel of SIPP. 
 
 \begin{itemize}
     \item Time: January 2013-December 2020
@@ -36,7 +41,7 @@ To estimate the risks to the labor earnings conditional on working for the same 
     \item Drop government/agriculture jobs: drop if TJB1\_IND>=9400.
 \end{itemize}
 
-The selected sample has summary statistics as reported in Table \ref{tab:sipp_sum_stat} below. 
+Based on the selected sample, Table \ref{tab:sipp_sum_stat} reports the size and approximated group-specific wage volatility as defined in Equation \ref{Eq:definition_volatility}. 
 
 \begin{table}[!ht]
     \centering
@@ -73,9 +78,50 @@ Full sample (100\%)        & 60,576 & 0.1       \\
 \end{tabular}
 \end{table}
 
-\subsection{Income risk decomposition under alternative assumptions}
+\subsubsection{SEAM Effect}
+
+One special feature of SIPP is that it collects monthly information by surveying each correspondent every four months before the 2013 wave and once a year afterward (since 2014 wave). This leads to the well-documented issue of SEAM effect \citep{ryscavage1993seam,rips2003straightening, nekarda2008weekly, callegaro2008seam}, which states that reported changes in survey answers are relatively small for adjacent months within a survey wave but much more abrupt between months across surveys. Such a difference could be either due to underreporting of changes within a reference period (due to reasons such as the recall bias) or overreporting of changes across reference periods. 
+
+This effect is clearly seen from the time series plot of monthly wage volatility in Figure \ref{fig:volatility_monthly_seam}, where there is always a spike in the size of volatility between December to January in the sample period.\footnote{Note that the only exception is January 2017, for which no monthly growth rate is not available due to reshuffling of the SIPP sample.}
+
+ \begin{figure}[!ht]
+    	\caption{Estimated monthly wage volatility}
+    	\label{fig:volatility_monthly_seam}
+    	\begin{center}
+    	\adjustimage{max size={0.8\linewidth}}{figures/log_wage_shk_gr_sd.png}
+    	\end{center}
+    	\floatfoot{Note: this figure plots the monthly wage volatility as defined in Equation \ref{Eq:definition_volatility} for the entire selected sample, estimated from SIPP.} 
+    \end{figure}
+
+Because of this issue, for monthly risk estimation, I exclude the December-January observations, leading to non-identification of the risks of each January. By doing so, I basically assume that within-wave respondents do not underreport true changes to the wages, while the cross-wave answers overreport these changes. But the opposite assumption might be true, in that respondents underreport changes within the reference year when they retroactively answer survey questions, and the changes across reference periods are correctly reported.
+
+One way to incorporate the cross-wage changes instead of dropping them by brutal force is to estimate risks at a lower frequency, i.e. quarterly and yearly, and construct  the quarterly/yearly period such that it covers the cross-wave cutoff month December. Figure \ref{fig:decomposed_yearly} and \ref{fig:decomposed_quarterly} in section \ref{appendix:quarter_year_risk_est} plot the time-varying risks estimated for quarterly and annual frequency, respectively. 
+
+\subsection{Wage risk estimation under alternative assumptions}
 
 \subsubsection{Baseline estimation}
+\label{appendix:risk_identification}
+Permanent and transitory risks are identified via the following moment restrictions.
+\begin{equation}
+\begin{split}
+   & var(\Delta w_{i,t}) = var(\psi_t+\theta_t-\theta_{t-1}) = \sigma^2_{\psi,t} + \sigma^2_{\theta,t}+\sigma^2_{\theta,t-1} \\
+  &  cov(\Delta w_{i,t},\Delta w_{i,t+1}) =cov(\psi_t+\theta_t-\theta_{t-1}, \psi_{t+1}+\theta_{i,t+1}-\theta_{i,t}) = - \sigma^2_{\theta,t} \\
+  &  cov(\Delta w_{i,t-1},\Delta w_{i,t}) =cov(\psi_{t-1}+\theta_t-\theta_{t-1}, \psi_{t}+\theta_{i,t}-\theta_{i,t-1})= - \sigma^2_{\theta,t-1} \\
+\end{split}
+\end{equation}
+
+With four years of wage of individual $i$ from $t-2$ to $t$, hence three years of first difference $\Delta w$, the above three equations can exactly identify the permanent risk specific to time $t$, $\sigma_{\psi,t}$ and the time-specific transitory risk $\sigma_{\theta,t}$ and $\sigma_{\theta,t-1}$. 
+
+Three years of wage data is sufficient under a slightly looser restriction that the transitory risks stay constant over each 3-year horizon, between $t-1$ and $t+1$, call it $\bar \sigma_{\theta_,t}$. In particular, we have the following identification. With wage growth in year 2014, 2015, 2016, and 2018, 2019, I can identify the year-specific permanent risks for 2014, 2015, 2016, 2018, and 2019, and the average transitory risks for 2014-2016 and 2017-2019, as shown in Figure \ref{fig:decomposed_yearly}. 
+
+
+\begin{equation}
+\begin{split}
+   & var(\Delta w_{i,t}) = var(\psi_t+\theta_t-\theta_{t-1}) = \sigma^2_{\psi,t} + 2\bar \sigma^2_{\theta,t} \\
+  &  cov(\Delta w_{i,t},\Delta w_{i,t+1}) = cov(\Delta w_{i,t-1},\Delta w_{i,t}) = - \bar \sigma^2_{\theta,t} 
+\end{split}
+\end{equation}
+
 
  \begin{figure}[!ht]
     	\caption{Monthly permanent and transitory income risks}
@@ -83,7 +129,7 @@ Full sample (100\%)        & 60,576 & 0.1       \\
     	\begin{center}
     	\adjustimage{max size={0.8\linewidth}}{figures/permanent-transitory-risk.jpg}
     	\end{center}
-    	\floatfoot{Note: this figure plots the 3-month moving average of the estimated monthly permanent and transitory risks (in variance) using the SIPP panel data on wage between 2013m3-2019m12. }
+    	\floatfoot{Note: this figure plots the 3-month moving average of the estimated monthly permanent and transitory risks (variance) using the SIPP panel data on wage between 2013m1-2019m12. }
     \end{figure}
     
 \pagebreak
@@ -131,9 +177,47 @@ Full sample (100\%)          & 0.029      & 0.021      & 0.112              & 0.
 	\begin{flushleft} This table reports estimated realized annual volatility, risks of different components, and the expected income volatility of different groups. All are expressed in standard deviation units.\end{flushleft}
 \end{table}
 
-%\subsubsection{A GARCH model of income risks}
 
-\subsubsection{Infrequent arrival of the transitory shocks}
+\subsubsection{Infrequent arrival of the wage shocks}
+
+As an alternative specification to the baseline wage process as in Equation \ref{Eq:IncProcess1}, I follow the same specification as in \cite{druedahl2021high} to estimate monthly wage risks, allowing for infrequent arrivals of both transitory and permanent shocks. The assumption of infrequent shocks is primarily motivated by the observed pattern (as shown in Figure \ref{fig:high-freq-cdf}) that a sizable mass of individual monthly wage growth is concentrated around zero. 
+
+\begin{figure}[!ht]
+    	\caption{CDF of monthly wage growth}
+    	\label{fig:high-freq-cdf}
+    	\begin{center}
+    	\adjustimage{max size={0.5\linewidth}}{figures/high_freq_cdf_all.png} \\ \adjustimage{max size={0.5\linewidth}}{figures/high_freq_cdf_by_group.png}
+    	\end{center}
+    	\begin{flushleft}Note:  this figure plots the cumulative distribution function of monthly wage growth from SIPP for the whole sample (left) and by gender-education-age-specific group (right).  \end{flushleft}
+    \end{figure}
+    
+\subsubsection{Estimated risks at a lower frequency}
+\label{appendix:quarter_year_risk_est}
+
+Most of the income risk estimation in the literature is done at a lower frequency, such as yearly and quarterly. Figure \ref{fig:decomposed_yearly} plots the estimated time-varying permanent and transitory risks using annual growth of average wage of each year in the sample.\footnote{A similar size of estimates is obtained when YOY growth of monthly wage is used.} Due to reshuffling of the entire of SIPP sample in 2017, no annual wage growth rate can be calculated in 2017, hence, the permanent risks of 2017 and the transitory risks of its adjacent years are unable to be identified.  
+
+For the years with identified risks, the estimated risks at annual frequency seems to be much larger than that commonly seen in the literature, as summarized in Table \ref{tab:risks_literature}. In particular, the size of the permanent shock ranges from 27\% to 41\%, in contrast to the standard estimation of 10-15\%. And the transitory risks are estimated to be around 25\%, which also exceeds the standard estimates of 10\% to 20\%. 
+
+ \begin{figure}[!ht]
+    	\caption{Yearly permanent and transitory wage risks}
+    	\label{fig:decomposed_yearly}
+    	\begin{center}
+    	\adjustimage{max size={0.5\linewidth}}{figures/permanent-transitory-risk-yearly.jpg}
+    	\end{center}
+    	\floatfoot{Note: this figure plots the estimated yearly permanent and transitory risks (variance) using the SIPP panel data on wage between 2013m1-2019m12.}
+    \end{figure}
+    
+The similar issue can be seen from quarterly estimates using quarterly growth of average wage rates.(See Figure \ref{fig:decomposed_quarterly}) Reminiscent of the seasonal spike in the monthly volatility in January, there is a similar spike in the first quarter every year in the sample.    
+
+ \begin{figure}[!ht]
+    	\caption{Quarterly permanent and transitory wage risks}
+    	\label{fig:decomposed_quarterly}
+    	\begin{center}
+    	\adjustimage{max size={0.5\linewidth}}{figures/permanent-transitory-risk-quarterly.jpg}
+    	\end{center}
+    	\floatfoot{Note: this figure plots the estimated quarterly permanent and transitory risks (variance) using the SIPP panel data on wage between 2013m1-2019m12.}
+    \end{figure}
+    
 
 \subsection{Results with the first moment (the expected and realized wage growth)}
 
@@ -153,6 +237,7 @@ Although the main focus of this paper is on income/wage risks, specifically the 
 %\subsection{Results with PSID data}
 
 \subsection{Life-cycle wage profile}
+
 \label{appendix:life-cycle-determinstic}
 
 \begin{center}
@@ -280,7 +365,32 @@ $$\tilde \Gamma^h = [\log[(12+\frac{1}{12\kappa^2})\tilde \sigma^{h2}_{\psi}],\t
 
 \textbf{Estimation sample} I restrict the sample to SCE respondents who were surveyed for at least 6 consecutive months with non-empty reported perceived earning volatility, separation and job-finding expectations. This left with me 6457 individuals.
 
-%\subsection{Solution algorithm of the model} 
+Table \ref{tab:PRMarkovEst} reports the estimated parameters. 
+
+\begin{table}[p]
+\centering
+\begin{threeparttable}
+\caption{Estimated subjective risk perceptions}
+\label{tab:PRMarkovEst}
+\begin{tabular}{lr}
+\toprule
+{} &  baseline \\
+\midrule
+
+$std(\tilde\sigma)$&     1.203 \\
+$q$                     &     0.565 \\
+$p$                     &     0.565 \\
+$\tilde \sigma^l_\psi$   &     0.897 \\
+$\tilde \sigma^l_\theta$ &     0.021 \\
+$\tilde \sigma^h_\psi$   &     1.140 \\
+$\tilde \sigma^h_\theta$  &     0.027 \\
+\bottomrule
+\end{tabular}
+	\begin{flushleft}
+		{\footnotesize This table reports estimates of the parameters for the 2-state Markov switching model of subjective risk perceptions. Risks are at the annual frequency. }
+			\end{flushleft}
+\end{threeparttable}
+\end{table}
 
 
 \subsection{Model extension: subjective risk perceptions}

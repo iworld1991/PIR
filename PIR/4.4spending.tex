@@ -25,9 +25,37 @@ The second term on the right above captures the effect from precautionary saving
 Since $\kappa\leq 1$, an OLS estimate coefficient of expected spending growth on perceived income risks reveals a lower bound of the $1/2$ of the size of relative risk aversion $\rho$. Table \ref{spending_reg} reports the regression results of planned
 log spending growth over the next year on real and nominal perceived income risk in the variance terms\footnote{One common econometric concern with running regressions of this kind is the measurement error in the regressor, i.e. the perceived risks. In a typical OLS regression in which the regressor has i.i.d. measurement errors, the coefficient estimate for the imperfectly measured regressor has a bias toward zero. For this reason, if I find that expected spending growth is indeed positively correlated with perceived risks, taking into account the bias, it implies that the correlation of the two is greater in size.}. Regardless of the specification, the perceived risk is indeed positively correlated with the expected spending growth as the precautionary saving motive would predict. Specifically, after controlling for individual fixed effect, i.e. discount rate, and time fixed effect i.e. interest rate, each unit increase in perceived variance leads to around a 3 percentage points increase in expected spending growth. This implies an estimated risk aversion coefficient in the range of 6-7. Besides, the precautionary saving motives are weaker for real earning risks than the nominal, but the two are not significantly different from each other. 
 
-\begin{center}
-[TABLE \ref{spending_reg} HERE]
-\end{center}
+\begin{table}[h]
+\centering
+\begin{adjustbox}{width={0.9\textwidth}}
+\begin{threeparttable}
+\caption{Perceived Income Risks and Household Spending Plan}
+\label{spending_reg}
+\begin{tabular}{lllllll}
+	\hline 
+	& (1)      & (2)      & (3)      & (4)      & (5)      & (6)      \\
+		\hline 
+	perceived earning risk           & 8.394*** & 8.399*** & 3.642*** & 3.243*** &          &          \\
+	& (1.175)  & (1.176)  & (0.533)  & (0.537)  &          &          \\
+	&          &          &          &          &          &          \\
+	perceived earning risk (nominal) &          &          &          &          & 3.656*** &          \\
+	&          &          &          &          & (0.990)  &          \\
+	&          &          &          &          &          &          \\
+	perceived ue risk                &          &          &          &          &          & 0.353*** \\
+	&          &          &          &          &          & (0.0553) \\
+		\hline 
+	R-squared                        & 0.0010 & 0.00282  & 0.928    & 0.928    & 0.941    & 0.633    \\
+	Sample Size                      & 53178    & 53178    & 53178    & 53178    & 54584    & 6269     \\
+	Time FE                          & No       & Yes      & No       & Yes      & Yes      & No       \\
+	Individual FE                    & Yes       & No       & Yes      & Yes      & Yes      & Yes     \\
+		\hline 
+\end{tabular}
+	\begin{flushleft}
+		{\footnotesize\item Standard errors are clustered by household. *** p$<$0.001, ** p$<$0.01 and * p$<$0.05. 
+\item This table reports regression results of expected spending growth on perceived income risks (incvar for nominal, rincvar for real).}\end{flushleft}
+\end{threeparttable}
+\end{adjustbox}
+\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% good to have a analytical formula underlying this regression

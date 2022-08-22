@@ -286,6 +286,50 @@ The pension income relative to the permanent income is assumed to be $\mathbb{S}
 
 Table \ref{tab:calibration} summarizes the parameters used in this calibration. 
 
-\begin{center}
-[TABLE \ref{tab:calibration} HERE]
-\end{center}
+
+\clearpage\begin{table}[h]
+\begin{threeparttable}
+\caption{Model parameters}
+\label{tab:calibration}
+\begin{tabular}{llll}
+\hline 
+
+block             & parameter name              & values & source                               \\
+\hline 
+
+risk              & $\sigma_\psi$               & 0.15   & Median estimates from the literature \\
+risk              & $\sigma_\theta$             & 0.15    & Median estimates from the literature \\
+risk              & $U2U$                       & 0.18   & Median estimates from the literature \\
+risk              & $E2E$                       & 0.96   & Median estimates from the literature \\
+\hline 
+
+initial condition & $\sigma_\psi^{\text{init}}$ & 0.629  & Estimated for age 25 in the 2016 SCF \\
+initial condition & bequest ratio               & 0      & assumption                           \\
+\hline 
+
+life cycle        & $T$                         & 40     & standard assumption                  \\
+life cycle        & $L$                         & 60     & standard assumption                  \\
+life cycle        & $1-D$                       & 0.994  & standard assumption                  \\
+\hline 
+
+preference        & $\rho$                      & 1      & standard assumption                  \\
+preference        & $\beta$                     & 0.98   & standard assumption                  \\
+\hline 
+
+policy            & $\mathbb{S}$                & 0.65   & U.S. average                         \\
+policy            & $\lambda$                   & N/A      & endogenously determined              \\
+policy            & $\lambda_{SS}$              & N/A      & endogenously determined              \\
+policy            & $\mu$                       & 0.15   & U.S. average                         \\
+\hline 
+
+production        & $W$                         & 1      & target values in steady state        \\
+production        & K2Y ratio                   & 3      & target values in steady state        \\
+production        & $\alpha$                    & 0.33   & standard assumption                  \\
+production        & $\delta$                    & 0.025  & standard assumption          \\
+\hline 
+\end{tabular} 
+	\begin{flushleft}
+		{\footnotesize This table reports parameters used in the benchmark objective model. All parameters, whenever relevant, are at the annual frequency.}
+			\end{flushleft}
+\end{threeparttable}
+\end{table}
