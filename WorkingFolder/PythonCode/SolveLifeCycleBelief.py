@@ -234,7 +234,7 @@ class LifeCycle:
         
         ## saving a grid
         a_grid_regular = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size-1))
-        self.a_grid = np.append(a_grid_regular,np.max(a_grid_regular)*10)
+        self.a_grid = np.append(a_grid_regular,np.max(a_grid_regular)*100)
               
         ## ma(1) shock grid 
         if sigma_eps!=0.0 and x!=0.0:
