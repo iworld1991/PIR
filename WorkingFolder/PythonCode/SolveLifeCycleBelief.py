@@ -125,7 +125,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[6, 128, 138, 143, 160, 211]
+# + code_folding=[128, 138, 143, 160, 211]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -233,7 +233,8 @@ class LifeCycle:
         self.prepare_shocks()
         
         ## saving a grid
-        self.a_grid = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size))
+        a_grid_regular = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size-1))
+        self.a_grid = np.append(a_grid_regular,np.max(a_grid_regular)*10)
               
         ## ma(1) shock grid 
         if sigma_eps!=0.0 and x!=0.0:
@@ -709,8 +710,8 @@ if __name__ == "__main__":
     m_init,σ_init = lc_basic.terminal_solution()
     
     plt.title('Consumption in the last period')
-    plt.plot(m_init[:,0,0,0],
-             σ_init[:,0,0,0])
+    plt.plot(m_init[0:-1,0,0,0],
+             σ_init[0:-1,0,0,0])
 # -
 
 ## the size of consumption function is  nb_a x nb_eps x nb_z x nb_f
@@ -728,8 +729,8 @@ if __name__ == "__main__":
     ### plot each iteration
     fig,ax = plt.subplots()
     plt.title('Consumption policy from each iteration')
-    ax.plot(m_vec[:,0,0,0],
-            σ_vec[:,0,0,0],
+    ax.plot(m_vec[0:-1,0,0,0],
+            σ_vec[0:-1,0,0,0],
             label='T')
 
     ## solve backward
@@ -740,8 +741,8 @@ if __name__ == "__main__":
                              10,
                              lc_basic)
         if it <5:
-            ax.plot(m_next[:,0,0,0],
-                    σ_next[:,0,0,0],
+            ax.plot(m_next[0:-1,0,0,0],
+                    σ_next[0:-1,0,0,0],
                     label='T-'+str(it+1))
         error = np.max(abs(σ_next-σ_vec))
         m_vec = np.copy(m_next)
@@ -811,7 +812,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -828,7 +829,7 @@ if __name__ == "__main__":
         age = lc_basic.L-year
         i = lc_basic.L-age
         for k,sigma_psi in enumerate(sigma_psi_ls):
-            m_plt,c_plt = ms_stars[k][i,:,eps_fix,0,0],σs_stars[k][i,:,eps_fix,0,0]
+            m_plt,c_plt = ms_stars[k][i,0:-1,eps_fix,0,0],σs_stars[k][i,0:-1,eps_fix,0,0]
             axes[x].plot(m_plt,
                          c_plt,
                          label = r'$\sigma_\psi=$'+str(sigma_psi),
@@ -917,7 +918,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -936,8 +937,8 @@ if __name__ == "__main__":
         age = lc_ar.L-year
         i = lc_ar.L-age
         for eps in eps_ls:
-            m_plt_l,c_plt_l = ms_stars_ar[0][i,:,eps,0,0],σs_stars_ar[0][i,:,eps,0,0]
-            m_plt_h,c_plt_h  = ms_stars_ar[0][i,:,eps,1,0],σs_stars_ar[0][i,:,eps,1,0]
+            m_plt_l,c_plt_l = ms_stars_ar[0][i,0:-1,eps,0,0],σs_stars_ar[0][i,0:-1,eps,0,0]
+            m_plt_h,c_plt_h  = ms_stars_ar[0][i,0:-1,eps,1,0],σs_stars_ar[0][i,0:-1,eps,1,0]
             axes[x].plot(m_plt_l,
                          c_plt_l,
                          '--',
@@ -1035,7 +1036,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     ## compare two markov states low versus high risk 
 
@@ -1050,8 +1051,8 @@ if __name__ == "__main__":
     for x,year in enumerate(years_left):
         age = lc_basic.L-year
         i = lc_basic.L-age
-        m_plt_l,c_plt_l = ms_star_sv[i,:,eps_id,0,0],σs_star_sv[i,:,eps_id,0,0]
-        m_plt_h,c_plt_h = ms_star_sv[i,:,eps_id,1,0],σs_star_sv[i,:,eps_id,1,0]
+        m_plt_l,c_plt_l = ms_star_sv[i,0:-1,eps_id,0,0],σs_star_sv[i,0:-1,eps_id,0,0]
+        m_plt_h,c_plt_h = ms_star_sv[i,0:-1,eps_id,1,0],σs_star_sv[i,0:-1,eps_id,1,0]
         
         axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
                      c_plt_l,
@@ -1073,7 +1074,7 @@ if __name__ == "__main__":
 
 # ### Comparison: objective and subjective risk perceptions
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1092,14 +1093,14 @@ if __name__ == "__main__":
         i = lc_basic.L-age
 
         ## baseline: no ma shock 
-        m_plt,c_plt = ms_star_basic[i,:,eps_fix,0,0],σs_star_basic[i,:,eps_fix,0,0]
+        m_plt,c_plt = ms_star_basic[i,0:-1,eps_fix,0,0],σs_star_basic[i,0:-1,eps_fix,0,0]
         axes[x].plot(m_plt,
                      c_plt,
                      label = 'objective',
                      lw=3)
          ## stochastic volatility 
-        m_plt_l,c_plt_l = ms_star_sv[i,:,eps_fix,0,0],σs_star_sv[i,:,eps_fix,0,0]
-        m_plt_h,c_plt_h = ms_star_sv[i,:,eps_fix,1,0],σs_star_sv[i,:,eps_fix,1,0]
+        m_plt_l,c_plt_l = ms_star_sv[i,0:-1,eps_fix,0,0],σs_star_sv[i,0:-1,eps_fix,0,0]
+        m_plt_h,c_plt_h = ms_star_sv[i,0:-1,eps_fix,1,0],σs_star_sv[i,0:-1,eps_fix,1,0]
 
         axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
                      c_plt_l,
@@ -1166,7 +1167,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1183,8 +1184,8 @@ if __name__ == "__main__":
     for x,year in enumerate(years_left):
         age = lc_uemkv.L-year
         i = lc_uemkv.L-age
-        m_plt_u, c_plt_u = ms_star_uemkv[i,:,eps_id,0,0],σs_star_uemkv[i,:,eps_id,0,0]
-        m_plt_e, c_plt_e = ms_star_uemkv[i,:,eps_id,1,0],σs_star_uemkv[i,:,eps_id,1,0]
+        m_plt_u, c_plt_u = ms_star_uemkv[i,0:-1,eps_id,0,0],σs_star_uemkv[i,0:-1,eps_id,0,0]
+        m_plt_e, c_plt_e = ms_star_uemkv[i,0:-1,eps_id,1,0],σs_star_uemkv[i,0:-1,eps_id,1,0]
 
         axes[x].plot(m_plt_u, ## 0 indicates the low risk state 
                      c_plt_u,
@@ -1283,7 +1284,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1300,8 +1301,8 @@ if __name__ == "__main__":
     for x,year in enumerate(years_left):
         age = lc_basic.L-year
         i = lc_basic.L-age
-        m_plt_l,c_plt_l = ms_star_cr[i,:,eps_id,0,0],σs_star_cr[i,:,eps_id,0,0]
-        m_plt_h,c_plt_h = ms_star_cr[i,:,eps_id,1,0],σs_star_cr[i,:,eps_id,1,0]
+        m_plt_l,c_plt_l = ms_star_cr[i,0:-1,eps_id,0,0],σs_star_cr[i,0:-1,eps_id,0,0]
+        m_plt_h,c_plt_h = ms_star_cr[i,0:-1,eps_id,1,0],σs_star_cr[i,0:-1,eps_id,1,0]
         
         axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
                      c_plt_l,
@@ -1394,7 +1395,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1411,11 +1412,11 @@ if __name__ == "__main__":
     for x,year in enumerate(years_left):
         age = lc_basic.L-year
         i = lc_basic.L-age
-        m_plt_u_l,c_plt_u_l = ms_star_sub[i,:,eps_id,0,0],σs_star_sub[i,:,eps_id,0,0]
-        m_plt_u_h,c_plt_u_h = ms_star_sub[i,:,eps_id,0,1],σs_star_sub[i,:,eps_id,0,1]
+        m_plt_u_l,c_plt_u_l = ms_star_sub[i,0:-1,eps_id,0,0],σs_star_sub[i,0:-1,eps_id,0,0]
+        m_plt_u_h,c_plt_u_h = ms_star_sub[i,0:-1,eps_id,0,1],σs_star_sub[i,0:-1,eps_id,0,1]
         
-        m_plt_e_l,c_plt_e_l = ms_star_sub[i,:,eps_id,1,0],σs_star_sub[i,:,eps_id,1,0]
-        m_plt_e_h,c_plt_e_h = ms_star_sub[i,:,eps_id,1,1],σs_star_sub[i,:,eps_id,1,1]
+        m_plt_e_l,c_plt_e_l = ms_star_sub[i,0:-1,eps_id,1,0],σs_star_sub[i,0:-1,eps_id,1,0]
+        m_plt_e_h,c_plt_e_h = ms_star_sub[i,0:-1,eps_id,1,1],σs_star_sub[i,0:-1,eps_id,1,1]
         
         axes[x].plot(m_plt_u_l, ## 0 indicates the low risk state 
                      c_plt_u_l,
@@ -1455,8 +1456,8 @@ if __name__ == "__main__":
         for eps in eps_ls:
            
             ## persistent 
-            m_plt_u, c_plt_u = ms_star_uemkv[i,:,eps,0],σs_star_uemkv[i,:,eps,0]
-            m_plt_e, c_plt_e = ms_star_uemkv[i,:,eps,1],σs_star_uemkv[i,:,eps,1]
+            m_plt_u, c_plt_u = ms_star_uemkv[i,0:-1,eps,0],σs_star_uemkv[i,0:-1,eps,0]
+            m_plt_e, c_plt_e = ms_star_uemkv[i,0:-1,eps,1],σs_star_uemkv[i,0:-1,eps,1]
             axes[x].plot(m_plt_u,
                          c_plt_u,
                          '--',
@@ -1469,8 +1470,8 @@ if __name__ == "__main__":
                          lw=3)
            
             ## countercyclical 
-            m_plt_l,c_plt_l = ms_star_cr[i,:,eps,0],σs_star_cr[i,:,eps,0]
-            m_plt_h,c_plt_h = ms_star_cr[i,:,eps,1],σs_star_cr[i,:,eps,1]
+            m_plt_l,c_plt_l = ms_star_cr[i,0:-1,eps,0],σs_star_cr[i,0:-1,eps,0]
+            m_plt_h,c_plt_h = ms_star_cr[i,0:-1,eps,1],σs_star_cr[i,0:-1,eps,1]
             axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
                      c_plt_l,
                      '--',
@@ -1545,8 +1546,8 @@ if __name__ == "__main__":
 
 
     for eps in eps_ls:
-        plt.plot(ms_inf_star[:,eps,0,0],
-                 σs_inf_star[:,eps,0,0],
+        plt.plot(ms_inf_star[0:-1,eps,0,0],
+                 σs_inf_star[0:-1,eps,0,0],
                  label = r'$\epsilon=$'+str(round(inf_liv.eps_grid[eps],2)),
                  lw=3
                 )
@@ -1604,14 +1605,14 @@ if __name__ == "__main__":
     σs_imp_star = σs_imp_stars[0]
 
     for y,eps in enumerate(eps_ls):
-        plt.plot(ms_imp_star[:,eps,1,0],
-                 σs_imp_star[:,eps,1,0],
+        plt.plot(ms_imp_star[0:-1,eps,1,0],
+                 σs_imp_star[0:-1,eps,1,0],
                  '-',
                  label = 'imperfect adjustment',
                  lw=3
                 )
-        plt.plot(ms_inf_star[:,eps,1,0],
-                 σs_inf_star[:,eps,1,0],
+        plt.plot(ms_inf_star[0:-1,eps,1,0],
+                 σs_inf_star[0:-1,eps,1,0],
                  '--',
                  label = 'perfect adjustment',
                  lw=3
