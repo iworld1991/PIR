@@ -1514,7 +1514,7 @@ ax.plot(model_solution['share_agents_ap_pe'],
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
-plt.savefig('../Graphs/model/lorenz_a_compare_pe.png')
+#plt.savefig('../Graphs/model/lorenz_a_compare_pe.png')
 
 
 ## life cycle
@@ -1549,7 +1549,7 @@ ax.set_ylabel('Log wealth in model')
 ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_compare_pe.png')
+#fig.savefig('../Graphs/model/life_cycle_a_compare_pe.png')
 
 
 
@@ -1570,7 +1570,7 @@ ax.set_xlim([-10,30])
 
 ax.set_ylabel(r'$prob(a)$')
 
-fig.savefig('../Graphs/model/distribution_a_compare_pe.png')
+#fig.savefig('../Graphs/model/distribution_a_compare_pe.png')
 
 
 ## lorenz curve in ge
@@ -1593,7 +1593,7 @@ ax.plot(model_solution['share_agents_ap_ge'],
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
-fig.savefig('../Graphs/model/lorenz_a_compare_ge.png')
+#fig.savefig('../Graphs/model/lorenz_a_compare_ge.png')
 
 
 ## life cycle profile in ge
@@ -1627,7 +1627,7 @@ ax.set_ylabel('Log wealth')
 ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
+#fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
 
 
 ## wealth distributions in ge
@@ -1646,7 +1646,7 @@ ax.set_ylabel(r'$prob(a)$')
 ax.set_xlim([-10,30])
 
 
-fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
+#fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
 
 # -
 

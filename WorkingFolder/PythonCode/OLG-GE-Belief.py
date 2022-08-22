@@ -81,10 +81,20 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
+lc_paras_y
+
+# +
 ## make some modifications 
 P_ss = cal_ss_2markov(lc_paras_y['P_sub'])
-lc_paras_y['σ_ψ_2mkv'] = np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.1))
-lc_paras_y['σ_θ_2mkv'] = np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.1))
+#lc_paras_y['σ_ψ_2mkv'] = np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.05))
+#lc_paras_y['σ_θ_2mkv'] = np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.05))
+
+lc_paras_y['σ_ψ_2mkv'] = np.array([0.2,0.25])
+lc_paras_y['σ_θ_2mkv'] = np.array([0.2,0.25])
+
+lc_paras_y['mho_2mkv'] = np.array([0.1,0.2])
+lc_paras_y['E_2mkv'] = np.array([0.98,0.9])
+# -
 
 
 print(lc_paras_y)
@@ -168,7 +178,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 196, 249, 251, 332]
+# + code_folding=[7, 83, 254]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -224,6 +234,8 @@ if calibrated_model == True:
                    P_sub = lc_paras['P_sub'],
                    sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
                    sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
+                   U2U_2mkv = lc_paras['mho_2mkv'],  ## permanent risks in 2 markov states
+                   E2E_2mkv = lc_paras['E_2mkv'],  ## transitory risks in 2 markov states
         
         ## initial conditions 
                     sigma_p_init = lc_paras['σ_ψ_init'],
@@ -284,7 +296,9 @@ if calibrated_model == True:
                    P_sub = lc_paras['P_sub'],
                    sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
                    sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-                   
+                   U2U_2mkv = lc_paras['mho_2mkv'],  ## permanent risks in 2 markov states
+                   E2E_2mkv = lc_paras['E_2mkv'],  ## transitory risks in 2 markov states
+        
         ## initial conditions 
                     sigma_p_init = lc_paras['σ_ψ_init'],
                     init_b = lc_paras['init_b'],
@@ -342,7 +356,8 @@ if calibrated_model == True:
                    P_sub = lc_paras['P_sub'],
                    sigma_psi_2mkv = lc_paras['σ_ψ_2mkv'],  ## permanent risks in 2 markov states
                    sigma_eps_2mkv = lc_paras['σ_θ_2mkv'],  ## transitory risks in 2 markov states
-        
+                   U2U_2mkv = lc_paras['mho_2mkv'],  ## permanent risks in 2 markov states
+                   E2E_2mkv = lc_paras['E_2mkv'],  ## transitory risks in 2 markov states
         ## initial conditions 
                     sigma_p_init = lc_paras['σ_ψ_init'],
                     init_b = lc_paras['init_b'],
@@ -531,7 +546,7 @@ else:
                       )
 
 
-# + code_folding=[0, 2, 23]
+# + code_folding=[2, 23]
 ## solve various models
 
 models = [lc_mkv,
@@ -580,7 +595,7 @@ ms_star_mkv, σs_star_mkv = ms_stars[0],σs_stars[0]
 ## get the solution for the subjective model 
 ms_star_mkv_sub,σs_star_mkv_sub = ms_stars[1],σs_stars[1]
 
-# + code_folding=[0]
+# + code_folding=[]
 ## compare different models 
 
 ojb_minus_sub = compare_2solutions(ms_stars[0:2],
@@ -1219,7 +1234,7 @@ def flatten_dist(grid_lists,      ## (nb.z x nb.f) x L x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 20]
+# + code_folding=[0, 20, 115, 251, 265, 294]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1317,7 +1332,7 @@ class HH_OLG_Markov:
                     if model.sigma_psi!=0.0:
                         std_p = model.sigma_psi
                     else:
-                        std_p = 1e-2
+                        std_p = 1e-4
                     max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
                     right_sided_grid = make_grid_exp_mult(1.05+1e-3, np.exp(max_p), num_pointsP, 2)
                     left_sided_gird = np.append(1.0/np.fliplr([right_sided_grid])[0],np.ones(1))
@@ -1578,7 +1593,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0, 26, 165]
+# + code_folding=[0, 26, 153, 165]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1797,7 +1812,7 @@ production = CDProduction(α = production_paras['α'],
 n_m = 100
 n_p = 100
 
-# + code_folding=[]
+# + code_folding=[0]
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
@@ -1962,7 +1977,7 @@ ax.plot(model_solution['share_agents_ap_pe'],
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
-plt.savefig('../Graphs/Belief/model/lorenz_a_compare_pe.png')
+#plt.savefig('../Graphs/model/Belief/lorenz_a_compare_pe.png')
 
 
 ## life cycle
@@ -1997,7 +2012,7 @@ ax.set_ylabel('Log wealth in model')
 ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
-fig.savefig('../Graphs/model/Belief/life_cycle_a_compare_pe.png')
+#fig.savefig('../Graphs/model/Belief/life_cycle_a_compare_pe.png')
 
 
 
@@ -2015,7 +2030,7 @@ ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
 
-fig.savefig('../Graphs/model/Belief/distribution_a_compare_pe.png')
+#fig.savefig('../Graphs/model/Belief/distribution_a_compare_pe.png')
 
 
 ## lorenz curve in ge
@@ -2038,7 +2053,7 @@ ax.plot(model_solution['share_agents_ap_ge'],
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
-fig.savefig('../Graphs/model/Belief/lorenz_a_compare_ge.png')
+#fig.savefig('../Graphs/model/Belief/lorenz_a_compare_ge.png')
 
 
 ## life cycle profile in ge
@@ -2072,7 +2087,7 @@ ax.set_ylabel('Log wealth')
 ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
 ax2.legend(loc=2)
-fig.savefig('../Graphs/model/Belief/life_cycle_a_compare_ge.png')
+#fig.savefig('../Graphs/model/Belief/life_cycle_a_compare_ge.png')
 
 
 ## wealth distributions in ge
@@ -2089,7 +2104,7 @@ ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
 
-fig.savefig('../Graphs/model/Belief/distribution_a_compare_ge.png')
+#fig.savefig('../Graphs/model/Belief/distribution_a_compare_ge.png')
 # -
 
 # ## Analysis of the baseline model 
@@ -2175,7 +2190,7 @@ A_life = HH.A_life
 
 
 
-# + code_folding=[11]
+# + code_folding=[0, 11]
 ## plot life cycle profile
 
 age_lc = SCF_profile.index
@@ -2327,3 +2342,8 @@ ax.plot(np.log(market_OLG_mkv.households.ap_grid_dist+1e-5),
 ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_a_eq.png')
+# -
+
+
+
+
