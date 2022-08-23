@@ -83,25 +83,28 @@ lc_paras_q = copy(lc_paras_Q)
 
 lc_paras_y
 
-# +
+# + code_folding=[]
 ## make some modifications 
+
+lc_paras_y['P_sub'] = np.array([[0.5,0.5],
+                               [0.1,0.9]])
 P_ss = cal_ss_2markov(lc_paras_y['P_sub'])
 
-#lc_paras_y['σ_ψ_2mkv'] = np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.05))
-#lc_paras_y['σ_θ_2mkv'] = np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.05))
+lc_paras_y['σ_ψ_2mkv'] = np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.05))
+lc_paras_y['σ_θ_2mkv'] = np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.05))
 
 #lc_paras_y['σ_ψ_2mkv'] = np.array([0.2,0.25])
 #lc_paras_y['σ_θ_2mkv'] = np.array([0.2,0.25])
 
-#lc_paras_y['mho_2mkv'] = np.array([0.1,0.2])
-#lc_paras_y['E_2mkv'] = np.array([0.98,0.9])
+#lc_paras_y['mho_2mkv'] = np.array([0.1,0.3])
+#lc_paras_y['E_2mkv'] = np.array([0.98,0.8])
 # -
 
 
 print(lc_paras_y)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## a deterministic income profile 
 
 ## income profile 
@@ -179,7 +182,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[19, 250]
+# + code_folding=[0, 7, 19, 93]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -400,7 +403,7 @@ specs = ['ob',
          #'cr'
         ]
 
-model_names=['baseline',
+model_names=['baselinePR',
              'SHPR',
              'HPR',
             # 'SLPR_sv'
@@ -427,7 +430,7 @@ print("Time taken, in seconds: "+ str(t_finish - t_start))
 
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## be careful with the order 
 ## get the solution for the objective model 
 ms_star_mkv, σs_star_mkv = ms_stars[0],σs_stars[0]
@@ -444,9 +447,9 @@ ojb_minus_sub = compare_2solutions(ms_stars[0:2],
 plt.hist(ojb_minus_sub.flatten(),
          bins=50)
 plt.title('Consumption in objective model minus subjective model')
-print('should be NEGATIVE!!!!!')
 
-# + code_folding=[]
+
+# + code_folding=[0]
 ## compare solutions 
 
 m_grid = np.linspace(0.0,10.0,200)
@@ -499,7 +502,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 473, 508, 543, 557]
+# + code_folding=[0, 8, 473, 508, 543, 557]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1789,7 +1792,7 @@ solve_models(models,
             model_name_list = model_names
             )
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot results from different models
 
 line_patterns =['g-v',
@@ -1949,7 +1952,7 @@ ax.set_ylabel(r'$prob(a)$')
 
 # ## Analysis of the baseline model 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## testing of the household class 
 
 HH = HH_OLG_Markov(model=lc_mkv)
