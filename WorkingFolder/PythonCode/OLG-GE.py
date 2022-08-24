@@ -88,8 +88,8 @@ lc_paras_q = copy(lc_paras_Q)
 P_ss = cal_ss_2markov(lc_paras_y['P'])
 #lc_paras_y['σ_ψ_2mkv'] = np.flip(lc_paras_y['σ_ψ_2mkv'])
 #lc_paras_y['σ_θ_2mkv'] = np.flip(lc_paras_y['σ_θ_2mkv'])
-lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.5)))
-lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.5)))
+#lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.5)))
+#lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.5)))
 #lc_paras_y['unemp_insurance'] = 0.0 
 #lc_paras_y['init_b'] = 0.0 
 #lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
@@ -172,7 +172,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[95, 97, 122, 150, 177]
+# + code_folding=[95]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -246,24 +246,22 @@ if calibrated_model == True:
     lc_mkv_sub_paras['subjective'] = True 
     lc_mkv_sub_paras['sigma_psi'] = lc_paras['σ_ψ_sub']
     lc_mkv_sub_paras['sigma_eps'] = lc_paras['σ_θ_sub']
-
     lc_mkv_sub = LifeCycle(**lc_mkv_sub_paras)
         
     
-     ## for the subjective model, only change the belief 
+     ## for the subjective-true model, let the true parameters to be same as the belief 
         
     lc_mkv_sub_true_paras = copy(lc_mkv_sub_paras)
     lc_mkv_sub_true_paras['subjective'] = False
-    lc_mkv_sub_true_paras['sigma_psi_true'] = lc_mkv_sub_true_paras['sigma_psi']
-    lc_mkv_sub_true_paras['sigma_eps_true'] = lc_mkv_sub_true_paras['sigma_eps']
-    
+    lc_mkv_sub_true_paras['sigma_psi_true'] = lc_paras['σ_ψ_sub']
+    lc_mkv_sub_true_paras['sigma_eps_true'] =  lc_paras['σ_θ_sub']
     lc_mkv_sub_true = LifeCycle(**lc_mkv_sub_true_paras)
 
     ## counter-cyclical risks 
     lc_mkv_sub_cr_paras = copy(lc_mkv_sub_paras)
     lc_mkv_sub_cr_paras['sigma_psi_2mkv'] = np.flip(lc_paras['σ_ψ_2mkv'])
     lc_mkv_sub_cr_paras['sigma_eps_2mkv'] = np.flip(lc_paras['σ_θ_2mkv'])
-
+    
     lc_mkv_sub_cr = LifeCycle(**lc_mkv_sub_cr_paras)
 
 
@@ -378,7 +376,7 @@ else:
                       )
 
 
-# + code_folding=[0, 23]
+# + code_folding=[23]
 ## solve various models
 
 models = [lc_mkv,
@@ -493,7 +491,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[0, 8, 236, 271, 307, 321]
+# + code_folding=[8, 236, 271, 307, 321]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -833,7 +831,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 17, 111, 219, 233, 263, 294]
+# + code_folding=[0, 5, 17, 111, 226, 240, 270, 301]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1051,6 +1049,13 @@ class HH_OLG_Markov:
                                                             dist_lists,
                                                             ss_dstn,
                                                             age_dist)
+        
+        ## stroe wealth to permanent income ratio distribution 
+        
+        self.a_grid_dist,self.a_pdfs_dist = flatten_list(a_PolGrid_list,
+                                                        dist_lists,
+                                                        ss_dstn,
+                                                        age_dist)
     ### Aggregate C or A
 
     def Aggregate(self):
@@ -1389,7 +1394,7 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## compare different models 
 
-# + code_folding=[0, 73]
+# + code_folding=[0, 58, 80]
 def solve_1model(model,
                 m_star,
                 σ_star,
@@ -1419,7 +1424,9 @@ def solve_1model(model,
     A_life_this = HH_this.A_life
 
     ## distribution 
-
+    
+    zero_wealth_id_pe = np.where(HH_this.a_grid_dist<=0.5)
+    h2m_share_pe = HH_this.a_pdfs_dist[zero_wealth_id_pe].sum()
 
     ## general equilibrium 
 
@@ -1441,7 +1448,10 @@ def solve_1model(model,
 
     gini_this_ge = gini(share_agents_ap_ge_this,
                      share_ap_ge_this)
-
+    
+    
+    zero_wealth_id_ge = np.where( market_OLG_mkv_this.households.a_grid_dist<=0.5)
+    h2m_share_ge =  market_OLG_mkv_this.households.a_pdfs_dist[zero_wealth_id_ge].sum()
         
     model_dct =  {'A_pe':HH_this.A,
                 'A_life_pe': HH_this.A_life,
@@ -1450,13 +1460,15 @@ def solve_1model(model,
                'ap_grid_dist_pe':HH_this.ap_grid_dist,
                 'ap_pdfs_dist_pe':HH_this.ap_pdfs_dist,
                  'gini_pe':gini_this_pe,
+                  'h2m_share_pe':h2m_share_pe,
                 'A_ge':market_OLG_mkv_this.households.A,
                 'A_life_ge':market_OLG_mkv_this.households.A_life,
                 'share_agents_ap_ge':share_agents_ap_ge_this,
                 'share_ap_ge':share_ap_ge_this,
                 'ap_grid_dist_ge':market_OLG_mkv_this.households.ap_grid_dist,
                 'ap_pdfs_dist_ge':market_OLG_mkv_this.households.ap_pdfs_dist,
-                'gini_ge':gini_this_ge
+                'gini_ge':gini_this_ge,
+                  'h2m_share_ge':h2m_share_ge
                }
     
     ## save it as a pkl
@@ -1478,7 +1490,7 @@ def solve_models(model_list,
                     σs_star_list[k],
                      model_name = model_name_list[k])
 
-# + code_folding=[2]
+# + code_folding=[0]
 ## solve a list of models and save all solutions as pickles 
 
 model_results = solve_models(models,
@@ -1486,7 +1498,7 @@ model_results = solve_models(models,
                              σs_stars,
                              model_name_list = model_names)
 
-# + pycharm={"name": "#%%\n"} code_folding=[2, 11, 37, 89]
+# + pycharm={"name": "#%%\n"} code_folding=[0, 2, 37, 89]
 ## plot results from different models
 
 line_patterns =['g-v',
@@ -1561,7 +1573,7 @@ for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
     ax.plot(np.log(model_solution['ap_grid_dist_pe']+1e-5),
             model_solution['ap_pdfs_dist_pe'],
-            label=model_names[k],
+            label=model_names[k]+', H2M={:.2f}'.format(model_solution['h2m_share_pe']),
            alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
@@ -1638,7 +1650,7 @@ for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
     ax.plot(np.log(model_solution['ap_grid_dist_ge']+1e-5),
             model_solution['ap_pdfs_dist_ge'],
-            label=model_names[k],
+            label=model_names[k]+', H2M={:.2f}'.format(model_solution['h2m_share_ge']),
             alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
