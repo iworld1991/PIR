@@ -27,29 +27,8 @@ import io
 import zipfile      #Three packages we'll need to unzip the data
 import matplotlib.pyplot as plt                            
 
-"""
-def unzip_survey_file(year = '2013'):
-    
-    #The next two lines of code converts the URL into a format that works
-    #with the "zipfile" package.
-    
-    if int(year) <1989:
-        url = 'http://www.federalreserve.gov/econresdata/scf/files/'+year+'_scf'+year[2:]+'bs.zip'
-    
-    else: 
-        url = 'http://www.federalreserve.gov/econresdata/scf/files/scfp'+year+'s.zip'    
-    url = requests.get(url)
-    
-    #Next, zipfile downloads, unzips, and saves the file to your computer. 'url2013_unzipped' 
-    #contains the file path for the file.
-    
-    url_unzipped = zipfile.ZipFile(io.BytesIO(url.content))
-    return url_unzipped.extract(url_unzipped.namelist()[0])
-    
-"""
 
-
-# + code_folding=[0]
+# + code_folding=[]
 def unzip_survey_file(year = '2013'):
     """
     The next two lines of code converts the URL into a format that works
@@ -57,7 +36,8 @@ def unzip_survey_file(year = '2013'):
     """
     if int(year) <1989:
         url = 'http://www.federalreserve.gov/econres/files/'+year+'_scf'+year[2:]+'bs.zip'
-    
+        #old url = 'http://www.federalreserve.gov/econresdata/scf/files/'+year+'_scf'+year[2:]+'bs.zip'
+
     else: 
         url = 'http://www.federalreserve.gov/econres/files/scfp'+year+'s.zip'    
     url = requests.get(url)
@@ -100,7 +80,15 @@ in the 1983 survey yet none for the other years.
 
 list(df2016.columns)
 
+# ## Variable definitions 
+#
+# The [definition](https://www.federalreserve.gov/econres/files/Networth%20Flowchart.pdf) of networth 
+
 # +
+## make new variables 
+lq_wealth = df2016['liq'] - df2016['ccbal']
+
+df2016['lqwealth'] = lq_wealth
 ### filters and clean variables 
 
 df2016 = df2016[(df2016['age']>=25) & (df2016['age']<=85)]
@@ -109,8 +97,9 @@ df2016 = df2016[df2016['norminc']>0]
 df2016['lincome'] = np.log(df2016['income'])
 df2016['lnorminc'] = np.log(df2016['norminc'])
 df2016['w2income']=df2016['networth']/ df2016['norminc']
+df2016['lw2income']=df2016['lqwealth']/ df2016['norminc']
 
-# +
+# + code_folding=[0]
 ## age polynomials regressions 
 
 df2016['age2'] = df2016['age']**2 
@@ -131,7 +120,7 @@ df2016['lnorminc_pr'] = results.predict()
 import joypy
 from matplotlib import cm
 
-# + code_folding=[]
+# + code_folding=[1]
 #labels=[y if y%10==0 else None for y in list(df2016.age.unique())]
 fig, axes = joypy.joyplot(df2016, 
                           by="age", 
@@ -155,8 +144,15 @@ wm = lambda x: np.average(x, weights=df2016.loc[x.index, "wgt"])
 age_av_wealth = df2016.groupby('age').agg(av_wealth = ('networth',wm))
 age_med_wealth = df2016.groupby('age').agg(med_wealth=('networth','median'))
 
+age_av_lqwealth = df2016.groupby('age').agg(av_lqwealth = ('lqwealth',wm))
+age_med_lqwealth = df2016.groupby('age').agg(med_lqwealth=('lqwealth','median'))
+
 age_av_w2i = df2016.groupby('age').agg(av_w2i = ('w2income',wm))
 age_med_w2i = df2016.groupby('age').agg(med_w2i=('w2income','median'))
+
+
+age_av_lqw2i = df2016.groupby('age').agg(av_lqw2i = ('lw2income',wm))
+age_med_lqw2i = df2016.groupby('age').agg(med_lqw2i=('lw2income','median'))
 
 age_av_lincome = df2016.groupby('age').agg(av_lincome = ('lincome',wm))
 age_med_lincome = df2016.groupby('age').agg(med_lincome=('lincome','median'))
@@ -164,16 +160,24 @@ age_med_lincome = df2016.groupby('age').agg(med_lincome=('lincome','median'))
 age_av_lnorminc = df2016.groupby('age').agg(av_lnorminc = ('lnorminc',wm))
 age_med_lnorminc = df2016.groupby('age').agg(med_lnorminc=('lnorminc','median'))
 
-# -
 
+# +
 plt.title('Net wealth over life cycle')
 plt.plot(np.log(age_av_wealth),label='average net wealth')
 plt.plot(np.log(age_med_wealth),label='median net wealth')
+plt.plot(np.log(age_av_lqwealth),label='average net liquid wealth')
+plt.plot(np.log(age_med_lqwealth),label='median net liquid wealth')
+
+
+
 plt.legend(loc=0)
+# -
 
 plt.title('Net wealth over life cycle')
 plt.plot(np.log(age_av_w2i),label='average net wealth/income ratio')
 plt.plot(np.log(age_med_w2i),label='median net wealth/income ratio')
+plt.plot(np.log(age_av_lqw2i),label='average net liquid wealth/income ratio')
+plt.plot(np.log(age_med_lqw2i),label='median net liquid wealth/income ratio')
 plt.legend(loc=0)
 
 plt.title('Income over life cycle')
@@ -186,12 +190,16 @@ plt.plot(np.log(age_av_lnorminc),label='average income')
 plt.plot(np.log(age_med_lnorminc),label='median income')
 plt.legend(loc=0)
 
-# + code_folding=[]
+# + code_folding=[0]
 ## merge all age profiles 
 
 to_merge = [age_med_wealth,
+            age_av_lqwealth,
+            age_med_lqwealth,
             age_av_w2i,
             age_med_w2i,
+            age_av_lqw2i,
+            age_med_lqw2i,
             age_av_lincome,
             age_med_lincome,
             age_av_lnorminc,
@@ -213,7 +221,7 @@ SCF_age_profile
 
 # ### Wealth inequality 
 
-# + code_folding=[0]
+# + code_folding=[]
 def weighted_percentiles(data, variable, weights, percentiles = [], 
                          dollar_amt = False, subgroup = None, limits = []):
     """
@@ -269,7 +277,7 @@ def weighted_percentiles(data, variable, weights, percentiles = [],
         return a
 
 
-# + code_folding=[0]
+# + code_folding=[]
 def figureprefs(data, variable = 'income', labels = False, legendlabels = []):
     
     percentiles = [i * 0.05 for i in range(20)]+[0.99, 1.00]
@@ -283,10 +291,10 @@ def figureprefs(data, variable = 'income', labels = False, legendlabels = []):
     ax.set_yticklabels(['{:3.0f}%'.format(x*100) for x in vals]);
     ax.set_xticklabels(['{:3.0f}%'.format(x*100) for x in vals]);
 
-    ax.set_title('Lorenz Curve: United States, 2013 vs. 2016 vs. 2019',  #Axes titles
+    ax.set_title('Lorenz Curve: United States in 2016',  #Axes titles
                   fontsize=18, loc='center');
-    ax.set_ylabel('Cumulative Percent of Total Income', fontsize = 12);
-    ax.set_xlabel('Percent of Familes Ordered by Incomes', fontsize = 12);
+    ax.set_ylabel('Cumulative Percent', fontsize = 12);
+    ax.set_xlabel('Percent of Agents', fontsize = 12);
     
     if type(data) == list:
         values = [weighted_percentiles(data[x], variable,
@@ -313,11 +321,5 @@ def figureprefs(data, variable = 'income', labels = False, legendlabels = []):
 years_graph = [df2016]
 labels = ['2016']
 
-figureprefs(years_graph, variable = 'networth', legendlabels = labels);
-# -
-
-
-
-
-
-
+figureprefs(years_graph, variable = 'networth', legendlabels = labels)
+figureprefs(years_graph, variable = 'lqwealth', legendlabels = labels);
