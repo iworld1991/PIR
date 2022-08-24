@@ -1389,7 +1389,7 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## compare different models 
 
-# + code_folding=[0, 87]
+# + code_folding=[87]
 def solve_1model(model,
                 m_star,
                 σ_star,
@@ -1422,7 +1422,7 @@ def solve_1model(model,
 
     ## distribution 
     
-    zero_wealth_id_pe = np.where(HH_this.a_grid_dist<=0.5)
+    zero_wealth_id_pe = np.where(HH_this.a_grid_dist<=1.0)
     h2m_share_pe = HH_this.a_pdfs_dist[zero_wealth_id_pe].sum()
 
    
@@ -1461,7 +1461,7 @@ def solve_1model(model,
                          share_ap_ge_this)
     
     
-        zero_wealth_id_ge = np.where( market_OLG_mkv_this.households.a_grid_dist<=0.5)
+        zero_wealth_id_ge = np.where( market_OLG_mkv_this.households.a_grid_dist<=1.0)
         h2m_share_ge =  market_OLG_mkv_this.households.a_pdfs_dist[zero_wealth_id_ge].sum()
         
         ## store all GE results
@@ -1472,7 +1472,7 @@ def solve_1model(model,
                         'ap_grid_dist':market_OLG_mkv_this.households.ap_grid_dist,
                         'ap_pdfs_dist':market_OLG_mkv_this.households.ap_pdfs_dist,
                         'gini':gini_this_ge,
-                          'h2m_share':h2m_share_ge }
+                        'h2m_share':h2m_share_ge }
    
         pickle.dump(model_ge_dct,open('./model_solutions/'+model_name+'_GE.pkl','wb'))
 
