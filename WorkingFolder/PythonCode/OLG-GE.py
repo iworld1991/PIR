@@ -119,7 +119,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -137,10 +137,6 @@ pension = 0.5
 T = 40
 L = 60
 TGPos = int(L/2)
-GPos = 1.01*np.ones(TGPos)
-GNeg= 0.99*np.ones(L-TGPos)
-#G = np.concatenate([GPos,GNeg])
-#YPath = np.cumprod(G)
 G = fake_life_cycle(L)
 YPath = np.cumprod(G)
 
@@ -172,7 +168,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[95]
+# + code_folding=[]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -382,7 +378,6 @@ else:
 models = [lc_mkv,
           lc_mkv_sub,
           lc_mkv_sub_true,
-          #lc_mkv_sub_cr
           ]
 specs = ['ob',
          'sub',
@@ -393,7 +388,7 @@ specs = ['ob',
 model_names=['baseline',
              'SLPR',
              'LPR'
-             #'subjective_sv'
+             'subjective_sv'
              ]
 
 ms_stars = []
@@ -1394,13 +1389,15 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## compare different models 
 
-# + code_folding=[0, 58, 80]
+# + code_folding=[0, 87]
 def solve_1model(model,
                 m_star,
                 σ_star,
                 n_m=40,
                 n_p=40,
-                model_name = 'model'):
+                model_name = 'model',
+                ge = False):
+    
     HH_this = HH_OLG_Markov(model = model)
     HH_this.define_distribution_grid(num_pointsM = n_m, 
                                     num_pointsP = n_p)
@@ -1428,57 +1425,63 @@ def solve_1model(model,
     zero_wealth_id_pe = np.where(HH_this.a_grid_dist<=0.5)
     h2m_share_pe = HH_this.a_pdfs_dist[zero_wealth_id_pe].sum()
 
-    ## general equilibrium 
-
-    market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
-                                        production = production)
-
-    market_OLG_mkv_this.get_equilibrium_k()
-    market_OLG_mkv_this.get_equilibrium_dist()
-
-    ## aggregate 
-
-
-    ## life cycle 
-
-    ## lorenz 
-    share_agents_ap_ge_this, share_ap_ge_this = market_OLG_mkv_this.households.Lorenz(variable='a')
-
-    ## gini in ge
-
-    gini_this_ge = gini(share_agents_ap_ge_this,
-                     share_ap_ge_this)
-    
-    
-    zero_wealth_id_ge = np.where( market_OLG_mkv_this.households.a_grid_dist<=0.5)
-    h2m_share_ge =  market_OLG_mkv_this.households.a_pdfs_dist[zero_wealth_id_ge].sum()
-        
-    model_dct =  {'A_pe':HH_this.A,
-                'A_life_pe': HH_this.A_life,
-                'share_agents_ap_pe':share_agents_ap_this,
-                'share_ap_pe':share_ap_this,
-               'ap_grid_dist_pe':HH_this.ap_grid_dist,
-                'ap_pdfs_dist_pe':HH_this.ap_pdfs_dist,
-                 'gini_pe':gini_this_pe,
-                  'h2m_share_pe':h2m_share_pe,
-                'A_ge':market_OLG_mkv_this.households.A,
-                'A_life_ge':market_OLG_mkv_this.households.A_life,
-                'share_agents_ap_ge':share_agents_ap_ge_this,
-                'share_ap_ge':share_ap_ge_this,
-                'ap_grid_dist_ge':market_OLG_mkv_this.households.ap_grid_dist,
-                'ap_pdfs_dist_ge':market_OLG_mkv_this.households.ap_pdfs_dist,
-                'gini_ge':gini_this_ge,
-                  'h2m_share_ge':h2m_share_ge
-               }
+   
+    ## store all PE results
+    model_pe_dct =  {'A':HH_this.A,
+                    'A_life': HH_this.A_life,
+                    'share_agents_ap':share_agents_ap_this,
+                    'share_ap':share_ap_this,
+                   'ap_grid_dist':HH_this.ap_grid_dist,
+                    'ap_pdfs_dist':HH_this.ap_pdfs_dist,
+                     'gini':gini_this_pe,
+                      'h2m_share':h2m_share_pe}
     
     ## save it as a pkl
-
-    pickle.dump(model_dct,open('./model_solutions/'+model_name+'.pkl','wb'))
+    pickle.dump(model_pe_dct,open('./model_solutions/'+model_name+'_PE.pkl','wb'))
     
+    if ge:
+        
+        ## general equilibrium 
+
+        market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
+                                            production = production)
+
+        market_OLG_mkv_this.get_equilibrium_k()
+        market_OLG_mkv_this.get_equilibrium_dist()
+
+
+        ## life cycle 
+
+        ## lorenz 
+        share_agents_ap_ge_this, share_ap_ge_this = market_OLG_mkv_this.households.Lorenz(variable='a')
+
+        ## gini in ge
+
+        gini_this_ge = gini(share_agents_ap_ge_this,
+                         share_ap_ge_this)
+    
+    
+        zero_wealth_id_ge = np.where( market_OLG_mkv_this.households.a_grid_dist<=0.5)
+        h2m_share_ge =  market_OLG_mkv_this.households.a_pdfs_dist[zero_wealth_id_ge].sum()
+        
+        ## store all GE results
+        model_ge_dct = {'A':market_OLG_mkv_this.households.A,
+                        'A_life':market_OLG_mkv_this.households.A_life,
+                        'share_agents_ap':share_agents_ap_ge_this,
+                        'share_ap':share_ap_ge_this,
+                        'ap_grid_dist':market_OLG_mkv_this.households.ap_grid_dist,
+                        'ap_pdfs_dist':market_OLG_mkv_this.households.ap_pdfs_dist,
+                        'gini':gini_this_ge,
+                          'h2m_share':h2m_share_ge }
+   
+        pickle.dump(model_ge_dct,open('./model_solutions/'+model_name+'_GE.pkl','wb'))
+
+
 def solve_models(model_list,
-                   ms_star_list,
-                   σs_star_list,
-                    model_name_list):
+                 ms_star_list,
+                 σs_star_list,
+                 model_name_list,
+                 ge = False):
     
     
     ## loop over different models 
@@ -1486,19 +1489,21 @@ def solve_models(model_list,
         print('solving model {}'.format(str(k)))
         print('\n')
         solve_1model(model,
-                    ms_star_list[k],
-                    σs_star_list[k],
-                     model_name = model_name_list[k])
+                     ms_star_list[k],
+                     σs_star_list[k],
+                     model_name = model_name_list[k],
+                     ge = ge)
 
-# + code_folding=[0]
+# + code_folding=[]
 ## solve a list of models and save all solutions as pickles 
 
 model_results = solve_models(models,
                              ms_stars,
                              σs_stars,
-                             model_name_list = model_names)
+                             model_name_list = model_names,
+                             ge = True)
 
-# + pycharm={"name": "#%%\n"} code_folding=[0, 2, 37, 89]
+# + pycharm={"name": "#%%\n"} code_folding=[0, 2]
 ## plot results from different models
 
 line_patterns =['g-v',
@@ -1511,16 +1516,16 @@ line_patterns =['g-v',
 
 fig, ax = plt.subplots(figsize=(6,6))
 for k,model in enumerate(models):
-    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
-    ax.plot(model_solution['share_agents_ap_pe'],
-            model_solution['share_ap_pe'],
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
+    ax.plot(model_solution['share_agents_ap'],
+            model_solution['share_ap'],
             line_patterns[k],
-            label = model_names[k]+', Gini={:.2f}'.format(model_solution['gini_pe']))
+            label = model_names[k]+', Gini={:.2f}'.format(model_solution['gini']))
 ax.plot(SCF_share_agents_ap,
         SCF_share_ap, 'k-.',
         label='SCF')
-ax.plot(model_solution['share_agents_ap_pe'],
-        model_solution['share_agents_ap_pe'], 
+ax.plot(model_solution['share_agents_ap'],
+        model_solution['share_agents_ap'], 
         'k-',
         label='equality curve')
 ax.legend()
@@ -1537,9 +1542,9 @@ fig, ax = plt.subplots(figsize=(16,8))
 plt.title('Life cycle profile of wealth')
 
 for k,model in enumerate(models):
-    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
     ax.plot(age_lc[1:],
-           np.log(model_solution['A_life_pe']),
+           np.log(model_solution['A_life']),
            line_patterns[k],
            label= model_names[k])
 ax.set_ylim([-0.5,3.5])
@@ -1570,10 +1575,10 @@ ax2.legend(loc=2)
 fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 for k, model in enumerate(models):
-    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
-    ax.plot(np.log(model_solution['ap_grid_dist_pe']+1e-5),
-            model_solution['ap_pdfs_dist_pe'],
-            label=model_names[k]+', H2M={:.2f}'.format(model_solution['h2m_share_pe']),
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
+    ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
+            model_solution['ap_pdfs_dist'],
+            label=model_names[k]+', H2M={:.2f}'.format(model_solution['h2m_share']),
            alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
@@ -1589,17 +1594,17 @@ ax.set_ylabel(r'$prob(a)$')
 
 fig, ax = plt.subplots(figsize=(6,6))
 for k,model in enumerate(models):
-    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
-    ax.plot(model_solution['share_agents_ap_ge'],
-            model_solution['share_ap_ge'],
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
+    ax.plot(model_solution['share_agents_ap'],
+            model_solution['share_ap'],
             line_patterns[k],
-            label = model_names[k]+', Gini={:.2f}'.format(model_solution['gini_ge']))
+            label = model_names[k]+', Gini={:.2f}'.format(model_solution['gini']))
 
 ax.plot(SCF_share_agents_ap,
         SCF_share_ap, 'k-.',
         label='SCF')
-ax.plot(model_solution['share_agents_ap_ge'],
-        model_solution['share_agents_ap_ge'], 
+ax.plot(model_solution['share_agents_ap'],
+        model_solution['share_agents_ap'], 
         'k-',
         label='equality curve')
 ax.legend()
@@ -1614,9 +1619,9 @@ fig, ax = plt.subplots(figsize=(16,8))
 plt.title('Life cycle profile of wealth')
 
 for k, model in enumerate(models):
-    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
     ax.plot(age_lc[:-2],
-            np.log(model_solution['A_life_ge'])[:-1],
+            np.log(model_solution['A_life'])[:-1],
             line_patterns[k],
            label = model_names[k])
 
@@ -1647,10 +1652,10 @@ ax2.legend(loc=2)
 fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 for k, model in enumerate(models):
-    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'.pkl','rb'))
-    ax.plot(np.log(model_solution['ap_grid_dist_ge']+1e-5),
-            model_solution['ap_pdfs_dist_ge'],
-            label=model_names[k]+', H2M={:.2f}'.format(model_solution['h2m_share_ge']),
+    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
+    ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
+            model_solution['ap_pdfs_dist'],
+            label=model_names[k]+', H2M={:.2f}'.format(model_solution['h2m_share']),
             alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
