@@ -85,15 +85,17 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
+# + code_folding=[0]
 ## make some modifications 
 P_ss = cal_ss_2markov(lc_paras_y['P'])
 #lc_paras_y['σ_ψ_2mkv'] = np.flip(lc_paras_y['σ_ψ_2mkv'])
 #lc_paras_y['σ_θ_2mkv'] = np.flip(lc_paras_y['σ_θ_2mkv'])
-lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.5)))
-lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.5)))
+#lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.5)))
+#lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.5)))
 #lc_paras_y['unemp_insurance'] = 0.0 
 #lc_paras_y['init_b'] = 0.0 
 #lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
+# -
 
 print(lc_paras_y)
 
@@ -379,15 +381,17 @@ else:
                       )
 
 
-# + code_folding=[0]
-def make_types(by,
+# + code_folding=[2, 26]
+## functions that make a list of consumer types different by parameters
+
+def make_1dtypes(by,
                vals):
     """
     input
     ======
     model: lifecycle class instance
-    by: a list, primitive variable's name on which types are made 
-    vals: a list, the values taken by different types 
+    by: a string, primitive variable's name on which types are made 
+    vals: an array, the values taken by different types 
     output
     =======
     types: a list of different types of life-cycle consumers
@@ -404,36 +408,73 @@ def make_types(by,
         types.append(this_type)
     return types 
 
+def make_2dtypes(by_list,
+                  vals_list):
+    
+    """
+    input
+    ======
+    model: lifecycle class instance
+    by_list: a list of strings, primitive variable's name on which types are made 
+    vals: a list of arrays, the values taken by different types 
+    output
+    =======
+    types: a list of different types of life-cycle consumers
+    
+    """
+    
+    n_type1 = len(vals_list[0])
+    n_type2 = len(vals_list[1])
+    
+    types = []
+    
+    for x in range(n_type1):
+        for y in range(n_type2):
+            paras_this_type = copy(lc_mkv_paras)
+            paras_this_type[by_list[0]] = vals_list[0][x]
+            paras_this_type[by_list[1]] = vals_list[1][y]
+            this_type = LifeCycle(**paras_this_type)
+            types.append(this_type)
+    return types 
 
-# + code_folding=[0]
+
+# + code_folding=[]
 ## create a list of consumer types with different permanent risks or any other primitive parameters 
 
-sigma_psi_types = np.array([0.01,0.1,0.15,0.2,0.25,0.3])
-sigma_eps_types = np.array([0.01,0.1,0.15,0.2,0.25,0.3])
-#U2U_types = np.array([0.1,0.15,0.2,0.5,0.3,0.35])
-#E2E_types = np.array([0.01,0.05,0.1,0.15,0.20,0.25])
-beta_types = np.array([0.9,0.92,0.93,0.95,0.97,0.98])
+sigma_psi_types = np.array([0.01,0.06,0.25])
+sigma_eps_types = np.array([0.01,0.15,0.25])
+U2U_types = np.array([0.1,0.18,0.25])
+E2E_types = np.array([0.99,0.96,0.93])
 
-hetero_beta_types = make_types('β',
+P_types = [np.array([[U2U_types[i],1-U2U_types[i]],
+                     [1-E2E_types[i],E2E_types[i]]]) 
+           for i in range(len(U2U_types))]
+
+beta_types = np.array([0.9,0.95,0.98])
+
+hetero_beta_types = make_1dtypes('β',
                               beta_types)
 
-hetero_prisk_types = make_types('sigma_psi',
+
+hetero_ue_risk_types = make_1dtypes('P',
+                                  P_types)
+
+hetero_prisk_types = make_1dtypes('sigma_psi',
                               sigma_psi_types)
 
-# + code_folding=[6, 18]
+hetero_p_t_risk_types = make_2dtypes(by_list = ['sigma_psi','sigma_eps'],
+                                    vals_list = [sigma_psi_types,
+                                                 sigma_eps_types]
+                                    )
+
+# + code_folding=[15]
 ## solve various models
 
-types = hetero_beta_types
+types = hetero_p_t_risk_types
 
 specs = ['ob']*len(types)
 
-type_names=['1',
-             '2',
-             '3',
-             '4',
-             '5',
-             '6'
-             ]
+type_names= [str(x) for x in range(1,len(types)+1)]
 
 ms_stars = []
 σs_stars = []
@@ -461,25 +502,6 @@ t_finish = time()
 print("Time taken, in seconds: "+ str(t_finish - t_start))
 
 
-
-# + code_folding=[]
-## be careful with the order 
-## get the solution for the objective model 
-ms_star_mkv_low, σs_star_mkv_low = ms_stars[0],σs_stars[0]
-
-## get the solution for the subjective model 
-ms_star_mkv_mid,σs_star_mkv_mid = ms_stars[1],σs_stars[1]
-
-# + code_folding=[0]
-## compare different models 
-
-low_minus_mid = compare_2solutions(ms_stars[0:2],
-                                   σs_stars[0:2])
-
-plt.hist(low_minus_mid.flatten(),
-         bins=50)
-plt.title('Consumption in objective model minus subjective model')
-print('should be NEGATIVE!!!!!')
 
 # + code_folding=[0, 12]
 ## compare solutions 
@@ -1230,7 +1252,7 @@ def Lorenz(model_results):
     return share_agents_ap,share_ap
 
 
-# + code_folding=[0, 24, 143]
+# + code_folding=[2, 7, 26]
 #need to modify these 
 
 class Market_OLG_mkv:
@@ -1418,7 +1440,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[0, 1]
+# + code_folding=[1]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1430,7 +1452,7 @@ n_m = 100
 n_p = 100
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
@@ -1619,7 +1641,7 @@ def combine_results(results_by_type):
 ## obtain the combined results 
 results_combined = combine_results(results_by_type)
 
-# + code_folding=[]
+# + code_folding=[0]
 ## aggregate lorenz curve 
 
 print('gini from model:'+str(results_combined['gini_pe']))
@@ -1628,7 +1650,7 @@ gini_SCF = gini(SCF_share_agents_ap,
                  SCF_share_ap)
 print('gini from SCE:'+str(gini_SCF))
 
-# + code_folding=[]
+# + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(8,8))
@@ -1660,97 +1682,8 @@ ax.plot(np.log(results_combined['ap_grid_dist_pe']+1e-5),
 ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
 fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
-
-
 # -
 
-# ## compare different models 
-
-# + code_folding=[73]
-def solve_1model(model,
-                m_star,
-                σ_star,
-                n_m=40,
-                n_p=40,
-                model_name = 'model'):
-    HH_this = HH_OLG_Markov(model = model)
-    HH_this.define_distribution_grid(num_pointsM = n_m, 
-                                    num_pointsP = n_p)
-    HH_this.ComputeSSDist(ms_star = m_star,
-                          σs_star = σ_star)
-    HH_this.Aggregate()
-    print('aggregate savings under stationary distribution:', str(HH_this.A))
-
-    ## lorenz 
-    share_agents_ap_this,share_ap_this = Lorenz(HH_this)
-
-    ## gini in pe
-    gini_this_pe = gini(share_agents_ap_this,
-                     share_ap_this)
+pickle.dump(results_combined,open('./model_solutions/HPR.pkl','wb'))
 
 
-    ## life cycle 
-
-    HH_this.AggregatebyAge()
-
-    A_life_this = HH_this.A_life
-
-    ## distribution 
-
-
-    ## general equilibrium 
-
-    market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
-                                        production = production)
-
-    market_OLG_mkv_this.get_equilibrium_k()
-    market_OLG_mkv_this.get_equilibrium_dist()
-
-    ## aggregate 
-
-
-    ## life cycle 
-
-    ## lorenz 
-    share_agents_ap_ge_this, share_ap_ge_this = Lorenz(market_OLG_mkv_this.households)
-
-    ## gini in ge
-
-    gini_this_ge = gini(share_agents_ap_ge_this,
-                     share_ap_ge_this)
-
-        
-    model_dct =  {'A_pe':HH_this.A,
-                'A_life_pe': HH_this.A_life,
-                'share_agents_ap_pe':share_agents_ap_this,
-                'share_ap_pe':share_ap_this,
-               'ap_grid_dist_pe':HH_this.ap_grid_dist,
-                'ap_pdfs_dist_pe':HH_this.ap_pdfs_dist,
-                 'gini_pe':gini_this_pe,
-                'A_ge':market_OLG_mkv_this.households.A,
-                'A_life_ge':market_OLG_mkv_this.households.A_life,
-                'share_agents_ap_ge':share_agents_ap_ge_this,
-                'share_ap_ge':share_ap_ge_this,
-                'ap_grid_dist_ge':market_OLG_mkv_this.households.ap_grid_dist,
-                'ap_pdfs_dist_ge':market_OLG_mkv_this.households.ap_pdfs_dist,
-                'gini_ge':gini_this_ge
-               }
-    
-    ## save it as a pkl
-
-    pickle.dump(model_dct,open('./model_solutions/'+model_name+'.pkl','wb'))
-    
-def solve_models(model_list,
-                   ms_star_list,
-                   σs_star_list,
-                    model_name_list):
-    
-    
-    ## loop over different models 
-    for k, model in enumerate(model_list):
-        print('solving model {}'.format(str(k)))
-        print('\n')
-        solve_1model(model,
-                    ms_star_list[k],
-                    σs_star_list[k],
-                     model_name = model_name_list[k])
