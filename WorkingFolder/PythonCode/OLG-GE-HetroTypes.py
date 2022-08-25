@@ -175,7 +175,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[7, 94, 96, 121, 149, 176]
+# + code_folding=[0, 94, 96, 121, 149, 176]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -381,7 +381,7 @@ else:
                       )
 
 
-# + code_folding=[2, 26]
+# + code_folding=[0, 26]
 ## functions that make a list of consumer types different by parameters
 
 def make_1dtypes(by,
@@ -441,8 +441,8 @@ def make_2dtypes(by_list,
 # + code_folding=[]
 ## create a list of consumer types with different permanent risks or any other primitive parameters 
 
-sigma_psi_types = np.array([0.01,0.06,0.25])
-sigma_eps_types = np.array([0.01,0.15,0.25])
+sigma_psi_types = np.array([0.1,0.15,0.2])
+sigma_eps_types = np.array([0.1,0.15,0.2])
 U2U_types = np.array([0.1,0.18,0.25])
 E2E_types = np.array([0.99,0.96,0.93])
 
@@ -462,15 +462,22 @@ hetero_ue_risk_types = make_1dtypes('P',
 hetero_prisk_types = make_1dtypes('sigma_psi',
                               sigma_psi_types)
 
-hetero_p_t_risk_types = make_2dtypes(by_list = ['sigma_psi','sigma_eps'],
+
+hetero_p_t_risk_types = make_2dtypes(by_list = ['sigma_psi',
+                                                'sigma_eps'],
                                     vals_list = [sigma_psi_types,
                                                  sigma_eps_types]
                                     )
 
-# + code_folding=[15]
+hetero_p_risk_beta_types = make_2dtypes(by_list = ['sigma_psi','β'],
+                                    vals_list = [sigma_psi_types,
+                                                 beta_types]
+                                    )
+
+# + code_folding=[12]
 ## solve various models
 
-types = hetero_p_t_risk_types
+types = hetero_p_risk_beta_types
 
 specs = ['ob']*len(types)
 
@@ -892,7 +899,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 17, 111, 219, 233, 263, 295]
+# + code_folding=[0, 17, 111, 224, 238, 268, 300]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1110,6 +1117,11 @@ class HH_OLG_Markov:
                                                             dist_lists,
                                                             ss_dstn,
                                                             age_dist)
+        
+        self.a_grid_dist, self.a_pdfs_dist = flatten_list(a_PolGrid_list,
+                                                            dist_lists,
+                                                            ss_dstn,
+                                                            age_dist)
     ### Aggregate C or A
 
     def Aggregate(self):
@@ -1235,8 +1247,8 @@ def Lorenz(model_results):
     returns the lorenz weights and value 
     """
     probs = 1/len(model_results) ## equal probable types 
-    ap_grid_dist = np.array([model_result['ap_grid_dist_pe'] for model_result in model_results]).flatten()
-    ap_pdfs_dist = np.array([[model_result['ap_pdfs_dist_pe'] for model_result in model_results]]).flatten()*probs
+    ap_grid_dist = np.array([model_result['ap_grid_dist'] for model_result in model_results]).flatten()
+    ap_pdfs_dist = np.array([[model_result['ap_pdfs_dist'] for model_result in model_results]]).flatten()*probs
     
     ## sort 
     ap_grid_dist_sort = ap_grid_dist.argsort()
@@ -1440,7 +1452,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[1]
+# + code_folding=[0, 1]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1452,7 +1464,7 @@ n_m = 100
 n_p = 100
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
@@ -1481,7 +1493,7 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## Solve the heterogenous-type model 
 
-# + code_folding=[0, 51, 72]
+# + code_folding=[0, 49]
 def solve_1type(model,
                 m_star,
                 σ_star,
@@ -1511,47 +1523,24 @@ def solve_1type(model,
     A_life_this = HH_this.A_life
 
     ## distribution 
-
-    ## general equilibrium 
-
-    #market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
-    #                                    production = production)
-
-    #market_OLG_mkv_this.get_equilibrium_k()
-    #market_OLG_mkv_this.get_equilibrium_dist()
-
-    ## aggregate 
-
-    ## life cycle 
-
-    ## lorenz 
-    #share_agents_ap_ge_this, share_ap_ge_this = Lorenz(market_OLG_mkv_this.households)
-
-    ## gini in ge
-
-    #gini_this_ge = gini(share_agents_ap_ge_this,
-    #                 share_ap_ge_this)
-
+    zero_wealth_id_pe = np.where(HH_this.a_grid_dist<=1.0)
+    h2m_share_pe = HH_this.a_pdfs_dist[zero_wealth_id_pe].sum()
+    
         
-    model_dct =  {'A_pe':HH_this.A,
-                'A_life_pe': HH_this.A_life,
-                'share_agents_ap_pe':share_agents_ap_this,
-                'share_ap_pe':share_ap_this,
-               'ap_grid_dist_pe':HH_this.ap_grid_dist,
-                'ap_pdfs_dist_pe':HH_this.ap_pdfs_dist,
-                'gini_pe':gini_this_pe,
-                #'A_ge':market_OLG_mkv_this.households.A,
-                #'A_life_ge':market_OLG_mkv_this.households.A_life,
-                #'share_agents_ap_ge':share_agents_ap_ge_this,
-                #'share_ap_ge':share_ap_ge_this,
-                #'ap_grid_dist_ge':market_OLG_mkv_this.households.ap_grid_dist,
-                #'ap_pdfs_dist_ge':market_OLG_mkv_this.households.ap_pdfs_dist,
-                #'gini_ge':gini_this_ge
+    model_dct =  {'A':HH_this.A,
+                'A_life': HH_this.A_life,
+                'share_agents_ap':share_agents_ap_this,
+                'share_ap':share_ap_this,
+               'ap_grid_dist':HH_this.ap_grid_dist,
+                'ap_pdfs_dist':HH_this.ap_pdfs_dist,
+                'a_grid_dist':HH_this.a_grid_dist,
+                'a_pdfs_dist':HH_this.a_pdfs_dist,
+                'gini':gini_this_pe,
+                'h2m_share':h2m_share_pe
                }
     
     ## save it as a pkl
 
-    #pickle.dump(model_dct,open('./model_solutions/'+model_name+'.pkl','wb'))
     return model_dct
     
 def solve_types(model_list,
@@ -1573,7 +1562,7 @@ def solve_types(model_list,
     return sols_all_types
 
 
-# + code_folding=[2]
+# + code_folding=[0]
 ## solve a list of models and save all solutions as pickles 
 
 results_by_type = solve_types(types,
@@ -1582,7 +1571,7 @@ results_by_type = solve_types(types,
                             model_name_list = type_names)
 
 
-# + code_folding=[0]
+# + code_folding=[0, 41]
 def combine_results(results_by_type):
     """
     input
@@ -1600,16 +1589,19 @@ def combine_results(results_by_type):
     
     ## aggregate wealth 
     A_pe = np.sum(
-        np.array([result['A_pe'] 
+        np.array([result['A'] 
                   for result in results_by_type])
     )*probs
     
     ## life cycle wealth
-    A_life_pe = np.sum(np.array([result['A_life_pe'] for result in results_by_type]),axis=0)
+    A_life_pe = np.sum(np.array([result['A_life'] for result in results_by_type]),axis=0)
     
     ## distribution 
-    ap_grid_dist_pe = np.array([result['ap_grid_dist_pe'] for result in results_by_type]).flatten()
-    ap_pdfs_dist_pe = np.array([result['ap_pdfs_dist_pe'] for result in results_by_type]).flatten()
+    ap_grid_dist_pe = np.array([result['ap_grid_dist'] for result in results_by_type]).flatten()
+    ap_pdfs_dist_pe = np.array([result['ap_pdfs_dist'] for result in results_by_type]).flatten()
+    a_grid_dist_pe = np.array([result['a_grid_dist'] for result in results_by_type]).flatten()
+    a_pdfs_dist_pe = np.array([result['a_pdfs_dist'] for result in results_by_type]).flatten()
+
 
     ## lorenz share
     share_agents_ap_pe,share_ap_pe = Lorenz(results_by_type)
@@ -1617,73 +1609,69 @@ def combine_results(results_by_type):
     ## gini
     gini_this_pe = gini(share_agents_ap_pe,
                         share_ap_pe)
+    
+    zero_wealth_id_pe = np.where(a_grid_dist_pe<=1.0)
+    h2m_share_pe = a_pdfs_dist_pe[zero_wealth_id_pe].sum()
 
-
-    model_dct =  {'A_pe':A_pe,
-                  'A_life_pe': A_life_pe,
-                  'share_agents_ap_pe':share_agents_ap_pe,
-                  'share_ap_pe':share_ap_pe,
-                  'ap_grid_dist_pe':ap_grid_dist_pe,
-                  'ap_pdfs_dist_pe':ap_pdfs_dist_pe,
-                  'gini_pe':gini_this_pe,
-                    #'A_ge':market_OLG_mkv_this.households.A,
-                    #'A_life_ge':market_OLG_mkv_this.households.A_life,
-                    #'share_agents_ap_ge':share_agents_ap_ge_this,
-                    #'share_ap_ge':share_ap_ge_this,
-                    #'ap_grid_dist_ge':market_OLG_mkv_this.households.ap_grid_dist,
-                    #'ap_pdfs_dist_ge':market_OLG_mkv_this.households.ap_pdfs_dist,
-                    #'gini_ge':gini_this_ge
+    model_dct_pe =  {'A':A_pe,
+                  'A_life': A_life_pe,
+                  'share_agents_ap':share_agents_ap_pe,
+                  'share_ap':share_ap_pe,
+                  'ap_grid_dist':ap_grid_dist_pe,
+                  'ap_pdfs_dist':ap_pdfs_dist_pe,
+                  'gini':gini_this_pe,
+                  'h2m_share':h2m_share_pe
                    }
     
-    return model_dct 
+    return model_dct_pe
 # -
 
 ## obtain the combined results 
 results_combined = combine_results(results_by_type)
 
-# + code_folding=[0]
+# + code_folding=[]
 ## aggregate lorenz curve 
 
-print('gini from model:'+str(results_combined['gini_pe']))
+print('gini from model:'+str(results_combined['gini']))
 
 gini_SCF = gini(SCF_share_agents_ap,
                  SCF_share_ap)
 print('gini from SCE:'+str(gini_SCF))
 
-# + code_folding=[0]
+# + code_folding=[]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(8,8))
-ax.plot(results_combined['share_agents_ap_pe'],
-        results_combined['share_ap_pe'], 
+ax.plot(results_combined['share_agents_ap'],
+        results_combined['share_ap'], 
         'r--',
-        label='Model, Gini={:.2f}'.format(results_combined['gini_pe']))
+        label='Model, Gini={:.2f}'.format(results_combined['gini']))
 ax.plot(SCF_share_agents_ap,
         SCF_share_ap, 
         'b-.',
         label='SCF, Gini={:.2f}'.format(gini_SCF))
-ax.plot(results_combined['share_agents_ap_pe'],
-        results_combined['share_agents_ap_pe'], 
+ax.plot(results_combined['share_agents_ap'],
+        results_combined['share_agents_ap'], 
         'k-',
         label='equality curve')
 ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
-plt.savefig('../Graphs/model/lorenz_a_hetero_type.png')
+#plt.savefig('../Graphs/model/lorenz_a_hetero_type.png')
 
 # +
 ## Wealth distribution 
 
 fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
-ax.plot(np.log(results_combined['ap_grid_dist_pe']+1e-5),
-         results_combined['ap_pdfs_dist_pe'])
+ax.plot(np.log(results_combined['ap_grid_dist']+1e-5),
+         results_combined['ap_pdfs_dist'])
 
 ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
-fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
+#fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
 # -
 
-pickle.dump(results_combined,open('./model_solutions/HPR.pkl','wb'))
+pickle.dump(results_combined,open('./model_solutions/HPRTP_PE.pkl','wb'))
 
 
