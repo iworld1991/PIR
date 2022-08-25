@@ -82,7 +82,8 @@ list(df2016.columns)
 
 # ## Variable definitions 
 #
-# The [definition](https://www.federalreserve.gov/econres/files/Networth%20Flowchart.pdf) of networth 
+# - [code book for 2016](https://sda.berkeley.edu/sdaweb/docs/scfcomb2016/DOC/hcbk0007.htm)
+# - The [definition](https://www.federalreserve.gov/econres/files/Networth%20Flowchart.pdf) of networth 
 
 # +
 ## make new variables 
@@ -96,8 +97,8 @@ df2016 = df2016[df2016['income']>0]
 df2016 = df2016[df2016['norminc']>0]
 df2016['lincome'] = np.log(df2016['income'])
 df2016['lnorminc'] = np.log(df2016['norminc'])
-df2016['w2income']=df2016['networth']/ df2016['norminc']
-df2016['lw2income']=df2016['lqwealth']/ df2016['norminc']
+df2016['w2income']= df2016['networth']/ df2016['norminc']
+df2016['lw2income']= df2016['lqwealth']/ df2016['norminc']
 
 # + code_folding=[0]
 ## age polynomials regressions 
@@ -277,7 +278,7 @@ def weighted_percentiles(data, variable, weights, percentiles = [],
         return a
 
 
-# + code_folding=[]
+# + code_folding=[0]
 def figureprefs(data, variable = 'income', labels = False, legendlabels = []):
     
     percentiles = [i * 0.05 for i in range(20)]+[0.99, 1.00]
