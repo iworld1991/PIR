@@ -1,28 +1,28 @@
 <!-- #region -->
-# Perceived Income Risks 
+# Perceived Income Risks
 - Author: Tao Wang
-- Stage: work in progress. Preliminary. 
+- Stage: work in progress. Preliminary.
 
-## To-knows 
+## To-knows
 
-- To download the entire working repo, go to the shell, navigate to the desirable locaiton, and type 
+- To download the entire working repo, go to the shell, navigate to the desirable locaiton, and type
   - `git init`
   - `git clone https://github.com/iworld1991/PIR.git`.   
 - For the most recent draft, see [here](./PIR.pdf).
-- For replication of all the work, navigate [here](/WorkingFolder/PythonCode/) and run "do_all.py'' by doing the following in the shell: 
+- For replication of all the work, navigate [here](/WorkingFolder/PythonCode/) and run "do_all.py'' by doing the following in the shell:
   - `ipython do_all.py`
-- For reproducing latex and pdf draft after replication, navigate to the main working directoary, and run the "to_tex.sh" by typing the following in the shell: 
+- For reproducing latex and pdf draft after replication, navigate to the main working directoary, and run the "to_tex.sh" by typing the following in the shell:
   - `source ./to_tex.sh`
-  
-  
+
+
 ## Structure of code
 
 ## Empirics
 
 1. [Density estimation of the survey answers](./WorkingFolder/PythonCode/DoDensityEst.ipynb) that draws from the general code [DensityEst](./WorkingFolder/PythonCode/DensityEst.py)
-   
+
 2. [Income risks decomposition](./WorkingFolder/PythonCode/IncomeRisksEst.ipynb) that draws on the [income process class](./WorkingFolder/PythonCode/IncomeProcess.ipynb)
-   - [Estimation allowing for infrequent shocks](IncomeRisksInfrequentEst.ipynb) 
+   - [Estimation allowing for infrequent shocks](./WorkingFolder/PythonCode/IncomeRisksInfrequentEst.ipynb) 
 
 3. [Micro empirical analysis](./WorkingFolder/PythonCode/MicroRiskProfile.ipynb) on the cross-sectional heterogeneity of perceived risks (PR)
 
@@ -36,7 +36,7 @@
   - stored as a dictionary, to be directly imported into model notebooks
 
 
-1. [Life-cycle model with Markov state of belief](./WorkingFolder/PythonCode/SolveLifeCycleBelief.ipynb) 
+1. [Life-cycle model with Markov state of belief](./WorkingFolder/PythonCode/SolveLifeCycleBelief.ipynb)
    -  [a baseline model without belief state](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
    - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleBelief-ComparisonHARK.ipynb)
    - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleBelief-Test.ipynb)
@@ -44,17 +44,17 @@
 
 2. [Stationary distribution and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
 
-   - [the extended version with heterogenous beliefs of income risks](./WorkingFolder/PythonCode/OLG-GE-Belief.ipynb) 
+   - [the extended version with heterogenous beliefs of income risks](./WorkingFolder/PythonCode/OLG-GE-Belief.ipynb)
 
 3. [Markov regime switching model of subjective PR](./WorkingFolder/PythonCode/SubjectiveProfileEst.ipynb)
 
 
-## Supporting utilities/resources 
+## Supporting utilities/resources
 
 
 
 1. [Utility](./WorkingFolder/PythonCode/Utility.ipynb)
-   
+
 2. [Latex table manipulation](./WorkingFolder/PythonCode/TexTablesMover.ipynb)
 <!-- #endregion -->
 
