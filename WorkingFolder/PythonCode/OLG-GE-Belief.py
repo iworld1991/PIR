@@ -1071,7 +1071,7 @@ def flatten_dist(grid_lists,      ## (nb.z x nb.f) x L x nb x nm x np
 
 
 
-# + code_folding=[20, 115, 287, 294, 301, 330, 360]
+# + code_folding=[0, 20, 115, 287, 294, 301, 330, 360]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1674,7 +1674,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[]
+# + code_folding=[0]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1899,9 +1899,13 @@ fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
+    ## get h2m fraction: an arbitrary definition for now. a2p ratio smaller than 5 
+    h2m_pe_where = np.where(model_solution['a_grid_dist']<=0.5)
+    h2m_share =model_solution['a_pdfs_dist'][h2m_pe_where].sum()
+    
     ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
             model_solution['ap_pdfs_dist'],
-            label=model_names[k],
+            label=model_names[k]+', H2M={:.2f}'.format(h2m_share),
            alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
@@ -1973,9 +1977,12 @@ fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
+    ## get h2m fraction: an arbitrary definition for now. a2p ratio smaller than 5 
+    h2m_pe_where = np.where(model_solution['a_grid_dist']<=0.5)
+    h2m_share =model_solution['a_pdfs_dist'][h2m_pe_where].sum()
     ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
             model_solution['ap_pdfs_dist'],
-            label=model_names[k],
+            label=model_names[k]+', H2M={:.2f}'.format(h2m_share),
             alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
