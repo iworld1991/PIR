@@ -496,7 +496,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[0, 8, 473, 508, 543, 557]
+# + code_folding=[8, 86, 473, 508, 543, 557]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -986,15 +986,15 @@ def initial_distribution_u(model,
     init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
     shk_prbs = np.repeat(
         init_p_plus_shk_probs,
-        len(model.eps_shk_draws)
-    )*1/len(model.eps_shk_draws)
+        len(model.eps_shk_true_draws)
+    )*1/len(model.eps_shk_true_draws)
     
     λ = model.λ
     init_b = model.init_b
-    ue_insurance = np.repeat(np.ones_like(model.eps_shk_draws),
+    ue_insurance = np.repeat(np.ones_like(model.eps_shk_true_draws),
                           len(init_p_plus_shk_probs))*model.unemp_insurance  
     init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
-                          len(model.eps_shk_draws)))
+                          len(model.eps_shk_true_draws)))
     
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid(np.ones_like(init_p_draws)*((1-λ)*ue_insurance+init_b/init_p_draws+model.transfer), ## initial unemployment insurance and accidental bequest transfer
@@ -1014,24 +1014,24 @@ def initial_distribution_e(model,
         np.array(
             [np.exp(init_p) * np.exp(psi_shk) 
              for init_p in model.init_p_draws 
-             for psi_shk in model.psi_shk_draws
+             for psi_shk in model.psi_shk_true_draws
             ]
         )
     )
     init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
     shk_prbs = np.repeat(
         init_p_plus_shk_probs,
-        len(model.eps_shk_draws)
-    )*1/len(model.eps_shk_draws)
+        len(model.eps_shk_true_draws)
+    )*1/len(model.eps_shk_true_draws)
     
     λ = model.λ
     λ_SS = model.λ_SS
     init_b = model.init_b
     
-    tran_shks = np.exp(np.repeat(model.eps_shk_draws,
+    tran_shks = np.exp(np.repeat(model.eps_shk_true_draws,
                           len(init_p_plus_shk_probs)))
     init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
-                          len(model.eps_shk_draws)))
+                          len(model.eps_shk_true_draws)))
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid((1-λ)*(1-λ_SS)*tran_shks+init_b/init_p_draws+model.transfer, ## initial transitory risks and accidental bequest transfer
                                init_p_draws,
@@ -1071,7 +1071,7 @@ def flatten_dist(grid_lists,      ## (nb.z x nb.f) x L x nb x nm x np
 
 
 
-# + code_folding=[0, 20, 115, 258, 265, 272, 301, 331]
+# + code_folding=[20, 115, 287, 294, 301, 330, 360]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1276,37 +1276,66 @@ class HH_OLG_Markov:
             this_dist_e_f1 = tran_matrix_lists[3][k]@this_dist_e_f1
             dist_e_f1_lists.append(this_dist_e_f1)
     
-
-            ## c and a for u for belief 0 (index 0)
-            ap_u_f0_PolGrid_list = [np.multiply.outer(a_PolGrid_list[0][k],
-                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
-
-            ## c and a for e for belief 0 (index 1)
-
-            ap_e_f0_PolGrid_list = [np.multiply.outer(a_PolGrid_list[1][k],
-                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
-            
-            ## c and a for u for belief 1 (index 2)
-            ap_u_f1_PolGrid_list = [np.multiply.outer(a_PolGrid_list[2][k],
-                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
-            
-            ## c and a for e for belief 1 (index 3)
-            ap_e_f1_PolGrid_list = [np.multiply.outer(a_PolGrid_list[3][k],
-                                           p_dist_grid_list[k]).flatten() for k in range(model.L)]
-
+    
         ## stack the distribution lists 
         dist_lists = [dist_u_f0_lists,
                      dist_e_f0_lists,
                      dist_u_f1_lists,
                      dist_e_f1_lists]
+        
+        
+        ## c and a for u for belief 0 (index 0)
+        ap_u_f0_PolGrid_list = [np.multiply.outer(a_PolGrid_list[0][k],
+                                       p_dist_grid_list[k]).flatten() for k in range(model.L)]
 
+        ## c and a for e for belief 0 (index 1)
+
+        ap_e_f0_PolGrid_list = [np.multiply.outer(a_PolGrid_list[1][k],
+                                       p_dist_grid_list[k]).flatten() for k in range(model.L)]
+
+        ## c and a for u for belief 1 (index 2)
+        ap_u_f1_PolGrid_list = [np.multiply.outer(a_PolGrid_list[2][k],
+                                       p_dist_grid_list[k]).flatten() for k in range(model.L)]
+
+        ## c and a for e for belief 1 (index 3)
+        ap_e_f1_PolGrid_list = [np.multiply.outer(a_PolGrid_list[3][k],
+                                       p_dist_grid_list[k]).flatten() for k in range(model.L)]
+
+        
         # a policy grid 
 
         ap_PolGrid_list = [ap_u_f0_PolGrid_list,
                           ap_e_f0_PolGrid_list,
                           ap_u_f1_PolGrid_list,
                           ap_e_f1_PolGrid_list]
+        
+        
+        ## policy grids to permanent income ratios
+        
+        ## c and a for u for belief 0 (index 0)
+        ap_ratio_u_f0_PolGrid_list = [np.repeat(a_PolGrid_list[0][k],
+                                       len(p_dist_grid_list[k])) for k in range(model.L)]
 
+        ## c and a for e for belief 0 (index 1)
+
+        ap_ratio_e_f0_PolGrid_list = [np.repeat(a_PolGrid_list[1][k],
+                                       len(p_dist_grid_list[k])) for k in range(model.L)]
+
+        ## c and a for u for belief 1 (index 2)
+        ap_ratio_u_f1_PolGrid_list = [np.repeat(a_PolGrid_list[2][k],
+                                      len(p_dist_grid_list[k])) for k in range(model.L)]
+
+        ## c and a for e for belief 1 (index 3)
+        ap_ratio_e_f1_PolGrid_list = [np.repeat(a_PolGrid_list[3][k],
+                                       len(p_dist_grid_list[k])) for k in range(model.L)]
+        
+         
+        # a policy grid 
+
+        ap_ratio_PolGrid_list = [ap_ratio_u_f0_PolGrid_list,
+                                  ap_ratio_e_f0_PolGrid_list,
+                                  ap_ratio_u_f1_PolGrid_list,
+                                  ap_ratio_e_f1_PolGrid_list]
 
         time_end = time()
         print('time taken to get SS dist:'+str(time_end-time_start))
@@ -1323,7 +1352,7 @@ class HH_OLG_Markov:
         
         ## stroe wealth to permanent income ratio distribution 
         
-        self.a_grid_dist,self.a_pdfs_dist = flatten_dist(a_PolGrid_list,
+        self.a_grid_dist,self.a_pdfs_dist = flatten_dist(ap_ratio_PolGrid_list,
                                                         dist_lists,
                                                         ss_dstn_combined,
                                                         age_dist)
@@ -1645,7 +1674,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[0]
+# + code_folding=[]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1653,8 +1682,8 @@ production = CDProduction(α = production_paras['α'],
                          target_W = production_paras['W']) 
 
 ## nb of grids used for transition matrix  
-n_m = 100
-n_p = 100
+n_m = 40
+n_p = 40
 
 # + code_folding=[0]
 ## get the wealth distribution from SCF (net worth)
@@ -1685,12 +1714,12 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## compare different models 
 
-# + code_folding=[0, 47, 87]
+# + code_folding=[0, 30, 86]
 def solve_1model(model,
                 m_star,
                 σ_star,
-                n_m = 30,
-                n_p = 40,
+                n_m = n_m,
+                n_p = n_p,
                 model_name = 'model',
                 ge = False):
     HH_this = HH_OLG_Markov(model = model)
@@ -1716,17 +1745,15 @@ def solve_1model(model,
 
     ## distribution 
     
-    zero_wealth_id_pe = np.where(HH_this.a_grid_dist<=1.0)
-    h2m_share_pe = HH_this.a_pdfs_dist[zero_wealth_id_pe].sum()
-    
     model_dct_pe =  {'A':HH_this.A,
                 'A_life': HH_this.A_life,
                 'share_agents_ap':share_agents_ap_this,
                 'share_ap':share_ap_this,
                'ap_grid_dist':HH_this.ap_grid_dist,
                 'ap_pdfs_dist':HH_this.ap_pdfs_dist,
-                 'gini':gini_this_pe,
-                 'h2m_share':h2m_share_pe
+                'a_grid_dist':HH_this.a_grid_dist,
+                'a_pdfs_dist':HH_this.a_pdfs_dist,
+                 'gini':gini_this_pe
                }
     ## save it as a pkl
     pickle.dump(model_dct_pe,open('./model_solutions/'+model_name+'_PE.pkl','wb'))
@@ -1765,8 +1792,9 @@ def solve_1model(model,
                         'share_ap':share_ap_ge_this,
                         'ap_grid_dist':market_OLG_mkv_this.households.ap_grid_dist,
                         'ap_pdfs_dist':market_OLG_mkv_this.households.ap_pdfs_dist,
+                        'a_grid_dist':market_OLG_mkv_this.households.a_grid_dist,
+                        'a_pdfs_dist':market_OLG_mkv_this.households.a_pdfs_dist,
                         'gini':gini_this_ge,
-                         'h2m_share':h2m_share_ge 
                         }
         
         ## save it as a pkl
