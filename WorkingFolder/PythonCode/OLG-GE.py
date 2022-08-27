@@ -119,7 +119,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -168,7 +168,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[]
+# + code_folding=[0, 18, 94, 119, 147, 174]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -372,7 +372,7 @@ else:
                       )
 
 
-# + code_folding=[23]
+# + code_folding=[0, 22]
 ## solve various models
 
 models = [lc_mkv,
@@ -381,14 +381,14 @@ models = [lc_mkv,
           ]
 specs = ['ob',
          'sub',
-         'sub_true'
+         'sub_true',
          #'cr'
          ]
 
 model_names=['baseline',
              'SLPR',
-             'LPR'
-             'subjective_sv'
+             'LPR',
+             #'subjective_sv'
              ]
 
 ms_stars = []
@@ -486,7 +486,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 236, 271, 307, 321]
+# + code_folding=[0, 8, 236, 271, 307, 321]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -732,22 +732,22 @@ def initial_distribution_u(model,
         np.array(
             [np.exp(init_p) * np.exp(psi_shk) 
              for init_p in model.init_p_draws 
-             for psi_shk in model.psi_shk_draws
+             for psi_shk in model.psi_shk_true_draws
             ]
         )
     )
     init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
     shk_prbs = np.repeat(
         init_p_plus_shk_probs,
-        len(model.eps_shk_draws)
-    )*1/len(model.eps_shk_draws)
+        len(model.eps_shk_true_draws)
+    )*1/len(model.eps_shk_true_draws)
     
     λ = model.λ
     init_b = model.init_b
-    ue_insurance = np.repeat(np.ones_like(model.eps_shk_draws),
+    ue_insurance = np.repeat(np.ones_like(model.eps_shk_true_draws),
                           len(init_p_plus_shk_probs))*model.unemp_insurance  
     init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
-                          len(model.eps_shk_draws)))
+                          len(model.eps_shk_true_draws)))
     
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid(np.ones_like(init_p_draws)*((1-λ)*ue_insurance+init_b/init_p_draws+model.transfer), ## initial unemployment insurance and accidental bequest transfer
@@ -767,21 +767,21 @@ def initial_distribution_e(model,
         np.array(
             [np.exp(init_p) * np.exp(psi_shk) 
              for init_p in model.init_p_draws 
-             for psi_shk in model.psi_shk_draws
+             for psi_shk in model.psi_shk_true_draws
             ]
         )
     )
     init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
     shk_prbs = np.repeat(
         init_p_plus_shk_probs,
-        len(model.eps_shk_draws)
-    )*1/len(model.eps_shk_draws)
+        len(model.eps_shk_true_draws)
+    )*1/len(model.eps_shk_true_draws)
     
     λ = model.λ
     λ_SS = model.λ_SS
     init_b = model.init_b
     
-    tran_shks = np.exp(np.repeat(model.eps_shk_draws,
+    tran_shks = np.exp(np.repeat(model.eps_shk_true_draws,
                           len(init_p_plus_shk_probs)))
     init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
                           len(model.eps_shk_draws)))
@@ -826,7 +826,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 17, 111, 226, 240, 270, 301]
+# + code_folding=[5, 17, 237, 251, 270, 281, 312]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1013,6 +1013,11 @@ class HH_OLG_Markov:
             ##emp
             this_dist_e = tran_matrix_lists[1][k]@this_dist_e
             dist_e_lists.append(this_dist_e)
+            
+            
+        ## stack the distribution lists 
+        dist_lists = [dist_u_lists,
+                     dist_e_lists]
                     
         ## get level of a over life cycle 
         ap_u_PolGrid_list = [np.multiply.outer(a_PolGrid_list[0][k],
@@ -1020,15 +1025,21 @@ class HH_OLG_Markov:
         ap_e_PolGrid_list = [np.multiply.outer(a_PolGrid_list[1][k],
                                            p_dist_grid_list[k]).flatten() for k in range(model.L)]
    
-        
-        ## stack the distribution lists 
-        dist_lists = [dist_u_lists,
-                     dist_e_lists]
-       
 
         # a policy grid 
         ap_PolGrid_list = [ap_u_PolGrid_list,
                           ap_e_PolGrid_list]
+        
+        
+        ## get the normalized a over life cycle 
+        ap_ratio_u_PolGrid_list = [np.repeat(a_PolGrid_list[0][k],
+                                           len(p_dist_grid_list[k])) for k in range(model.L)]
+        ap_eratio_e_PolGrid_list = [np.repeat(a_PolGrid_list[1][k],
+                                           len(p_dist_grid_list[k])) for k in range(model.L)]
+        
+        # a policy grid 
+        ap_ratio_PolGrid_list = [ap_ratio_u_PolGrid_list,
+                                 ap_eratio_e_PolGrid_list]
 
         
         time_end = time()
@@ -1047,7 +1058,7 @@ class HH_OLG_Markov:
         
         ## stroe wealth to permanent income ratio distribution 
         
-        self.a_grid_dist,self.a_pdfs_dist = flatten_list(a_PolGrid_list,
+        self.a_grid_dist,self.a_pdfs_dist = flatten_list(ap_ratio_PolGrid_list,
                                                         dist_lists,
                                                         ss_dstn,
                                                         age_dist)
@@ -1356,8 +1367,8 @@ production = CDProduction(α = production_paras['α'],
                          target_W = production_paras['W']) 
 
 ## nb of grids used for transition matrix  
-n_m = 100
-n_p = 100
+n_m = 60
+n_p = 50
 
 
 # + code_folding=[0]
@@ -1389,12 +1400,15 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## compare different models 
 
-# + code_folding=[87]
+# + code_folding=[3, 87]
+## This function bundles all procedures of solving stationary dist and StE for a particular model. 
+## It also has a boelean argument that turns offs the general-equilibrium part of solutions for faster operation
+
 def solve_1model(model,
                 m_star,
                 σ_star,
-                n_m=40,
-                n_p=40,
+                n_m=n_m,
+                n_p=n_p,
                 model_name = 'model',
                 ge = False):
     
@@ -1421,11 +1435,7 @@ def solve_1model(model,
     A_life_this = HH_this.A_life
 
     ## distribution 
-    
-    zero_wealth_id_pe = np.where(HH_this.a_grid_dist<=1.0)
-    h2m_share_pe = HH_this.a_pdfs_dist[zero_wealth_id_pe].sum()
-
-   
+       
     ## store all PE results
     model_pe_dct =  {'A':HH_this.A,
                     'A_life': HH_this.A_life,
@@ -1433,8 +1443,9 @@ def solve_1model(model,
                     'share_ap':share_ap_this,
                    'ap_grid_dist':HH_this.ap_grid_dist,
                     'ap_pdfs_dist':HH_this.ap_pdfs_dist,
-                     'gini':gini_this_pe,
-                      'h2m_share':h2m_share_pe}
+                    'a_grid_dist':HH_this.a_grid_dist,
+                    'a_pdfs_dist':HH_this.a_pdfs_dist,
+                     'gini':gini_this_pe}
     
     ## save it as a pkl
     pickle.dump(model_pe_dct,open('./model_solutions/'+model_name+'_PE.pkl','wb'))
@@ -1471,11 +1482,11 @@ def solve_1model(model,
                         'share_ap':share_ap_ge_this,
                         'ap_grid_dist':market_OLG_mkv_this.households.ap_grid_dist,
                         'ap_pdfs_dist':market_OLG_mkv_this.households.ap_pdfs_dist,
-                        'gini':gini_this_ge,
-                        'h2m_share':h2m_share_ge }
+                        'a_grid_dist':market_OLG_mkv_this.households.a_grid_dist,
+                        'a_pdfs_dist':market_OLG_mkv_this.households.a_pdfs_dist,
+                        'gini':gini_this_ge}
    
         pickle.dump(model_ge_dct,open('./model_solutions/'+model_name+'_GE.pkl','wb'))
-
 
 def solve_models(model_list,
                  ms_star_list,
@@ -1494,7 +1505,7 @@ def solve_models(model_list,
                      model_name = model_name_list[k],
                      ge = ge)
 
-# + code_folding=[]
+# + code_folding=[0]
 ## solve a list of models and save all solutions as pickles 
 
 model_results = solve_models(models,
@@ -1503,13 +1514,17 @@ model_results = solve_models(models,
                              model_name_list = model_names,
                              ge = True)
 
-# + pycharm={"name": "#%%\n"} code_folding=[0, 2]
+# + pycharm={"name": "#%%\n"} code_folding=[0]
 ## plot results from different models
+
+model_names=['baseline',
+             'SLPR',
+             'LPR',
+             ]
 
 line_patterns =['g-v',
                 'r-.',
                 'b--',
-                #'y.'
                 ]
 
 ## Lorenz curve of steady state wealth distribution
@@ -1576,9 +1591,14 @@ fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
+    
+    ## get h2m fraction: an arbitrary definition for now. a2p ratio smaller than 5 
+    h2m_pe_where = np.where(model_solution['a_grid_dist']<=0.5)
+    h2m_share =model_solution['a_pdfs_dist'][h2m_pe_where].sum()
+
     ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
             model_solution['ap_pdfs_dist'],
-            label=model_names[k]+', H2M={:.2f}'.format(model_solution['h2m_share']),
+            label=model_names[k]+', H2M={:.2f}'.format(h2m_share),
            alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
@@ -1653,9 +1673,14 @@ fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
 for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
+    
+    ## get h2m fraction: an arbitrary definition for now. a2p ratio smaller than 5 
+    h2m_ge_where = np.where(model_solution['a_grid_dist']<=0.5)
+    h2m_share =model_solution['a_pdfs_dist'][h2m_ge_where].sum()
+
     ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
             model_solution['ap_pdfs_dist'],
-            label=model_names[k]+', H2M={:.2f}'.format(model_solution['h2m_share']),
+            label=model_names[k]+', H2M={:.2f}'.format(h2m_share),
             alpha = 0.8)
 ax.set_xlabel(r'$a$')
 ax.legend(loc=0)
@@ -1685,7 +1710,7 @@ HH.ComputeSSDist(ms_star = ms_star_mkv,
                   σs_star = σs_star_mkv)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot the initial distribution in the first period of life 
 
 plt.title('Initial distributions over m and p given u')
