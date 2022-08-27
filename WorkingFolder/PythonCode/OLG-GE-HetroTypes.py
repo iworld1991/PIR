@@ -14,7 +14,7 @@
 #     name: python3
 # ---
 
-# ## Aggregate dynamics, stationary distribution and GE of a life-cycle economy (with heterogeneous types of agents )
+# ## Aggregate StE of a life-cycle economy (with heterogeneous types of agents)
 #
 # - author: Tao Wang
 # - this is a companion notebook to the paper "Perceived income risks"
@@ -175,7 +175,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 94, 96, 121, 149, 176]
+# + code_folding=[0, 96, 121, 149]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -381,7 +381,7 @@ else:
                       )
 
 
-# + code_folding=[0, 26]
+# + code_folding=[2, 26]
 ## functions that make a list of consumer types different by parameters
 
 def make_1dtypes(by,
@@ -450,7 +450,7 @@ P_types = [np.array([[U2U_types[i],1-U2U_types[i]],
                      [1-E2E_types[i],E2E_types[i]]]) 
            for i in range(len(U2U_types))]
 
-beta_types = np.array([0.9,0.95,0.98])
+beta_types = np.array([0.9,0.98])
 
 hetero_beta_types = make_1dtypes('β',
                               beta_types)
@@ -474,10 +474,10 @@ hetero_p_risk_beta_types = make_2dtypes(by_list = ['sigma_psi','β'],
                                                  beta_types]
                                     )
 
-# + code_folding=[12]
+# + code_folding=[0]
 ## solve various models
 
-types = hetero_p_risk_beta_types
+types = hetero_beta_types
 
 specs = ['ob']*len(types)
 
@@ -559,7 +559,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[0, 8, 236, 271, 307, 321]
+# + code_folding=[8, 307, 321]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -812,15 +812,15 @@ def initial_distribution_u(model,
     init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
     shk_prbs = np.repeat(
         init_p_plus_shk_probs,
-        len(model.eps_shk_draws)
-    )*1/len(model.eps_shk_draws)
+        len(model.eps_shk_true_draws)
+    )*1/len(model.eps_shk_true_draws)
     
     λ = model.λ
     init_b = model.init_b
-    ue_insurance = np.repeat(np.ones_like(model.eps_shk_draws),
+    ue_insurance = np.repeat(np.ones_like(model.eps_shk_true_draws),
                           len(init_p_plus_shk_probs))*model.unemp_insurance  
     init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
-                          len(model.eps_shk_draws)))
+                          len(model.eps_shk_true_draws)))
     
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid(np.ones_like(init_p_draws)*((1-λ)*ue_insurance+init_b/init_p_draws+model.transfer), ## initial unemployment insurance and accidental bequest transfer
@@ -840,24 +840,24 @@ def initial_distribution_e(model,
         np.array(
             [np.exp(init_p) * np.exp(psi_shk) 
              for init_p in model.init_p_draws 
-             for psi_shk in model.psi_shk_draws
+             for psi_shk in model.psi_shk_true_draws
             ]
         )
     )
     init_p_plus_shk_probs = np.ones(len(init_p_plus_shk_draws))/len(init_p_plus_shk_draws)
     shk_prbs = np.repeat(
         init_p_plus_shk_probs,
-        len(model.eps_shk_draws)
-    )*1/len(model.eps_shk_draws)
+        len(model.eps_shk_true_draws)
+    )*1/len(model.eps_shk_true_draws)
     
     λ = model.λ
     λ_SS = model.λ_SS
     init_b = model.init_b
     
-    tran_shks = np.exp(np.repeat(model.eps_shk_draws,
+    tran_shks = np.exp(np.repeat(model.eps_shk_true_draws,
                           len(init_p_plus_shk_probs)))
     init_p_draws = np.exp(np.repeat(init_p_plus_shk_draws,
-                          len(model.eps_shk_draws)))
+                          len(model.eps_shk_true_draws)))
     ## this function starts with a state-specific initial distribution over m and p as a vector sized of (n_m x n_p) 
     NewBornDist = jump_to_grid((1-λ)*(1-λ_SS)*tran_shks+init_b/init_p_draws+model.transfer,
                                ## initial transitory risks and accidental bequest transfer
@@ -899,7 +899,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 17, 111, 224, 238, 268, 300]
+# + code_folding=[0, 5, 17, 224, 238, 268, 300]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1264,242 +1264,14 @@ def Lorenz(model_results):
     return share_agents_ap,share_ap
 
 
-# + code_folding=[2, 7, 26]
-#need to modify these 
+# + code_folding=[2, 43, 61]
+## new functions that are needed for heterogenous-types 
 
-class Market_OLG_mkv:
-    """
-    A class of the market
-    """
-
-    def __init__(self,
-                 households=None,
-                 production=None):  
-
-        self.households = households   ## HH block 
-        self.model = households.model  ## life-cycle model 
-        
-        ### normalize A based on the model parameters first
-        ss_dstn = households.ss_dstn
-        age_dist = households.age_dist 
-        T =  self.model.T
-        L_ss = np.sum(age_dist[:T-1])*ss_dstn[1] ## employment fraction for working age population
-        self.households.emp_ss = L_ss
-        production.normlize_Z(N_ss = L_ss)
-        self.production = production   ## Production function
-
-
-    ## stationary asset demand for a given capital stock/factor price
-
-    def StE_K_d(self,
-                K_s,   ## given asset supply 
-                dstn):  ## distribution between emp and unemp 
-        """
-        Given a proposed capital stock/asset supply ,
-        this function generates the stationary asset demands 
-
-        """
-        model = self.model 
-        households = self.households
-        production = self.production 
-        age_dist = households.age_dist
-        T = self.model.T ## retirement age 
-        ################################
-        ## Step 0. Parameterize the model 
-        ################################
-        ## get the L based on current employed fraction
-        uemp_now,emp_now = dstn[0]*np.sum(age_dist[:T-1]),dstn[1]*np.sum(age_dist[:T-1])
-        print('Labor force',str(emp_now))
-
-
-        ## Obtain factor prices from FOC of firms
-        
-        production.K = K_s
-        production.L = emp_now
-        
-        #print(nb.typeof(one_economy.K))
-        print('Capital stock',str(K_s))
-        W,R = production.YL(),production.R()
-        print('Wage rate',str(W))
-        print('Real interest rate',str(R))
-        
-        ##################################
-        model.W, model.R = W,R
-        ##################################
-
-        ## stable age distribution 
-        age_dist = households.age_dist
-        #stationary_age_dist(model.L,#n = 0.0,#LivPrb =model.LivPrb)
-
-        ## obtain tax rate from the government budget balance 
-
-        model.λ = unemp_insurance2tax(model.unemp_insurance,
-                                     uemp_now)
-        print('Tax rate',str(model.λ))
-
-        ## obtain social security rate balancing the SS replacement ratio 
-
-        model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
-                            model.T,  ## retirement years
-                            age_dist,  ## age distribution in the economy 
-                            model.G,         ## permanent growth factor lists over cycle
-                            emp_now)
-
-        print('Social security tax rate',str(model.λ_SS))
-
-        ################################
-        ## Step 1. Solve the model 
-        ################################
-
-        ## terminal period solution
-        m_init,σ_init = model.terminal_solution()
-
-        ## solve the model 
-        ms_star, σs_star = solve_model_backward_iter(model,
-                                                     m_init,
-                                                     σ_init)
-
-        ################################
-        ## Step 2. StE distribution
-        ################################
-
-
-        ## accidental transfers 
-        #model.init_b = init_b
-
-        ## Get the StE K_d
-        ## get the transition matrix and policy grid 
-        
-        n_m = 40
-        n_p = 50
-        households.define_distribution_grid(num_pointsM = n_m, 
-                                            num_pointsP = n_p)
-        households.ComputeSSDist(ms_star = ms_star,
-                                 σs_star = σs_star)
-
-        households.Aggregate()
-
-        K_d = households.A*model.W  ## no population growth otherwise diluted by (1+n)
-
-        ## realized accidental transfers from age 2 to L
-
-        #ap_PolGrid_list_old = [ap_PolGrid_list[0][1:],ap_PolGrid_list[1][1:]]
-        #mp_pdfs_2d_lists_old = [mp_pdfs_2d_lists[0][1:],mp_pdfs_2d_lists[1][1:]]
-        #age_dist_old =  age_dist[1:]
-        #A_old = Aggregate(ap_PolGrid_list_old,
-        #                  mp_pdfs_2d_lists_old,
-        #                  ss_dstn,
-        #                 age_dist_old)*model.W 
-
-        #init_b_out = model.bequest_ratio*(1-model.LivPrb)*A_old*(1-age_dist[0])*model.R/age_dist[0]
-
-        print('Induced capital stock',str(K_d))
-        #print('Induced  bequest',str(init_b_out))
-
-        return K_d
-    
-    def get_equilibrium_k(self):
-        ss_dstn = self.households.ss_dstn
-        
-        ## function to solve the equilibrium 
-        eq_func = lambda K: self.StE_K_d(K_s = K,
-                                         dstn = ss_dstn)
-        ## solve the fixed point 
-        K_eq = op.fixed_point(eq_func,
-                              x0 = 7.3)
-        
-        self.K_eq = K_eq
-    
-    def get_equilibrium_dist(self):
-        
-        households = self.households 
-        model = self.model 
-        
-        ### get equilibrium values 
-        K_eq = self.K_eq 
-        L_ss = households.emp_ss
-        
-        ## compute factor prices in StE
-        production.K = K_eq
-        production.L = L_ss
-        
-        print('SS Capital stock',str(K_eq))
-        W_eq,R_eq = production.YL(),production.R()
-        print('SS Wage Rate',str(W_eq))
-        print('SS Real interest rate',str(R_eq))
-
-        ## get the distribution under SS
-        model.W,model.R = W_eq,R_eq
-
-        ## solve the model again 
-
-        ## terminal period solution
-        m_init,σ_init = model.terminal_solution()
-
-        ms_star, σs_star = solve_model_backward_iter(model,
-                                                     m_init,
-                                                     σ_init)
-
-        households.define_distribution_grid(num_pointsM = 40, 
-                                            num_pointsP = 50)
-        households.ComputeSSDist(ms_star = ms_star,
-                                 σs_star = σs_star)
-
-        ## operation for the StE, such as aggregation
-        households.Aggregate()
-        households.AggregatebyAge()
-        
-        
-        self.households = households
-
-# + code_folding=[0, 1]
-## initializations 
-production = CDProduction(α = production_paras['α'],
-                          δ = production_paras['δ'],
-                          target_KY = production_paras['K2Y ratio'],
-                         target_W = production_paras['W']) 
-
-## nb of grids used for transition matrix  
-n_m = 100
-n_p = 100
-
-
-# + code_folding=[0]
-## get the wealth distribution from SCF (net worth)
-
-SCF2016 = pd.read_stata('rscfp2016.dta')
-SCF2016 = SCF2016.drop_duplicates(subset=['yy1'])
-
-SCF_wealth, SCF_weights = np.array(SCF2016['networth']), np.array(SCF2016['wgt'])
-
-## get the lorenz curve weights from SCF 
-SCF_wealth_sort_id = SCF_wealth.argsort()
-SCF_wealth_sort = SCF_wealth[SCF_wealth_sort_id]
-SCF_weights_sort = SCF_weights[SCF_wealth_sort_id]
-SCF_weights_sort_norm = SCF_weights_sort/SCF_weights_sort.sum()
-
-SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
-                                                 SCF_weights_sort_norm,
-                                                 nb_share_grid = 200)
-
-
-import pandas as pd
-SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
-
-SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
-
-
-# -
-
-# ## Solve the heterogenous-type model 
-
-# + code_folding=[0, 49]
 def solve_1type(model,
                 m_star,
                 σ_star,
                 n_m=40,
-                n_p=40,
-                model_name = 'model'):
+                n_p=40):
     HH_this = HH_OLG_Markov(model = model)
     HH_this.define_distribution_grid(num_pointsM = n_m, 
                                     num_pointsP = n_p)
@@ -1515,16 +1287,11 @@ def solve_1type(model,
     gini_this_pe = gini(share_agents_ap_this,
                      share_ap_this)
 
-
     ## life cycle 
 
     HH_this.AggregatebyAge()
 
     A_life_this = HH_this.A_life
-
-    ## distribution 
-    zero_wealth_id_pe = np.where(HH_this.a_grid_dist<=1.0)
-    h2m_share_pe = HH_this.a_pdfs_dist[zero_wealth_id_pe].sum()
     
         
     model_dct =  {'A':HH_this.A,
@@ -1535,43 +1302,30 @@ def solve_1type(model,
                 'ap_pdfs_dist':HH_this.ap_pdfs_dist,
                 'a_grid_dist':HH_this.a_grid_dist,
                 'a_pdfs_dist':HH_this.a_pdfs_dist,
-                'gini':gini_this_pe,
-                'h2m_share':h2m_share_pe
-               }
+                'gini':gini_this_pe
+                 }
     
     ## save it as a pkl
 
-    return model_dct
-    
+    return model_dct,HH_this
 def solve_types(model_list,
-                   ms_star_list,
-                   σs_star_list,
-                    model_name_list):
+                ms_star_list,
+                σs_star_list):
     
     sols_all_types = []
+    HH_all_types = []
     ## loop over different models 
     for k, model in enumerate(model_list):
         print('solving model {}'.format(str(k)))
         print('\n')
-        sol_this_type = solve_1type(model,
-                        ms_star_list[k],
-                        σs_star_list[k],
-                         model_name = model_name_list[k])
+        sol_this_type,HH_this = solve_1type(model,
+                                            ms_star_list[k],
+                                            σs_star_list[k])
         sols_all_types.append(sol_this_type)
+        HH_all_types.append(HH_this)
         print('\n')
-    return sols_all_types
+    return sols_all_types,HH_all_types
 
-
-# + code_folding=[0]
-## solve a list of models and save all solutions as pickles 
-
-results_by_type = solve_types(types,
-                            ms_stars,
-                            σs_stars,
-                            model_name_list = type_names)
-
-
-# + code_folding=[0, 41]
 def combine_results(results_by_type):
     """
     input
@@ -1609,9 +1363,7 @@ def combine_results(results_by_type):
     ## gini
     gini_this_pe = gini(share_agents_ap_pe,
                         share_ap_pe)
-    
-    zero_wealth_id_pe = np.where(a_grid_dist_pe<=1.0)
-    h2m_share_pe = a_pdfs_dist_pe[zero_wealth_id_pe].sum()
+
 
     model_dct_pe =  {'A':A_pe,
                   'A_life': A_life_pe,
@@ -1620,38 +1372,279 @@ def combine_results(results_by_type):
                   'ap_grid_dist':ap_grid_dist_pe,
                   'ap_pdfs_dist':ap_pdfs_dist_pe,
                   'gini':gini_this_pe,
-                  'h2m_share':h2m_share_pe
                    }
     
     return model_dct_pe
+
+
+# + code_folding=[7, 31, 137, 149]
+## market class
+
+class Market_OLG_mkv_hetero_types:
+    """
+    A class of the market
+    """
+
+    def __init__(self,
+                 households_list=None, ## a list of different ``types'' of households block
+                 production=None):  
+        
+        n_types = len(households_list)
+        self.households_list = households_list   ## HH block 
+        self.model_list =  [self.households_list[i].model for i in range(n_types)]  ## life-cycle model 
+        
+        ### normalize A based on the model parameters first
+        ss_dstn_all = np.array([self.households_list[i].ss_dstn for i in range(n_types)])
+        ss_dstn = ss_dstn_all.mean(axis=0) ## the average emp uemp fraction over types 
+        self.ss_dstn = ss_dstn ## storing it in the market class for future use 
+        age_dist = self.households_list[0].age_dist 
+        T =  self.model_list[0].T
+        
+        L_ss_all = np.sum(age_dist[:T-1])*ss_dstn[1] ## employment fraction for working age population
+        self.emp_ss = L_ss_all ## average across equal-probable agents 
+    
+        ## the producation side 
+        production.normlize_Z(N_ss = self.emp_ss)
+        self.production = production   ## Production function
+
+    ## stationary asset demand for a given capital stock/factor price
+
+    def StE_K_d(self,
+                K_s,   ## given asset supply 
+                dstn):  ## distribution between emp and unemp 
+        """
+        Given a proposed capital stock/asset supply ,
+        this function generates the stationary asset demands 
+
+        """
+        model_list = self.model_list
+        households_list = self.households_list
+        production = self.production 
+        age_dist = self.households_list[0].age_dist
+        T = self.model_list[0].T ## retirement age 
+        
+        ################################
+        ## Step 0. Parameterize the model 
+        ################################
+        ## get the L based on current employed fraction
+        uemp_now,emp_now = dstn[0]*np.sum(age_dist[:T-1]),dstn[1]*np.sum(age_dist[:T-1])
+        print('Labor force',str(emp_now))
+
+        ## Obtain factor prices from FOC of firms
+        
+        production.K = K_s
+        production.L = emp_now
+        
+        print('Capital stock',str(K_s))
+        W,R = production.YL(),production.R()
+        print('Wage rate',str(W))
+        print('Real interest rate',str(R))
+        
+        ## stable age distribution 
+        age_dist = households_list[0].age_dist
+        λ = unemp_insurance2tax(model_list[0].unemp_insurance,
+                                uemp_now)
+        print('Tax rate',str(λ))
+                     
+        ## obtain social security rate balancing the SS replacement ratio 
+
+        λ_SS = SS2tax(model_list[0].pension, ## social security /pension replacement ratio 
+                     model_list[0].T,  ## retirement years
+                    age_dist,  ## age distribution in the economy 
+                    model_list[0].G,         ## permanent growth factor lists over cycle
+                    emp_now)
+        print('Social security tax rate',str(λ_SS))
+    
+                                      
+        ## solutions 
+        ms_stars = []
+        σs_stars = []
+        
+        ## start the loop calculating K_d for each type/model of consumers 
+        K_d = 0.0
+        for model_i,model in enumerate(model_list):
+                                      
+            ##################################
+            model.W, model.R = W,R
+            ##################################
+
+            ## obtain tax rate from the government budget balance 
+            model.λ = λ
+
+            ## obtain social security rate balancing the SS replacement ratio 
+            model.λ_SS = λ_SS
+                                      
+            ################################
+            ## Step 1. Solve the model 
+            ################################
+
+            ## terminal period solution
+            m_init,σ_init = model.terminal_solution()
+
+            ## solve the model 
+            ms_star, σs_star = solve_model_backward_iter(model,
+                                                         m_init,
+                                                         σ_init)
+            ms_stars.append(ms_star)
+            σs_stars.append(σs_star)                    
+
+            ################################
+            ## Step 2. StE distribution
+            ################################
+
+            ## accidental transfers 
+
+            ## Get the StE K_d
+            ## get the transition matrix and policy grid 
+
+            n_m = 40
+            n_p = 50
+            
+            households_list[model_i].define_distribution_grid(num_pointsM = n_m,
+                                                        num_pointsP = n_p)
+            households_list[model_i].ComputeSSDist(ms_star = ms_star,
+                                             σs_star = σs_star)
+
+            households_list[model_i].Aggregate()
+
+            K_d_this = households_list[model_i].A*model.W  ## no population growth otherwise diluted by (1+n)
+        
+            K_d += K_d_this
+        
+        print('Induced capital stock',str(K_d))
+        
+        return K_d
+    
+    def get_equilibrium_k(self):
+        ss_dstn = self.ss_dstn
+        
+        ## function to solve the equilibrium 
+        eq_func = lambda K: self.StE_K_d(K_s = K,
+                                         dstn = ss_dstn)
+        ## solve the fixed point 
+        K_eq = op.fixed_point(eq_func,
+                              x0 = 7.3)
+        
+        self.K_eq = K_eq
+    
+    def get_equilibrium_dist(self):
+        
+        households_list = self.households_list 
+        model_list = self.model_list 
+        
+        ### get equilibrium values 
+        K_eq = self.K_eq 
+        L_ss = self.emp_ss
+        
+        ## compute factor prices in StE
+        production.K = K_eq
+        production.L = L_ss
+        
+        print('SS Capital stock',str(K_eq))
+        W_eq,R_eq = production.YL(),production.R()
+        print('SS Wage Rate',str(W_eq))
+        print('SS Real interest rate',str(R_eq))
+        
+        ms_stars = []
+        σs_stars = []
+        for model_i, model in enumerate(model_list):
+            ## get the distribution under SS
+            model.W,model.R = W_eq,R_eq
+
+            ## solve the model again 
+
+            ## terminal period solution
+            m_init,σ_init = model.terminal_solution()
+
+            ms_star, σs_star = solve_model_backward_iter(model,
+                                                         m_init,
+                                                         σ_init)
+            
+            ms_stars.append(ms_star)
+            σs_stars.append(σs_star)
+            
+        results_by_type,_ = solve_types(model_list,
+                                      ms_stars,
+                                      σs_stars)
+        
+        
+        results_combined = combine_results(results_by_type) 
+        
+        return results_combined
+
+# + code_folding=[0, 1]
+## initializations 
+production = CDProduction(α = production_paras['α'],
+                          δ = production_paras['δ'],
+                          target_KY = production_paras['K2Y ratio'],
+                         target_W = production_paras['W']) 
+
+## nb of grids used for transition matrix  
+n_m = 100
+n_p = 100
+
+
+# + code_folding=[0]
+## get the wealth distribution from SCF (net worth)
+
+SCF2016 = pd.read_stata('rscfp2016.dta')
+SCF2016 = SCF2016.drop_duplicates(subset=['yy1'])
+
+SCF_wealth, SCF_weights = np.array(SCF2016['networth']), np.array(SCF2016['wgt'])
+
+## get the lorenz curve weights from SCF 
+SCF_wealth_sort_id = SCF_wealth.argsort()
+SCF_wealth_sort = SCF_wealth[SCF_wealth_sort_id]
+SCF_weights_sort = SCF_weights[SCF_wealth_sort_id]
+SCF_weights_sort_norm = SCF_weights_sort/SCF_weights_sort.sum()
+
+SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
+                                                 SCF_weights_sort_norm,
+                                                 nb_share_grid = 200)
+
+
+import pandas as pd
+SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
+
+SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
+# -
+
+# ## Solve the heterogenous-type model 
+
+# + code_folding=[]
+## solve a list of models and save all solutions as pickles 
+
+results_by_type,households_by_type = solve_types(types,
+                                                ms_stars,
+                                                σs_stars)
 # -
 
 ## obtain the combined results 
-results_combined = combine_results(results_by_type)
+results_combined_pe = combine_results(results_by_type)
 
 # + code_folding=[]
 ## aggregate lorenz curve 
 
-print('gini from model:'+str(results_combined['gini']))
+print('gini from model:'+str(results_combined_pe['gini']))
 
 gini_SCF = gini(SCF_share_agents_ap,
                  SCF_share_ap)
 print('gini from SCE:'+str(gini_SCF))
 
-# + code_folding=[]
+# + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(8,8))
-ax.plot(results_combined['share_agents_ap'],
-        results_combined['share_ap'], 
+ax.plot(results_combined_pe['share_agents_ap'],
+        results_combined_pe['share_ap'], 
         'r--',
-        label='Model, Gini={:.2f}'.format(results_combined['gini']))
+        label='Model, Gini={:.2f}'.format(results_combined_pe['gini']))
 ax.plot(SCF_share_agents_ap,
         SCF_share_ap, 
         'b-.',
         label='SCF, Gini={:.2f}'.format(gini_SCF))
-ax.plot(results_combined['share_agents_ap'],
-        results_combined['share_agents_ap'], 
+ax.plot(results_combined_pe['share_agents_ap'],
+        results_combined_pe['share_agents_ap'], 
         'k-',
         label='equality curve')
 ax.legend()
@@ -1659,19 +1652,61 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 #plt.savefig('../Graphs/model/lorenz_a_hetero_type.png')
 
-# +
+# + code_folding=[0]
 ## Wealth distribution 
 
 fig, ax = plt.subplots(figsize=(8,6))
 ax.set_title('Wealth distribution')
-ax.plot(np.log(results_combined['ap_grid_dist']+1e-5),
-         results_combined['ap_pdfs_dist'])
+ax.plot(np.log(results_combined_pe['ap_grid_dist']+1e-5),
+         results_combined_pe['ap_pdfs_dist'])
 
 ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
 # -
 
-pickle.dump(results_combined,open('./model_solutions/HPRTP_PE.pkl','wb'))
+pickle.dump(results_combined_pe,open('./model_solutions/HTP_PE.pkl','wb'))
+
+# ## GE with multiple types 
+
+market_OLG_mkv_this = Market_OLG_mkv_hetero_types(households_list = households_by_type,
+                                                  production = production)
+
+market_OLG_mkv_this.get_equilibrium_k()
+
+results_combined_ge = market_OLG_mkv_this.get_equilibrium_dist()
+
+pickle.dump(results_combined_ge,open('./model_solutions/'+'HTP_GE.pkl','wb'))
+# + code_folding=[0]
+## Lorenz curve of steady state wealth distribution
+
+fig, ax = plt.subplots(figsize=(8,8))
+ax.plot(results_combined_ge['share_agents_ap'],
+        results_combined_ge['share_ap'], 
+        'r--',
+        label='Model, Gini={:.2f}'.format(results_combined_ge['gini']))
+ax.plot(SCF_share_agents_ap,
+        SCF_share_ap, 
+        'b-.',
+        label='SCF, Gini={:.2f}'.format(gini_SCF))
+ax.plot(results_combined_pe['share_agents_ap'],
+        results_combined_pe['share_agents_ap'], 
+        'k-',
+        label='equality curve')
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+#plt.savefig('../Graphs/model/lorenz_a_hetero_type.png')
 
 
+# +
+## Wealth distribution 
+
+fig, ax = plt.subplots(figsize=(8,6))
+ax.set_title('Wealth distribution')
+ax.plot(np.log(results_combined_ge['ap_grid_dist']+1e-5),
+         results_combined_ge['ap_pdfs_dist'])
+
+ax.set_xlabel(r'$a$')
+ax.set_ylabel(r'$prob(a)$')
+#fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
