@@ -42,7 +42,6 @@ from Utility import jump_to_grid,jump_to_grid_fast,gen_tran_matrix,gen_tran_matr
 import pickle
 from scipy import sparse 
 
-
 # + code_folding=[0]
 ## figure plotting configurations
 
@@ -85,9 +84,9 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
-# + code_folding=[0]
+# + code_folding=[]
 ## make some modifications 
-P_ss = cal_ss_2markov(lc_paras_y['P'])
+#P_ss = cal_ss_2markov(lc_paras_y['P'])
 #lc_paras_y['σ_ψ_2mkv'] = np.flip(lc_paras_y['σ_ψ_2mkv'])
 #lc_paras_y['σ_θ_2mkv'] = np.flip(lc_paras_y['σ_θ_2mkv'])
 #lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.5)))
@@ -122,7 +121,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -175,7 +174,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 96, 121, 149]
+# + code_folding=[0, 96, 121, 149, 176]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -381,11 +380,12 @@ else:
                       )
 
 
-# + code_folding=[2, 26]
+# + code_folding=[2, 29]
 ## functions that make a list of consumer types different by parameters
 
 def make_1dtypes(by,
-               vals):
+                 vals,
+                 subjective=False):
     """
     input
     ======
@@ -404,12 +404,16 @@ def make_1dtypes(by,
     for i in range(nb_types):
         paras_this_type = copy(lc_mkv_paras)
         paras_this_type[by] = vals[i]
+        if subjective:
+            paras_this_type['subjective'] = True
         this_type = LifeCycle(**paras_this_type)
         types.append(this_type)
     return types 
 
 def make_2dtypes(by_list,
-                  vals_list):
+                 vals_list,
+                 perfect_correlated = False,
+                subjective = False):
     
     """
     input
@@ -428,21 +432,65 @@ def make_2dtypes(by_list,
     
     types = []
     
-    for x in range(n_type1):
-        for y in range(n_type2):
-            paras_this_type = copy(lc_mkv_paras)
-            paras_this_type[by_list[0]] = vals_list[0][x]
-            paras_this_type[by_list[1]] = vals_list[1][y]
-            this_type = LifeCycle(**paras_this_type)
-            types.append(this_type)
+    if perfect_correlated:
+         for x in range(n_type1):
+                paras_this_type = copy(lc_mkv_paras)
+                paras_this_type[by_list[0]] = vals_list[0][x]
+                paras_this_type[by_list[1]] = vals_list[1][x]
+                if subjective:
+                    paras_this_type['subjective'] = True
+                this_type = LifeCycle(**paras_this_type)
+                types.append(this_type)     
+    else:
+        for x in range(n_type1):
+            for y in range(n_type2):
+                paras_this_type = copy(lc_mkv_paras)
+                paras_this_type[by_list[0]] = vals_list[0][x]
+                paras_this_type[by_list[1]] = vals_list[1][y]
+                if subjective:
+                    paras_this_type['subjective'] = True
+                this_type = LifeCycle(**paras_this_type)
+                types.append(this_type)
     return types 
 
+
+# +
+## load parameters estimated 
+
+PR_est = pickle.load(open('./parameters/PR_est.pkl','rb'))
+mu_PR_est_SCE = PR_est['mu_pr']
+sigma_PR_est_SCE = PR_est['sigma_pr']
+
+
+# + code_folding=[8]
+## make grids of sigma_psi and sigma_eps
+
+from resources_jit import LogNormal as lognorm
+
+## use the equalprobable distribution function 
+
+nb_grid = 4
+
+PRs_grid_dist = lognorm(mu_PR_est_SCE,
+                        sigma_PR_est_SCE,
+                        100000,
+                        nb_grid)
+
+PRs_grid = PRs_grid_dist.X
+        
+p2t_ratio = (lc_paras['σ_ψ']/lc_paras['σ_θ'])**2 
+
+sigma_eps_grid = np.sqrt(PRs_grid/(p2t_ratio+1))
+sigma_psi_grid = np.sqrt(p2t_ratio*PRs_grid/(p2t_ratio+1))
+
+print('Equally probable sigma_psi grid',str(sigma_psi_grid))
+print('Equally probable sigma_eps grid',str(sigma_eps_grid))
 
 # + code_folding=[]
 ## create a list of consumer types with different permanent risks or any other primitive parameters 
 
-sigma_psi_types = np.array([0.1,0.15,0.2])
-sigma_eps_types = np.array([0.1,0.15,0.2])
+sigma_psi_types = np.array(sigma_psi_grid)
+sigma_eps_types = np.array(sigma_eps_grid)
 U2U_types = np.array([0.1,0.18,0.25])
 E2E_types = np.array([0.99,0.96,0.93])
 
@@ -466,7 +514,17 @@ hetero_prisk_types = make_1dtypes('sigma_psi',
 hetero_p_t_risk_types = make_2dtypes(by_list = ['sigma_psi',
                                                 'sigma_eps'],
                                     vals_list = [sigma_psi_types,
-                                                 sigma_eps_types]
+                                                 sigma_eps_types],
+                                     perfect_correlated = True
+                                    )
+
+
+hetero_p_t_risk_sub_types = make_2dtypes(by_list = ['sigma_psi',
+                                                'sigma_eps'],
+                                         vals_list = [sigma_psi_types,
+                                                 sigma_eps_types],
+                                         perfect_correlated = True,
+                                         subjective = True
                                     )
 
 hetero_p_risk_beta_types = make_2dtypes(by_list = ['sigma_psi','β'],
@@ -474,10 +532,10 @@ hetero_p_risk_beta_types = make_2dtypes(by_list = ['sigma_psi','β'],
                                                  beta_types]
                                     )
 
-# + code_folding=[0]
+# + code_folding=[0, 12]
 ## solve various models
 
-types = hetero_beta_types
+types = hetero_p_t_risk_sub_types
 
 specs = ['ob']*len(types)
 
@@ -559,7 +617,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 307, 321]
+# + code_folding=[8, 236, 271, 307, 321]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -1371,6 +1429,8 @@ def combine_results(results_by_type):
                   'share_ap':share_ap_pe,
                   'ap_grid_dist':ap_grid_dist_pe,
                   'ap_pdfs_dist':ap_pdfs_dist_pe,
+                   'a_grid_dist':a_grid_dist_pe,
+                    'a_pdfs_dist':a_pdfs_dist_pe,
                   'gini':gini_this_pe,
                    }
     
@@ -1652,7 +1712,7 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 #plt.savefig('../Graphs/model/lorenz_a_hetero_type.png')
 
-# + code_folding=[0]
+# + code_folding=[]
 ## Wealth distribution 
 
 fig, ax = plt.subplots(figsize=(8,6))
@@ -1665,7 +1725,7 @@ ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
 # -
 
-pickle.dump(results_combined_pe,open('./model_solutions/HTP_PE.pkl','wb'))
+pickle.dump(results_combined_pe,open('./model_solutions/SHPR_PE.pkl','wb'))
 
 # ## GE with multiple types 
 
@@ -1676,7 +1736,7 @@ market_OLG_mkv_this.get_equilibrium_k()
 
 results_combined_ge = market_OLG_mkv_this.get_equilibrium_dist()
 
-pickle.dump(results_combined_ge,open('./model_solutions/'+'HTP_GE.pkl','wb'))
+pickle.dump(results_combined_ge,open('./model_solutions/'+'SHPR_GE.pkl','wb'))
 # + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
@@ -1710,3 +1770,6 @@ ax.plot(np.log(results_combined_ge['ap_grid_dist']+1e-5),
 ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
+# -
+
+
