@@ -20,7 +20,6 @@
 
 # +
 # Import required Python libraries
-from __future__ import division     # In Python 3.x this will not be needed.
 import math
 import numpy as np
 from warnings import warn
@@ -40,7 +39,123 @@ from numba.experimental import jitclass
 
 # ## Jittable frozen distribution of log normal 
 
-# + code_folding=[59]
+# + code_folding=[11]
+LogNormalPara=[
+    ('sigma', float64),   
+    ('mu',float64),
+    ('sim_N', int64),             
+    ('sim_draws', float64[:]),
+    ('X',float64[:]),
+    ('pmf',float64[:]),
+    ('approx_N',int64)
+]
+
+@jitclass(LogNormalPara)
+class LogNormal:
+    def __init__(self,
+                 mu = 0.1,
+                 sigma = 0.2,
+                 sim_N = 100000,
+                 approx_N = 7):
+
+        self.mu = mu 
+        self.sigma = sigma ## underlying normal std
+        self.sim_N = sim_N
+        self.sim_draws = np.random.lognormal(mu, 
+                                             sigma,
+                                             sim_N)
+        self.approx_N = approx_N
+        self.discretize()
+        
+    def pdf(self,
+           x):
+        lx = np.log(x)
+        ## notice there is a x in denominator 
+        return 1/(self.sigma * x*np.sqrt(2 * np.pi)) *np.exp(- (lx - self.mu)**2 / (2 * self.sigma**2))
+    
+    def cdf(self,
+           x):
+        ## cdf 
+        sim_draws_sort = np.sort(self.sim_draws)
+        cdf = np.sum(sim_draws_sort<=x)/self.sim_N
+        return cdf
+    
+    def invcdf(self,
+              cdf):
+        sim_draws_sort = np.sort(self.sim_draws)
+        if cdf >0.0 and cdf <1.0:
+            cdfs = 1.0 * np.arange(self.sim_N)/self.sim_N 
+            where_idx = np.min(cdfs<=cdf)
+            where_idx = np.searchsorted(cdfs,cdf) ## the location index of the cdf
+            if where_idx==0:
+                left_x = sim_draws_sort[where_idx]
+            elif where_idx==self.sim_N:
+                left_x = sim_draws_sort[where_idx-1]
+            else:
+                left_x, right_x = sim_draws_sort[where_idx-1],sim_draws_sort[where_idx]
+            x = (left_x+right_x)/2
+        elif cdf ==0.0:
+            x = np.min(sim_draws_sort)
+        else:
+            x = np.max(sim_draws_sort)
+        return x 
+        
+    def discretize(self):
+        """
+        N equally probable values of the random variable
+        """
+        if self.sigma!=0.0:
+            N = self.approx_N
+            probs_cutoffs = np.arange(N+1)/N        # Includes 0 and 1
+            state_cutoffs = np.array([self.invcdf(prob_cutoff) for prob_cutoff in probs_cutoffs]) # State cutoff values, each bin
+            bin_probs = np.empty(N,float64)
+
+            # Find the E[X|bin] values:
+            #F = lambda x: x*self.pdf(x)
+            Ebins = np.empty(N,float64)
+
+            for i, (x0, x1) in enumerate(zip(state_cutoffs[:-1], state_cutoffs[1:])):
+                bin_probs[i] = self.cdf(x1) - self.cdf(x0) ## pdf between x0 and x1 
+                cond_mean = self.integrate_by_sum(x0, x1)
+                #cond_mean, err = quad(F, x0, x1)
+                Ebins[i]=cond_mean/bin_probs[i] 
+
+            self.X = Ebins
+            self.pmf = bin_probs
+        else:
+            self.X = np.array([1.0])
+            self.pmf = np.array([1.0])
+        #return self.X,self.pmf
+
+    def integrate_by_sum(self,
+                         x0,
+                         x1,
+                         bins = 10000,
+                         how ='midpoint'):
+        """
+        integrate pdfs by sum over very finely divided bins between x0 and x1. 
+        it is an good approximation as long as the number of bins is fine enough
+        the pdf is calculated exactly 
+        """
+        dx = (x1-x0)/bins
+        xs = np.linspace(x0,x1,bins)
+        if how == 'left':
+            x_left = xs[:-1]
+            to_sum = np.array([self.pdf(x)*x for x in x_left])*dx
+            return np.sum(to_sum)
+        elif how == 'right':
+            x_right = xs[1:]
+            to_sum = np.array([self.pdf(x)*x for x in x_right])*dx
+            return np.sum(to_sum)
+        elif how == 'midpoint':
+            x_mid = (xs[:-1] + xs[1:])/2
+            to_sum = np.array([self.pdf(x)*x for x in x_mid])*dx
+            return np.sum(to_sum)
+        else:
+            raise ValueError("Method must be 'left', 'right' or 'midpoint'.")
+
+
+# + code_folding=[59, 86]
 MeanOneLogNormalPara=[
     ('sigma', float64),   
     ('mu',float64),
@@ -160,7 +275,7 @@ class MeanOneLogNormal:
 if __name__ == "__main__":
     
     sigma = 0.1
-    N = 20
+    N = 7
 
     # new model 
     ln = MeanOneLogNormal(sigma=sigma)
