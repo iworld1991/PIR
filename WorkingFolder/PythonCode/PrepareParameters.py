@@ -105,12 +105,48 @@ elif age_profile_data=='SCF':
     lc_G_full = lc_p_incom[1:]/lc_p_incom[:-1] 
     assert len(lc_G_full) == L,'length of G needs to be equal to L'
     lc_G_q_full = y2q_interpolate(lc_G_full)
+    
 
 # -
 
 if __name__ == "__main__":
     plt.title('life-cycle profile')
     plt.plot(np.cumprod(lc_G_full))
+
+# +
+## subjective growth expectations 
+
+
+SCE = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
+SCE = SCE.rename(columns={'Q24_mean': 'incexp',
+                       'Q24_var': 'incvar',
+                       'Q24_iqr': 'inciqr',
+                       'Q24_rmean':'rincexp',
+                       'Q24_rvar': 'rincvar',
+                       'Q13new':'UE_s',
+                       'Q22new':'UE_f'
+                       })
+SCE = SCE.rename(columns = {'D6':'HHinc',
+                          'Q10_1':'fulltime',
+                          'Q10_2':'parttime',
+                          'Q12new':'selfemp',
+                          'Q32':'age',
+                          'Q33':'gender',
+                          'Q36':'educ'})
+
+lc_G_sub = np.array(1+SCE[(SCE['age']>=26) &(SCE['age']<64)].groupby('age')['rincexp'].mean())
+## growth rates after retirement
+lc_G_rt_sub = np.ones(L-T)
+#lc_G_rt[0] = 1/np.cumprod(lc_G)[-1]
+#lc_G_rt = lc_G_rt*lc_G[-1]
+lc_G_full_sub = np.concatenate([lc_G_sub,lc_G_rt_sub])
+assert len(lc_G_full_sub) == L,'length of G needs to be equal to L'
+lc_G_q_full_sub = y2q_interpolate(lc_G_full_sub)
+# -
+
+if __name__ == "__main__":
+    plt.title('subjective life-cycle profile')
+    plt.plot(np.cumprod(lc_G_full_sub))
 
 # ### Income risk estimates 
 
@@ -212,6 +248,7 @@ life_cycle_paras_q = {'ρ': 2.0,
                     'T': T_q, 
                     'L': L_q, 
                     'G':lc_G_q_full, 
+                    'G_sub':lc_G_q_full_sub, 
                     'unemp_insurance': 0.15, 
                     'pension': 0.65, 
                     'σ_ψ_init': σ_ψ_init_SCF, 
@@ -248,7 +285,7 @@ else:
 
 life_cycle_paras_q
 
-# + code_folding=[1]
+# + code_folding=[]
 ## create a dictionary of parameters 
 life_cycle_paras_y = {'ρ': 2.0, 
                     'β': 0.98, 
@@ -264,6 +301,7 @@ life_cycle_paras_y = {'ρ': 2.0,
                     'T': T, 
                     'L': L, 
                     'G':lc_G_full, 
+                    'G_sub':lc_G_full_sub, 
                     'unemp_insurance': 0.15, 
                     'pension': 0.65, 
                     'σ_ψ_init': σ_ψ_init_SCF, 
@@ -319,6 +357,7 @@ life_cycle_paras_y_copy = copy(life_cycle_paras_y)
 
 # +
 del life_cycle_paras_y_copy['G']  
+del life_cycle_paras_y_copy['G_sub']  
 del life_cycle_paras_y_copy['σ_ψ_2mkv']
 del life_cycle_paras_y_copy['σ_θ_2mkv']
 
