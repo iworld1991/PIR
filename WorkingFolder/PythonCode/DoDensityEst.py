@@ -86,7 +86,7 @@ probs_example = np.flip(np.array([IndSCE.iloc[81,:]['Q24_bin'+str(n)]/100 for n 
 
 
 ## plot 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(10,5))
 
 pl1 = ax.bar(SCE_bins_id, 
             probs_example,
@@ -95,7 +95,7 @@ pl1 = ax.bar(SCE_bins_id,
 ax.set_xlabel('expected wage growth (%)')
 
 ax.set_ylabel('probs')
-ax.set_title('An example of density bins of wage growth from SCE')
+ax.set_title('An example of density forecast of wage growth from SCE')
 ax.set_xticks(SCE_bins_id, 
               labels=SCE_bins_all_names)
 
@@ -110,14 +110,23 @@ print(sim_est)
 
 sim_x = np.linspace(SCE_bins[0],SCE_bins[-1],200)
 sim_pdf= beta.pdf(sim_x,sim_est[0],sim_est[1],loc=sim_est[2],scale=sim_est[3]-sim_est[2])
-plt.plot(sim_x,
-         sim_pdf,label='Estimated pdf')
-plt.xlim(-12,12)
-plt.bar(SCE_bins[1:],
+
+fig, ax = plt.subplots(figsize=(10,5))
+
+ax.set_title('An example of density distribution estimation')
+
+ax.set_xlim(-13,13)
+ax.plot(sim_x,
+         sim_pdf,
+        label='Estimated pdf')
+
+ax.bar(SCE_bins[1:],
         probs_example,
        color='orange',
         width = 3,
-       alpha = 0.5)
+       alpha = 0.5,
+      label='Survey answer')
+ax.legend(loc=0)
 plt.savefig('../Graphs/sce/density_bin_est_example.pdf')
 
 # + code_folding=[]
