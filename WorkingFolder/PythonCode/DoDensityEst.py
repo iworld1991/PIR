@@ -19,9 +19,35 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.stats import beta
 # -
 
-from DensityEst import SynDensityStat 
+from DensityEst import SynDensityStat,GeneralizedBetaEst
+
+# +
+## figure plotting configurations
+
+
+plt.style.use('seaborn')
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['axes.labelweight'] = 'bold'
+
+## Set the 
+plt.rc('font', size=25)
+# Set the axes title font size
+plt.rc('axes', titlesize=20)
+# Set the axes labels font size
+plt.rc('axes', labelsize=20)
+# Set the font size for x tick labels
+plt.rc('xtick', labelsize=20)
+# Set the font size for y tick labels
+plt.rc('ytick', labelsize=20)
+# Set the legend font size
+plt.rc('legend', fontsize=20)
+# Set the font size of the figure title
+plt.rc('figure', titlesize=20)
 
 # + code_folding=[]
 ### loading probabilistic data on monthly income growth  
@@ -46,8 +72,53 @@ len(IndSCE_sub)
 # + code_folding=[]
 ## survey-specific parameters 
 nobs = len(IndSCE)
-SCE_bins = np.array([-20,-12,-8,-4,-2,0,2,4,8,12,20])
+SCE_bins = np.array([-20,-12,-8,-4,-2,0,2,4,8,12,20]) ## -20 and +20 are a fake lower and upper bound 
 print("There are "+str(len(SCE_bins)-1)+" bins in SCE")
+
+# + code_folding=[]
+## make an illustration plot 
+
+SCE_bins_all = ['<']+[str(bin) for bin in SCE_bins[1:-1]]+['>']
+
+SCE_bins_all_names = [str(SCE_bins_all[i]+' '+str(SCE_bins_all[i+1])) for i in range(len(SCE_bins_all)-1)]
+SCE_bins_id = np.arange(len(SCE_bins_all_names))
+probs_example = np.flip(np.array([IndSCE.iloc[81,:]['Q24_bin'+str(n)]/100 for n in range(1,11)]))
+
+
+## plot 
+fig, ax = plt.subplots()
+
+pl1 = ax.bar(SCE_bins_id, 
+            probs_example,
+             color='orange',
+           alpha=0.5)
+ax.set_xlabel('expected wage growth (%)')
+
+ax.set_ylabel('probs')
+ax.set_title('An example of density bins of wage growth from SCE')
+ax.set_xticks(SCE_bins_id, 
+              labels=SCE_bins_all_names)
+
+plt.savefig('../Graphs/sce/density_bin_example.pdf')
+
+# +
+## example estimate 
+
+sim_est = GeneralizedBetaEst(SCE_bins,
+                           probs_example)
+print(sim_est)
+
+sim_x = np.linspace(SCE_bins[0],SCE_bins[-1],200)
+sim_pdf= beta.pdf(sim_x,sim_est[0],sim_est[1],loc=sim_est[2],scale=sim_est[3]-sim_est[2])
+plt.plot(sim_x,
+         sim_pdf,label='Estimated pdf')
+plt.xlim(-12,12)
+plt.bar(SCE_bins[1:],
+        probs_example,
+       color='orange',
+        width = 3,
+       alpha = 0.5)
+plt.savefig('../Graphs/sce/density_bin_est_example.pdf')
 
 # + code_folding=[]
 ##############################################
