@@ -42,7 +42,7 @@ from Utility import jump_to_grid,jump_to_grid_fast,gen_tran_matrix,gen_tran_matr
 import pickle
 from scipy import sparse 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## figure plotting configurations
 
 
@@ -84,18 +84,6 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
-# + code_folding=[]
-## make some modifications 
-#P_ss = cal_ss_2markov(lc_paras_y['P'])
-#lc_paras_y['σ_ψ_2mkv'] = np.flip(lc_paras_y['σ_ψ_2mkv'])
-#lc_paras_y['σ_θ_2mkv'] = np.flip(lc_paras_y['σ_θ_2mkv'])
-#lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.5)))
-#lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.5)))
-#lc_paras_y['unemp_insurance'] = 0.0 
-#lc_paras_y['init_b'] = 0.0 
-#lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
-# -
-
 print(lc_paras_y)
 
 
@@ -121,7 +109,7 @@ def fake_life_cycle(L):
     return G
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## parameters for testing 
 
 U = 0.0 ## transitory ue risk 
@@ -174,7 +162,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 96, 121, 149, 176]
+# + code_folding=[0, 18, 96, 121, 149, 176]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -380,7 +368,7 @@ else:
                       )
 
 
-# + code_folding=[2, 29]
+# + code_folding=[2, 29, 72, 120]
 ## functions that make a list of consumer types different by parameters
 
 def make_1dtypes(by,
@@ -453,23 +441,132 @@ def make_2dtypes(by_list,
                 types.append(this_type)
     return types 
 
+def make_3dtypes(by_list,
+                 vals_list,
+                 perfect_correlated = False,
+                subjective = False):
+    
+    """
+    input
+    ======
+    model: lifecycle class instance
+    by_list: a list of strings, primitive variable's name on which types are made 
+    vals: a list of arrays, the values taken by different types 
+    output
+    =======
+    types: a list of different types of life-cycle consumers
+    
+    """
+    
+    n_type1 = len(vals_list[0])
+    n_type2 = len(vals_list[1])
+    n_type3 = len(vals_list[2])
 
-# +
+
+    types = []
+    
+    if perfect_correlated:
+         for x in range(n_type1):
+                paras_this_type = copy(lc_mkv_paras)
+                paras_this_type[by_list[0]] = vals_list[0][x]
+                paras_this_type[by_list[1]] = vals_list[1][x]
+                paras_this_type[by_list[2]] = vals_list[2][x]
+                if subjective:
+                    paras_this_type['subjective'] = True
+                this_type = LifeCycle(**paras_this_type)
+                types.append(this_type)     
+    else:
+        for x in range(n_type1):
+            for y in range(n_type2):
+                for z in range(n_type3):
+                    paras_this_type = copy(lc_mkv_paras)
+                    paras_this_type[by_list[0]] = vals_list[0][x]
+                    paras_this_type[by_list[1]] = vals_list[1][y]
+                    paras_this_type[by_list[2]] = vals_list[2][z]
+                    if subjective:
+                        paras_this_type['subjective'] = True
+                    this_type = LifeCycle(**paras_this_type)
+                    types.append(this_type)
+    return types 
+
+def make_4dtypes(by_list,
+                 vals_list,
+                 perfect_correlated = False,
+                subjective = False):
+    
+    """
+    input
+    ======
+    model: lifecycle class instance
+    by_list: a list of strings, primitive variable's name on which types are made 
+    vals: a list of arrays, the values taken by different types 
+    output
+    =======
+    types: a list of different types of life-cycle consumers
+    
+    """
+    
+    n_type1 = len(vals_list[0])
+    n_type2 = len(vals_list[1])
+    n_type3 = len(vals_list[2])
+    n_type4 = len(vals_list[3])
+
+    types = []
+    
+    if perfect_correlated:
+         for x in range(n_type1):
+                paras_this_type = copy(lc_mkv_paras)
+                paras_this_type[by_list[0]] = vals_list[0][x]
+                paras_this_type[by_list[1]] = vals_list[1][x]
+                paras_this_type[by_list[2]] = vals_list[2][x]
+                paras_this_type[by_list[3]] = vals_list[3][x]
+                if subjective:
+                    paras_this_type['subjective'] = True
+                this_type = LifeCycle(**paras_this_type)
+                types.append(this_type)     
+    else:
+        for x in range(n_type1):
+            for y in range(n_type2):
+                for z in range(n_type3):
+                    for h in range(n_type4):
+                        paras_this_type = copy(lc_mkv_paras)
+                        paras_this_type[by_list[0]] = vals_list[0][x]
+                        paras_this_type[by_list[1]] = vals_list[1][y]
+                        paras_this_type[by_list[2]] = vals_list[2][z]
+                        paras_this_type[by_list[3]] = vals_list[3][h]
+                        if subjective:
+                            paras_this_type['subjective'] = True
+                        this_type = LifeCycle(**paras_this_type)
+                        types.append(this_type)
+    return types 
+
+
+# + code_folding=[]
 ## load parameters estimated 
 
 PR_est = pickle.load(open('./parameters/PR_est.pkl','rb'))
 mu_PR_est_SCE = PR_est['mu_pr']
 sigma_PR_est_SCE = PR_est['sigma_pr']
+sigma_xi_SCE = PR_est['sigma_xi']
+std_exp_SCE = PR_est['std_exp']
+
+mu_trans_U2U_SCE = PR_est['mu_trans_U2U']
+sigma_trans_U2U_SCE = PR_est['sigma_trans_U2U']
+loc_trans_U2U_SCE = PR_est['loc_trans_U2U']
+
+mu_trans_E2E_SCE = PR_est['mu_trans_E2E']
+sigma_trans_E2E_SCE = PR_est['sigma_trans_E2E']
+loc_trans_E2E_SCE = PR_est['loc_trans_E2E']
 
 
-# + code_folding=[8]
+# + code_folding=[0]
 ## make grids of sigma_psi and sigma_eps
 
 from resources_jit import LogNormal as lognorm
 
 ## use the equalprobable distribution function 
 
-nb_grid = 4
+nb_grid = 3
 
 PRs_grid_dist = lognorm(mu_PR_est_SCE,
                         sigma_PR_est_SCE,
@@ -482,17 +579,116 @@ p2t_ratio = (lc_paras['σ_ψ']/lc_paras['σ_θ'])**2
 
 sigma_eps_grid = np.sqrt(PRs_grid/(p2t_ratio+1))
 sigma_psi_grid = np.sqrt(p2t_ratio*PRs_grid/(p2t_ratio+1))
+sigma_xi_psi = np.sqrt(sigma_xi_SCE**2*p2t_ratio/(1+p2t_ratio))
+sigma_xi_eps = np.sqrt(sigma_xi_SCE**2/(1+p2t_ratio))
 
 print('Equally probable sigma_psi grid',str(sigma_psi_grid))
 print('Equally probable sigma_eps grid',str(sigma_eps_grid))
 
+
+print('Heterogeneity in expected growth rate is', str(std_exp_SCE))
+print('Unobserved permanent heterogeneity is',str(sigma_xi_psi))
+print('Unobserved transitory heterogeneity',str(sigma_xi_eps))
+
+# + code_folding=[0]
+## make grids for U2U and E2E 
+
+prob_func = lambda y: np.exp(y)/(1+np.exp(y))
+
+
+U2U_grid_dist = lognorm(mu_trans_U2U_SCE,
+                        sigma_trans_U2U_SCE,
+                        100000,
+                        nb_grid)
+
+U2U_grid = prob_func(U2U_grid_dist.X + loc_trans_U2U_SCE)
+
+
+
+E2E_grid_dist = lognorm(mu_trans_E2E_SCE,
+                        sigma_trans_E2E_SCE,
+                        100000,
+                        nb_grid)
+
+E2E_grid = prob_func(E2E_grid_dist.X + loc_trans_E2E_SCE)
+
+
+print('Equally probable U2U grid is', str(U2U_grid))
+
+
+print('Equally probable E2E grid is', str(E2E_grid))
+
+# + code_folding=[0]
+## make deterministic profiles 
+
+G_types = [lc_paras['G']-std_exp_SCE,
+           lc_paras['G'],
+           lc_paras['G']+std_exp_SCE]   
+
+plt.title('Heterogeneous wage growth rates')
+plt.plot(np.cumprod(G_types[0]))
+plt.plot(np.cumprod(G_types[1]))
+plt.plot(np.cumprod(G_types[2]))
+
+
+# + code_folding=[2]
+## this function turn the size of unobservable heterogeneity into an equivalent initial 
+
+def average_heterogeneity(sigma_xi_psi,
+                          T,
+                          L,
+                          age_dist):
+    """
+    input
+    ======
+    sigma_xi_psi: sigma of annual permanent heterogeneity 
+    sigma_xi_eps: sigma of annual transitory heterogeneity 
+    T: retirement date
+    L: length of life
+    age_dist: age distributions 
+    
+    output
+    ======
+    sigma_xi_psi_av: average annual permanent 
+    
+    """
+    
+    sigma_xi_psi2 = np.ones(T)*sigma_xi_psi**2
+    sigma_xi_psi_cum2 = sigma_xi_psi2.cumsum()
+    sigma_xi_psi_cum2_after = np.ones(L-T)*sigma_xi_psi_cum2[-1]
+    
+    sigma_xi_psi_cum2_all = np.concatenate((sigma_xi_psi_cum2,
+                                         sigma_xi_psi_cum2_after))
+    
+    sigma_xi_psi2_av = np.mean(np.dot(sigma_xi_psi_cum2_all,age_dist))
+    
+    sigma_xi_psi_av = np.sqrt(sigma_xi_psi2_av)
+    
+    return sigma_xi_psi_av
+        
+
+
 # + code_folding=[]
-## create a list of consumer types with different permanent risks or any other primitive parameters 
+## stationary distribution of age 
+from Utility import stationary_age_dist
+
+age_dist_ss = stationary_age_dist(lc_paras['L'],
+                               n = 0.0,
+                               LivPrb = lc_paras['LivPrb'])
+init_sigma_psi_av = average_heterogeneity(sigma_xi_psi,
+                                         lc_paras['T'],
+                                         lc_paras['L'],
+                                         age_dist_ss)
+
+print('Adjusting initial p dispersion by {} to account of heterogeneity in p '.format(init_sigma_psi_av))
+
+# + code_folding=[7, 13, 24, 27, 44, 53, 64, 75]
+## create a list of consumer types with different risk parameters and any other primitive parameters 
 
 sigma_psi_types = np.array(sigma_psi_grid)
 sigma_eps_types = np.array(sigma_eps_grid)
-U2U_types = np.array([0.1,0.18,0.25])
-E2E_types = np.array([0.99,0.96,0.93])
+U2U_types = U2U_grid
+E2E_types = E2E_grid
 
 P_types = [np.array([[U2U_types[i],1-U2U_types[i]],
                      [1-E2E_types[i],E2E_types[i]]]) 
@@ -503,6 +699,10 @@ beta_types = np.array([0.9,0.98])
 hetero_beta_types = make_1dtypes('β',
                               beta_types)
 
+## heterogeneity in risks 
+
+hetero_G_types = make_1dtypes('G',
+                             G_types)
 
 hetero_ue_risk_types = make_1dtypes('P',
                                   P_types)
@@ -510,14 +710,53 @@ hetero_ue_risk_types = make_1dtypes('P',
 hetero_prisk_types = make_1dtypes('sigma_psi',
                               sigma_psi_types)
 
-
 hetero_p_t_risk_types = make_2dtypes(by_list = ['sigma_psi',
                                                 'sigma_eps'],
                                     vals_list = [sigma_psi_types,
                                                  sigma_eps_types],
-                                     perfect_correlated = True
+                                     perfect_correlated = False
                                     )
 
+hetero_p_t_risk_G_types = make_3dtypes(by_list = ['sigma_psi',
+                                                'sigma_eps',
+                                                 'G'],
+                                    vals_list = [sigma_psi_types,
+                                                 sigma_eps_types,
+                                                G_types],
+                                     perfect_correlated = False
+                                    )
+
+
+hetero_p_t_ue_risk_types = make_3dtypes(by_list = ['sigma_psi',
+                                                   'sigma_eps',
+                                                  'P'],
+                                    vals_list = [sigma_psi_types,
+                                                 sigma_eps_types,
+                                                P_types],
+                                     perfect_correlated = False
+                                    )
+
+hetero_p_t_ue_risk_G_types = make_4dtypes(by_list = ['sigma_psi',
+                                                        'sigma_eps',
+                                                        'P',
+                                                        'G'],
+                                    vals_list = [sigma_psi_types,
+                                                 sigma_eps_types,
+                                                P_types,
+                                                G_types],
+                                     perfect_correlated = False
+                                    )
+
+hetero_p_t_ue_risk_beta_types = make_4dtypes(by_list = ['sigma_psi',
+                                                        'sigma_eps',
+                                                        'P',
+                                                        'β'],
+                                    vals_list = [sigma_psi_types,
+                                                 sigma_eps_types,
+                                                P_types,
+                                                beta_types],
+                                     perfect_correlated = False
+                                    )
 
 hetero_p_t_risk_sub_types = make_2dtypes(by_list = ['sigma_psi',
                                                 'sigma_eps'],
@@ -532,10 +771,58 @@ hetero_p_risk_beta_types = make_2dtypes(by_list = ['sigma_psi','β'],
                                                  beta_types]
                                     )
 
-# + code_folding=[0, 12]
+# + code_folding=[4, 11, 18, 25, 37]
+## addting unobserved heterogeneity in permanent income 
+
+hetero_p_t_risk_uh_types = []
+
+for this_type in hetero_p_t_risk_types:
+    this_type.sigma_p_init = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
+    this_type.prepare_shocks()
+    hetero_p_t_risk_uh_types.append(this_type)
+
+hetero_p_risk_beta_uh_types = []
+
+for this_type in hetero_p_risk_beta_types:
+    this_type.sigma_p_init = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
+    this_type.prepare_shocks()
+    hetero_p_risk_beta_uh_types.append(this_type)
+    
+hetero_p_t_ue_risk_uh_types = []
+
+for this_type in hetero_p_t_ue_risk_types:
+    this_type.sigma_p_init = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
+    this_type.prepare_shocks()
+    hetero_p_t_ue_risk_uh_types.append(this_type)
+    
+hetero_p_t_ue_risk_beta_uh_types = []
+
+for this_type in hetero_p_t_ue_risk_beta_types:
+    this_type.sigma_p_init = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
+    this_type.prepare_shocks()
+    hetero_p_t_ue_risk_beta_uh_types.append(this_type)
+    
+hetero_p_t_risk_G_uh_types =  []
+for this_type in hetero_p_t_risk_G_types:
+    this_type.sigma_p_init = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
+    this_type.prepare_shocks()
+    hetero_p_t_risk_G_uh_types.append(this_type)
+
+hetero_p_t_ue_risk_G_uh_types =  []
+for this_type in hetero_p_t_ue_risk_G_types:
+    this_type.sigma_p_init = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
+    this_type.prepare_shocks()
+    hetero_p_t_ue_risk_G_uh_types.append(this_type)
+
+# -
+
+
+# ### Solve consumption policies
+
+# + code_folding=[12]
 ## solve various models
 
-types = hetero_p_t_risk_sub_types
+types = hetero_p_t_risk_G_uh_types
 
 specs = ['ob']*len(types)
 
@@ -608,7 +895,6 @@ for x,year in enumerate(years_left):
 
 # ## Aggregate steady state distributions
 
-from Utility import stationary_age_dist
 ## a function that computes social security tax rate balances gov budget for pension
 from Utility import unemp_insurance2tax  
 ## a function that computes tax rate balances gov budget for ue insurance
@@ -617,7 +903,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 236, 271, 307, 321]
+# + code_folding=[0, 8, 236, 271, 307, 321]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -957,7 +1243,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 17, 224, 238, 268, 300]
+# + code_folding=[0, 5, 17, 111, 235, 249, 278, 309]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1160,6 +1446,17 @@ class HH_OLG_Markov:
         # a policy grid 
         ap_PolGrid_list = [ap_u_PolGrid_list,
                           ap_e_PolGrid_list]
+        
+        
+        ## get the normalized a over life cycle 
+        ap_ratio_u_PolGrid_list = [np.repeat(a_PolGrid_list[0][k],
+                                           len(p_dist_grid_list[k])) for k in range(model.L)]
+        ap_eratio_e_PolGrid_list = [np.repeat(a_PolGrid_list[1][k],
+                                           len(p_dist_grid_list[k])) for k in range(model.L)]
+        
+        # a policy grid 
+        ap_ratio_PolGrid_list = [ap_ratio_u_PolGrid_list,
+                                 ap_eratio_e_PolGrid_list]
 
         
         time_end = time()
@@ -1176,7 +1473,7 @@ class HH_OLG_Markov:
                                                             ss_dstn,
                                                             age_dist)
         
-        self.a_grid_dist, self.a_pdfs_dist = flatten_list(a_PolGrid_list,
+        self.a_grid_dist, self.a_pdfs_dist = flatten_list(ap_ratio_PolGrid_list,
                                                             dist_lists,
                                                             ss_dstn,
                                                             age_dist)
@@ -1223,7 +1520,6 @@ class HH_OLG_Markov:
             
         self.A_life = A_life
         
-        
     ### Wealth distribution over life cycle 
 
     def get_lifecycle_dist(self):
@@ -1255,7 +1551,6 @@ class HH_OLG_Markov:
         self.ap_grid_dist_life = ap_grid_dist_life
         self.ap_pdfs_dist_life = ap_pdfs_dist_life
         
-    
     ### Get lorenz weights  
     
     def Lorenz(self,
@@ -1322,7 +1617,7 @@ def Lorenz(model_results):
     return share_agents_ap,share_ap
 
 
-# + code_folding=[2, 43, 61]
+# + code_folding=[0, 2, 43, 61]
 ## new functions that are needed for heterogenous-types 
 
 def solve_1type(model,
@@ -1406,14 +1701,21 @@ def combine_results(results_by_type):
     )*probs
     
     ## life cycle wealth
-    A_life_pe = np.sum(np.array([result['A_life'] for result in results_by_type]),axis=0)
+    A_life_pe = np.sum(np.array([result['A_life'] for result in results_by_type]),axis=0)*probs
     
     ## distribution 
     ap_grid_dist_pe = np.array([result['ap_grid_dist'] for result in results_by_type]).flatten()
-    ap_pdfs_dist_pe = np.array([result['ap_pdfs_dist'] for result in results_by_type]).flatten()
+    ap_pdfs_dist_pe = np.array([result['ap_pdfs_dist'] for result in results_by_type]).flatten()*probs
+    ap_grid_dist_pe_sort = ap_grid_dist_pe.argsort()
+    ap_grid_dist_pe = ap_grid_dist_pe[ap_grid_dist_pe_sort]
+    ap_pdfs_dist_pe = ap_pdfs_dist_pe[ap_grid_dist_pe_sort]
+    
     a_grid_dist_pe = np.array([result['a_grid_dist'] for result in results_by_type]).flatten()
-    a_pdfs_dist_pe = np.array([result['a_pdfs_dist'] for result in results_by_type]).flatten()
-
+    a_pdfs_dist_pe = np.array([result['a_pdfs_dist'] for result in results_by_type]).flatten()*probs
+    a_grid_dist_pe_sort = a_grid_dist_pe.argsort()
+    a_grid_dist_pe = a_grid_dist_pe[a_grid_dist_pe_sort]
+    a_pdfs_dist_pe = a_pdfs_dist_pe[a_grid_dist_pe_sort]
+    
 
     ## lorenz share
     share_agents_ap_pe,share_ap_pe = Lorenz(results_by_type)
@@ -1430,14 +1732,14 @@ def combine_results(results_by_type):
                   'ap_grid_dist':ap_grid_dist_pe,
                   'ap_pdfs_dist':ap_pdfs_dist_pe,
                    'a_grid_dist':a_grid_dist_pe,
-                    'a_pdfs_dist':a_pdfs_dist_pe,
+                   'a_pdfs_dist':a_pdfs_dist_pe,
                   'gini':gini_this_pe,
                    }
     
     return model_dct_pe
 
 
-# + code_folding=[7, 31, 137, 149]
+# + code_folding=[2, 138, 150]
 ## market class
 
 class Market_OLG_mkv_hetero_types:
@@ -1507,11 +1809,12 @@ class Market_OLG_mkv_hetero_types:
         print('Tax rate',str(λ))
                      
         ## obtain social security rate balancing the SS replacement ratio 
-
+        G_av = np.mean([model_list[i].G for i in range(len(model_list))],axis=0)
+        print('xx',str(len(G_av)))
         λ_SS = SS2tax(model_list[0].pension, ## social security /pension replacement ratio 
                      model_list[0].T,  ## retirement years
                     age_dist,  ## age distribution in the economy 
-                    model_list[0].G,         ## permanent growth factor lists over cycle
+                    G_av,         ## permanent growth factor lists over cycle
                     emp_now)
         print('Social security tax rate',str(λ_SS))
     
@@ -1632,16 +1935,12 @@ class Market_OLG_mkv_hetero_types:
         
         return results_combined
 
-# + code_folding=[0, 1]
+# + code_folding=[0]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
                           target_KY = production_paras['K2Y ratio'],
-                         target_W = production_paras['W']) 
-
-## nb of grids used for transition matrix  
-n_m = 100
-n_p = 100
+                          target_W = production_paras['W']) 
 
 
 # + code_folding=[0]
@@ -1671,7 +1970,7 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## Solve the heterogenous-type model 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## solve a list of models and save all solutions as pickles 
 
 results_by_type,households_by_type = solve_types(types,
@@ -1682,7 +1981,7 @@ results_by_type,households_by_type = solve_types(types,
 ## obtain the combined results 
 results_combined_pe = combine_results(results_by_type)
 
-# + code_folding=[]
+# + code_folding=[0]
 ## aggregate lorenz curve 
 
 print('gini from model:'+str(results_combined_pe['gini']))
@@ -1691,7 +1990,7 @@ gini_SCF = gini(SCF_share_agents_ap,
                  SCF_share_ap)
 print('gini from SCE:'+str(gini_SCF))
 
-# + code_folding=[0]
+# + code_folding=[0, 3]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(8,8))
@@ -1712,7 +2011,7 @@ plt.xlim([0,1])
 plt.ylim([0,1])
 #plt.savefig('../Graphs/model/lorenz_a_hetero_type.png')
 
-# + code_folding=[]
+# + code_folding=[0]
 ## Wealth distribution 
 
 fig, ax = plt.subplots(figsize=(8,6))
@@ -1725,18 +2024,20 @@ ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
 # -
 
-pickle.dump(results_combined_pe,open('./model_solutions/SHPR_PE.pkl','wb'))
+pickle.dump(results_combined_pe,open('./model_solutions/HPRG_PE.pkl','wb'))
 
 # ## GE with multiple types 
 
+# + code_folding=[]
 market_OLG_mkv_this = Market_OLG_mkv_hetero_types(households_list = households_by_type,
                                                   production = production)
+# -
 
 market_OLG_mkv_this.get_equilibrium_k()
 
 results_combined_ge = market_OLG_mkv_this.get_equilibrium_dist()
 
-pickle.dump(results_combined_ge,open('./model_solutions/'+'SHPR_GE.pkl','wb'))
+pickle.dump(results_combined_ge,open('./model_solutions/'+'HPRG_GE.pkl','wb'))
 # + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
@@ -1759,7 +2060,7 @@ plt.ylim([0,1])
 #plt.savefig('../Graphs/model/lorenz_a_hetero_type.png')
 
 
-# +
+# + code_folding=[0]
 ## Wealth distribution 
 
 fig, ax = plt.subplots(figsize=(8,6))
@@ -1771,5 +2072,6 @@ ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
 # -
+
 
 
