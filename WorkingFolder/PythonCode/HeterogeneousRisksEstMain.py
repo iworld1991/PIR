@@ -334,7 +334,7 @@ PRs_grid = np.linspace(np.min(PR_ind_av),
 
 PRs_sim_simple = np.exp(np.random.randn(10000)*sigma_PR_est_SCE+mu_PR_est_SCE)
 
-# + {"code_folding": [0, 3, 4, 10]}
+# + {"code_folding": [3, 4, 10]}
 ## plot simulated data based on log normal estimates and the observed PRs
 
 plt.title('Heterogeneity in PR in SCE')
@@ -381,7 +381,7 @@ U2U_grid = np.linspace(np.min(U2U_ind_av),
 U2U_pdfs = U2U_est_dist.pdf(U2U_grid)
 U2U_draws = U2U_est_dist.rvs(size = 10000)
 
-plt.title('U2U in SCE')
+plt.title('Heterogeneity in U2U in SCE')
 
 hist = plt.hist(prob_func(U2U_SCE),
                 bins = 100,
@@ -403,7 +403,7 @@ plt.axvline(np.mean(prob_func(U2U_SCE)),
             color='black',
             label='Average U2U=.{:.3f}'.format(np.mean(prob_func(U2U_SCE))))
 
-plt.xlabel('U2U')
+plt.xlabel('U2U (prob of staying unemployed)')
 plt.legend(loc=1)
 plt.savefig('../Graphs/sce/log_normal_u2u_fit.pdf')
 
@@ -420,7 +420,7 @@ E2E_draws = stats.lognorm.rvs(s = shape_E2E,
                              scale= scale_E2E,
                              size = 10000)
 
-plt.title('E2E in SCE')
+plt.title('Heterogeneity in E2E in SCE')
 
 hist = plt.hist(prob_func(E2E_SCE),
                 bins = 100,
@@ -440,7 +440,7 @@ plt.axvline(np.mean(prob_func(E2E_SCE)),
             color='black',
             label='Average E2E=.{:.3f}'.format(np.mean(prob_func(E2E_SCE))))
 
-plt.xlabel('E2E')
+plt.xlabel('E2E (prob of staying employed)')
 plt.legend(loc=1)
 plt.savefig('../Graphs/sce/log_normal_e2e_fit.pdf')
 # -
