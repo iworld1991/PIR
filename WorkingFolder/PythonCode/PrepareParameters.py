@@ -21,6 +21,31 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numba as nb
 from copy import copy
+
+# +
+## figure plotting configurations
+
+
+plt.style.use('seaborn')
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['axes.labelweight'] = 'bold'
+
+## Set the 
+plt.rc('font', size=25)
+# Set the axes title font size
+plt.rc('axes', titlesize=20)
+# Set the axes labels font size
+plt.rc('axes', labelsize=20)
+# Set the font size for x tick labels
+plt.rc('xtick', labelsize=20)
+# Set the font size for y tick labels
+plt.rc('ytick', labelsize=20)
+# Set the legend font size
+plt.rc('legend', fontsize=20)
+# Set the font size of the figure title
+plt.rc('figure', titlesize=20)
 # -
 
 # ### Age profile of income 
@@ -105,13 +130,15 @@ elif age_profile_data=='SCF':
     lc_G_full = lc_p_incom[1:]/lc_p_incom[:-1] 
     assert len(lc_G_full) == L,'length of G needs to be equal to L'
     lc_G_q_full = y2q_interpolate(lc_G_full)
-    
+
 
 # -
 
 if __name__ == "__main__":
-    plt.title('life-cycle profile')
-    plt.plot(np.cumprod(lc_G_full))
+    plt.title('Determinstic life-cycle wage profile')
+    plt.plot(np.cumprod(lc_G_full),
+            'k-v')
+    plt.savefig('../Graphs/sipp/age_wage_profile.pdf')
 
 # +
 ## subjective growth expectations 
