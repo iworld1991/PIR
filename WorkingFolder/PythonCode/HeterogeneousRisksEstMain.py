@@ -113,7 +113,7 @@ def Est_PR_log_normal_simple(PRs,
 # ## Estimation using SCE data
 #
 
-# + {"code_folding": [26, 35]}
+# + {"code_folding": [13, 35]}
 dataset = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 
 ## variables 
@@ -145,8 +145,8 @@ SCEM = SCEM.rename(columns={'Q24_mean': 'incexp',
                            'Q24_iqr': 'inciqr',
                            'Q24_rmean':'rincexp',
                            'Q24_rvar': 'rincvar',
-                           'Q13new':'UE_s',
-                           'Q22new':'UE_f'
+                           'Q13new':'UE_s', ## 1-year-ahead job separation 
+                           'Q22new':'UE_f' ## 3-month-ahead job finding 
                            })
 
 SCEM = SCEM.rename(columns = {'D6':'HHinc',
@@ -169,10 +169,17 @@ SCEM =SCEM[SCEM['nlit']>=2.0]
 SCEM =SCEM[SCEM['educ']>=1]
 print('nb of observations after dropping low numeracy/low education sample:',str(len(SCEM)))
 
+## turn to 0-1 probs 
+SCEM['UE_f']= SCEM['UE_f']/100
+SCEM['UE_s']= SCEM['UE_s']/100
+
+## time aggregation to 1year
+
+SCEM['UE_f'] = 1-(1-SCEM['UE_f'])**4
 
 ## job finding and separation rates to U2U and E2E rate 
-SCEM['U2U'] = 1- SCEM['UE_f']/100
-SCEM['E2E'] = 1- SCEM['UE_s']/100*(1-SCEM['UE_f']/100)
+SCEM['U2U'] = 1- SCEM['UE_f']
+SCEM['E2E'] = 1- SCEM['UE_s']*(1-SCEM['UE_f'])
 
 
 ## trucate 0 and 1s for probs 
@@ -194,11 +201,14 @@ SCEM['E2E_e'] =  SCEM['E2E_truc'].apply(prob_inv_func)
 
 # + {"code_folding": []}
 ## first obtain time average by individual 
+SCE_av = SCEM.groupby('userid')[['incvar','rincvar','incexp','rincexp','U2U_e','E2E_e']].mean()
 
-PR_ind_av = SCEM.groupby('userid')['rincvar'].mean().dropna()
-Exp_ind_av = SCEM.groupby('userid')['rincexp'].mean().dropna()
-U2U_ind_av = SCEM.groupby('userid')['U2U_e'].mean().dropna()
-E2E_ind_av = SCEM.groupby('userid')['E2E_e'].mean().dropna()
+PRn_ind_av = SCE_av['incvar'].dropna()
+PR_ind_av = SCE_av['rincvar'].dropna()
+Expn_ind_av = SCE_av['incexp'].dropna()
+Exp_ind_av = SCE_av['rincexp'].dropna()
+U2U_ind_av = SCE_av['U2U_e'].dropna()
+E2E_ind_av = SCE_av['E2E_e'].dropna()
 
 
 ## other transition probs 
@@ -207,6 +217,11 @@ PRs_SCE = np.array(PR_ind_av)
 Exps_SCE = np.array(Exp_ind_av)
 U2U_SCE = np.array(U2U_ind_av)
 E2E_SCE = np.array(E2E_ind_av)
+
+# +
+## correlation 
+
+SCE_av.corr()
 
 # + {"code_folding": []}
 ## some commonly used parameters, e.g. from Low et al.
@@ -262,7 +277,7 @@ plt.axvline(np.sqrt(est_PR_Low),
 plt.xlabel('PR (in std terms)')
 plt.legend(loc=1)
 
-# + {"code_folding": [4]}
+# + {"code_folding": [11]}
 ## distributions of U2U 
 
 plt.title('U2U in SCE' )
@@ -381,6 +396,8 @@ hist2 = plt.hist(prob_func(U2U_draws),
                 label='Dist of Simulated U2U',
                density=True,
                alpha=0.2)
+plt.xlim(0.0,0.2)
+
 
 plt.axvline(np.mean(prob_func(U2U_SCE)),
             color='black',
@@ -418,7 +435,7 @@ hist2 = plt.hist(prob_func(E2E_draws),
                 label='Dist of Simulated E2E',
                density=True,
                 alpha=0.2)
-
+plt.xlim(0.7,1)
 plt.axvline(np.mean(prob_func(E2E_SCE)),
             color='black',
             label='Average E2E=.{:.3f}'.format(np.mean(prob_func(E2E_SCE))))
