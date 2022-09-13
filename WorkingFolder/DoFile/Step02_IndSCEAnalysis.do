@@ -198,7 +198,7 @@ duplicates report year month userid
 
 
 ** merge labor market module  
-merge 1:1 year month userid using "${otherfolder}/data/SCE/LaborExpSCEIndM", keep(master match)
+merge 1:1 year month userid using "${otherdata_folder}/LaborExpSCEIndM", keep(master match)
 rename _merge labor_merge
 rename userid ID 
 
@@ -591,6 +591,7 @@ restore
 **** earning level and risk perceptions
 ***************************************
 
+gen incsd = sqrt(incvar)
 gen rincsd = sqrt(rincvar)
 gen rincsd_all_rl = sqrt(rincvar_all_rl)
 gen psd2_all_rl = sqrt(prisk2_all_rl)
@@ -610,31 +611,33 @@ graph bar rincsd, ///
 graph export "${sum_graph_folder}/boxplot_rvar_earning.png", as(png) replace 
 
 
-graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl if educ!=1 & age_5yr>25, ///
+graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl if educ!=1 & age_5yr>25, ///
            over(age_5yr) over(gender,relabel(1 "Male" 2 "Female")) ///
 		   bar(1, color(navy)) ///
-		   bar(2, color(gray)) ///
-		   bar(3, color(cranberry)) ///
-		   bar(4, color(orange)) ///
+		   bar(2, color(khaki)) ///
+		   bar(3, color(gray)) ///
+		   bar(4, color(cranberry)) ///
+		   bar(5, color(orange)) ///
 		   title("Perceived and realized risk by age",size(med)) ///
 		   ytitle("Average perceived risk (std)")  ///
-		   legend(row(2) label(1 "perceived risk") label(2 "volatility") label(3 "realized risk") label(4 "permanent risk"))
+		   legend(row(2) label(1 "PR") label(1 "PR (nominal)") label(3 "volatility") label(4 "realized risk") label(5 "permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_age.png", as(png) replace 
 
 
-graph bar rincsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
+graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
            over(educ,relabel(1 "HS dropout" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
 		   bar(1, color(navy)) ///
-		   bar(2, color(gray)) ///
-		   bar(3, color(cranberry)) ///
-		   bar(4, color(orange)) ///
+		   bar(2, color(khaki)) ///
+		   bar(3, color(gray)) ///
+		   bar(4, color(cranberry)) ///
+		   bar(5, color(orange)) ///
 		   title("Perceived and realized risk by education",size(med)) ///
 		   ytitle("Average perceived risk (std)")  ///
-		   legend(row(2) label(1 "perceived risk") label(2 "volatility")  label(3 "realized risk") label(4 "permanent risk"))
+		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "realized risk") label(5 "permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_educ.png", as(png) replace 
-
+ddd
 
 ********************************************************
 ** Compare risks between perception and realization **
