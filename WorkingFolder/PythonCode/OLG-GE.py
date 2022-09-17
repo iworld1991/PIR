@@ -1175,7 +1175,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0, 5, 25, 132]
+# + code_folding=[5, 132]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1321,7 +1321,9 @@ class Market_OLG_mkv:
         self.K_eq = K_eq
     
     def get_equilibrium_dist(self):
-        
+        print('\n')
+        print('Getting StE')
+        print('\n')
         households = self.households 
         model = self.model 
         
@@ -1345,7 +1347,7 @@ class Market_OLG_mkv:
 
         model.λ = unemp_insurance2tax(model.unemp_insurance,
                                      households.uemp_ss)
-
+        print('Tax rate',str(model.λ))
         ## obtain social security rate balancing the SS replacement ratio 
 
         model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
@@ -1353,7 +1355,7 @@ class Market_OLG_mkv:
                             households.age_dist,  ## age distribution in the economy 
                             model.G,         ## permanent growth factor lists over cycle
                             households.emp_ss)
-
+        print('Social security tax rate',str(model.λ_SS))
         ## solve the model again 
 
         ## terminal period solution
@@ -1513,6 +1515,7 @@ def solve_models(model_list,
     
     ## loop over different models 
     for k, model in enumerate(model_list):
+        print('\n')
         print('solving model {}'.format(str(k)))
         print('\n')
         solve_1model(model,
