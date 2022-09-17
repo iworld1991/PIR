@@ -178,7 +178,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 91]
+# + code_folding=[91]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -1069,7 +1069,7 @@ def flatten_dist(grid_lists,      ## (nb.z x nb.f) x L x nb x nm x np
 
 
 
-# + code_folding=[5, 20, 115, 287, 294, 301, 330, 360]
+# + code_folding=[0, 5, 20, 115, 287, 294, 301, 330, 360]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1464,7 +1464,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[154]
+# + code_folding=[27, 154, 166]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1651,11 +1651,13 @@ class Market_OLG_mkv:
 
         ## get the distribution under SS
         model.W,model.R = W_eq,R_eq
+        households.model.W, households.model.R = W_eq,R_eq
         
         ## obtain tax rate from the government budget balance 
         model.λ = unemp_insurance2tax(model.unemp_insurance,
                                      households.uemp_ss)
-        print('Tax rate',str(model.λ))
+        households.model.λ = model.λ
+        print('Tax rate',str(households.model.λ))
         ## obtain social security rate balancing the SS replacement ratio 
 
         model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
@@ -1663,7 +1665,8 @@ class Market_OLG_mkv:
                             households.age_dist,  ## age distribution in the economy 
                             model.G,         ## permanent growth factor lists over cycle
                             households.emp_ss)
-        print('Social security tax rate',str(model.λ_SS))
+        households.model.λ_SS = model.λ_SS
+        print('Social security tax rate',str(households.model.λ_SS))
         
         ## solve the model again 
 
