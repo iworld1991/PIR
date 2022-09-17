@@ -620,7 +620,7 @@ graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl if educ
 		   bar(5, color(orange)) ///
 		   title("Perceived and realized risk by age",size(med)) ///
 		   ytitle("Average perceived risk (std)")  ///
-		   legend(row(2) label(1 "PR") label(1 "PR (nominal)") label(3 "volatility") label(4 "realized risk") label(5 "permanent risk"))
+		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility") label(4 "realized risk") label(5 "permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_age.png", as(png) replace 
 
@@ -637,7 +637,7 @@ graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
 		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "realized risk") label(5 "permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_educ.png", as(png) replace 
-ddd
+
 
 ********************************************************
 ** Compare risks between perception and realization **
