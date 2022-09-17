@@ -368,7 +368,7 @@ else:
                       )
 
 
-# + code_folding=[2, 29, 72, 120, 172]
+# + code_folding=[2, 29, 72, 120, 171]
 ## functions that make a list of consumer types different by parameters
 
 def make_1dtypes(by,
@@ -622,7 +622,7 @@ sigma_trans_E2E_SCE = PR_est['sigma_trans_E2E']
 loc_trans_E2E_SCE = PR_est['loc_trans_E2E']
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## make grids of sigma_psi and sigma_eps
 
 from resources_jit import LogNormal as lognorm
@@ -662,7 +662,7 @@ exp_grid = exp_grid_dist.X+loc_exp_est_SCE
 
 print('Equally probable exp grid is', str(exp_grid))
 
-# + code_folding=[0]
+# + code_folding=[]
 ## make grids for U2U and E2E 
 
 prob_func = lambda y: np.exp(y)/(1+np.exp(y))
@@ -758,7 +758,7 @@ def average_heterogeneity(sigma_xi_psi,
         
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## stationary distribution of age 
 from Utility import stationary_age_dist
 
@@ -772,7 +772,7 @@ init_sigma_psi_av = average_heterogeneity(sigma_xi_psi,
 
 print('Adjusting initial p dispersion by {} to account of heterogeneity in p '.format(init_sigma_psi_av))
 
-# + code_folding=[7, 13, 24, 27, 34, 44, 54, 64, 86]
+# + code_folding=[7, 24, 27, 34, 44, 54, 64, 86]
 ## create a list of consumer types with different risk parameters and any other primitive parameters 
 
 sigma_psi_types = np.array(sigma_psi_grid)
@@ -784,7 +784,7 @@ P_types = [np.array([[U2U_types[i],1-U2U_types[i]],
                      [1-E2E_types[i],E2E_types[i]]]) 
            for i in range(len(U2U_types))]
 
-beta_types = np.array([0.9,0.98])
+beta_types = np.array([0.9,0.99])
 
 hetero_beta_types = make_1dtypes('β',
                               beta_types)
@@ -806,6 +806,16 @@ hetero_p_t_risk_types = make_2dtypes(by_list = ['sigma_psi',
                                                  sigma_eps_types],
                                      perfect_correlated = False
                                     )
+
+hetero_p_t_risk_beta_types = make_3dtypes(by_list = ['sigma_psi',
+                                                'sigma_eps',
+                                                 'β'],
+                                    vals_list = [sigma_psi_types,
+                                                 sigma_eps_types,
+                                                beta_types],
+                                     perfect_correlated = False
+                                    )
+
 
 hetero_p_t_risk_G_types = make_3dtypes(by_list = ['sigma_psi',
                                                 'sigma_eps',
@@ -856,7 +866,7 @@ hetero_p_t_ue_risk_beta_types = make_4dtypes(by_list = ['sigma_psi',
                                                  sigma_eps_types,
                                                 P_types,
                                                 beta_types],
-                                     perfect_correlated = True
+                                     perfect_correlated = False
                                     )
 
 hetero_p_t_risk_sub_types = make_2dtypes(by_list = ['sigma_psi',
@@ -872,7 +882,7 @@ hetero_p_risk_beta_types = make_2dtypes(by_list = ['sigma_psi','β'],
                                                  beta_types]
                                     )
 
-# + code_folding=[0, 4, 11, 18, 33]
+# + code_folding=[4, 22]
 ## addting unobserved heterogeneity in permanent income 
 
 hetero_p_t_risk_uh_types = []
@@ -889,13 +899,18 @@ for this_type in hetero_p_risk_beta_types:
     this_type.prepare_shocks()
     hetero_p_risk_beta_uh_types.append(this_type)
     
+hetero_p_t_risk_beta_uh_types =[]
+for this_type in hetero_p_t_risk_beta_types:
+    this_type.sigma_p_init = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
+    this_type.prepare_shocks()
+    hetero_p_t_risk_beta_uh_types.append(this_type)
+    
 hetero_p_t_ue_risk_uh_types = []
 
 for this_type in hetero_p_t_ue_risk_types:
     this_type.sigma_p_init = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
     this_type.prepare_shocks()
     hetero_p_t_ue_risk_uh_types.append(this_type)
-    
     
 hetero_p_t_risk_sub_uh_types =[]
 
@@ -928,10 +943,10 @@ for this_type in hetero_p_t_ue_risk_G_types:
 
 # ### Solve consumption policies
 
-# + code_folding=[0, 12]
+# + code_folding=[12]
 ## solve various models
 
-types = hetero_p_t_ue_risk_beta_uh_types
+types = hetero_p_t_risk_beta_uh_types
 
 specs = ['ob']*len(types)
 
@@ -964,7 +979,7 @@ print("Time taken, in seconds: "+ str(t_finish - t_start))
 
 
 
-# + code_folding=[0, 12]
+# + code_folding=[12]
 ## compare solutions 
 
 m_grid = np.linspace(0.0,10.0,200)
@@ -1849,7 +1864,7 @@ def combine_results(results_by_type):
     return model_dct_pe
 
 
-# + code_folding=[0, 2, 7]
+# + code_folding=[0, 7]
 ## market class
 
 class Market_OLG_mkv_hetero_types:
@@ -2133,7 +2148,7 @@ ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
 # -
 
-pickle.dump(results_combined_pe,open('./model_solutions/HPRURGTP_PE.pkl','wb'))
+pickle.dump(results_combined_pe,open('./model_solutions/HPRTP_PE.pkl','wb'))
 
 # ## GE with multiple types 
 
@@ -2146,7 +2161,7 @@ market_OLG_mkv_this.get_equilibrium_k()
 
 results_combined_ge = market_OLG_mkv_this.get_equilibrium_dist()
 
-pickle.dump(results_combined_ge,open('./model_solutions/'+'HPRURGTP_GE.pkl','wb'))
+pickle.dump(results_combined_ge,open('./model_solutions/'+'HPRTP_GE.pkl','wb'))
 # + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 

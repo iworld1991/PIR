@@ -78,7 +78,8 @@ print('est loc:',str(loc))
 
 # + {"code_folding": [0]}
 def Est_PR_log_normal_simple(PRs,
-                             est_PR):
+                             est_PR,
+                             transform = True):
     """
     input
     =====
@@ -96,10 +97,14 @@ def Est_PR_log_normal_simple(PRs,
     
     ## PR log normal 
     
-    shape, loc, scale = stats.lognorm.fit(PRs, 
-                                          floc=0)
-    mu_PR_est, sigma_PR_est= np.log(scale), shape  # mu, sigma ## mu=-sigma^2/2 for mean-one log normal 
-    
+    if transform ==False:
+        shape, loc, scale = stats.lognorm.fit(PRs, 
+                                              floc=0)
+        mu_PR_est, sigma_PR_est= np.log(scale), shape  # mu, sigma ## mu=-sigma^2/2 for mean-one log normal 
+        
+    else:
+        mu_PR_est, sigma_PR_est = stats.norm.fit(np.log(PRs))
+        
     av_PRs = np.mean(PRs)
     ## Estimating the wedge 
     sigma_xi_est = np.sqrt(est_PR - av_PRs)
@@ -212,7 +217,7 @@ E2E_ind_av = SCE_av['E2E_e'].dropna()
 
 
 ## other transition probs 
-
+PRns_SCE = np.array(PRn_ind_av)
 PRs_SCE = np.array(PR_ind_av)
 Exps_SCE = np.array(Exp_ind_av)
 U2U_SCE = np.array(U2U_ind_av)
@@ -233,18 +238,18 @@ print('Estimated tran risk', str(sigma_tran_Low_est))
 est_PR_Low = sigma_perm_Low_est**2 + sigma_tran_Low_est**2
 print('Implied Estimated PR in std term', str(np.sqrt(est_PR_Low)))
 
+av_PRn_SCE = np.mean(PRns_SCE) 
 av_PR_SCE = np.mean(PRs_SCE)
 av_Exp_SCE = np.mean(Exps_SCE)
 std_Exp_SCE = np.std(Exps_SCE)
 
+print('Average nominal PR in SCE', str(np.sqrt(av_PRn_SCE)))
 print('Average PR in SCE', str(np.sqrt(av_PR_SCE)))
 print('Average exp in SCE', str(np.sqrt(av_PR_SCE)))
 print('Std of exp in SCE', str(np.sqrt(av_PR_SCE)))
 
 
-
 ## other 
-
 
 print('Average U2U in SCE', str(np.mean(prob_func(U2U_SCE))))
 print('Std of U2U in SCE', str(np.std(prob_func(U2U_SCE))))
@@ -323,7 +328,8 @@ plt.legend(loc=1)
 ## estimating the parameters using SCE 
 
 mu_PR_est_SCE, sigma_PR_est_SCE, sigma_xi_est_SCE = Est_PR_log_normal_simple(PR_ind_av,
-                                                                            est_PR_Low)
+                                                                            est_PR_Low,
+                                                                            transform=True)
 print('Estimated mean PR',str(mu_PR_est_SCE))
 print('Estimated standard deviation in PR',str(sigma_PR_est_SCE))
 print('Estimated wedge due to unobserved heterogeneity',str(sigma_xi_est_SCE))
@@ -354,7 +360,7 @@ plt.hist(np.sqrt(PR_ind_av),
 
 plt.axvline(np.sqrt(av_PR_SCE),
             color='red',
-            label='Average PR=.{:.2f}'.format(np.sqrt(av_PR_SCE)))
+            label='Average PR={:.2f}'.format(np.sqrt(av_PR_SCE)))
 
 plt.axvline(np.sqrt(est_PR_Low),
             linestyle='--',
@@ -365,6 +371,54 @@ plt.xlim([0.0,0.2])
 plt.xlabel('PR in std terms')
 plt.legend(loc=1)
 plt.savefig('../Graphs/sce/log_normal_pr_fit.pdf')
+# +
+## estimating the parameters using SCE 
+
+mu_PRn_est_SCE, sigma_PRn_est_SCE, sigma_xi_n_est_SCE = Est_PR_log_normal_simple(PRn_ind_av,
+                                                                                 est_PR_Low,
+                                                                                transform=True)
+print('Estimated mean nominal PR',str(mu_PRn_est_SCE))
+print('Estimated standard deviation in nominal PR',str(sigma_PRn_est_SCE))
+print('Estimated nominal wedge due to unobserved heterogeneity',str(sigma_xi_n_est_SCE))
+
+PRns_grid = np.linspace(np.min(PRn_ind_av),
+                      np.max(PRn_ind_av),
+                      100)
+
+PRns_sim_simple = np.exp(np.random.randn(10000)*sigma_PRn_est_SCE+mu_PRn_est_SCE)
+
+# +
+## plot simulated data based on log normal estimates and the observed PRs
+
+plt.title('Heterogeneity in nominal PR in SCE')
+plt.hist(np.sqrt(PRns_sim_simple),
+        bins = 200,
+         color='red',
+        label='Estimated distribution in nominal PRs',
+         alpha = 0.3,
+        density = True)
+
+plt.hist(np.sqrt(PRn_ind_av),
+         bins = 200,
+         color='black',
+         label='Observed PRs in SCE',
+         density = True,
+         alpha=0.5)
+
+plt.axvline(np.sqrt(av_PRn_SCE),
+            color='red',
+            label='Average nominal PR={:.2f}'.format(np.sqrt(av_PRn_SCE)))
+
+plt.axvline(np.sqrt(est_PR_Low),
+            linestyle='--',
+            color='blue',
+            label='Estimated PR')
+
+plt.xlim([0.0,0.2])
+plt.xlabel('Nominal PR in std terms')
+plt.legend(loc=1)
+plt.savefig('../Graphs/sce/log_normal_npr_fit.pdf')
+
 # + {"code_folding": []}
 ## estimating the parameters using SCE U2U
 
@@ -401,7 +455,7 @@ plt.xlim(0.0,0.2)
 
 plt.axvline(np.mean(prob_func(U2U_SCE)),
             color='black',
-            label='Average U2U=.{:.3f}'.format(np.mean(prob_func(U2U_SCE))))
+            label='Average U2U={:.3f}'.format(np.mean(prob_func(U2U_SCE))))
 
 plt.xlabel('U2U (prob of staying unemployed)')
 plt.legend(loc=1)
@@ -438,7 +492,7 @@ hist2 = plt.hist(prob_func(E2E_draws),
 plt.xlim(0.7,1)
 plt.axvline(np.mean(prob_func(E2E_SCE)),
             color='black',
-            label='Average E2E=.{:.3f}'.format(np.mean(prob_func(E2E_SCE))))
+            label='Average E2E={:.3f}'.format(np.mean(prob_func(E2E_SCE))))
 
 plt.xlabel('E2E (prob of staying employed)')
 plt.legend(loc=1)

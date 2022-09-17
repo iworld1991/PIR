@@ -394,13 +394,11 @@ models = [lc_mkv,
 specs = ['ob',
          'sub',
          'sub_true',
-         #'cr'
         ]
 
 model_names=['baselinePR',
              'SSDPR',
              'SDPR',
-            # 'SLPR_sv'
             ]
 
 ms_stars = []
@@ -1071,7 +1069,7 @@ def flatten_dist(grid_lists,      ## (nb.z x nb.f) x L x nb x nm x np
 
 
 
-# + code_folding=[0, 20, 115, 287, 294, 301, 330, 360]
+# + code_folding=[5, 20, 115, 287, 294, 301, 330, 360]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1466,7 +1464,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0, 26, 153, 165]
+# + code_folding=[154]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1487,6 +1485,7 @@ class Market_OLG_mkv:
         T =  self.model.T
         L_ss = np.sum(age_dist[:T-1])*ss_dstn[1] ## employment fraction for working age population
         self.households.emp_ss = L_ss
+        self.households.uemp_ss = np.sum(age_dist[:T-1])*ss_dstn[0]  ## unemployed pop fraction
         production.normlize_Z(N_ss = L_ss)
         self.production = production   ## production function
 
@@ -1652,7 +1651,20 @@ class Market_OLG_mkv:
 
         ## get the distribution under SS
         model.W,model.R = W_eq,R_eq
+        
+        ## obtain tax rate from the government budget balance 
+        model.λ = unemp_insurance2tax(model.unemp_insurance,
+                                     households.uemp_ss)
+        print('Tax rate',str(model.λ))
+        ## obtain social security rate balancing the SS replacement ratio 
 
+        model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
+                            model.T,  ## retirement years
+                            households.age_dist,  ## age distribution in the economy 
+                            model.G,         ## permanent growth factor lists over cycle
+                            households.emp_ss)
+        print('Social security tax rate',str(model.λ_SS))
+        
         ## solve the model again 
 
         ## terminal period solution
@@ -1826,7 +1838,7 @@ solve_models(models,
             model_name_list = model_names,
             ge = True)
 
-# + code_folding=[111]
+# + code_folding=[0, 11, 37, 70]
 ## plot results from different models
 
 line_patterns =['g-v',

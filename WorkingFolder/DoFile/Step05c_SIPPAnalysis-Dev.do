@@ -453,7 +453,7 @@ gen `var'_y2y_gr = `var'- l12.`var'
 }
 label var lwage_id_shk_y2y_gr "log YoY growth of unexplained wage"
 
-** first difference for yearly 
+** 1-year 2-year 3-year difference for yearly 
 foreach var in lwage_Y lwage_n_Y lwage_Y_id_shk{
 gen `var'_gr = `var'- l12.`var'
 gen `var'_gr2 = `var'- l24.`var'
@@ -498,7 +498,6 @@ label var pvar_est_all2 "Yearly permanent risks in variance"
 
 gen pvar_est_all3 = (lwage_Y_id_shk_gr_var3_all- lwage_Y_id_shk_gr_var_all)/2
 label var pvar_est_all3 "Yearly permanent risks in variance"
-
 
 ***********************************************
 ** summary chart of unconditional wages ********

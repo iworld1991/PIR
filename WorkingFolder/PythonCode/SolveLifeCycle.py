@@ -126,7 +126,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[6, 128, 160]
+# + code_folding=[128, 160]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -233,8 +233,8 @@ class LifeCycle:
         self.prepare_shocks()
         
         ## saving a grid
-        a_grid_small = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size))
-        self.a_grid = np.append(a_grid_small,np.max(a_grid_small)*100)
+        a_grid_regular = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size-1))
+        self.a_grid = np.append(a_grid_regular,np.max(a_grid_regular)*100)
         
         ## ma(1) shock grid 
         if sigma_eps!=0.0 and x!=0.0:
