@@ -84,6 +84,7 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
+# + code_folding=[]
 ## make some modifications 
 P_ss = cal_ss_2markov(lc_paras_y['P'])
 #lc_paras_y['σ_ψ_2mkv'] = np.flip(lc_paras_y['σ_ψ_2mkv'])
@@ -93,6 +94,7 @@ P_ss = cal_ss_2markov(lc_paras_y['P'])
 #lc_paras_y['unemp_insurance'] = 0.0 
 #lc_paras_y['init_b'] = 0.0 
 #lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
+# -
 
 print(lc_paras_y)
 
@@ -168,7 +170,7 @@ bequest_ratio = 0.0
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 18, 94, 119, 147, 174]
+# + code_folding=[0, 9, 96, 121, 149, 176]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -251,13 +253,15 @@ if calibrated_model == True:
     lc_mkv_sub_true_paras['subjective'] = False
     lc_mkv_sub_true_paras['sigma_psi_true'] = lc_paras['σ_ψ_sub']
     lc_mkv_sub_true_paras['sigma_eps_true'] =  lc_paras['σ_θ_sub']
+    #lc_mkv_sub_true_paras['sigma_p_init'] = np.sqrt(lc_paras['σ_ψ_init']**2+ 0.6**2)
+
     lc_mkv_sub_true = LifeCycle(**lc_mkv_sub_true_paras)
 
     ## counter-cyclical risks 
     lc_mkv_sub_cr_paras = copy(lc_mkv_sub_paras)
     lc_mkv_sub_cr_paras['sigma_psi_2mkv'] = np.flip(lc_paras['σ_ψ_2mkv'])
     lc_mkv_sub_cr_paras['sigma_eps_2mkv'] = np.flip(lc_paras['σ_θ_2mkv'])
-    
+
     lc_mkv_sub_cr = LifeCycle(**lc_mkv_sub_cr_paras)
 
 
@@ -372,7 +376,7 @@ else:
                       )
 
 
-# + code_folding=[0, 22]
+# + code_folding=[0, 20]
 ## solve various models
 
 models = [lc_mkv,
@@ -382,13 +386,11 @@ models = [lc_mkv,
 specs = ['ob',
          'sub',
          'sub_true',
-         #'cr'
          ]
 
 model_names=['baseline',
              'SLPR',
              'LPR',
-             #'subjective_sv'
              ]
 
 ms_stars = []
@@ -418,7 +420,7 @@ print("Time taken, in seconds: "+ str(t_finish - t_start))
 
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## be careful with the order 
 ## get the solution for the objective model 
 ms_star_mkv, σs_star_mkv = ms_stars[0],σs_stars[0]
@@ -826,7 +828,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[5, 17, 237, 251, 270, 281, 312]
+# + code_folding=[0, 17, 111, 237, 251, 270, 281, 312]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1173,7 +1175,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0, 5, 24, 143]
+# + code_folding=[0, 5, 25, 132]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1191,7 +1193,8 @@ class Market_OLG_mkv:
         age_dist = households.age_dist 
         T =  self.model.T
         L_ss = np.sum(age_dist[:T-1])*ss_dstn[1] ## employment fraction for working age population
-        self.households.emp_ss = L_ss
+        self.households.emp_ss = L_ss  ## employed pop fraction
+        self.households.uemp_ss = np.sum(age_dist[:T-1])*ss_dstn[0]  ## unemployed pop fraction
         production.normlize_Z(N_ss = L_ss)
         self.production = production   ## Production function
 
@@ -1337,6 +1340,19 @@ class Market_OLG_mkv:
 
         ## get the distribution under SS
         model.W,model.R = W_eq,R_eq
+        
+        ## obtain tax rate from the government budget balance 
+
+        model.λ = unemp_insurance2tax(model.unemp_insurance,
+                                     households.uemp_ss)
+
+        ## obtain social security rate balancing the SS replacement ratio 
+
+        model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
+                            model.T,  ## retirement years
+                            households.age_dist,  ## age distribution in the economy 
+                            model.G,         ## permanent growth factor lists over cycle
+                            households.emp_ss)
 
         ## solve the model again 
 
@@ -1359,7 +1375,7 @@ class Market_OLG_mkv:
         
         self.households = households
 
-# + code_folding=[1]
+# + code_folding=[0, 1]
 ## initializations 
 production = CDProduction(α = production_paras['α'],
                           δ = production_paras['δ'],
@@ -1505,7 +1521,7 @@ def solve_models(model_list,
                      model_name = model_name_list[k],
                      ge = ge)
 
-# + code_folding=[0]
+# + code_folding=[0, 2]
 ## solve a list of models and save all solutions as pickles 
 
 model_results = solve_models(models,
@@ -1946,5 +1962,9 @@ zero_wealth_id = np.where(market_OLG_mkv.households.ap_grid_dist<=1e-2)
 zero_wealth_share = market_OLG_mkv.households.ap_pdfs_dist[zero_wealth_id].sum()
 print('Share of zero wealth',str(zero_wealth_share))
 # -
+
+
+
+
 
 
