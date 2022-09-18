@@ -622,7 +622,7 @@ sigma_trans_E2E_SCE = PR_est['sigma_trans_E2E']
 loc_trans_E2E_SCE = PR_est['loc_trans_E2E']
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## make grids of sigma_psi and sigma_eps
 
 from resources_jit import LogNormal as lognorm
@@ -758,7 +758,7 @@ def average_heterogeneity(sigma_xi_psi,
         
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## stationary distribution of age 
 from Utility import stationary_age_dist
 
@@ -772,7 +772,7 @@ init_sigma_psi_av = average_heterogeneity(sigma_xi_psi,
 
 print('Adjusting initial p dispersion by {} to account of heterogeneity in p '.format(init_sigma_psi_av))
 
-# + code_folding=[7, 24, 27, 34, 44, 54, 64, 86]
+# + code_folding=[0, 7, 24, 27, 34, 44, 54, 64, 74, 85, 96, 104]
 ## create a list of consumer types with different risk parameters and any other primitive parameters 
 
 sigma_psi_types = np.array(sigma_psi_grid)
@@ -882,7 +882,7 @@ hetero_p_risk_beta_types = make_2dtypes(by_list = ['sigma_psi','β'],
                                                  beta_types]
                                     )
 
-# + code_folding=[4, 22]
+# + code_folding=[4]
 ## addting unobserved heterogeneity in permanent income 
 
 hetero_p_t_risk_uh_types = []
@@ -946,7 +946,7 @@ for this_type in hetero_p_t_ue_risk_G_types:
 # + code_folding=[12]
 ## solve various models
 
-types = hetero_p_t_risk_beta_uh_types
+types = hetero_p_t_risk_uh_types
 
 specs = ['ob']*len(types)
 
@@ -979,7 +979,7 @@ print("Time taken, in seconds: "+ str(t_finish - t_start))
 
 
 
-# + code_folding=[12]
+# + code_folding=[0, 12]
 ## compare solutions 
 
 m_grid = np.linspace(0.0,10.0,200)
@@ -1019,7 +1019,7 @@ for x,year in enumerate(years_left):
 
 # ## Aggregate steady state distributions
 
-# + code_folding=[]
+# + code_folding=[0]
 ## a function that computes social security tax rate balances gov budget for pension
 from Utility import unemp_insurance2tax  
 ## a function that computes tax rate balances gov budget for ue insurance
@@ -1368,7 +1368,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 17, 235, 249, 278, 309]
+# + code_folding=[0, 17, 111, 235, 249, 278, 309]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1742,7 +1742,7 @@ def Lorenz(model_results):
     return share_agents_ap,share_ap
 
 
-# + code_folding=[0, 2, 43, 61]
+# + code_folding=[2, 43, 58, 76]
 ## new functions that are needed for heterogenous-types 
 
 def solve_1type(model,
@@ -1750,6 +1750,20 @@ def solve_1type(model,
                 σ_star,
                 n_m=40,
                 n_p=40):
+    """
+    this function obtains the stationary distribution a particular life cycle type, 
+      and produces all results regarding the stationary distribution.
+      
+    input
+    =====
+    model: life cycle class instance
+    m_star, \sigma_star: optimal consumption policy of this agent 
+    
+    output
+    ======
+    a dictionary storing results regarding the stationary dist for the household block with only this type
+    the household block instance to be appended with other household blocks. 
+    """
     HH_this = HH_OLG_Markov(model = model)
     HH_this.define_distribution_grid(num_pointsM = n_m, 
                                     num_pointsP = n_p)
@@ -1786,6 +1800,7 @@ def solve_1type(model,
     ## save it as a pkl
 
     return model_dct,HH_this
+
 def solve_types(model_list,
                 ms_star_list,
                 σs_star_list):
@@ -1864,7 +1879,7 @@ def combine_results(results_by_type):
     return model_dct_pe
 
 
-# + code_folding=[0, 7]
+# + code_folding=[2, 32, 138]
 ## market class
 
 class Market_OLG_mkv_hetero_types:
@@ -1889,7 +1904,8 @@ class Market_OLG_mkv_hetero_types:
         
         L_ss_all = np.sum(age_dist[:T-1])*ss_dstn[1] ## employment fraction for working age population
         self.emp_ss = L_ss_all ## average across equal-probable agents 
-    
+        self.uemp_ss = np.sum(age_dist[:T-1])*ss_dstn[0]
+        
         ## the producation side 
         production.normlize_Z(N_ss = self.emp_ss)
         self.production = production   ## Production function
@@ -2032,12 +2048,31 @@ class Market_OLG_mkv_hetero_types:
         print('SS Wage Rate',str(W_eq))
         print('SS Real interest rate',str(R_eq))
         
+        λ = unemp_insurance2tax(model_list[0].unemp_insurance,
+                                self.uemp_ss)
+        print('Tax rate',str(λ))
+                     
+        ## obtain social security rate balancing the SS replacement ratio 
+        G_av = np.mean([model_list[i].G for i in range(len(model_list))],axis=0)
+        age_dist = households_list[0].age_dist
+        λ_SS = SS2tax(model_list[0].pension, ## social security /pension replacement ratio 
+                     model_list[0].T,  ## retirement years
+                    age_dist,  ## age distribution in the economy 
+                    G_av,         ## permanent growth factor lists over cycle
+                    self.emp_ss)
+        
+        print('Social security tax rate',str(λ_SS))
+        
         ms_stars = []
         σs_stars = []
+        model_updated_list = []
+        
         for model_i, model in enumerate(model_list):
             ## get the distribution under SS
             model.W,model.R = W_eq,R_eq
-
+            model.λ = λ
+            model.λ_SS = λ_SS
+            
             ## solve the model again 
 
             ## terminal period solution
@@ -2049,11 +2084,11 @@ class Market_OLG_mkv_hetero_types:
             
             ms_stars.append(ms_star)
             σs_stars.append(σs_star)
-            
-        results_by_type,_ = solve_types(model_list,
-                                      ms_stars,
-                                      σs_stars)
-        
+            model_updated_list.append(model)
+                    
+        results_by_type,_ = solve_types(model_updated_list, ## use updated list because it has updated factor price 
+                                          ms_stars,
+                                          σs_stars)
         
         results_combined = combine_results(results_by_type) 
         
@@ -2094,7 +2129,7 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## Solve the heterogenous-type model 
 
-# + code_folding=[0]
+# + code_folding=[0, 2]
 ## solve a list of models and save all solutions as pickles 
 
 results_by_type,households_by_type = solve_types(types,
@@ -2148,7 +2183,7 @@ ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
 # -
 
-pickle.dump(results_combined_pe,open('./model_solutions/HPRTP_PE.pkl','wb'))
+pickle.dump(results_combined_pe,open('./model_solutions/HPR_PE.pkl','wb'))
 
 # ## GE with multiple types 
 
@@ -2161,7 +2196,7 @@ market_OLG_mkv_this.get_equilibrium_k()
 
 results_combined_ge = market_OLG_mkv_this.get_equilibrium_dist()
 
-pickle.dump(results_combined_ge,open('./model_solutions/'+'HPRTP_GE.pkl','wb'))
+pickle.dump(results_combined_ge,open('./model_solutions/'+'HPR_GE.pkl','wb'))
 # + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
