@@ -33,20 +33,20 @@
 
 
 1. [Life-cycle consumption/saving model with permanent/persistent/transitory income risks](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
-   -  [an extended model with a Markov belief state](./WorkingFolder/PythonCode/SolveLifeCycleBelief.ipynb)
    - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleBelief-ComparisonHARK.ipynb)
    - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleBelief-Test.ipynb)
    - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
 
 2. [Stationary distribution and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
-   - [an extended version with heterogeneous income risks, growth rates and time preference](./WorkingFolder/PythonCode/OLG-GE-HeteroTypes.ipynb)
-   - [an extended version with heterogenous beliefs of income risks](./WorkingFolder/PythonCode/OLG-GE-Belief.ipynb)
+   - [an extended version with heterogeneous income risks, growth rates and time preference](./WorkingFolder/PythonCode/OLG-GE-HeterTypes.ipynb)
 
 3. [Calibration of the heterogeneous wage/unemployment risks from SCE](./WorkingFolder/PythonCode/HeterogeneousRisksEstMain.ipynb)
 
 ## Other derivative results (not in the main body of the paper)
 
 1. [Markov regime switching model of subjective PR](./WorkingFolder/PythonCode/SubjectiveProfileEst.ipynb)
+2. [an extended life-cycle model with a Markov belief state](./WorkingFolder/PythonCode/SolveLifeCycleBelief.ipynb)
+3. [An extended OLG-GE model with state-dependent beliefs of income risks](./WorkingFolder/PythonCode/OLG-GE-Belief.ipynb)
 
 ## Supporting utilities/resources
 
