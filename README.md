@@ -18,7 +18,7 @@
 1. [Density estimation of the survey answers](./WorkingFolder/PythonCode/DoDensityEst.ipynb) that draws from the general code [DensityEst](./WorkingFolder/PythonCode/DensityEst.py)
 
 2. [Income risks decomposition](./WorkingFolder/PythonCode/IncomeRisksEst.ipynb) that draws on the [income process class](./WorkingFolder/PythonCode/IncomeProcess.ipynb)
-   - [Estimation allowing for infrequent shocks](./WorkingFolder/PythonCode/IncomeRisksInfrequentEst.ipynb) 
+   - [Evidence for infrequent shocks for monthly wage growth](./WorkingFolder/PythonCode/IncomeRisksInfrequentEst.ipynb) 
 
 3. [Micro empirical analysis](./WorkingFolder/PythonCode/MicroRiskProfile.ipynb) on the cross-sectional heterogeneity of perceived risks (PR)
 
