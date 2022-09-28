@@ -31,9 +31,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 # %matplotlib inline
-import statsmodels.api as sm 
 import statsmodels.formula.api as smf
-from linearmodels.panel import PanelOLS
 from statsmodels.iolib.summary2 import summary_col
 
 """ 
@@ -512,7 +510,7 @@ print("Median of risk perception is "
 SCEM['incstd'] = np.sqrt(SCEM['incvar'])
 SCEM['rincstd'] = np.sqrt(SCEM['rincvar'])
 
-# +
+# + {"code_folding": [1]}
 ### first step regression 
 mom_list = ['incexp',
             'incvar',
@@ -552,13 +550,13 @@ from matplotlib import cm
 
 labels=[y for y in list(SCEM.year.unique())]
 
-labels_list = ['Expected nominal income growth',
-            'Perceived nominal income risks',
-            'Perceived nominal income IQR',
-            'Perceived real income risks',
-            'Perceived nominal income risks (std)',
-            'Perceived real income risks (std)',
-            'Perceived nominal income risks']
+labels_list = ['Expected nominal wage growth',
+            'Perceived nominal wage risks',
+            'Perceived nominal wage IQR',
+            'Expected real wage growth',
+            'Perceived nominal wage risks (std)',
+            'Perceived real wage risks (std)',
+            'Perceived nominal wage risks']
 
 
 for mom_id,mom in enumerate(mom_list):
