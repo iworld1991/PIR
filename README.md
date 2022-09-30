@@ -11,14 +11,14 @@
 - For the most recent draft, see [here](./PIR.pdf).
 
 
-## Structure of code
+## Structure of the code
 
 ## Empirics
 
 1. [Density estimation of the survey answers](./WorkingFolder/PythonCode/DoDensityEst.ipynb) that draws from the general code [DensityEst](./WorkingFolder/PythonCode/DensityEst.py)
 
 2. [Income risks decomposition](./WorkingFolder/PythonCode/IncomeRisksEst.ipynb) that draws on the [income process class](./WorkingFolder/PythonCode/IncomeProcess.ipynb)
-   - [Evidence for infrequent shocks for monthly wage growth](./WorkingFolder/PythonCode/IncomeRisksInfrequentEst.ipynb) 
+   - [Evidence for infrequent shocks to monthly wage growth](./WorkingFolder/PythonCode/IncomeRisksInfrequentEst.ipynb) 
 
 3. [Micro empirical analysis](./WorkingFolder/PythonCode/MicroRiskProfile.ipynb) on the cross-sectional heterogeneity of perceived risks (PR)
 
@@ -26,12 +26,12 @@
 
 ## Model
 
-
+### Calibration
 1.  [SCFMoments](./WorkingFolder/PythonCode/SCFData.ipynb)
 2. [Parameters](./WorkingFolder/PythonCode/PrepareParameters.ipynb)
   - stored as a dictionary, to be directly imported into model notebooks
 
-
+### Model
 1. [Life-cycle consumption/saving model with permanent/persistent/transitory income risks](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
    - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleBelief-ComparisonHARK.ipynb)
    - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleBelief-Test.ipynb)
@@ -49,7 +49,6 @@
 3. [An extended OLG-GE model with state-dependent beliefs of income risks](./WorkingFolder/PythonCode/OLG-GE-Belief.ipynb)
 
 ## Supporting utilities/resources
-
 
 
 1. [Utility](./WorkingFolder/PythonCode/Utility.ipynb)
