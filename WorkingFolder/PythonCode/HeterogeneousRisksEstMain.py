@@ -17,11 +17,9 @@
 # # A heterogeneous-risk model estimation using SCE
 #
 
-# ## Motivation
+# ## Introduction
 #
-# So it has been established that PR shows a large degree of heterogeneity and it is along dimensions beyond the conventional assumptions. So the questions are how am I about to model this heterogeneity, estimating them from survey data and also acccount for the empirical regularities.
-#
-# In reality, the income process could differ in various different ways. But a simple assumption is enough. I assume that the relative size of permanent and transitory risks are heterogeneous. This easily accomodates various kinds of reasons for the heterogeneity in income risks. 
+# This notebook fits truncated log normal distributions to the cross-sectional distribution of PRs, UE risks and growth rates expectations in SCE. 
 
 # +
 import numpy as np
