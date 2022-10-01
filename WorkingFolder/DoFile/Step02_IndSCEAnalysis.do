@@ -227,6 +227,7 @@ gen UEprobInd=Q13new/100
 rename Q26v2 spending_dum
 rename Q26v2part2 spending 
 replace spending = spending/100
+gen spending_r = spending - Q9_mean
 
 gen exp_offer = oo2u/100
 gen EUprobInd = Q22new/100
@@ -344,6 +345,7 @@ label var linciqr "log perceived iqr"
 label var lincvar "log perceived risk"
 label var lrincvar "log perceived risk (real)"
 label var spending "expected growth in spending"
+label var spending_r "expected growth in spending (real)"
 
 *************************************
 *** Poisson rate in expectations 
@@ -862,36 +864,32 @@ eststo clear
 ************************************************
 ** spending decisions and perceived risks **
 ************************************************
+
 eststo clear
 xtset ID date
+label var incmean "expected wage growth"
+label var rincvar "perceived wage risk"
+label var incvar "perceived wage risk (nominal)"
+label var exp_s "perceived UE risk next 4m"
+label var exp_s_1y "perceived UE risk next 1y"
 
-label var rincvar "perceived earning risk"
-label var incvar "perceived earning risk (nominal)"
-label var exp_s "perceived ue risk next 4m"
-label var exp_s_1y "perceived ue risk next 1y"
 
-eststo: reg spending rincvar
+eststo: reg spending incmean rincvar
 
 estadd local hast "No",replace
 estadd local hasid "No",replace
 
-eststo: areg spending rincvar, a(date)
+eststo: areg spending incmean rincvar, a(date)
 
 estadd local hast "Yes",replace
 estadd local hasid "No",replace
 
-eststo: areg spending rincvar, a(ID)
+eststo: areg spending incmean rincvar, a(ID)
 
 estadd local hast "No",replace
 estadd local hasid "Yes",replace
 
-
-eststo: areg spending rincvar i.year, a(ID)
-
-estadd local hast "Yes",replace
-estadd local hasid "Yes",replace
-
-eststo: areg spending incvar i.year, a(ID)
+eststo: areg spending incmean rincvar i.year, a(ID)
 
 estadd local hast "Yes",replace
 estadd local hasid "Yes",replace

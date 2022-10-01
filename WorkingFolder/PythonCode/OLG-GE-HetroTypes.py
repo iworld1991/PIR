@@ -622,7 +622,7 @@ sigma_trans_E2E_SCE = PR_est['sigma_trans_E2E']
 loc_trans_E2E_SCE = PR_est['loc_trans_E2E']
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## make grids of sigma_psi and sigma_eps
 
 from resources_jit import LogNormal as lognorm
@@ -690,7 +690,7 @@ print('Equally probable U2U grid is', str(U2U_grid))
 
 print('Equally probable E2E grid is', str(E2E_grid))
 
-# + code_folding=[]
+# + code_folding=[0]
 ## make deterministic profiles 
 
 G_low_work = lc_paras['G'][:lc_paras['T']]-std_exp_SCE
@@ -784,7 +784,7 @@ P_types = [np.array([[U2U_types[i],1-U2U_types[i]],
                      [1-E2E_types[i],E2E_types[i]]]) 
            for i in range(len(U2U_types))]
 
-beta_types = np.array([0.9,0.99])
+beta_types = np.array([0.96,0.97,0.98])
 
 hetero_beta_types = make_1dtypes('β',
                               beta_types)
@@ -882,7 +882,7 @@ hetero_p_risk_beta_types = make_2dtypes(by_list = ['sigma_psi','β'],
                                                  beta_types]
                                     )
 
-# + code_folding=[4]
+# + code_folding=[0, 4]
 ## addting unobserved heterogeneity in permanent income 
 
 hetero_p_t_risk_uh_types = []
@@ -912,12 +912,12 @@ for this_type in hetero_p_t_ue_risk_types:
     this_type.prepare_shocks()
     hetero_p_t_ue_risk_uh_types.append(this_type)
     
-hetero_p_t_risk_sub_uh_types =[]
+hetero_p_t_ue_risk_sub_uh_types =[]
 
 for this_type in hetero_p_t_ue_risk_sub_types:
     this_type.sigma_p_init = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
     this_type.prepare_shocks()
-    hetero_p_t_risk_sub_uh_types.append(this_type)
+    hetero_p_t_ue_risk_sub_uh_types.append(this_type)
     
 hetero_p_t_ue_risk_beta_uh_types = []
 
@@ -946,7 +946,7 @@ for this_type in hetero_p_t_ue_risk_G_types:
 # + code_folding=[12]
 ## solve various models
 
-types = hetero_p_t_risk_uh_types
+types = hetero_p_t_ue_risk_sub_uh_types
 
 specs = ['ob']*len(types)
 
@@ -1368,7 +1368,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 17, 111, 235, 249, 278, 309]
+# + code_folding=[0, 5, 17, 111, 235, 249, 278, 309]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -1879,7 +1879,7 @@ def combine_results(results_by_type):
     return model_dct_pe
 
 
-# + code_folding=[2, 32, 138]
+# + code_folding=[0, 7, 32, 138]
 ## market class
 
 class Market_OLG_mkv_hetero_types:
@@ -2129,7 +2129,7 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## Solve the heterogenous-type model 
 
-# + code_folding=[0, 2]
+# + code_folding=[2]
 ## solve a list of models and save all solutions as pickles 
 
 results_by_type,households_by_type = solve_types(types,
@@ -2183,7 +2183,7 @@ ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
 # -
 
-pickle.dump(results_combined_pe,open('./model_solutions/HPR_PE.pkl','wb'))
+pickle.dump(results_combined_pe,open('./model_solutions/SHPRUR_PE.pkl','wb'))
 
 # ## GE with multiple types 
 
@@ -2196,7 +2196,7 @@ market_OLG_mkv_this.get_equilibrium_k()
 
 results_combined_ge = market_OLG_mkv_this.get_equilibrium_dist()
 
-pickle.dump(results_combined_ge,open('./model_solutions/'+'HPR_GE.pkl','wb'))
+pickle.dump(results_combined_ge,open('./model_solutions/'+'SHPRUR_GE.pkl','wb'))
 # + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
