@@ -7,21 +7,27 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.6.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
-#     display_name: Python 3
+#     display_name: Python 3 (ipykernel)
 #     language: python
 #     name: python3
 # ---
 
+# ## Permanent-transitory income process and income risk estimation
+# - Author: Tao Wang
+# - Date: Sep, 2022
+
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 from scipy.optimize import root 
 import copy as cp
+import matplotlib.pyplot as plt
 
 
-# + {"code_folding": [0, 8]}
+# + {"code_folding": [2, 10]}
+## some help functions that are useful in numerical estimations 
+
 def toVec(ma_coeffs,
           sigmas,
           t,
@@ -37,18 +43,19 @@ def toPara(vec,
     return vec[:ma_q-1], vec[ma_q:].reshape(2,t)
 
 
-# + {"code_folding": [38, 42, 53, 66, 74, 89, 97, 115, 140, 149, 177, 181, 186, 202, 222, 236, 253, 273, 279, 301, 324, 352, 370, 380, 390, 410, 438, 461, 479, 508, 525]}
-## class of integrated moving average process, trend/cycle process allowing for serial correlation transitory shocks
+# + {"code_folding": [2, 17, 39, 43, 54, 74, 88, 96, 114, 140, 174, 178, 183, 219, 233, 249, 269, 297, 320, 347, 365, 370, 375, 380, 385, 390, 405, 433, 456, 470, 474, 503, 508, 520]}
+## a class of integrated moving average process, trend/cycle process allowing for serial correlation transitory shocks
+## this corresponds to the permanent-transitory income process in the literature. 
 class IMAProcess:
     '''
     inputs
     ------
     t: int, number of periods of the series
-    process_para, dict, includes 
-       - ma_coeffs: size f q for MA(q),  moving average coeffcients of transitory shocks. q = 0 by default.
-       - sigmas:  size of 2 x t, draws of permanent and transitory risks from time varying volatility 
-       In the case of stochastical volatility with constant transitory volatility and time 
-       past-dependent permanent volatility, following parameters are used as well
+    process_para, a dictionary, includes 
+       - ma_coeffs: size of q for MA(q),  moving average coefficients of transitory shocks. q = 0 by default.
+         only q =0 or 1 is implemented so far. 
+       - sigmas:  size of 2 x t, the sizes of permanent and transitory risks and possibly time-varying 
+       In the case of stochastic volatility with constant transitory volatility and path-dependent permanent volatility, following parameters are used as well
        
        - rho: how persistent the innovation to permanent risks is
        - gamma: size of the innovation 
@@ -96,7 +103,6 @@ class IMAProcess:
         t = self.t 
         ma_coeffs = self.ma_coeffs
         sigmas = self.sigmas
-        ma_q = self.ma_q 
         np.random.seed(12345)                 
         p_draws = np.multiply(np.random.randn(n_sim*t).reshape([n_sim,t]), 
                               np.tile(sigmas[0,:],[n_sim,1]))  # draw permanent shocks
@@ -126,7 +132,6 @@ class IMAProcess:
                        'Var':varcov_diff}
         return self.SimMoms
     
-
     def TimeAggregate(self):
         n_agg = self.n_agg
         simulated = self.simulated
@@ -190,17 +195,15 @@ class IMAProcess:
     def ComputeGenMoments(self):
         ## parameters 
         t = self.t 
-        ma_coeffs = self.ma_coeffs
         sigmas = self.sigmas
         p_sigmas = sigmas[0,:]
         t_sigmas = sigmas[1,:]
-        ma_q = self.ma_q 
         
         ## generalized moments 
         mean_diff = np.zeros(t)[1:] 
         ## varcov is basically the variance covariance of first difference of income of this IMA(q) process
         ## Cov(delta y_t - delta y_{t+k}) forall k for all t
-        varcov_diff = np.asmatrix( np.zeros((t)**2).reshape([t,t]) )
+        varcov_diff =  np.asmatrix( np.zeros((t)**2).reshape([t,t]) )
         
         for i in range(t):
             autocovf_this = p_sigmas[i]**2 + t_sigmas[i]**2 + t_sigmas[i-1]**2
@@ -284,7 +287,6 @@ class IMAProcess:
                                   ma_q)
         self.ma_coeffs = ma_coeffs
         self.sigmas = sigmas
-        model_series_sim = self.SimulateSeries(n_sim = 2000) 
         model_moms_dct = self.SimulatedMoments()  
         model_moms = np.array([model_moms_dct[key] for key in ['Var']]).flatten()
         data_moms = np.array([data_moms_dct[key] for key in ['Var']]).flatten()
@@ -367,7 +369,6 @@ class IMAProcess:
         data_moms_agg_dct = self.data_moms_agg_dct
         t = self.t
         ma_q = self.ma_q
-        n_agg = self.n_agg
         ma_coeffs,sigmas = toPara(para_agg,
                                   t,
                                   ma_q)
@@ -446,7 +447,7 @@ class IMAProcess:
 ###################
 
     
-    ## simulated cross sectional vols before time aggregatio, i.e. monthly 
+    ## simulated cross sectional vols before time aggregation, i.e. monthly 
     
     def SimulateSVols(self,
                       n_sim = 200):
@@ -568,113 +569,146 @@ class IMAProcess:
                           k):
         k_step_sigma_theta = self.rho**k*np.exp(-0.5*self.gamma)*(sigma_theta_now**2)
         return k_step_sigma_theta
-# + {"code_folding": []}
-## debugging test of the data 
+# + {"code_folding": [0]}
+if __name__ == "__main__":
+    
+    ## debugging test of the data 
 
-#t = 100
-#ma_nosa = np.array([1])
-#p_sigmas = np.arange(t)  # sizes of the time-varying permanent volatility 
-#p_sigmas_rw = np.ones(t) # a special case of time-invariant permanent volatility, random walk 
-#p_sigmas_draw = np.random.uniform(0,1,t) ## allowing for time-variant shocks 
+    t = 100
+    ma_nosa = np.array([1])  ## ma coefficient without serial correlation
+    p_sigmas = np.random.uniform(0,1,t) ## allowing for time-variant shocks 
+    pt_ratio = 0.33
+    t_sigmas = pt_ratio * p_sigmas # sizes of the time-varying permanent volatility
+    sigmas = np.array([p_sigmas,
+                       t_sigmas])
 
-#pt_ratio = 0.33
-#t_sigmas = pt_ratio * p_sigmas_draw # sizes of the time-varyingpermanent volatility
-#sigmas = np.array([p_sigmas_draw,
-#                   t_sigmas])
-
-#dt = IMAProcess(t = t,
-#                ma_coeffs = ma_nosa)
-#dt.sigmas = sigmas
-#dt.n_agg = 12
-
-#sim_data = dt.SimulateSeries(n_sim = 800)
-#sim_moms = dt.SimulatedMoments()
-
-# + {"code_folding": []}
-## invoke an instance 
-
-#dt_fake = IMAProcess(t = t,
-#                     ma_coeffs = ma_nosa)
-#dt_fake.sigmas = sigmas 
-#dt_fake.n_agg = 12
-
-#data_fake= dt_fake.SimulateSeries(n_sim = 500)
-#moms_fake = dt_fake.SimulatedMoments()
+    dt = IMAProcess(t = t,
+             ma_coeffs = ma_nosa)
+    dt.sigmas = sigmas
+    sim_data = dt.SimulateSeries(n_sim = 2000)
+    sim_moms = dt.SimulatedMoments()
 
 
 # + {"code_folding": []}
-## time aggregation 
-#dt_fake.n_agg = 12
+if __name__ == "__main__":
+    
+    ## plot the simulated data for 10 individuals 
+    
+    plt.plot(sim_data[0,:])
+    plt.plot(sim_data[1,:])
+    plt.plot(sim_data[3,:])
+    plt.xlabel('Time')
+    plt.ylabel(r'$y_t$')
+    plt.title('Income realizations of \n a few simulated agents')
 
-#dt_fake.TimeAggregate()
-#moms_fake_agg = dt_fake.SimulateMomentsAgg()
+# + {"code_folding": [0]}
+if __name__ == "__main__":
+    ## get the computed moments 
 
-## and prepare fake data 
-
-#sigmas2 = sigmas*2 
-#dt_fake2 = IMAProcess(t = t,
-#                      ma_coeffs = ma_nosa)
-#dt_fake2.sigmas = sigmas2
-#data_fake2= dt_fake2.SimulateSeries(n_sim = 5000)
-#moms_fake2 = dt_fake2.SimulatedMoments()
-#dt_fake2.n_agg = 3
-#dt_fake2.TimeAggregate()
-#moms_fake_agg2 = dt_fake2.SimulateMomentsAgg()
-
-# + {"code_folding": []}
-# simulated time aggregated moments 
-#agg_moms_sim = moms_fake_agg['Var']
-
-# computed time aggregated moments 
-#agg_moms_com = dt_fake.ComputeMomentsAgg()
-
-#distance = np.linalg.norm((agg_moms_com[3:,3:] - agg_moms_sim))
-
-# +
-#distance
-
-# + {"code_folding": []}
-## estimation 
-#dt_fake.GetDataMomentsAgg(moms_fake_agg2)
-#dt_fake.EstimateParaAggCompute()
+    comp_moms = dt.ComputeGenMoments()
+    av_comp = comp_moms['Mean']
+    cov_var_comp = comp_moms['Var']
+    var_comp = dt.AutocovarComp(step=0) #np.diagonal(cov_var_comp)
+    autovarb1_comp = dt.AutocovarComp(step=-1)  #np.array([cov_var_comp[i,i+1] for i in range(len(cov_var_comp)-1)]) 
+    
+    
+    ## get the simulated moments 
+    sim_moms = dt.SimulatedMoments()
+    av = sim_moms['Mean']
+    cov_var = sim_moms['Var']
+    var = dt.Autocovar(step = 0)   #= np.diagonal(cov_var)
+    autovarb1 = dt.Autocovar(step = -1) #np.array([cov_var[i,i+1] for i in range(len(cov_var)-1)]) 
 # -
 
-# ## Estimate volatility 
+if __name__ == "__main__":
+
+    ## plot simulated moments of first diff 
+
+    plt.figure(figsize=(20,4))
+
+    plt.subplot(1,4,1)
+    plt.title(r'$\sigma_{\theta,t},\sigma_{\epsilon,t}$')
+    plt.plot(p_sigmas,label='sigma_p')
+    plt.plot(t_sigmas,label='sigma_t')
+    plt.legend(loc=0)
+
+    plt.subplot(1,4,2)
+    plt.title(r'$\Delta(y_t)$')
+    plt.plot(av,label='simulated')
+    plt.plot(av_comp,label='computed')
+    plt.legend(loc=0)
+
+    plt.subplot(1,4,3)
+    plt.title(r'$Var(\Delta y_t)$')
+    plt.plot(var,label='simulated')
+    plt.plot(var_comp,label='computed')
+    plt.legend(loc=0)
+
+    plt.subplot(1,4,4)
+    plt.title(r'$Cov(\Delta y_t,\Delta y_{t+1})$')
+    plt.plot(autovarb1,label='simulated')
+    plt.plot(autovarb1_comp,label='computed')
+    plt.legend(loc = 0)
+
+if __name__ == "__main__":
+
+    ## robustness check if the transitory risks is approximately equal to the assigned level
+
+    sigma_t_est = np.array(np.sqrt(abs(autovarb1)))
+    plt.plot(sigma_t_est,'r-',label=r'$\widehat \sigma_{\theta,t}$')
+    plt.plot(t_sigmas[1:-1],'b-.',label=r'$\sigma_{\theta,t}$')  # the head and tail trimmed
+    plt.legend(loc=1)
 
 # + {"code_folding": []}
-## simulate volatility 
+## Estimating income risks using fake data 
+# -
 
-#dt.SimulateSVols()
-#dt.SimulateSVolsAgg()
-#dt.SimulateSVolsAggMoms()
+if __name__ == "__main__":
+    ## some fake data moments with alternative parameters
+    
+    ## both p and t risks are draws
+    p_sigmas_draw = np.random.uniform(0,1,t)
+    t_sigmas_draw = np.random.uniform(0,1,t)
 
-#dt_fake.SimulateSVols()
-#dt_fake.SimulateSVolsAgg()
-#svols_fake = dt_fake.SimulateSVolsAggMoms()
+    sigmas_fake = np.array([p_sigmas_draw,
+                       t_sigmas_draw])
 
-# + {"code_folding": []}
-#plt.plot(dt.vols_agg_sim_moms['ATV'])
+    dt_fake = IMAProcess(t = t,
+                  ma_coeffs = ma_nosa)
+    dt_fake.sigmas = sigmas_fake
+    data_fake = dt_fake.SimulateSeries(n_sim = 2000)
+    moms_fake = dt_fake.SimulatedMoments()
 
-# +
-#dt.GetDataMomentsVolsAgg(svols_fake)
-#dt.EstimateSVolsParaAgg()
+# + {"code_folding": [0]}
+if __name__ == "__main__":
 
-# +
-## after estimation 
-#dt.rho,dt.gamma, dt.sigma_eps = dt.para_svols_est_agg
-#vols_sim = dt.SimulateSVols()
-#vols_agg_sim = dt.SimulateSVolsAgg()
-#vols_agg_sim_mom = dt.SimulateSVolsAggMoms()
+    ## estimation of income risks 
 
-# + {"code_folding": []}
-## permanent and transitory 
-#plt.plot(vols_agg_sim[0:3,12:].T)
+    dt_est = cp.deepcopy(dt)
+    dt_est.GetDataMoments(moms_fake)
 
-# + {"code_folding": []}
-#plt.plot(vols_sim[0:3,12:].T)
+    para_guess_this = np.ones(2*t  + dt_est.ma_q)  # make sure the length of the parameters are right 
 
-# +
-#plt.plot(vols_agg_sim_mom['Mean'][12:])
+    para_est = dt_est.EstimatePara(method='BFGS',
+                                   para_guess = para_guess_this)
+
+# + {"code_folding": [0]}
+if __name__ == "__main__":
+
+    ## check the estimation and true parameters 
+
+    fig = plt.figure(figsize=([10,4]))
+
+    plt.subplot(1,2,1)
+    plt.title('Permanent Risk')
+    plt.plot(dt_est.para_est[1][0][1:].T**2,'r-',label='Estimation')
+    plt.plot(dt_fake.sigmas[0][1:]**2,'b-*',label='Truth')
+
+    plt.subplot(1,2,2)
+    plt.title('Transitory Risk')
+    plt.plot(dt_est.para_est[1][1][1:].T**2,'r-',label='Estimation')
+    plt.plot(dt_fake.sigmas[1][1:]**2,'b-*',label='Truth')
+    plt.legend(loc=0)
 # -
 
 
