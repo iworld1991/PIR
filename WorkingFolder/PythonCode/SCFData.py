@@ -13,7 +13,7 @@
 #     name: python3
 # ---
 
-# ## [Survey of Consumer Finace (SCF)](https://www.federalreserve.gov/econres/scfindex.htm) data cleaning and analysis 
+# ## [Survey of Consumer Finance (SCF)](https://www.federalreserve.gov/econres/scfindex.htm) data cleaning and analysis 
 #
 # - the code builds on this [blog](https://notebook.community/DaveBackus/Data_Bootcamp/Code/Lab/SCF_data_experiment_Brian)
 
