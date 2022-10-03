@@ -13,9 +13,9 @@
 #     name: python3
 # ---
 
-# ## SCF data cleaning and analysis 
+# ## [Survey of Consumer Finace (SCF)](https://www.federalreserve.gov/econres/scfindex.htm) data cleaning and analysis 
 #
-# - building on this [blog](https://notebook.community/DaveBackus/Data_Bootcamp/Code/Lab/SCF_data_experiment_Brian)
+# - the code builds on this [blog](https://notebook.community/DaveBackus/Data_Bootcamp/Code/Lab/SCF_data_experiment_Brian)
 
 import numpy as np
 import pandas as pd   #The data package
