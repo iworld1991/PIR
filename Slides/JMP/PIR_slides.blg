@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2020)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: PIR_slides.aux
+The style file: apalike.bst
+Database file #1: PIR_slides.bib
+Warning--there's a number but no volume in armantier_overview_2017
+Warning--empty journal in rozsypal_overpersistence_2017
+You've used 36 entries,
+            1935 wiz_defined-function locations,
+            683 strings with 9359 characters,
+and the built_in function-call counts, 14637 in all, are:
+= -- 1489
+> -- 522
+< -- 27
++ -- 188
+- -- 170
+* -- 1276
+:= -- 2505
+add.period$ -- 109
+call.type$ -- 36
+change.case$ -- 267
+chr.to.int$ -- 36
+cite$ -- 38
+duplicate$ -- 531
+empty$ -- 1043
+format.name$ -- 226
+if$ -- 2853
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 32
+newline$ -- 182
+num.names$ -- 108
+pop$ -- 189
+preamble$ -- 1
+purify$ -- 265
+quote$ -- 0
+skip$ -- 420
+stack$ -- 0
+substring$ -- 1223
+swap$ -- 69
+text.length$ -- 6
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 216
+warning$ -- 2
+while$ -- 138
+width$ -- 0
+write$ -- 469
+(There were 2 warnings)

@@ -1,0 +1,9 @@
+\beamer@sectionintoc {1}{Motivation}{3}{0}{1}
+\beamer@sectionintoc {2}{Empirical evidence}{11}{0}{2}
+\beamer@subsectionintoc {2}{1}{Framework}{15}{0}{2}
+\beamer@subsectionintoc {2}{2}{Cross-sectional patterns}{25}{0}{2}
+\beamer@subsectionintoc {2}{3}{Unemployment risks}{30}{0}{2}
+\beamer@subsectionintoc {2}{4}{Perceived risks and decisions}{31}{0}{2}
+\beamer@sectionintoc {3}{Model}{35}{0}{3}
+\beamer@subsectionintoc {3}{1}{Subjective model}{57}{0}{3}
+\beamer@sectionintoc {4}{Conclusion}{62}{0}{4}
