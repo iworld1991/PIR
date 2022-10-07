@@ -14,21 +14,26 @@
 #     name: python3
 # ---
 
-# ## A life-cycle consumption model with belief state 
+# ## A life-cycle consumption model with a state-dependent belief state (of income risks)
 #
 # - author: Tao Wang
-# - date: Feb 2022
-# - this is a companion notebook to the paper "Perceived income risks"
+# - date: October 2022
+# - this is a companion notebook to the paper ["Perceived income risks"](https://github.com/iworld1991/PIR/blob/master/PIR.pdf)
 
-# - This notebook builds on a standard life-cycle consumption model with uninsured income risks and extends it to allow subjective beliefs about income risks
-#   - Preference/income process
+# - This notebook builds on a standard life-cycle consumption model with uninsured income risks and extends it to allow for a **state-dependent belief state** about income risks
 #
+# __What's standard__
+#   - Preference/income process
 #       - CRRA utility 
-#       - During work: labor income risk: permanent + MA(1)/persistent/transitory/2-state Markov between UE and EMP or between low and high risk + i.i.d. unemployment shock
+#       - During work: labor income risk: permanent + MA(1)/persistent/transitory/2-state Markov between UE and EMP/ i.i.d. unemployment shock if not psersistent
 #        -  a deterministic growth rate of permanent income over the life cycle 
 #       - During retirement: receives a constant pension proportional to permanent income (no permanent/transitory income risks)
 #       - A positive probability of death before terminal age 
 #   
+# __What's new__
+#   - A new state variable of belief whose transitions follow 2-regime Markov, e.g. low risk versus high risk.
+#   - It is written for income risk parameters, but can be can be easily modified to reflect other state-dependent belief variables. 
+#
 
 import numpy as np
 from interpolation import interp, mlinterp
@@ -125,7 +130,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[128, 138, 143, 160, 211]
+# + code_folding=[1, 6, 128]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -355,7 +360,7 @@ class LifeCycle:
         return m_init,σ_init
 
 
-# + code_folding=[]
+# + code_folding=[7]
 ## This function takes the consumption values at different 
 ## grids of state variables from period t+1, and
 ## the model class, then generates the consumption values at t.
@@ -645,12 +650,11 @@ def compare_2solutions(ms_stars,
     return diff12 
 
 
-
 # -
 
-# ## Initialize the model
+# ## Initialize a Model
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -665,22 +669,17 @@ if __name__ == "__main__":
 
     T = 40
     L = 60
-    G = np.ones(L)
+    G = np.ones(L) # A Fake deterministic Life-cycle Income Profile
     YPath = np.cumprod(G)
-
-# + code_folding=[]
-## a deterministic income profile 
-if __name__ == "__main__":
-
-    plt.title('Deterministic Life-cycle Income Profile \n')
-    plt.plot(YPath,'ro')
-    plt.xlabel('Age')
-    plt.ylabel(r'$\hat Y$')
 # -
 
-# ## Life-Cycle Problem 
+# ## Solve the Life-Cycle Problem 
 
+# + code_folding=[0]
 if __name__ == "__main__":
+    P_uemkv = np.array([(0.2, 0.8),
+                        (0.2, 0.8)])   # markov transition matrices
+    
     lc_paras = {'sigma_psi':0.2, # permanent 
                 'sigma_eps': 0.1, #transitory
                 'U':U,
@@ -690,6 +689,7 @@ if __name__ == "__main__":
                 'L':L,
                 'G':G,
                 'β':0.97,
+                 'P':P_uemkv,
                 'x':0.0,  # no MA shock 
                 'borrowing_cstr':True,
                 'b_y':0.0, #no persistent state
@@ -700,7 +700,7 @@ if __name__ == "__main__":
     lc_basic = LifeCycle(**lc_paras)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 # Initial the end-of-period consumption policy of σ = consume all assets
 
 if __name__ == "__main__":
@@ -712,13 +712,15 @@ if __name__ == "__main__":
     plt.title('Consumption in the last period')
     plt.plot(m_init[0:-1,0,0,0],
              σ_init[0:-1,0,0,0])
+    plt.xlabel('m: cash in hand')
+    plt.ylabel('c: consumption')
 # -
 
 ## the size of consumption function is  nb_a x nb_eps x nb_z x nb_f
 if __name__ == "__main__":
     print(σ_init.shape)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     #########################
     ## test the iteration
@@ -732,7 +734,8 @@ if __name__ == "__main__":
     ax.plot(m_vec[0:-1,0,0,0],
             σ_vec[0:-1,0,0,0],
             label='T')
-
+    ax.set_xlabel('m: cash in hand')
+    ax.set_ylabel('c: consumption')
     ## solve backward
 
     for it in range(100):
@@ -748,13 +751,13 @@ if __name__ == "__main__":
         m_vec = np.copy(m_next)
         σ_vec = np.copy(σ_next)
     ax.legend(loc=0)
+    
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     t_start = time()
 
-    
     ### this line is very important!!!!
     #### need to regenerate shock draws for new sigmas
     lc_basic.prepare_shocks()
@@ -773,596 +776,30 @@ if __name__ == "__main__":
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 # -
 
-# ### Different permanent/transitory risk (no MA)
-
-# + code_folding=[]
-if __name__ == "__main__":
-    lc_pt_paras = copy(lc_paras)
-    
-    lc_pt = LifeCycle(**lc_pt_paras)
+# ## Allowing for State-dependent BELIEFS 
 
 # + code_folding=[0]
-if __name__ == "__main__":
-
-    t_start = time()
-
-    sigma_psi_ls = [0.03,0.2]
-    
-    ms_stars =[]
-    σs_stars = []
-    for i,sigma_psi in enumerate(sigma_psi_ls):
-        lc_pt.sigma_psi = sigma_psi_ls[i]
-
-        ### this line is very important!!!!
-        #### need to regenerate shock draws for new sigmas
-        lc_pt.prepare_shocks()
-        
-        ## terminal solution
-        m_init,σ_init = lc_pt.terminal_solution()
-        
-        ## solve backward
-        ms_star, σs_star = solve_model_backward_iter(lc_pt,
-                                                     m_init,
-                                                     σ_init)
-        ms_stars.append(ms_star)
-        σs_stars.append(σs_star)
-
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ## plot c func at different age /asset grid
-    years_left = [0,1,30,40]
-
-    n_sub = len(years_left)
-
-    eps_fix = 0 ## the first eps grid 
-
-    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
-
-    for x,year in enumerate(years_left):
-        age = lc_basic.L-year
-        i = lc_basic.L-age
-        for k,sigma_psi in enumerate(sigma_psi_ls):
-            m_plt,c_plt = ms_stars[k][i,0:-1,eps_fix,0,0],σs_stars[k][i,0:-1,eps_fix,0,0]
-            axes[x].plot(m_plt,
-                         c_plt,
-                         label = r'$\sigma_\psi=$'+str(sigma_psi),
-                         lw=3,
-                        )
-        axes[x].legend()
-        axes[x].set_xlabel('asset')
-        axes[0].set_ylabel('c')
-        axes[x].set_title(r'$age={}$'.format(age))
-# -
-
-## the size of consumption function is  T x nb_a x nb_eps x nb_z 
-if __name__ == "__main__":
-    print(σs_star.shape)
-
-# + code_folding=[0]
-if __name__ == "__main__":
-
-    ## plot 3d functions over life cycle 
-
-    ages = np.array(range(ms_star.shape[0]))
-    asset = ms_star[0,:,0,0,0]
-    xx, yy = np.meshgrid(ages, asset)
-    c_stars = np.flip(σs_star[:,:,0,0,0],axis=0).T
-
-    fig = plt.figure(figsize=(8,8))
-    ax = fig.add_subplot(111, 
-                         projection='3d')
-    dem3d = ax.plot_surface(xx,
-                            yy,
-                            c_stars,
-                            cmap="viridis"
-                           )
-    ax.set_xlim(60,0)
-    ax.set_title('Consumption over the life cycle')
-    ax.set_xlabel('age')
-    ax.set_ylabel('wealth')
-    ax.view_init(20, 30)
-# -
-
-# ### With a Markov/persistent state: good versus bad 
-
-# + code_folding=[]
-if __name__ == "__main__":
-    lc_ar_paras = copy(lc_paras)
-    lc_ar_paras['b_y'] = 0.5
-    ## initialize another 
-    lc_ar = LifeCycle(**lc_ar_paras)
-
-
-# + code_folding=[0]
-if __name__ == "__main__":
-
-
-    ## solve the model for different persistence 
-    t_start = time()
-    
-    P = np.array([(0.8, 0.2),
-                  (0.05, 0.95)])
-    
-    P_ls = [P]
-    
-    ms_stars_ar = []
-    σs_stars_ar = []
-
-    for i, P in enumerate(P_ls):
-
-        ## feed the model with a markov matrix of macro state 
-        
-        lc_ar.P = P
-        ## no need to reinitialize the model because P is only used in solving stage
-
-        ## terminal solution
-        m_init_ar,σ_init_ar = lc_ar.terminal_solution()
-
-    
-        ## solve the model 
-        ms_star_ar, σs_star_ar = solve_model_backward_iter(lc_ar,
-                                                         m_init_ar,
-                                                         σ_init_ar)
-        ms_stars_ar.append(ms_star_ar)
-        σs_stars_ar.append(σs_star_ar)
-
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ## compare two markov states good versus bad 
-
-    years_left = [1,2,20,25]
-
-    n_sub = len(years_left)
-
-
-    eps_ls = [0]
-
-    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
-
-    for x,year in enumerate(years_left):
-        age = lc_ar.L-year
-        i = lc_ar.L-age
-        for eps in eps_ls:
-            m_plt_l,c_plt_l = ms_stars_ar[0][i,0:-1,eps,0,0],σs_stars_ar[0][i,0:-1,eps,0,0]
-            m_plt_h,c_plt_h  = ms_stars_ar[0][i,0:-1,eps,1,0],σs_stars_ar[0][i,0:-1,eps,1,0]
-            axes[x].plot(m_plt_l,
-                         c_plt_l,
-                         '--',
-                         label ='bad',
-                         lw=3)
-            axes[x].plot(m_plt_h,
-                         c_plt_h,
-                         '-.',
-                         label ='good',
-                         lw=3)
-        axes[x].legend()
-        axes[x].set_xlim((0.0,np.max(m_plt_h)))
-        axes[x].set_xlabel('m')
-        axes[0].set_ylabel('c')
-        axes[x].set_title(r'c at $age={}$'.format(age))
-# -
-
-# ### State-dependent risks 
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-    ## transition matrix between low and high risk state
-
-    P = np.array([(0.5, 0.5),
-                  (0.5, 0.5)])   # markov transition matrices
-
-    ss_P = cal_ss_2markov(P)
-    prob_l = P[0,0]
-    prob_h = P[0,1]
-
-    ## keep average risks the same 
-     
-    sigma_psi_2mkv = np.sqrt(
-        mean_preserving_spread(
-            mean = lc_basic.sigma_psi**2,
-            probs = np.array([prob_l,prob_h]),
-            l2mean_ratio = 0.1)
-    )
-    
-    
-    
-    sigma_eps_2mkv = np.sqrt(
-        mean_preserving_spread(
-            mean = lc_basic.sigma_eps**2,
-            probs = np.array([prob_l,prob_h]),
-            l2mean_ratio = 0.1)
-    )
-
-
-
-# + code_folding=[0]
-if __name__ == "__main__":
-    ## compute steady state 
-    av_sigma_psi = np.sqrt(np.dot(P[0,:],sigma_psi_2mkv**2))
-    av_sigma_eps = np.sqrt(np.dot(P[0,:],sigma_eps_2mkv**2))
-    print('steady state is '+str(ss_P))
-    print('transitory probability is '+str(P[0,:]))
-    print('permanent risk state is '+str(sigma_psi_2mkv))
-    print('transitory risk state is '+str(sigma_eps_2mkv))
-    print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(lc_basic.sigma_psi))
-    print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(lc_basic.sigma_eps))
-
-# + code_folding=[]
-if __name__ == "__main__":
-    
-    lc_sv_paras = copy(lc_paras)
-    lc_sv_paras['sigma_psi_2mkv'] =sigma_psi_2mkv
-    lc_sv_paras['sigma_eps_2mkv'] =sigma_eps_2mkv
-    lc_sv_paras['state_dependent_risk'] = True
-
-    ## another model instance 
-
-    lc_sv0 = LifeCycle(**lc_sv_paras)
-
-
-# + code_folding=[0]
-if __name__ == "__main__":
-
-    ## solve the model for different transition matricies 
-
-    t_start = time()
-
-    ## feed the model with a markov matrix of macro state 
-
-    ## terminal solution       
-    m_init_sv,σ_init_sv = lc_sv0.terminal_solution()
-
-    ## solve the model 
-    ms_star_sv, σs_star_sv = solve_model_backward_iter(lc_sv0,
-                                                       m_init_sv,
-                                                       σ_init_sv)
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))
-
-# + code_folding=[]
-if __name__ == "__main__":
-    ## compare two markov states low versus high risk 
-
-    years_left = [0,1,21,28]
-
-    n_sub = len(years_left)
-
-    eps_id = 0
-
-    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
-
-    for x,year in enumerate(years_left):
-        age = lc_basic.L-year
-        i = lc_basic.L-age
-        m_plt_l,c_plt_l = ms_star_sv[i,0:-1,eps_id,0,0],σs_star_sv[i,0:-1,eps_id,0,0]
-        m_plt_h,c_plt_h = ms_star_sv[i,0:-1,eps_id,1,0],σs_star_sv[i,0:-1,eps_id,1,0]
-        
-        axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
-                     c_plt_l,
-                     '--',
-                     label ='low risk',
-                     lw=3)
-        
-        axes[x].plot(m_plt_h, ## 1 indicates the high risk state 
-                     c_plt_h,
-                     '-.',
-                     label ='high risk',
-                     lw=3)
-        axes[x].legend()
-
-        axes[x].set_xlabel('m')
-        axes[0].set_ylabel('c')
-        axes[x].set_title(r'c under SV at $age={}$'.format(age))
-# -
-
-# ### Comparison: objective and subjective risk perceptions
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ## compare subjective and objective models 
-    years_left = [1,20,30,50]
-
-
-    n_sub = len(years_left)
-
-    eps_fix = 0
-
-    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
-
-    for x,year in enumerate(years_left):
-        age = lc_basic.L-year
-        i = lc_basic.L-age
-
-        ## baseline: no ma shock 
-        m_plt,c_plt = ms_star_basic[i,0:-1,eps_fix,0,0],σs_star_basic[i,0:-1,eps_fix,0,0]
-        axes[x].plot(m_plt,
-                     c_plt,
-                     label = 'objective',
-                     lw=3)
-         ## stochastic volatility 
-        m_plt_l,c_plt_l = ms_star_sv[i,0:-1,eps_fix,0,0],σs_star_sv[i,0:-1,eps_fix,0,0]
-        m_plt_h,c_plt_h = ms_star_sv[i,0:-1,eps_fix,1,0],σs_star_sv[i,0:-1,eps_fix,1,0]
-
-        axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
-                     c_plt_l,
-                     '--',
-                     label ='subjective: low risk',
-                     lw=3)
-        axes[x].plot(m_plt_h, ## 1 indicates the high risk state 
-                     c_plt_h,
-                     '-.',
-                     label ='subjective: high risk',
-                     lw=3)
-        axes[0].legend()
-        axes[x].set_xlim((0.0,np.max(m_plt)))
-        axes[x].set_xlabel('m')
-        axes[0].set_ylabel('c')
-        axes[x].set_title(r'working age$={}$'.format(age))
-
-    #plt.suptitle('Various Straight Lines',fontsize=20)
-
-    fig.savefig('../Graphs/model/comparison1.png')
-# -
-
-# ### With a Markov/persistent unemployment state
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ## transition matrix between emp and uemp
-
-    ## transition probability during normal times of the economy 
-
-    P_uemkv = np.array([(0.2, 0.8),
-                        (0.2, 0.8)])   # markov transition matrices
-
-
-
-# + code_folding=[]
-if __name__ == "__main__":
-    
-    lc_uemkv_paras = copy(lc_paras)
-    lc_uemkv_paras['P'] = P_uemkv
-    lc_uemkv_paras['ue_markov'] = True
-    
-    ## initialize another 
-    lc_uemkv = LifeCycle(**lc_uemkv_paras)
-
-# + code_folding=[0]
-if __name__ == "__main__":
-
-    ## solve the model for different transition matrices of UE markov
-    t_start = time()
-
-  
-   ## terminal solution
-    m_init_uemkv,σ_init_uemkv = lc_uemkv.terminal_solution()
-
-    ## solve the model 
-    ms_star_uemkv, σs_star_uemkv = solve_model_backward_iter(lc_uemkv,
-                                                             m_init_uemkv,
-                                                             σ_init_uemkv)
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ## compare two markov states of emp and uemp 
-
-    years_left = [1,2,20,25]
-
-    n_sub = len(years_left)
-
-    eps_id = 0
-
-    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
-
-    for x,year in enumerate(years_left):
-        age = lc_uemkv.L-year
-        i = lc_uemkv.L-age
-        m_plt_u, c_plt_u = ms_star_uemkv[i,0:-1,eps_id,0,0],σs_star_uemkv[i,0:-1,eps_id,0,0]
-        m_plt_e, c_plt_e = ms_star_uemkv[i,0:-1,eps_id,1,0],σs_star_uemkv[i,0:-1,eps_id,1,0]
-
-        axes[x].plot(m_plt_u, ## 0 indicates the low risk state 
-                     c_plt_u,
-                     '--',
-                     label ='unemployed',
-                     lw=3)
-        axes[x].plot(m_plt_e, ## 1 indicates the high risk state 
-                     c_plt_e,
-                     '-.',
-                     label ='employed',
-                     lw=3)
-        axes[x].legend()
-        axes[x].set_xlim((0.0,np.max(m_plt_e)))
-        axes[x].set_xlabel('asset')
-        axes[0].set_ylabel('c')
-        axes[x].set_title(r'c under UE Markov at $age={}$'.format(age))
-# -
-
-# ### "Countercylical" risks
-#
-# - unemployed perceive higher risks
-#
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ss_P_cr= cal_ss_2markov(P_uemkv)
-    prob_h_cr = P_uemkv[0,0]
-    prob_l_cr = P_uemkv[0,1]
-
-    ## keep average risks the same 
-    ### notice here I put high risk at the first!!!
-    sigma_psi_2mkv_cr = np.sqrt(mean_preserving_spread(mean = lc_uemkv.sigma_psi**2,
-                                                      probs = np.array([prob_l_cr,prob_h_cr]),
-                                                      l2mean_ratio = 0.1)
-                               )
-    ### notice here I put high risk at the first!!!
-    sigma_psi_2mkv_cr = np.flip(sigma_psi_2mkv_cr)
-    ### notice here I put high risk at the first!!!
-    
-    sigma_eps_2mkv_cr = np.sqrt(mean_preserving_spread(mean = lc_uemkv.sigma_eps**2,
-                                                      probs = np.array([prob_l_cr,prob_h_cr]),
-                                                      l2mean_ratio = 0.1)
-                               )
-    ### notice here I put high risk at the first!!!
-    sigma_eps_2mkv_cr = np.flip(sigma_eps_2mkv_cr)
-   ### notice here I put high risk at the first!!!
-
-
-    ## again, zero loading from z
-    b_y = 0.0
-
-# + code_folding=[0]
-if __name__ == "__main__":
-    ## compute steady state 
-    av_sigma_psi_cr = np.sqrt(np.dot(P_uemkv[0,:],sigma_psi_2mkv_cr**2))
-    av_sigma_eps_cr = np.sqrt(np.dot(P_uemkv[0,:],sigma_eps_2mkv_cr**2))
-    print('steady state is '+str(ss_P_cr))
-    print('transitory probability is '+str(P_uemkv[0,:]))
-
-    print('average permanent risk is '+str(av_sigma_psi_cr)+' compared to objective model '+str(lc_uemkv.sigma_psi))
-    print('average transitory risk is '+str(av_sigma_eps_cr)+' compared to objective model '+str(lc_uemkv.sigma_eps))
-
-# + code_folding=[]
-if __name__ == "__main__":
-    
-    
-    lc_cr_paras = copy(lc_paras)
-    lc_cr_paras['ue_markov'] = True
-    lc_cr_paras['state_dependent_risk'] = True
-    lc_cr_paras['sigma_psi_2mkv'] = sigma_psi_2mkv_cr
-    lc_cr_paras['sigma_eps_2mkv'] = sigma_eps_2mkv_cr
-
-    ## model instance 
-    lc_cr= LifeCycle(**lc_cr_paras)
-
-# + code_folding=[0]
-if __name__ == "__main__":
-
-
-    ## solve the model for different transition matrices
-
-    t_start = time()
-
-
-    ## initial guess
-    m_init_cr,σ_init_cr =lc_cr.terminal_solution()
-
-    ## solve the model 
-    ms_star_cr, σs_star_cr = solve_model_backward_iter(lc_cr,
-                                                       m_init_cr,
-                                                       σ_init_cr)
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ## compare two markov states low versus high risk 
-
-    years_left = [1,5,20,25]
-
-    n_sub = len(years_left)
-
-    eps_id = 0
-
-    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
-
-    for x,year in enumerate(years_left):
-        age = lc_basic.L-year
-        i = lc_basic.L-age
-        m_plt_l,c_plt_l = ms_star_cr[i,0:-1,eps_id,0,0],σs_star_cr[i,0:-1,eps_id,0,0]
-        m_plt_h,c_plt_h = ms_star_cr[i,0:-1,eps_id,1,0],σs_star_cr[i,0:-1,eps_id,1,0]
-        
-        axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
-                     c_plt_l,
-                     '--',
-                     label ='une+ high risk',
-                     lw = 3)
-        axes[x].plot(m_plt_h, ## 1 indicates the high risk state 
-                     c_plt_h,
-                     '-.',
-                     label ='emp+ low risk',
-                     lw = 3)
-        axes[x].legend()
-        axes[x].set_xlabel('m')
-        axes[0].set_ylabel('c')
-        axes[x].set_title(r'c under countercyclical risks at $age={}$'.format(age))
-# -
-
-# ### State-dependent BELIEFS 
-
 if __name__ == "__main__":
     
     ## markov tansition probs of belief states 
     P_sub = np.array(
         [[0.95,0.05],[0.1,0.9]]
     )
-
-if __name__ == "__main__":
-    ss_P_sub= cal_ss_2markov(P_sub)
-    prob_h_sub = P_sub[0,0]
-    prob_l_sub = P_sub[0,1]
-
-    ## keep average risks the same 
-    ### notice here I put high risk at the first!!!
-    sigma_psi_2mkv_sub = np.sqrt(mean_preserving_spread(mean = lc_uemkv.sigma_psi**2,
-                                                      probs = np.array([prob_l_sub,prob_h_sub]),
-                                                      l2mean_ratio = 0.1)
-                               )
+        
+    sigma_psi_low, sigma_psi_high = 0.03, 0.25
+    sigma_eps_low, sigma_eps_high = 0.03, 0.25
     
-    sigma_eps_2mkv_sub = np.sqrt(mean_preserving_spread(mean = lc_uemkv.sigma_eps**2,
-                                                      probs = np.array([prob_l_sub,prob_h_sub]),
-                                                      l2mean_ratio = 0.1)
-                               )
+    sigma_psi_2mkv_sub = np.array([sigma_psi_low, sigma_psi_high])
+    sigma_eps_2mkv_sub = np.array([sigma_eps_low, sigma_eps_high])
 
-if __name__ == "__main__":
-    ## compute steady state 
-    av_sigma_psi_sub = np.sqrt(np.dot(P_sub[0,:],sigma_psi_2mkv_sub**2))
-    av_sigma_eps_sub = np.sqrt(np.dot(P_sub[0,:],sigma_eps_2mkv_sub**2))
-    print('steady state is '+str(ss_P_sub))
-    print('transitory probability is '+str(P_sub[0,:]))
-    print('markov permanent risks are '+str(sigma_psi_2mkv_sub))
-    print('markov transitionry risks are '+str(sigma_eps_2mkv_sub))
-
-    print('average permanent risk is '+str(av_sigma_psi_sub)+' compared to objective model '+str(lc_uemkv.sigma_psi))
-    print('average transitory risk is '+str(av_sigma_eps_sub)+' compared to objective model '+str(lc_uemkv.sigma_eps))
-
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     
-    lc_uemkv_sub_paras = copy(lc_uemkv_paras)
+    lc_uemkv_sub_paras = copy(lc_paras)
+    lc_uemkv_sub_paras['P'] = P_uemkv
+    lc_uemkv_sub_paras['ue_markov'] = True
     lc_uemkv_sub_paras['state_dependent_risk'] = False
+    
     ####################
      ## subjective belief 
      ####################
@@ -1375,7 +812,7 @@ if __name__ == "__main__":
     ## initialize another 
     lc_uemkv_sub = LifeCycle(**lc_uemkv_sub_paras)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
 
@@ -1428,85 +865,34 @@ if __name__ == "__main__":
                      '-.',
                      label ='uemp+ high risk belief',
                      lw = 3)
+        
+        #axes[x].plot(m_plt_e_l, ## 0 indicates the low risk state 
+        #             c_plt_e_l,
+        #             '--',
+        #             label ='emp+ low risk belief',
+        #             lw = 3)
+        #axes[x].plot(m_plt_e_h, ## 1 indicates the high risk state 
+        #             c_plt_e_h,
+        #             '-.',
+        #             label ='emp+ high risk belief',
+        #             lw = 3)
+        
         axes[x].legend()
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
-        axes[x].set_title(r'c under markov belief of risks at $age={}$'.format(age))
+        axes[x].set_title(r'$age={}$'.format(age))
 # -
 
-# ### Objective and subject state-dependent profile
+# ## Solve the Infinite-horizon Problem
 
 # + code_folding=[]
 if __name__ == "__main__":
 
-    ## compare subjective and objective models 
-
-    years_left = [1,30,40]
-
-
-    n_sub = len(years_left)
-
-    eps_ls = [0]
-
-    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
-
-    for x,year in enumerate(years_left):
-        age = lc_basic.L-year
-        i = lc_basic.L-age
-        for eps in eps_ls:
-           
-            ## persistent 
-            m_plt_u, c_plt_u = ms_star_uemkv[i,0:-1,eps,0],σs_star_uemkv[i,0:-1,eps,0]
-            m_plt_e, c_plt_e = ms_star_uemkv[i,0:-1,eps,1],σs_star_uemkv[i,0:-1,eps,1]
-            axes[x].plot(m_plt_u,
-                         c_plt_u,
-                         '--',
-                         label ='unemployed',
-                         lw=3)
-            axes[x].plot(m_plt_e,
-                         c_plt_e,
-                         '-.',
-                         label ='employed',
-                         lw=3)
-           
-            ## countercyclical 
-            m_plt_l,c_plt_l = ms_star_cr[i,0:-1,eps,0],σs_star_cr[i,0:-1,eps,0]
-            m_plt_h,c_plt_h = ms_star_cr[i,0:-1,eps,1],σs_star_cr[i,0:-1,eps,1]
-            axes[x].plot(m_plt_l, ## 0 indicates the low risk state 
-                     c_plt_l,
-                     '--',
-                     label ='ue + high risk',
-                     lw=3)
-            axes[x].plot(m_plt_h, ## 1 indicates the high risk state 
-                         c_plt_h,
-                         '-.',
-                         label ='emp + low risk',
-                         lw=3)
-
-        axes[0].legend()
-        axes[x].set_xlim((0.0,np.max(m_plt_e)))
-        axes[x].set_xlabel('m')
-        axes[0].set_ylabel('c')
-        axes[x].set_title(r'working age$={}$'.format(age))
-
-    #plt.suptitle('Various Straight Lines',fontsize=20)
-
-    fig.savefig('../Graphs/model/comparison2.png')
-
-
-# -
-
-# ## Infinite horizon problem
-
-# + code_folding=[]
-if __name__ == "__main__":
-
-    inf_liv_paras = copy(lc_paras)
+    inf_liv_paras = copy(lc_uemkv_sub_paras)
     
     ## initialize a model instance
 
     inf_liv = LifeCycle(**inf_liv_paras)
-
 
     ## initial guess of consumption functions 
 
@@ -1539,85 +925,26 @@ if __name__ == "__main__":
 
     ## plot c func 
 
-    eps_ls = [0]
+    eps_fix = 0 ## no ma shock here. just use 0 for the index of transitory shock
 
     ms_inf_star = ms_inf_stars[0]
     σs_inf_star = σs_inf_stars[0]
 
-
-    for eps in eps_ls:
-        plt.plot(ms_inf_star[0:-1,eps,0,0],
-                 σs_inf_star[0:-1,eps,0,0],
-                 label = r'$\epsilon=$'+str(round(inf_liv.eps_grid[eps],2)),
-                 lw=3
-                )
-        plt.legend()
-        plt.xlabel('asset')
-        plt.ylabel('c')
-        plt.title('Infinite horizon solution')
+    plt.plot(ms_inf_star[0:-1,eps_fix,0,0],
+             σs_inf_star[0:-1,eps_fix,0,0],
+             label='uemp: low risk belief',
+             lw=3
+            )
+    plt.plot(ms_inf_star[0:-1,eps_fix,0,1],
+             σs_inf_star[0:-1,eps_fix,0,1],
+             label='uemp: high risk belief',
+             lw=3
+            )
+    plt.legend()
+    plt.xlabel('m: cash in hand')
+    plt.ylabel('c: consumption')
+    plt.title('Infinite horizon solution')
 
 # -
 
-# ## Infinite horizon with adjustment inertia
-#
-#
 
-# + code_folding=[]
-if __name__ == "__main__":
-
-
-    ## Initialize a model instance
-    
-    imp_adjust_paras = copy(inf_liv_paras)
-    imp_adjust_paras['adjust_prob'] = 0.6
-    
-
-    imp_adjust = LifeCycle(**imp_adjust_paras)
-
-    ## initial consumption functions 
-    m_init,σ_init = imp_adjust.terminal_solution()
-
-    t_start = time()
-
-    x_ls = [0.0]
-    ms_imp_stars =[]
-    σs_imp_stars = []
-    for i,x in enumerate(x_ls):
-
-        ## set different ma parameters 
-        inf_liv.x = x
-        m_imp_star, σ_imp_star = solve_model_iter(imp_adjust,
-                                                  m_init,
-                                                  σ_init)
-        ms_imp_stars.append(m_imp_star)
-        σs_imp_stars.append(σ_imp_star)
-
-
-    t_finish = time()
-
-    print("Time taken, in seconds: "+ str(t_finish - t_start))   
-
-    ## plot c func at different age /asset grid
-
-    eps_ls = [0]
-
-    ms_imp_star = ms_imp_stars[0]
-    σs_imp_star = σs_imp_stars[0]
-
-    for y,eps in enumerate(eps_ls):
-        plt.plot(ms_imp_star[0:-1,eps,1,0],
-                 σs_imp_star[0:-1,eps,1,0],
-                 '-',
-                 label = 'imperfect adjustment',
-                 lw=3
-                )
-        plt.plot(ms_inf_star[0:-1,eps,1,0],
-                 σs_inf_star[0:-1,eps,1,0],
-                 '--',
-                 label = 'perfect adjustment',
-                 lw=3
-                )
-        plt.legend()
-        plt.xlabel('asset')
-        plt.ylabel('c')
-        plt.title('Infinite horizon solution')
