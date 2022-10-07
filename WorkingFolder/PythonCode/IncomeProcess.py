@@ -17,12 +17,45 @@
 # ## Permanent-transitory income process and income risk estimation
 # - Author: Tao Wang
 # - Date: Sep, 2022
+#
+# This notebook includes the code that 
+#    - simulates cross-sectional realizations
+#    - simulates and computes population moments
+#    - estimates income risk parameters using GMM/SMM method
+#    - that involves time-aggregation, e.g., monthly income progress aggregated into yearly income. 
 
+# ### Income progress 
+#
+# \begin{equation}
+# \begin{split}
+# & y_{i,t} = \underbrace{p_{i,t}}_{\text{Permanent component}} + \underbrace{\mu_{i,t}}_{\text{Transitory component}}\\& \mu_{i,t} = \underbrace{\underbrace{\theta_{i,t}}_{\text{Transitory shock}} + \phi \theta_{i,t-1}}_{\text{MA(1)}} \\
+# & p_{i,t} = p_{i,t-1} + \underbrace{\psi_{i,t}}_{\text{Permanent shock}} \\
+# & \theta_{i,t} \sim N(\frac{-\sigma^2_{\theta}}{2}, \sigma^2_{\theta}) \\
+# & \psi_{i,t} \sim N(\frac{-\sigma^2_{\psi}}{2}, \sigma^2_{\psi})
+# \end{split}
+# \end{equation}
+#
+# A few things:
+#
+# - The simulation functionality of the code allows $\phi$ to be non-zero--allowing for the serial correlation of transitory component. But the income risk estimation now only works for the case $\phi=0$: a purely transitory shock, or MA(0).
+# - The code can handle either constant or time-varying risks, i.e., $\sigma^2_{\psi,t}$ and $\sigma^2_{\theta,t}$
+# - The code also allows one to specify a stochastic process of $\sigma^2_{\psi,t}$, by making it an AR(1), with the coefficient of $\rho$ and the size of the shock to be $\sigma_\epsilon$. 
+
+# +
 import numpy as np
 from scipy.optimize import minimize
 from scipy.optimize import root 
 import copy as cp
 import matplotlib.pyplot as plt
+
+## figure plotting configurations
+
+
+plt.style.use('fivethirtyeight')
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['axes.labelweight'] = 'bold'
 
 
 # + {"code_folding": [2, 10]}
@@ -43,9 +76,10 @@ def toPara(vec,
     return vec[:ma_q-1], vec[ma_q:].reshape(2,t)
 
 
-# + {"code_folding": [2, 17, 39, 43, 54, 74, 88, 96, 114, 140, 174, 178, 183, 219, 233, 249, 269, 297, 320, 347, 365, 370, 375, 380, 385, 390, 405, 433, 456, 470, 474, 503, 508, 520]}
-## a class of integrated moving average process, trend/cycle process allowing for serial correlation transitory shocks
-## this corresponds to the permanent-transitory income process in the literature. 
+# + {"code_folding": [3, 18, 40, 44, 55, 75, 89, 97, 112, 138, 172, 176, 217, 231, 247, 267, 295, 313, 340, 358, 363, 368, 373, 378, 383, 398, 426, 449, 463, 467, 496, 501, 513]}
+## A class of integrated moving average process, trend/cycle process allowing for serial correlation of transitory shocks
+## This corresponds to the permanent-transitory income process in the literature. 
+
 class IMAProcess:
     '''
     inputs
@@ -155,9 +189,6 @@ class IMAProcess:
         return self.SimAggMoms
 
     
-##########
-## new ###
-##########
     def ComputeMomentsAgg(self):
         n_agg = self.n_agg
         sigmas = self.sigmas
@@ -359,11 +390,6 @@ class IMAProcess:
                                    ma_q)
         return self.para_est_agg  
     
-
-##########
-## new ###
-########## 
-
     def ObjFuncAggCompute(self,
                           para_agg):
         data_moms_agg_dct = self.data_moms_agg_dct
@@ -569,10 +595,10 @@ class IMAProcess:
                           k):
         k_step_sigma_theta = self.rho**k*np.exp(-0.5*self.gamma)*(sigma_theta_now**2)
         return k_step_sigma_theta
-# + {"code_folding": [0]}
+# + {"code_folding": []}
 if __name__ == "__main__":
     
-    ## debugging test of the data 
+    ## Simulate series using some fake parameters. 
 
     t = 100
     ma_nosa = np.array([1])  ## ma coefficient without serial correlation
@@ -618,8 +644,8 @@ if __name__ == "__main__":
     cov_var = sim_moms['Var']
     var = dt.Autocovar(step = 0)   #= np.diagonal(cov_var)
     autovarb1 = dt.Autocovar(step = -1) #np.array([cov_var[i,i+1] for i in range(len(cov_var)-1)]) 
-# -
 
+# + {"code_folding": [0]}
 if __name__ == "__main__":
 
     ## plot simulated moments of first diff 
@@ -649,21 +675,25 @@ if __name__ == "__main__":
     plt.plot(autovarb1,label='simulated')
     plt.plot(autovarb1_comp,label='computed')
     plt.legend(loc = 0)
+# -
 
 if __name__ == "__main__":
 
-    ## robustness check if the transitory risks is approximately equal to the assigned level
+    ## Since transitory risk is equal to autocovariance of first-difference,
+    ## we can easily check if the estimated transitory risks are equal to the assigned level.
 
     sigma_t_est = np.array(np.sqrt(abs(autovarb1)))
     plt.plot(sigma_t_est,'r-',label=r'$\widehat \sigma_{\theta,t}$')
     plt.plot(t_sigmas[1:-1],'b-.',label=r'$\sigma_{\theta,t}$')  # the head and tail trimmed
     plt.legend(loc=1)
 
-# + {"code_folding": []}
-## Estimating income risks using fake data 
-# -
+# + [markdown] {"code_folding": []}
+# ### Estimating income risks using fake data 
 
+# + {"code_folding": []}
 if __name__ == "__main__":
+    
+    
     ## some fake data moments with alternative parameters
     
     ## both p and t risks are draws
@@ -697,7 +727,7 @@ if __name__ == "__main__":
 
     ## check the estimation and true parameters 
 
-    fig = plt.figure(figsize=([10,4]))
+    fig = plt.figure(figsize=([15,5]))
 
     plt.subplot(1,2,1)
     plt.title('Permanent Risk')
