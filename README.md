@@ -40,7 +40,7 @@
 2. [Stationary distribution and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
    - [an extended version with heterogeneous income risks, growth rates and time preference](./WorkingFolder/PythonCode/OLG-GE-HeterTypes.ipynb)
 
-3. [Compare model results and data]((./WorkingFolder/PythonCode/PlotModelResults.ipynb) )
+3. [Compare model results and data](./WorkingFolder/PythonCode/PlotModelResults.ipynb) 
 
 4. [Calibration of the heterogeneous wage/unemployment risks from SCE](./WorkingFolder/PythonCode/HeterogeneousRisksEstMain.ipynb)
 
