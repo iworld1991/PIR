@@ -17,7 +17,7 @@
 # ## Aggregate dynamics, stationary distribution and GE of a life-cycle economy
 #
 # - author: Tao Wang
-# - this is a companion notebook to the paper "Perceived income risks"
+# - this is a companion notebook to the paper ["Perceived income risks"](https://github.com/iworld1991/PIR/blob/master/PIR.pdf)
 
 from psutil import Process 
 
@@ -73,6 +73,8 @@ plt.rc('figure', titlesize=20)
 # + code_folding=[]
 from SolveLifeCycle import LifeCycle, solve_model_backward_iter,compare_2solutions
 
+## LifeCycle is a class for solving life-cycle consumption/saving problems 
+
 
 # -
 
@@ -83,18 +85,6 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 ## make a copy of the imported parameters 
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
-
-# + code_folding=[]
-## make some modifications 
-P_ss = cal_ss_2markov(lc_paras_y['P'])
-#lc_paras_y['σ_ψ_2mkv'] = np.flip(lc_paras_y['σ_ψ_2mkv'])
-#lc_paras_y['σ_θ_2mkv'] = np.flip(lc_paras_y['σ_θ_2mkv'])
-#lc_paras_y['σ_ψ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_ψ_sub'],P_ss,0.5)))
-#lc_paras_y['σ_θ_2mkv'] = np.flip(np.sqrt(mean_preserving_spread(lc_paras_y['σ_θ_sub'],P_ss,0.5)))
-#lc_paras_y['unemp_insurance'] = 0.0 
-#lc_paras_y['init_b'] = 0.0 
-#lc_paras_y['G'] = np.ones_like(lc_paras_y['G'])
-# -
 
 print(lc_paras_y)
 
@@ -109,68 +99,11 @@ plt.title('Deterministic Life-cycle Income Profile \n')
 plt.plot(YPath,'ko-')
 plt.xlabel('Age')
 plt.ylabel(r'$\hat Y$')
-
-
-# + code_folding=[2]
-#this is a fake life cycle income function 
-
-def fake_life_cycle(L):
-    LPath = np.arange(L+1)
-    Y_fake = -0.01*(LPath-int(L/3))**2+0.03*LPath+20
-    G = Y_fake[1:]/Y_fake[:-1]
-    return G
-
-
-# + code_folding=[0]
-## parameters for testing 
-
-U = 0.0 ## transitory ue risk 
-LivPrb = 0.99
-unemp_insurance = 0.15
-sigma_psi = np.sqrt(0.01) # permanent 
-sigma_eps = np.sqrt(0.04) # transitory 
-sigma_p_init = np.sqrt(0.03)
-init_b = 0.0
-λ = 0.0942 
-λ_SS = 0.0
-transfer = 0.0
-pension = 0.5
-
-T = 40
-L = 60
-TGPos = int(L/2)
-G = fake_life_cycle(L)
-YPath = np.cumprod(G)
-
-## other parameters 
-ρ = 1
-R = 1.01
-W = 1.0
-β = 0.96
-x = 0.0
-
-## no persistent state
-b_y = 0.0
-
-## set the bool to be true to turn on unemployment/employment markov (persistent unemployment risks)
-ue_markov = True
-###################################
-
-## natural borrowing constraint if False
-borrowing_cstr = True
-
-## extrapolation parameter
-
-theta = 0.0
-
-## bequest ratio 
-bequest_ratio = 0.0
 # -
-
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 9, 96, 121, 149, 176]
+# + code_folding=[9, 96, 121, 149, 176]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -193,7 +126,7 @@ if calibrated_model == True:
         ## primitives
                    'ρ':lc_paras['ρ'],     ## relative risk aversion  
                    'β':lc_paras['β'],     ## discount factor
-                   'borrowing_cstr':borrowing_cstr,
+                   'borrowing_cstr':True,
                    'adjust_prob':1.0,
         
         ## prices 
@@ -257,126 +190,8 @@ if calibrated_model == True:
 
     lc_mkv_sub_true = LifeCycle(**lc_mkv_sub_true_paras)
 
-    ## counter-cyclical risks 
-    lc_mkv_sub_cr_paras = copy(lc_mkv_sub_paras)
-    lc_mkv_sub_cr_paras['sigma_psi_2mkv'] = np.flip(lc_paras['σ_ψ_2mkv'])
-    lc_mkv_sub_cr_paras['sigma_eps_2mkv'] = np.flip(lc_paras['σ_θ_2mkv'])
 
-    lc_mkv_sub_cr = LifeCycle(**lc_mkv_sub_cr_paras)
-
-
-else:
-    ## only for testing 
-    lc_mkv = LifeCycle(sigma_psi = sigma_psi,
-                       sigma_eps = sigma_eps,
-                       U=U,
-                       LivPrb = LivPrb,
-                       ρ=ρ,
-                       R=R,
-                       W=W,
-                       G=G,
-                       T=T,
-                       L=L,
-                       β=β,
-                       x=x,  ## shut down ma(1)
-                       theta=theta,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y = b_y, ## set the macro state loading to be zero, it does not matter for ue_markov
-                       unemp_insurance = unemp_insurance, 
-                       pension = pension,
-                       ue_markov = ue_markov,
-                       sigma_p_init =sigma_p_init,
-                       init_b = init_b,
-                       λ = λ,
-                       transfer = transfer,
-                       bequest_ratio = bequest_ratio
-                      )
-    
-    lc_mkv_sub = LifeCycle(sigma_psi = 0.1*sigma_psi, ##  0.1 is arbitrary but just to make the PR lower
-                       sigma_eps = 0.1*sigma_eps,
-                       subjective =True,
-                       sigma_psi_true = sigma_psi,
-                       sigma_eps_true = sigma_eps,
-                       U=U,
-                       LivPrb = LivPrb,
-                       ρ=ρ,
-                       R=R,
-                       W=W,
-                       G=G,
-                       T=T,
-                       L=L,
-                       β=β,
-                       x=x,  ## shut down ma(1)
-                       theta=theta,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y = b_y, ## set the macro state loading to be zero, it does not matter for ue_markov
-                       unemp_insurance = unemp_insurance, 
-                       pension = pension,
-                       ue_markov = ue_markov,
-                       sigma_p_init =sigma_p_init,
-                       init_b = init_b,
-                       λ = λ,
-                       transfer = transfer,
-                       bequest_ratio = bequest_ratio
-                      )
-    
-    lc_mkv_sub_true = LifeCycle(sigma_psi = 0.1*sigma_psi, ##  0.1 is arbitrary but just to make the PR lower
-                       sigma_eps = 0.1*sigma_eps,
-                       subjective =True,
-                       sigma_psi_true = 0.1*sigma_psi,
-                       sigma_eps_true = 0.1*sigma_eps,
-                       U=U,
-                       LivPrb = LivPrb,
-                       ρ=ρ,
-                       R=R,
-                       W=W,
-                       G=G,
-                       T=T,
-                       L=L,
-                       β=β,
-                       x=x,  ## shut down ma(1)
-                       theta=theta,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y = b_y, ## set the macro state loading to be zero, it does not matter for ue_markov
-                       unemp_insurance = unemp_insurance, 
-                       pension = pension,
-                       ue_markov = ue_markov,
-                       sigma_p_init =sigma_p_init,
-                       init_b = init_b,
-                       λ = λ,
-                       transfer = transfer,
-                       bequest_ratio = bequest_ratio
-                      )
-    lc_mkv_sub_cr = LifeCycle(sigma_psi = 0.1*sigma_psi, ##  0.1 is arbitrary but just to make the PR lower
-                       sigma_eps = 0.1*sigma_eps,
-                       subjective =True,
-                       sigma_psi_true = sigma_psi,
-                       sigma_eps_true = sigma_eps,
-                       U=U,
-                       LivPrb = LivPrb,
-                       ρ=ρ,
-                       R=R,
-                       W=W,
-                       G=G,
-                       T=T,
-                       L=L,
-                       β=β,
-                       x=x,  ## shut down ma(1)
-                       theta=theta,
-                       borrowing_cstr = borrowing_cstr,
-                       b_y = b_y, ## set the macro state loading to be zero, it does not matter for ue_markov
-                       unemp_insurance = unemp_insurance, 
-                       pension = pension,
-                       ue_markov = ue_markov,
-                       sigma_p_init =sigma_p_init,
-                       init_b = init_b,
-                       λ = λ,
-                       transfer = transfer,
-                       bequest_ratio = bequest_ratio
-                      )
-
-
-# + code_folding=[0, 20]
+# + code_folding=[20]
 ## solve various models
 
 models = [lc_mkv,
@@ -488,7 +303,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[0, 8, 236, 271, 307, 321]
+# + code_folding=[8, 237, 272, 308, 322]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -531,6 +346,7 @@ def calc_transition_matrix(model,
         
         ## tax rate
         λ = model.λ
+        λ_SS = model.λ_SS
         
         ## permanent income growth factor
         G = model.G
@@ -1175,7 +991,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[5, 25, 132]
+# + code_folding=[0, 5, 25, 132]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1540,7 +1356,7 @@ model_results = solve_models(models,
                              model_name_list = model_names,
                              ge = True)
 
-# + code_folding=[0] pycharm={"name": "#%%\n"}
+# + code_folding=[] pycharm={"name": "#%%\n"}
 ## plot results from different models
 
 model_names=['baseline',
@@ -1580,7 +1396,7 @@ plt.ylim([0,1])
 age_lc = SCF_profile.index
 
 fig, ax = plt.subplots(figsize=(16,8))
-plt.title('Life cycle profile of wealth')
+#plt.title('Life cycle profile of wealth')
 
 for k,model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
@@ -1715,266 +1531,4 @@ ax.set_xlim([-10,30])
 
 
 #fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
-
-# -
-
-# ## Analysis of the baseline model 
-
-# + code_folding=[]
-## testing of the household class 
-
-HH = HH_OLG_Markov(model=lc_mkv)
-
-## Markov transition matrix 
-
-print("markov state transition matrix: \n",lc_mkv.P)
-print('steady state of markov state:\n',HH.ss_dstn)
-
-HH.define_distribution_grid(num_pointsM = n_m, 
-                            num_pointsP = n_p)
-HH.ComputeSSDist(ms_star = ms_star_mkv,
-                  σs_star = σs_star_mkv)
-
-
-# + code_folding=[0]
-## plot the initial distribution in the first period of life 
-
-plt.title('Initial distributions over m and p given u')
-plt.spy(HH.initial_dist_u.reshape(n_m,-1),
-       markersize = 2)
-plt.xlabel('p')
-plt.ylabel('m')
-
-# + code_folding=[]
-## plot the initial distribution in the first period of life 
-
-plt.title('Initial distributions over m and p given e')
-plt.spy(HH.initial_dist_e.reshape(n_m,-1),
-       markersize = 2)
-plt.xlabel('p')
-plt.ylabel('m')
-# -
-
-HH.Aggregate()
-print('aggregate savings under stationary distribution:', str(HH.A))
-
-# ### Stationary wealth/consumption distribution
-
-share_agents_ap,share_ap = HH.Lorenz(variable='a')
-
-# + code_folding=[]
-gini_this = gini(share_agents_ap,
-                 share_ap)
-print('gini from model:'+str(gini_this))
-gini_SCE = gini(SCF_share_agents_ap,
-                 SCF_share_ap)
-print('gini from SCE:'+str(gini_SCE))
-
-# + code_folding=[0]
-## Lorenz curve of steady state wealth distribution
-
-fig, ax = plt.subplots(figsize=(8,8))
-ax.plot(share_agents_ap,
-        share_ap, 
-        'r--',
-        label='Model'+', Gini={:.2f}'.format(gini_this))
-ax.plot(SCF_share_agents_ap,
-        SCF_share_ap, 
-        'b-.',
-        label='SCF')
-ax.plot(share_agents_ap,share_agents_ap, 
-        'k-',
-        label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
-plt.savefig('../Graphs/model/lorenz_a_test.png')
-
-# + code_folding=[0]
-## Wealth distribution 
-
-ap_grid_dist = HH.ap_grid_dist
-ap_pdfs_dist = HH.ap_pdfs_dist
-
-fig, ax = plt.subplots(figsize=(8,6))
-ax.set_title('Wealth distribution')
-ax.plot(np.log(ap_grid_dist+1e-5),
-         ap_pdfs_dist)
-
-ax.set_xlabel(r'$a$')
-ax.set_ylabel(r'$prob(a)$')
-fig.savefig('../Graphs/model/distribution_a_test.png')
-
-
-# + pycharm={"name": "#%%\n"}
-zero_wealth_id = np.where(ap_grid_dist<=1e-1)
-zero_wealth_share = ap_pdfs_dist[zero_wealth_id].sum()
-print('Share of zero wealth',str(zero_wealth_share))
-# -
-
-# ### Life-cycle profile and wealth distribution
-
-# + code_folding=[]
-HH.AggregatebyAge()
-
-A_life = HH.A_life
-
-
-# + code_folding=[0, 13]
-## plot life cycle profile
-
-age_lc = SCF_profile.index
-
-fig, ax = plt.subplots(figsize=(16,8))
-plt.title('Life cycle profile of wealth')
-ax.plot(age_lc[1:],
-       np.log(A_life),
-       'r-o',
-       label='model')
-
-ax2 = ax.twinx()
-ax2.set_ylim([10.5,15])
-ax2.vlines(lc_mkv.T+25,
-          10.5,
-          15,
-          color='k',
-          label='retirement'
-         )
-ax2.bar(age_lc[1:],
-        np.log(SCF_profile['mv_wealth'][1:]),
-       label='SCF (RHS)')
-
-
-ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth in model')
-ax2.set_ylabel('Log wealth SCF')
-ax.legend(loc=1)
-ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_test.png')
-
-# + code_folding=[]
-## get the within-age distribution 
-
-HH.get_lifecycle_dist()
-
-ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
-
-
-# + code_folding=[1, 13]
-joy = False
-if joy == True:
-    ## create the dataframe to plot distributions over the life cycle 
-    ap_pdfs_life = pd.DataFrame(ap_pdfs_dist_life).T
-    ap_range = list(ap_pdfs_life.index)
-    fig, axes = joypy.joyplot(ap_pdfs_life, 
-                              kind="values", 
-                              x_range= ap_range,
-                              figsize=(6,10),
-                              title="Wealth distribution over life cycle",
-                             colormap=cm.winter)
-    fig.savefig('../Graphs/model/life_cycle_distribution_a_test.png')
-    
-else:
-    pass
-# -
-
-# ### General Equilibrium 
-
-# + code_folding=[0]
-## initialize a market and solve the equilibrium 
-
-market_OLG_mkv = Market_OLG_mkv(households = HH,
-                                production = production)
-
-market_OLG_mkv.get_equilibrium_k()
-
-# -
-
-market_OLG_mkv.get_equilibrium_dist()
-
-# + code_folding=[0]
-## plot life cycle profile
-
-age_lc = SCF_profile.index
-
-fig, ax = plt.subplots(figsize=(16,8))
-plt.title('Life cycle profile of wealth')
-ax.plot(age_lc[:-2],
-        np.log(market_OLG_mkv.households.A_life)[:-1],
-       'r-o',
-       label='model')
-ax.set_ylim([-0.5,3.5])
-
-
-ax2 = ax.twinx()
-ax2.set_ylim([10.5,15])
-ax2.vlines(lc_mkv.T+25,
-          10.5,
-          15,
-          color='k',
-          label='retirement')
-
-ax2.bar(age_lc,
-        np.log(SCF_profile['mv_wealth']),
-       #'k--',
-       label='SCF (RHS)')
-
-#ax2.plot(age,
-#        C_life,
-#        'b--',
-#        label='consumption (RHS)')
-
-ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth')
-ax2.set_ylabel('Log wealth SCF')
-ax.legend(loc=1)
-ax2.legend(loc=2)
-fig.savefig('../Graphs/model/life_cycle_a_eq.png')
-# + code_folding=[0]
-## compute things needed for lorenz curve plot of asset accumulation 
-
-share_agents_ap, share_ap = market_OLG_mkv.households.Lorenz(variable='a')
-gini_this_ge = gini(share_agents_ap,share_ap)
-
-
-## Lorenz curve of steady state wealth distribution
-
-fig, ax = plt.subplots(figsize=(6,6))
-ax.plot(share_agents_ap,share_ap, 
-        'r--',
-        label='Model'+', Gini={:.2f}'.format(gini_this_ge))
-ax.plot(SCF_share_agents_ap,SCF_share_ap, 
-        'b-.',
-        label='SCF')
-ax.plot(share_agents_ap,share_agents_ap, 
-        'k-',
-        label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
-fig.savefig('../Graphs/model/lorenz_a_eq.png')
-
-
-
-# + code_folding=[] pycharm={"name": "#%%\n"}
-## Wealth distribution 
-
-fig, ax = plt.subplots(figsize=(8,6))
-ax.set_title('Wealth distribution')
-ax.plot(np.log(market_OLG_mkv.households.ap_grid_dist+1e-5), 
-         market_OLG_mkv.households.ap_pdfs_dist)
-ax.set_xlabel(r'$log(a)$')
-ax.set_ylabel(r'$prob(a)$')
-fig.savefig('../Graphs/model/distribution_a_eq.png')
-
-# + pycharm={"name": "#%%\n"}
-zero_wealth_id = np.where(market_OLG_mkv.households.ap_grid_dist<=1e-2)
-zero_wealth_share = market_OLG_mkv.households.ap_pdfs_dist[zero_wealth_id].sum()
-print('Share of zero wealth',str(zero_wealth_share))
-# -
-
-
-
-
-
 
