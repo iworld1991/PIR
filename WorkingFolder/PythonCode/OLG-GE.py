@@ -103,7 +103,7 @@ plt.ylabel(r'$\hat Y$')
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[9, 96, 121, 149, 176]
+# + code_folding=[0, 9]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -191,7 +191,7 @@ if calibrated_model == True:
     lc_mkv_sub_true = LifeCycle(**lc_mkv_sub_true_paras)
 
 
-# + code_folding=[20]
+# + code_folding=[0, 20]
 ## solve various models
 
 models = [lc_mkv,
@@ -303,7 +303,7 @@ from Utility import CDProduction
 from PrepareParameters import production_paras_y as production_paras
 
 
-# + code_folding=[8, 237, 272, 308, 322]
+# + code_folding=[0, 8, 237, 272, 308, 322]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -991,7 +991,7 @@ class HH_OLG_Markov:
             return share_agents_cp,share_cp
 
 
-# + code_folding=[0, 5, 25, 132]
+# + code_folding=[0, 5, 132]
 class Market_OLG_mkv:
     """
     A class of the market
@@ -1065,13 +1065,13 @@ class Market_OLG_mkv:
 
         ## obtain social security rate balancing the SS replacement ratio 
 
-        model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
-                            model.T,  ## retirement years
-                            age_dist,  ## age distribution in the economy 
-                            model.G,         ## permanent growth factor lists over cycle
-                            emp_now)
+        #model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
+        #                    model.T,  ## retirement years
+        #                    age_dist,  ## age distribution in the economy 
+        #                    model.G,         ## permanent growth factor lists over cycle
+        #                    emp_now)
 
-        print('Social security tax rate',str(model.λ_SS))
+        #print('Social security tax rate',str(model.λ_SS))
 
         ################################
         ## Step 1. Solve the model 
@@ -1171,12 +1171,12 @@ class Market_OLG_mkv:
         print('Tax rate',str(households.model.λ))
         ## obtain social security rate balancing the SS replacement ratio 
 
-        model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
-                            model.T,  ## retirement years
-                            households.age_dist,  ## age distribution in the economy 
-                            model.G,         ## permanent growth factor lists over cycle
-                            households.emp_ss)
-        households.model.λ_SS = model.λ_SS
+        #model.λ_SS = SS2tax(model.pension, ## social security /pension replacement ratio 
+        #                    model.T,  ## retirement years
+        #                    households.age_dist,  ## age distribution in the economy 
+        #                    model.G,         ## permanent growth factor lists over cycle
+        #                    households.emp_ss)
+        #households.model.λ_SS = model.λ_SS
         
         print('Social security tax rate',str(households.model.λ_SS))
         ## solve the model again 
@@ -1356,7 +1356,7 @@ model_results = solve_models(models,
                              model_name_list = model_names,
                              ge = True)
 
-# + code_folding=[] pycharm={"name": "#%%\n"}
+# + code_folding=[0] pycharm={"name": "#%%\n"}
 ## plot results from different models
 
 model_names=['baseline',
@@ -1531,4 +1531,7 @@ ax.set_xlim([-10,30])
 
 
 #fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
+
+# -
+
 
