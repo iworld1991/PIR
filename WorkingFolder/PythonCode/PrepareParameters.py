@@ -281,7 +281,7 @@ life_cycle_paras_q = {'ρ': 2.0,
                     'σ_ψ_init': σ_ψ_init_SCF, 
                     'init_b': b_q_SCF, 
                     'λ': 0.0, 
-                    'λ_SS': 0.0, 
+                    'λ_SS': 0.065, 
                     'transfer': 0.0, 
                     'bequest_ratio': 0.0,
                     'κ':kappa_sipp,
@@ -334,7 +334,7 @@ life_cycle_paras_y = {'ρ': 2.0,
                     'σ_ψ_init': σ_ψ_init_SCF, 
                     'init_b': b_SCF, 
                     'λ': 0.0, 
-                    'λ_SS': 0.0, 
+                    'λ_SS': 0.065, 
                     'transfer': 0.0, 
                     'bequest_ratio': 0.0,
                     'κ':kappa_sipp,
@@ -491,7 +491,7 @@ model_paras_by_block_df.loc['preference','source']='standard assumption'
 model_paras_by_block_df.loc['policy','source']='U.S. average'
 model_paras_by_block_df.loc[('policy','λ'),'values']=np.nan
 model_paras_by_block_df.loc[('policy','λ'),'source']='endogenously determined'
-model_paras_by_block_df.loc[('policy','λ_SS'),'source']='endogenously determined'
+model_paras_by_block_df.loc[('policy','λ_SS'),'source']='U.S. average'
 model_paras_by_block_df.loc[('policy','λ_SS'),'values']=np.nan
 
 model_paras_by_block_df.loc['production','source']='standard assumption'
