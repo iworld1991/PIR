@@ -83,7 +83,6 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
-lc_paras_y['λ_SS'] = 0.06
 print(lc_paras_y)
 
 
@@ -97,14 +96,6 @@ plt.title('Deterministic Life-cycle Income Profile \n')
 plt.plot(YPath,'ko-')
 plt.xlabel('Age')
 plt.ylabel(r'$\hat Y$')
-
-# +
-## stationary distribution of age 
-from Utility import stationary_age_dist
-
-age_dist_ss = stationary_age_dist(lc_paras['L'],
-                               n = 0.0,
-                               LivPrb = lc_paras['LivPrb'])
 # -
 
 # ### Solve the model with a Markov state: unemployment and employment 
@@ -179,7 +170,7 @@ if calibrated_model == True:
     lc_mkv = LifeCycle(**lc_mkv_paras)    
 
 
-# + code_folding=[2, 29, 72, 120, 171]
+# + code_folding=[]
 ## functions that make a list of consumer types different by parameters
 
 def make_1dtypes(by,
@@ -211,19 +202,27 @@ def make_1dtypes(by,
 
 
 
-# +
+# + code_folding=[0]
 ## create different betas 
-beta_types = np.array([0.9,0.95,0.99])
+beta_types = np.array([0.85,0.87,0.92,0.96,0.995])
 
 ## create a list of consumer types with different risk parameters and any other primitive parameters 
 
 hetero_beta_types = make_1dtypes('β',
                                  beta_types)
+
+# + code_folding=[0]
+## stationary distribution of age 
+from Utility import stationary_age_dist
+
+age_dist_ss = stationary_age_dist(lc_paras['L'],
+                               n = 0.0,
+                               LivPrb = lc_paras['LivPrb'])
 # -
 
 # ### Solve consumption policies
 
-# + code_folding=[12]
+# + code_folding=[0, 12]
 ## solve various models
 
 types = hetero_beta_types
@@ -299,7 +298,7 @@ for x,year in enumerate(years_left):
 
 # ## Aggregate steady state distributions
 
-# + code_folding=[]
+# + code_folding=[0]
 ## a function that computes social security tax rate balances gov budget for pension
 from Utility import unemp_insurance2tax  
 ## a function that computes tax rate balances gov budget for ue insurance
@@ -1023,7 +1022,7 @@ def Lorenz(model_results):
     return share_agents_ap,share_ap
 
 
-# + code_folding=[2, 43, 58, 76]
+# + code_folding=[0, 2, 43, 58, 76]
 ## new functions that are needed for heterogenous-types 
 
 def solve_1type(model,
@@ -1160,7 +1159,7 @@ def combine_results(results_by_type):
     return model_dct_pe
 
 
-# + code_folding=[2]
+# + code_folding=[]
 ## market class
 
 class Market_OLG_mkv_hetero_types:
@@ -1295,6 +1294,7 @@ class Market_OLG_mkv_hetero_types:
         
             K_d += K_d_this
         
+        K_d = K_d/len(model_list)
         print('Induced capital stock',str(K_d))
         
         return K_d
