@@ -828,9 +828,9 @@
 		\item A blend of \cite{huggett1996wealth} and \cite{carroll1997buffer}
 		\item Only one risk-free asset 
 	\item Calibrating income risks \textcolor{red}{using survey} versus \textcolor{blue}{estimates from panel} 
-	\item Extension: subjective risk perceptions 
+	\item \textcolor{brown}{Extension}: subjective model
 	\begin{itemize}
-		\item Individuals swing between low/high risk perceptions
+		\item subjective PR $\neq$ objective income risks 
 	\end{itemize}
 
 	\end{itemize}
@@ -1001,8 +1001,14 @@
 		\label{Eq:DistDyn}
 		\psi_{\tau}(B)=\int_{x \in X} \underbrace{P(x, \tau-1, B)}_{\text{transition funcs}}  \mathrm{d}\psi_{\tau-1} \quad \text { for all } \quad B\in B(X)
 	\end{equation*}
+	\begin{itemize}
+	\item $B(X)$:  distribution measure on state space $X$
+	\item $\psi_{\tau}$: distribution over state variables $x$ for agents in age $\tau$
+	\item $\psi_{1}$ depends on initial draws of income shocks 
+\end{itemize}
 	
 	\end{itemize}
+
 \end{frame}
 
 
@@ -1261,19 +1267,16 @@ $$R = 1+Z\alpha (K/N)^{\alpha-1} - \delta$$
 			\psi_{\tau}(B)=\int_{x \in X} \underbrace{P(x, \tau-1, B)}_{\text{transition funcs}}  \mathrm{d}\psi_{\tau-1} \quad \text { for all } \quad B\in B(X)
 		\end{equation*}
 		
-		\begin{itemize}
-			\item $B(X)$:  distribution measure on state space $X$
-			\item $\psi_{\tau}$: distribution over state variables $x$ for agents in age $\tau$
-			\item $\psi_{1}$ depends on initial draws of income shocks 
-		\end{itemize}
-		
+	
 		\item \textcolor{red}{subjective}: 
 		
 		\begin{equation*}
 			\label{Eq:DistDynSub}
 			\tilde \psi_{\tau}(\tilde B)=\int_{\tilde x \in \tilde X} \tilde P(\tilde x, \tau-1, \tilde B) \mathrm{d} \tilde \psi_{\tau-1} \quad \text { for all } \quad \tilde B \in \tilde B(X)
 		\end{equation*}
-		
+		\begin{itemize}
+			\item $\tilde P$ depends on both subjective and objective risks 
+		\end{itemize}
 	\end{itemize}
 \end{frame}
 
