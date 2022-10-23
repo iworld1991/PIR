@@ -37,7 +37,7 @@
    - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
 
 2. [Stationary distribution and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
-   - [an extended version with heterogeneous income risks, growth rates and time preference](./WorkingFolder/PythonCode/OLG-GE-HeterTypes.ipynb)
+   - [an extended version with heterogeneous income risks, growth rates and time preference](./WorkingFolder/PythonCode/OLG-GE-HetroTypes.ipynb)
 
 3. [Compare model results and data](./WorkingFolder/PythonCode/PlotModelResults.ipynb) 
 
