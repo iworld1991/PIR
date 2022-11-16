@@ -97,31 +97,30 @@ graph export "${sum_graph_folder}/median_`mom'.png",as(png) replace
 ** real PR 
 
 twoway (tsline rincvarmv3,lwidth(thick)  lcolor(navy) lpattern(dash)) ///
-       (tsline rincvar_all_rlmv3,lwidth(thick) lpattern(solid)  lcolor(red) yaxis(2)), ///
-	   legend(label(1 "Perceived") label(2 "Realized (RHS)")) ///
-	   title("Perceived and estimated realized risk") ///
+       (tsline rincvar_all_rlmv3,lwidth(thick) lpattern(solid) lcolor(red) yaxis(2)), ///
+	   legend(label(1 "Perceived") label(2 "Estimated (RHS)")) ///
+	   title("Perceived and estimated risk") ///
        ytitle("Perceived Risk") ///
-	   ytitle("Realized Risk", axis(2)) 
+	   ytitle("Estimated Risk", axis(2)) 
 	   
 graph export "${graph_folder}/real_volatility_compare.png",as(png) replace 
 
 
 twoway (tsline rincvarmv3,lwidth(thick)  lcolor(navy) lpattern(dash)) ///
        (tsline prisk2_all_rlmv3,lwidth(thick) lpattern(solid)  lcolor(red) yaxis(2)), ///
-	   legend(label(1 "Perceived") label(2 "Realized (RHS)")) ///
+	   legend(label(1 "Perceived") label(2 "Estimated (RHS)")) ///
 	   title("Perceived and estimated permanent risk") ///
        ytitle("Perceived Risk") ///
-	   ytitle("Realized Risk", axis(2)) 
+	   ytitle("Estimated Risk", axis(2)) 
 	   
 graph export "${graph_folder}/real_permanent_compare.png",as(png) replace 
 
 
 twoway (tsline rincvarmv3,lwidth(thick)  lcolor(navy) lpattern(dash)) ///
        (tsline trisk2_all_rlmv3,lwidth(thick) lpattern(solid)  lcolor(red) yaxis(2)), ///
-	   legend(label(1 "Perceived") label(2 "Realized (RHS)")) ///
+	   legend(label(1 "Perceived") label(2 "Estimated (RHS)")) ///
 	   title("Perceived and estimated transitory risk") ///
        ytitle("Permanent Risk") ///
-	   ytitle("Realized Risk", axis(2)) 
+	   ytitle("Estimated Risk", axis(2)) 
 	   
 graph export "${graph_folder}/real_transitory_compare.png",as(png) replace   
-
