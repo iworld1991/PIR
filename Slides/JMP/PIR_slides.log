@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  15 SEP 2022 08:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.4.7)  16 OCT 2022 22:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -915,21 +915,36 @@ Dictionary: translator-theorem-dictionary, Language: English
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
  (./PIR_slides.nav)
-Overfull \hbox (36.33516pt too wide) in paragraph at lines 113--113
- [][]|  []\OT1/cmr/m/n/6 0/56|  
+Overfull \hbox (163.21638pt too wide) in paragraph at lines 113--113
+ [][][][][][]  
  []
 
 
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 1/56|  
+Overfull \hbox (41.074pt too wide) in paragraph at lines 113--113
+ [][]|  []\OT1/cmr/m/n/6 0/58|  
+ []
+
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 1/58|  
  []
 
 [1
 
 {/usr/local/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 (./PIR_slides.toc)
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 2/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 2/58|  
  []
 
 [2
@@ -946,518 +961,785 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 157
 (/usr/local/texlive/2020/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 3/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 3/58|  
  []
 
 [3
 
 ]
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 3/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 3/58|  
  []
 
 [4
 
 ]
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 3/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 3/58|  
  []
 
 [5
 
 ]
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 4/56|  
+<figures/conventional_approach.png, id=226, 1053.9375pt x 484.81125pt>
+File: figures/conventional_approach.png Graphic file (type png)
+<use figures/conventional_approach.png>
+Package pdftex.def Info: figures/conventional_approach.png  used on input line 
+168.
+(pdftex.def)             Requested size: 273.83728pt x 125.96657pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 4/58|  
  []
 
 [6
 
-]
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 4/56|  
+ <./figures/conventional_approach.png>]
+<figures/my_approach.png, id=257, 1045.9075pt x 491.8375pt>
+File: figures/my_approach.png Graphic file (type png)
+<use figures/my_approach.png>
+Package pdftex.def Info: figures/my_approach.png  used on input line 178.
+(pdftex.def)             Requested size: 273.83728pt x 128.7753pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 5/58|  
  []
 
 [7
 
-]
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 5/56|  
+ <./figures/my_approach.png>]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 6/58|  
  []
 
 [8
 
 ]
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 5/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 6/58|  
  []
 
 [9
 
 ]
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 6/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 7/58|  
  []
 
 [10
 
 ]
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 7/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 7/58|  
  []
 
 [11
 
 ]
-<figures/density_bin_example.pdf, id=464, 722.7pt x 361.35pt>
-File: figures/density_bin_example.pdf Graphic file (type pdf)
-<use figures/density_bin_example.pdf>
-Package pdftex.def Info: figures/density_bin_example.pdf  used on input line 28
-6.
-(pdftex.def)             Requested size: 239.60567pt x 119.80275pt.
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
 
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 8/56|  
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 8/58|  
  []
 
 [12
 
- <./figures/density_bin_example.pdf>]
-<figures/density_bin_est_example.pdf, id=555, 722.7pt x 361.35pt>
-File: figures/density_bin_est_example.pdf Graphic file (type pdf)
-<use figures/density_bin_est_example.pdf>
-Package pdftex.def Info: figures/density_bin_est_example.pdf  used on input lin
-e 303.
-(pdftex.def)             Requested size: 205.37926pt x 102.68808pt.
+]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
 
-Overfull \hbox (36.33516pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 9/56|  
+
+Overfull \hbox (41.074pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 9/58|  
  []
 
 [13
 
- <./figures/density_bin_est_example.pdf>]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 10/56|  
+]
+<figures/density_bin_example.pdf, id=527, 722.7pt x 361.35pt>
+File: figures/density_bin_example.pdf Graphic file (type pdf)
+<use figures/density_bin_example.pdf>
+Package pdftex.def Info: figures/density_bin_example.pdf  used on input line 30
+7.
+(pdftex.def)             Requested size: 239.60567pt x 119.80275pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 10/58|  
  []
 
 [14
 
-]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 11/56|  
+ <./figures/density_bin_example.pdf>]
+<figures/density_bin_est_example.pdf, id=618, 722.7pt x 361.35pt>
+File: figures/density_bin_est_example.pdf Graphic file (type pdf)
+<use figures/density_bin_est_example.pdf>
+Package pdftex.def Info: figures/density_bin_est_example.pdf  used on input lin
+e 324.
+(pdftex.def)             Requested size: 205.37926pt x 102.68808pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 11/58|  
  []
 
 [15
 
-]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 12/56|  
+ <./figures/density_bin_est_example.pdf>]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 12/58|  
  []
 
 [16
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 12/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 13/58|  
  []
 
 [17
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 12/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 14/58|  
  []
 
 [18
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 13/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 14/58|  
  []
 
 [19
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 13/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 14/58|  
  []
 
 [20
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 13/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 15/58|  
  []
 
 [21
 
-] Excluding 'comment' comment.
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 14/56|  
+]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 15/58|  
  []
 
 [22
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 14/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 15/58|  
  []
 
 [23
 
-]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 14/56|  
+] Excluding 'comment' comment.
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 16/58|  
  []
 
 [24
 
 ]
-<figures/boxplot_rvar_compare_educ.png, id=937, 585.18625pt x 425.59pt>
-File: figures/boxplot_rvar_compare_educ.png Graphic file (type png)
-<use figures/boxplot_rvar_compare_educ.png>
-Package pdftex.def Info: figures/boxplot_rvar_compare_educ.png  used on input l
-ine 520.
-(pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 15/56|  
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 16/58|  
  []
 
 [25
 
- <./figures/boxplot_rvar_compare_educ.png>]
-File: figures/boxplot_rvar_compare_educ.png Graphic file (type png)
-<use figures/boxplot_rvar_compare_educ.png>
-Package pdftex.def Info: figures/boxplot_rvar_compare_educ.png  used on input l
-ine 520.
-(pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
+]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 15/56|  
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 16/58|  
  []
 
 [26
 
 ]
-<figures/boxplot_rvar_compare_age.png, id=1003, 585.18625pt x 425.59pt>
-File: figures/boxplot_rvar_compare_age.png Graphic file (type png)
-<use figures/boxplot_rvar_compare_age.png>
-Package pdftex.def Info: figures/boxplot_rvar_compare_age.png  used on input li
-ne 531.
-(pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
+<figures/boxplot_rvar_compare_educ.png, id=999, 585.18625pt x 425.59pt>
+File: figures/boxplot_rvar_compare_educ.png Graphic file (type png)
+<use figures/boxplot_rvar_compare_educ.png>
+Package pdftex.def Info: figures/boxplot_rvar_compare_educ.png  used on input l
+ine 541.
+(pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 16/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 17/58|  
  []
 
 [27
 
- <./figures/boxplot_rvar_compare_age.png>]
-<figures/joy_rincstd.jpg, id=1036, 433.62pt x 505.89pt>
-File: figures/joy_rincstd.jpg Graphic file (type jpg)
-<use figures/joy_rincstd.jpg>
-Package pdftex.def Info: figures/joy_rincstd.jpg  used on input line 544.
-(pdftex.def)             Requested size: 136.91603pt x 159.73442pt.
+ <./figures/boxplot_rvar_compare_educ.png>]
+File: figures/boxplot_rvar_compare_educ.png Graphic file (type png)
+<use figures/boxplot_rvar_compare_educ.png>
+Package pdftex.def Info: figures/boxplot_rvar_compare_educ.png  used on input l
+ine 541.
+(pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 17/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 17/58|  
  []
 
 [28
 
- <./figures/joy_rincstd.jpg>]
-<figures/real_permanent_compare.png, id=1067, 585.18625pt x 425.59pt>
-File: figures/real_permanent_compare.png Graphic file (type png)
-<use figures/real_permanent_compare.png>
-Package pdftex.def Info: figures/real_permanent_compare.png  used on input line
- 570.
-(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
-<figures/real_transitory_compare.png, id=1068, 585.18625pt x 425.59pt>
-File: figures/real_transitory_compare.png Graphic file (type png)
-<use figures/real_transitory_compare.png>
-Package pdftex.def Info: figures/real_transitory_compare.png  used on input lin
-e 570.
-(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
-<figures/real_volatility_compare.png, id=1069, 585.18625pt x 425.59pt>
-File: figures/real_volatility_compare.png Graphic file (type png)
-<use figures/real_volatility_compare.png>
-Package pdftex.def Info: figures/real_volatility_compare.png  used on input lin
-e 570.
-(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
+]
+<figures/boxplot_rvar_compare_age.png, id=1064, 585.18625pt x 425.59pt>
+File: figures/boxplot_rvar_compare_age.png Graphic file (type png)
+<use figures/boxplot_rvar_compare_age.png>
+Package pdftex.def Info: figures/boxplot_rvar_compare_age.png  used on input li
+ne 552.
+(pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 18/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 18/58|  
  []
 
 [29
 
- <./figures/real_permanent_compare.png> <./figures/real_transitory_compare.png>
- <./figures/real_volatility_compare.png>] Excluding 'comment' comment.
-<figures/separation_rate_1y.png, id=1103, 585.18625pt x 425.59pt>
-File: figures/separation_rate_1y.png Graphic file (type png)
-<use figures/separation_rate_1y.png>
-Package pdftex.def Info: figures/separation_rate_1y.png  used on input line 635
-.
-(pdftex.def)             Requested size: 154.03183pt x 112.02101pt.
-<figures/job_finding_rate.png, id=1104, 585.18625pt x 425.59pt>
-File: figures/job_finding_rate.png Graphic file (type png)
-<use figures/job_finding_rate.png>
-Package pdftex.def Info: figures/job_finding_rate.png  used on input line 635.
-(pdftex.def)             Requested size: 154.03183pt x 112.02101pt.
+ <./figures/boxplot_rvar_compare_age.png>]
+<figures/joy_rincstd.jpg, id=1096, 433.62pt x 505.89pt>
+File: figures/joy_rincstd.jpg Graphic file (type jpg)
+<use figures/joy_rincstd.jpg>
+Package pdftex.def Info: figures/joy_rincstd.jpg  used on input line 565.
+(pdftex.def)             Requested size: 136.91603pt x 159.73442pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 19/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 19/58|  
  []
 
 [30
 
- <./figures/separation_rate_1y.png> <./figures/job_finding_rate.png>]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 20/56|  
+ <./figures/joy_rincstd.jpg>]
+<figures/real_permanent_compare.png, id=1127, 585.18625pt x 425.59pt>
+File: figures/real_permanent_compare.png Graphic file (type png)
+<use figures/real_permanent_compare.png>
+Package pdftex.def Info: figures/real_permanent_compare.png  used on input line
+ 591.
+(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
+<figures/real_transitory_compare.png, id=1128, 585.18625pt x 425.59pt>
+File: figures/real_transitory_compare.png Graphic file (type png)
+<use figures/real_transitory_compare.png>
+Package pdftex.def Info: figures/real_transitory_compare.png  used on input lin
+e 591.
+(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
+<figures/real_volatility_compare.png, id=1129, 585.18625pt x 425.59pt>
+File: figures/real_volatility_compare.png Graphic file (type png)
+<use figures/real_volatility_compare.png>
+Package pdftex.def Info: figures/real_volatility_compare.png  used on input lin
+e 591.
+(pdftex.def)             Requested size: 109.537pt x 79.66154pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 20/58|  
  []
 
 [31
 
-]
-<figures/log_normal_pr_fit.pdf, id=1168, 578.16pt x 397.485pt>
-File: figures/log_normal_pr_fit.pdf Graphic file (type pdf)
-<use figures/log_normal_pr_fit.pdf>
-Package pdftex.def Info: figures/log_normal_pr_fit.pdf  used on input line 699.
+ <./figures/real_permanent_compare.png> <./figures/real_transitory_compare.png>
+ <./figures/real_volatility_compare.png>] Excluding 'comment' comment.
+<figures/separation_rate_1y.png, id=1165, 585.18625pt x 425.59pt>
+File: figures/separation_rate_1y.png Graphic file (type png)
+<use figures/separation_rate_1y.png>
+Package pdftex.def Info: figures/separation_rate_1y.png  used on input line 656
+.
+(pdftex.def)             Requested size: 154.03183pt x 112.02101pt.
+<figures/job_finding_rate.png, id=1166, 585.18625pt x 425.59pt>
+File: figures/job_finding_rate.png Graphic file (type png)
+<use figures/job_finding_rate.png>
+Package pdftex.def Info: figures/job_finding_rate.png  used on input line 656.
+(pdftex.def)             Requested size: 154.03183pt x 112.02101pt.
 
-(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
-<figures/log_normal_u2u_fit.pdf, id=1169, 578.16pt x 397.485pt>
-File: figures/log_normal_u2u_fit.pdf Graphic file (type pdf)
-<use figures/log_normal_u2u_fit.pdf>
-Package pdftex.def Info: figures/log_normal_u2u_fit.pdf  used on input line 699
-.
-(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
-<figures/log_normal_e2e_fit.pdf, id=1170, 578.16pt x 397.485pt>
-File: figures/log_normal_e2e_fit.pdf Graphic file (type pdf)
-<use figures/log_normal_e2e_fit.pdf>
-Package pdftex.def Info: figures/log_normal_e2e_fit.pdf  used on input line 699
-.
-(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
-<figures/log_normal_exp_fit.pdf, id=1171, 578.16pt x 397.485pt>
-File: figures/log_normal_exp_fit.pdf Graphic file (type pdf)
-<use figures/log_normal_exp_fit.pdf>
-Package pdftex.def Info: figures/log_normal_exp_fit.pdf  used on input line 699
-.
-(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 21/56|  
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 21/58|  
  []
 
 [32
 
- <./figures/log_normal_pr_fit.pdf> <./figures/log_normal_u2u_fit.pdf> <./figure
-s/log_normal_e2e_fit.pdf> <./figures/log_normal_exp_fit.pdf>]
-File: figures/log_normal_pr_fit.pdf Graphic file (type pdf)
-<use figures/log_normal_pr_fit.pdf>
-Package pdftex.def Info: figures/log_normal_pr_fit.pdf  used on input line 699.
+ <./figures/separation_rate_1y.png> <./figures/job_finding_rate.png>]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
 
-(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
-File: figures/log_normal_u2u_fit.pdf Graphic file (type pdf)
-<use figures/log_normal_u2u_fit.pdf>
-Package pdftex.def Info: figures/log_normal_u2u_fit.pdf  used on input line 699
-.
-(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
-File: figures/log_normal_e2e_fit.pdf Graphic file (type pdf)
-<use figures/log_normal_e2e_fit.pdf>
-Package pdftex.def Info: figures/log_normal_e2e_fit.pdf  used on input line 699
-.
-(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
-File: figures/log_normal_exp_fit.pdf Graphic file (type pdf)
-<use figures/log_normal_exp_fit.pdf>
-Package pdftex.def Info: figures/log_normal_exp_fit.pdf  used on input line 699
-.
-(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 21/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 22/58|  
  []
 
 [33
 
 ]
+<figures/log_normal_pr_fit.pdf, id=1228, 578.16pt x 397.485pt>
 File: figures/log_normal_pr_fit.pdf Graphic file (type pdf)
 <use figures/log_normal_pr_fit.pdf>
-Package pdftex.def Info: figures/log_normal_pr_fit.pdf  used on input line 699.
+Package pdftex.def Info: figures/log_normal_pr_fit.pdf  used on input line 720.
 
 (pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+<figures/log_normal_u2u_fit.pdf, id=1229, 578.16pt x 397.485pt>
 File: figures/log_normal_u2u_fit.pdf Graphic file (type pdf)
 <use figures/log_normal_u2u_fit.pdf>
-Package pdftex.def Info: figures/log_normal_u2u_fit.pdf  used on input line 699
+Package pdftex.def Info: figures/log_normal_u2u_fit.pdf  used on input line 720
 .
 (pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+<figures/log_normal_e2e_fit.pdf, id=1230, 578.16pt x 397.485pt>
 File: figures/log_normal_e2e_fit.pdf Graphic file (type pdf)
 <use figures/log_normal_e2e_fit.pdf>
-Package pdftex.def Info: figures/log_normal_e2e_fit.pdf  used on input line 699
+Package pdftex.def Info: figures/log_normal_e2e_fit.pdf  used on input line 720
 .
 (pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+<figures/log_normal_exp_fit.pdf, id=1231, 578.16pt x 397.485pt>
 File: figures/log_normal_exp_fit.pdf Graphic file (type pdf)
 <use figures/log_normal_exp_fit.pdf>
-Package pdftex.def Info: figures/log_normal_exp_fit.pdf  used on input line 699
+Package pdftex.def Info: figures/log_normal_exp_fit.pdf  used on input line 720
 .
 (pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 21/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 23/58|  
  []
 
 [34
 
-] Excluding 'comment' comment. Excluding 'comment' comment.
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 22/56|  
+ <./figures/log_normal_pr_fit.pdf> <./figures/log_normal_u2u_fit.pdf> <./figure
+s/log_normal_e2e_fit.pdf> <./figures/log_normal_exp_fit.pdf>]
+File: figures/log_normal_pr_fit.pdf Graphic file (type pdf)
+<use figures/log_normal_pr_fit.pdf>
+Package pdftex.def Info: figures/log_normal_pr_fit.pdf  used on input line 720.
+
+(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+File: figures/log_normal_u2u_fit.pdf Graphic file (type pdf)
+<use figures/log_normal_u2u_fit.pdf>
+Package pdftex.def Info: figures/log_normal_u2u_fit.pdf  used on input line 720
+.
+(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+File: figures/log_normal_e2e_fit.pdf Graphic file (type pdf)
+<use figures/log_normal_e2e_fit.pdf>
+Package pdftex.def Info: figures/log_normal_e2e_fit.pdf  used on input line 720
+.
+(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+File: figures/log_normal_exp_fit.pdf Graphic file (type pdf)
+<use figures/log_normal_exp_fit.pdf>
+Package pdftex.def Info: figures/log_normal_exp_fit.pdf  used on input line 720
+.
+(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 23/58|  
  []
 
 [35
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 23/56|  
+File: figures/log_normal_pr_fit.pdf Graphic file (type pdf)
+<use figures/log_normal_pr_fit.pdf>
+Package pdftex.def Info: figures/log_normal_pr_fit.pdf  used on input line 720.
+
+(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+File: figures/log_normal_u2u_fit.pdf Graphic file (type pdf)
+<use figures/log_normal_u2u_fit.pdf>
+Package pdftex.def Info: figures/log_normal_u2u_fit.pdf  used on input line 720
+.
+(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+File: figures/log_normal_e2e_fit.pdf Graphic file (type pdf)
+<use figures/log_normal_e2e_fit.pdf>
+Package pdftex.def Info: figures/log_normal_e2e_fit.pdf  used on input line 720
+.
+(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+File: figures/log_normal_exp_fit.pdf Graphic file (type pdf)
+<use figures/log_normal_exp_fit.pdf>
+Package pdftex.def Info: figures/log_normal_exp_fit.pdf  used on input line 720
+.
+(pdftex.def)             Requested size: 119.80544pt x 82.3644pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 23/58|  
  []
 
 [36
 
-]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 23/56|  
+] Excluding 'comment' comment. Excluding 'comment' comment.
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 24/58|  
  []
 
 [37
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 24/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 25/58|  
  []
 
 [38
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 25/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 25/58|  
  []
 
 [39
 
 ]
-Overfull \vbox (0.24936pt too high) detected at line 915
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 26/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 26/58|  
  []
 
 [40
 
 ]
-Overfull \vbox (0.24936pt too high) detected at line 915
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 26/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 27/58|  
  []
 
 [41
 
 ]
-Overfull \vbox (0.24936pt too high) detected at line 915
+Overfull \vbox (0.24936pt too high) detected at line 936
  []
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 26/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 28/58|  
  []
 
 [42
 
 ]
-Overfull \vbox (0.24936pt too high) detected at line 915
+Overfull \vbox (0.24936pt too high) detected at line 936
  []
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 26/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 28/58|  
  []
 
 [43
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 27/56|  
+Overfull \vbox (0.24936pt too high) detected at line 936
+ []
+
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 28/58|  
  []
 
 [44
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 28/56|  
+Overfull \vbox (0.24936pt too high) detected at line 936
+ []
+
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 28/58|  
  []
 
 [45
 
 ]
-Overfull \vbox (7.96545pt too high) detected at line 1004
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 29/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 29/58|  
  []
 
 [46
 
 ]
-<figures/age_wage_profile.pdf, id=1837, 578.16pt x 397.485pt>
-File: figures/age_wage_profile.pdf Graphic file (type pdf)
-<use figures/age_wage_profile.pdf>
-Package pdftex.def Info: figures/age_wage_profile.pdf  used on input line 1016.
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
 
-(pdftex.def)             Requested size: 578.15858pt x 397.48402pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 30/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 30/58|  
  []
 
 [47
 
- <./figures/age_wage_profile.pdf>]
-<figures/lorenz_a_compare_pe_baseline.pdf, id=1899, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_pe_baseline.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_pe_baseline.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_pe_baseline.pdf  used on inpu
-t line 1031.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_pe_baseline.pdf, id=1900, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_pe_baseline.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_pe_baseline.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_pe_baseline.pdf  used on 
-input line 1031.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
-<figures/lorenz_a_compare_ge_baseline.pdf, id=1901, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_ge_baseline.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_ge_baseline.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_ge_baseline.pdf  used on inpu
-t line 1031.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_ge_baseline.pdf, id=1902, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_ge_baseline.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_ge_baseline.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_ge_baseline.pdf  used on 
-input line 1031.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+]
+Overfull \vbox (7.96545pt too high) detected at line 1025
+ []
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 31/56|  
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 31/58|  
  []
 
 [48
+
+]
+<figures/age_wage_profile.pdf, id=1898, 578.16pt x 397.485pt>
+File: figures/age_wage_profile.pdf Graphic file (type pdf)
+<use figures/age_wage_profile.pdf>
+Package pdftex.def Info: figures/age_wage_profile.pdf  used on input line 1037.
+
+(pdftex.def)             Requested size: 578.15858pt x 397.48402pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 32/58|  
+ []
+
+[49
+
+ <./figures/age_wage_profile.pdf>]
+<figures/lorenz_a_compare_pe_baseline.pdf, id=1960, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_pe_baseline.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_pe_baseline.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_pe_baseline.pdf  used on inpu
+t line 1052.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_pe_baseline.pdf, id=1961, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_pe_baseline.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_pe_baseline.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_pe_baseline.pdf  used on 
+input line 1052.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+<figures/lorenz_a_compare_ge_baseline.pdf, id=1962, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_ge_baseline.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_ge_baseline.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_ge_baseline.pdf  used on inpu
+t line 1052.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_ge_baseline.pdf, id=1963, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_ge_baseline.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_ge_baseline.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_ge_baseline.pdf  used on 
+input line 1052.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 33/58|  
+ []
+
+[50
 
  <./figures/lorenz_a_compare_pe_baseline.pdf> <./figures/life_cycle_a_compare_p
 e_baseline.pdf> <./figures/lorenz_a_compare_ge_baseline.pdf> <./figures/life_cy
@@ -1465,453 +1747,583 @@ cle_a_compare_ge_baseline.pdf>]
 File: figures/lorenz_a_compare_pe_baseline.pdf Graphic file (type pdf)
 <use figures/lorenz_a_compare_pe_baseline.pdf>
 Package pdftex.def Info: figures/lorenz_a_compare_pe_baseline.pdf  used on inpu
-t line 1031.
+t line 1052.
 (pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
 File: figures/life_cycle_a_compare_pe_baseline.pdf Graphic file (type pdf)
 <use figures/life_cycle_a_compare_pe_baseline.pdf>
 Package pdftex.def Info: figures/life_cycle_a_compare_pe_baseline.pdf  used on 
-input line 1031.
+input line 1052.
 (pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
 File: figures/lorenz_a_compare_ge_baseline.pdf Graphic file (type pdf)
 <use figures/lorenz_a_compare_ge_baseline.pdf>
 Package pdftex.def Info: figures/lorenz_a_compare_ge_baseline.pdf  used on inpu
-t line 1031.
+t line 1052.
 (pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
 File: figures/life_cycle_a_compare_ge_baseline.pdf Graphic file (type pdf)
 <use figures/life_cycle_a_compare_ge_baseline.pdf>
 Package pdftex.def Info: figures/life_cycle_a_compare_ge_baseline.pdf  used on 
-input line 1031.
+input line 1052.
 (pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 31/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
-[49
 
-]
-<figures/lorenz_a_compare_pe_LPR.pdf, id=2183, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_pe_LPR.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_pe_LPR.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_pe_LPR.pdf  used on input lin
-e 1046.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_pe_LPR.pdf, id=2184, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_pe_LPR.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_pe_LPR.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_pe_LPR.pdf  used on input
- line 1046.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
-<figures/lorenz_a_compare_ge_LPR.pdf, id=2185, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_ge_LPR.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_ge_LPR.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_ge_LPR.pdf  used on input lin
-e 1046.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_ge_LPR.pdf, id=2186, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_ge_LPR.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_ge_LPR.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_ge_LPR.pdf  used on input
- line 1046.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
-
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 32/56|  
- []
-
-[50
-
- <./figures/lorenz_a_compare_pe_LPR.pdf> <./figures/life_cycle_a_compare_pe_LPR
-.pdf> <./figures/lorenz_a_compare_ge_LPR.pdf> <./figures/life_cycle_a_compare_g
-e_LPR.pdf>]
-<figures/lorenz_a_compare_pe_HPR.pdf, id=2444, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_pe_HPR.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_pe_HPR.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_pe_HPR.pdf  used on input lin
-e 1060.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_pe_HPR.pdf, id=2445, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_pe_HPR.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_pe_HPR.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_pe_HPR.pdf  used on input
- line 1060.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
-<figures/lorenz_a_compare_ge_HPR.pdf, id=2446, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_ge_HPR.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_ge_HPR.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_ge_HPR.pdf  used on input lin
-e 1060.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_ge_HPR.pdf, id=2447, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_ge_HPR.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_ge_HPR.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_ge_HPR.pdf  used on input
- line 1060.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
-
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 33/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 33/58|  
  []
 
 [51
 
- <./figures/lorenz_a_compare_pe_HPR.pdf> <./figures/life_cycle_a_compare_pe_HPR
-.pdf> <./figures/lorenz_a_compare_ge_HPR.pdf> <./figures/life_cycle_a_compare_g
-e_HPR.pdf>]
-<figures/lorenz_a_compare_pe_HPRUR.pdf, id=2705, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_pe_HPRUR.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_pe_HPRUR.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_pe_HPRUR.pdf  used on input l
-ine 1074.
+]
+<figures/lorenz_a_compare_pe_LPR.pdf, id=2244, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_pe_LPR.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_pe_LPR.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_pe_LPR.pdf  used on input lin
+e 1067.
 (pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_pe_HPRUR.pdf, id=2706, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_pe_HPRUR.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_pe_HPRUR.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_pe_HPRUR.pdf  used on inp
-ut line 1074.
+<figures/life_cycle_a_compare_pe_LPR.pdf, id=2245, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_pe_LPR.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_pe_LPR.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_pe_LPR.pdf  used on input
+ line 1067.
 (pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
-<figures/lorenz_a_compare_ge_HPRUR.pdf, id=2707, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_ge_HPRUR.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_ge_HPRUR.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_ge_HPRUR.pdf  used on input l
-ine 1074.
+<figures/lorenz_a_compare_ge_LPR.pdf, id=2246, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_ge_LPR.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_ge_LPR.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_ge_LPR.pdf  used on input lin
+e 1067.
 (pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_ge_HPRUR.pdf, id=2708, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_ge_HPRUR.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_ge_HPRUR.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_ge_HPRUR.pdf  used on inp
-ut line 1074.
+<figures/life_cycle_a_compare_ge_LPR.pdf, id=2247, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_ge_LPR.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_ge_LPR.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_ge_LPR.pdf  used on input
+ line 1067.
 (pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 34/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 34/58|  
  []
 
 [52
 
- <./figures/lorenz_a_compare_pe_HPRUR.pdf> <./figures/life_cycle_a_compare_pe_H
-PRUR.pdf> <./figures/lorenz_a_compare_ge_HPRUR.pdf> <./figures/life_cycle_a_com
-pare_ge_HPRUR.pdf>]
-<figures/hetero_growth_rates_life_cycle.pdf, id=2972, 578.16pt x 397.485pt>
-File: figures/hetero_growth_rates_life_cycle.pdf Graphic file (type pdf)
-<use figures/hetero_growth_rates_life_cycle.pdf>
-Package pdftex.def Info: figures/hetero_growth_rates_life_cycle.pdf  used on in
-put line 1085.
-(pdftex.def)             Requested size: 578.15858pt x 397.48402pt.
+ <./figures/lorenz_a_compare_pe_LPR.pdf> <./figures/life_cycle_a_compare_pe_LPR
+.pdf> <./figures/lorenz_a_compare_ge_LPR.pdf> <./figures/life_cycle_a_compare_g
+e_LPR.pdf>]
+<figures/lorenz_a_compare_pe_HPR.pdf, id=2504, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_pe_HPR.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_pe_HPR.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_pe_HPR.pdf  used on input lin
+e 1081.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_pe_HPR.pdf, id=2505, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_pe_HPR.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_pe_HPR.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_pe_HPR.pdf  used on input
+ line 1081.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+<figures/lorenz_a_compare_ge_HPR.pdf, id=2506, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_ge_HPR.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_ge_HPR.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_ge_HPR.pdf  used on input lin
+e 1081.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_ge_HPR.pdf, id=2507, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_ge_HPR.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_ge_HPR.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_ge_HPR.pdf  used on input
+ line 1081.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 35/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 35/58|  
  []
 
 [53
 
- <./figures/hetero_growth_rates_life_cycle.pdf>]
-<figures/lorenz_a_compare_pe_HPRURG.pdf, id=3042, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_pe_HPRURG.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_pe_HPRURG.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_pe_HPRURG.pdf  used on input 
-line 1099.
+ <./figures/lorenz_a_compare_pe_HPR.pdf> <./figures/life_cycle_a_compare_pe_HPR
+.pdf> <./figures/lorenz_a_compare_ge_HPR.pdf> <./figures/life_cycle_a_compare_g
+e_HPR.pdf>]
+<figures/lorenz_a_compare_pe_HPRUR.pdf, id=2766, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_pe_HPRUR.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_pe_HPRUR.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_pe_HPRUR.pdf  used on input l
+ine 1095.
 (pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_pe_HPRURG.pdf, id=3043, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_pe_HPRURG.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_pe_HPRURG.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_pe_HPRURG.pdf  used on in
-put line 1099.
+<figures/life_cycle_a_compare_pe_HPRUR.pdf, id=2767, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_pe_HPRUR.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_pe_HPRUR.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_pe_HPRUR.pdf  used on inp
+ut line 1095.
 (pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
-<figures/lorenz_a_compare_ge_HPRURG.pdf, id=3044, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_ge_HPRURG.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_ge_HPRURG.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_ge_HPRURG.pdf  used on input 
-line 1099.
+<figures/lorenz_a_compare_ge_HPRUR.pdf, id=2768, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_ge_HPRUR.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_ge_HPRUR.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_ge_HPRUR.pdf  used on input l
+ine 1095.
 (pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_ge_HPRURG.pdf, id=3045, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_ge_HPRURG.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_ge_HPRURG.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_ge_HPRURG.pdf  used on in
-put line 1099.
+<figures/life_cycle_a_compare_ge_HPRUR.pdf, id=2769, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_ge_HPRUR.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_ge_HPRUR.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_ge_HPRUR.pdf  used on inp
+ut line 1095.
 (pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
 
-Overfull \vbox (14.34734pt too high) detected at line 1099
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 36/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 36/58|  
  []
 
 [54
 
- <./figures/lorenz_a_compare_pe_HPRURG.pdf> <./figures/life_cycle_a_compare_pe_
-HPRURG.pdf> <./figures/lorenz_a_compare_ge_HPRURG.pdf> <./figures/life_cycle_a_
-compare_ge_HPRURG.pdf>]
-<figures/lorenz_a_compare_pe_HPRURGTP.pdf, id=3310, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_pe_HPRURGTP.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_pe_HPRURGTP.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_pe_HPRURGTP.pdf  used on inpu
-t line 1118.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_pe_HPRURGTP.pdf, id=3311, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_pe_HPRURGTP.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_pe_HPRURGTP.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_pe_HPRURGTP.pdf  used on 
-input line 1118.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
-<figures/lorenz_a_compare_ge_HPRURGTP.pdf, id=3312, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_ge_HPRURGTP.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_ge_HPRURGTP.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_ge_HPRURGTP.pdf  used on inpu
-t line 1118.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_ge_HPRURGTP.pdf, id=3313, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_ge_HPRURGTP.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_ge_HPRURGTP.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_ge_HPRURGTP.pdf  used on 
-input line 1118.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+ <./figures/lorenz_a_compare_pe_HPRUR.pdf> <./figures/life_cycle_a_compare_pe_H
+PRUR.pdf> <./figures/lorenz_a_compare_ge_HPRUR.pdf> <./figures/life_cycle_a_com
+pare_ge_HPRUR.pdf>]
+<figures/hetero_growth_rates_life_cycle.pdf, id=3033, 578.16pt x 397.485pt>
+File: figures/hetero_growth_rates_life_cycle.pdf Graphic file (type pdf)
+<use figures/hetero_growth_rates_life_cycle.pdf>
+Package pdftex.def Info: figures/hetero_growth_rates_life_cycle.pdf  used on in
+put line 1106.
+(pdftex.def)             Requested size: 578.15858pt x 397.48402pt.
 
-Overfull \vbox (27.36955pt too high) detected at line 1118
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 37/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 37/58|  
  []
 
 [55
 
- <./figures/lorenz_a_compare_pe_HPRURGTP.pdf> <./figures/life_cycle_a_compare_p
-e_HPRURGTP.pdf> <./figures/lorenz_a_compare_ge_HPRURGTP.pdf> <./figures/life_cy
-cle_a_compare_ge_HPRURGTP.pdf>] (./tables/model_compare_summary.tex)
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 38/56|  
+ <./figures/hetero_growth_rates_life_cycle.pdf>]
+<figures/lorenz_a_compare_pe_HPRURG.pdf, id=3104, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_pe_HPRURG.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_pe_HPRURG.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_pe_HPRURG.pdf  used on input 
+line 1120.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_pe_HPRURG.pdf, id=3105, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_pe_HPRURG.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_pe_HPRURG.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_pe_HPRURG.pdf  used on in
+put line 1120.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+<figures/lorenz_a_compare_ge_HPRURG.pdf, id=3106, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_ge_HPRURG.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_ge_HPRURG.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_ge_HPRURG.pdf  used on input 
+line 1120.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_ge_HPRURG.pdf, id=3107, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_ge_HPRURG.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_ge_HPRURG.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_ge_HPRURG.pdf  used on in
+put line 1120.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+
+Overfull \vbox (14.34734pt too high) detected at line 1120
+ []
+
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 38/58|  
  []
 
 [56
 
-]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 39/56|  
+ <./figures/lorenz_a_compare_pe_HPRURG.pdf> <./figures/life_cycle_a_compare_pe_
+HPRURG.pdf> <./figures/lorenz_a_compare_ge_HPRURG.pdf> <./figures/life_cycle_a_
+compare_ge_HPRURG.pdf>]
+<figures/lorenz_a_compare_pe_HPRURGTP.pdf, id=3371, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_pe_HPRURGTP.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_pe_HPRURGTP.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_pe_HPRURGTP.pdf  used on inpu
+t line 1139.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_pe_HPRURGTP.pdf, id=3372, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_pe_HPRURGTP.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_pe_HPRURGTP.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_pe_HPRURGTP.pdf  used on 
+input line 1139.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+<figures/lorenz_a_compare_ge_HPRURGTP.pdf, id=3373, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_ge_HPRURGTP.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_ge_HPRURGTP.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_ge_HPRURGTP.pdf  used on inpu
+t line 1139.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_ge_HPRURGTP.pdf, id=3374, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_ge_HPRURGTP.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_ge_HPRURGTP.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_ge_HPRURGTP.pdf  used on 
+input line 1139.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+
+Overfull \vbox (27.36955pt too high) detected at line 1139
+ []
+
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 39/58|  
  []
 
 [57
 
-]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 40/56|  
+ <./figures/lorenz_a_compare_pe_HPRURGTP.pdf> <./figures/life_cycle_a_compare_p
+e_HPRURGTP.pdf> <./figures/lorenz_a_compare_ge_HPRURGTP.pdf> <./figures/life_cy
+cle_a_compare_ge_HPRURGTP.pdf>] (./tables/model_compare_summary.tex)
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 40/58|  
  []
 
 [58
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 41/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 41/58|  
  []
 
 [59
 
 ]
-<figures/lorenz_a_compare_pe_SHPRUR.pdf, id=3695, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_pe_SHPRUR.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_pe_SHPRUR.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_pe_SHPRUR.pdf  used on input 
-line 1216.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_pe_SHPRUR.pdf, id=3696, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_pe_SHPRUR.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_pe_SHPRUR.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_pe_SHPRUR.pdf  used on in
-put line 1216.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
-<figures/lorenz_a_compare_ge_SHPRUR.pdf, id=3697, 578.16pt x 578.16pt>
-File: figures/lorenz_a_compare_ge_SHPRUR.pdf Graphic file (type pdf)
-<use figures/lorenz_a_compare_ge_SHPRUR.pdf>
-Package pdftex.def Info: figures/lorenz_a_compare_ge_SHPRUR.pdf  used on input 
-line 1216.
-(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
-<figures/life_cycle_a_compare_ge_SHPRUR.pdf, id=3698, 1156.32pt x 578.16pt>
-File: figures/life_cycle_a_compare_ge_SHPRUR.pdf Graphic file (type pdf)
-<use figures/life_cycle_a_compare_ge_SHPRUR.pdf>
-Package pdftex.def Info: figures/life_cycle_a_compare_ge_SHPRUR.pdf  used on in
-put line 1216.
-(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 42/56|  
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 42/58|  
  []
 
 [60
 
- <./figures/lorenz_a_compare_pe_SHPRUR.pdf> <./figures/life_cycle_a_compare_pe_
-SHPRUR.pdf> <./figures/lorenz_a_compare_ge_SHPRUR.pdf> <./figures/life_cycle_a_
-compare_ge_SHPRUR.pdf>]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 43/56|  
+]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 43/58|  
  []
 
 [61
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 44/56|  
+<figures/lorenz_a_compare_pe_SHPRUR.pdf, id=3756, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_pe_SHPRUR.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_pe_SHPRUR.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_pe_SHPRUR.pdf  used on input 
+line 1237.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_pe_SHPRUR.pdf, id=3757, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_pe_SHPRUR.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_pe_SHPRUR.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_pe_SHPRUR.pdf  used on in
+put line 1237.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+<figures/lorenz_a_compare_ge_SHPRUR.pdf, id=3758, 578.16pt x 578.16pt>
+File: figures/lorenz_a_compare_ge_SHPRUR.pdf Graphic file (type pdf)
+<use figures/lorenz_a_compare_ge_SHPRUR.pdf>
+Package pdftex.def Info: figures/lorenz_a_compare_ge_SHPRUR.pdf  used on input 
+line 1237.
+(pdftex.def)             Requested size: 578.15858pt x 578.15858pt.
+<figures/life_cycle_a_compare_ge_SHPRUR.pdf, id=3759, 1156.32pt x 578.16pt>
+File: figures/life_cycle_a_compare_ge_SHPRUR.pdf Graphic file (type pdf)
+<use figures/life_cycle_a_compare_ge_SHPRUR.pdf>
+Package pdftex.def Info: figures/life_cycle_a_compare_ge_SHPRUR.pdf  used on in
+put line 1237.
+(pdftex.def)             Requested size: 1156.31718pt x 578.15858pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 44/58|  
  []
 
 [62
 
-]
-<figures/joy_incstd.jpg, id=4026, 433.62pt x 505.89pt>
-File: figures/joy_incstd.jpg Graphic file (type jpg)
-<use figures/joy_incstd.jpg>
-Package pdftex.def Info: figures/joy_incstd.jpg  used on input line 1280.
-(pdftex.def)             Requested size: 136.91603pt x 159.73442pt.
+ <./figures/lorenz_a_compare_pe_SHPRUR.pdf> <./figures/life_cycle_a_compare_pe_
+SHPRUR.pdf> <./figures/lorenz_a_compare_ge_SHPRUR.pdf> <./figures/life_cycle_a_
+compare_ge_SHPRUR.pdf>]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 45/56|  
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 45/58|  
  []
 
 [63
 
+]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 46/58|  
+ []
+
+[64
+
+]
+<figures/joy_incstd.jpg, id=4086, 433.62pt x 505.89pt>
+File: figures/joy_incstd.jpg Graphic file (type jpg)
+<use figures/joy_incstd.jpg>
+Package pdftex.def Info: figures/joy_incstd.jpg  used on input line 1301.
+(pdftex.def)             Requested size: 136.91603pt x 159.73442pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 47/58|  
+ []
+
+[65
+
  <./figures/joy_incstd.jpg>]
-<figures/real_log_wage_gr_level_by_age_edu_gender_compare.png, id=4055, 585.186
+<figures/real_log_wage_gr_level_by_age_edu_gender_compare.png, id=4116, 585.186
 25pt x 425.59pt>
 File: figures/real_log_wage_gr_level_by_age_edu_gender_compare.png Graphic file
  (type png)
 <use figures/real_log_wage_gr_level_by_age_edu_gender_compare.png>
 Package pdftex.def Info: figures/real_log_wage_gr_level_by_age_edu_gender_compa
-re.png  used on input line 1292.
+re.png  used on input line 1313.
 (pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 46/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
-[64
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 48/58|  
+ []
+
+[66
 
  <./figures/real_log_wage_gr_level_by_age_edu_gender_compare.png>]
-<figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png, id=4085, 585.18
+<figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png, id=4146, 585.18
 625pt x 425.59pt>
 File: figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png Graphic fil
 e (type png)
 <use figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png>
 Package pdftex.def Info: figures/real_log_wage_gr_nlevel_by_age_edu_gender_comp
-are.png  used on input line 1305.
+are.png  used on input line 1326.
 (pdftex.def)             Requested size: 239.60567pt x 174.25923pt.
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 47/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
-[65
 
- <./figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png>]
-<figures/experience_var_var_data.png, id=4117, 585.18625pt x 425.59pt>
-File: figures/experience_var_var_data.png Graphic file (type png)
-<use figures/experience_var_var_data.png>
-Package pdftex.def Info: figures/experience_var_var_data.png  used on input lin
-e 1325.
-(pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
-
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 48/56|  
- []
-
-[66
-
- <./figures/experience_var_var_data.png>]
-<figures/experience_ue_var_data.png, id=4148, 585.18625pt x 425.59pt>
-File: figures/experience_ue_var_data.png Graphic file (type png)
-<use figures/experience_ue_var_data.png>
-Package pdftex.def Info: figures/experience_ue_var_data.png  used on input line
- 1337.
-(pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
-
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 49/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 49/58|  
  []
 
 [67
 
- <./figures/experience_ue_var_data.png>]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 50/56|  
+ <./figures/real_log_wage_gr_nlevel_by_age_edu_gender_compare.png>]
+<figures/experience_var_var_data.png, id=4178, 585.18625pt x 425.59pt>
+File: figures/experience_var_var_data.png Graphic file (type png)
+<use figures/experience_var_var_data.png>
+Package pdftex.def Info: figures/experience_var_var_data.png  used on input lin
+e 1346.
+(pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 50/58|  
  []
 
 [68
 
-]
-<figures/tsMean3mvrexp_he.jpg, id=4207, 5781.6pt x 2890.8pt>
-File: figures/tsMean3mvrexp_he.jpg Graphic file (type jpg)
-<use figures/tsMean3mvrexp_he.jpg>
-Package pdftex.def Info: figures/tsMean3mvrexp_he.jpg  used on input line 1388.
+ <./figures/experience_var_var_data.png>]
+<figures/experience_ue_var_data.png, id=4209, 585.18625pt x 425.59pt>
+File: figures/experience_ue_var_data.png Graphic file (type png)
+<use figures/experience_ue_var_data.png>
+Package pdftex.def Info: figures/experience_ue_var_data.png  used on input line
+ 1358.
+(pdftex.def)             Requested size: 205.37926pt x 149.36784pt.
 
-(pdftex.def)             Requested size: 308.06367pt x 154.03212pt.
-
-Overfull \vbox (3.14047pt too high) detected at line 1388
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 51/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 51/58|  
  []
 
 [69
 
- <./figures/tsMean3mvrexp_he.jpg>]
-Overfull \hbox (13.6674pt too wide) in alignment at lines 1423--1423
- [][][] []
+ <./figures/experience_ue_var_data.png>]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 52/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 52/58|  
  []
 
 [70
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 53/56|  
+<figures/tsMean3mvrexp_he.jpg, id=4268, 5781.6pt x 2890.8pt>
+File: figures/tsMean3mvrexp_he.jpg Graphic file (type jpg)
+<use figures/tsMean3mvrexp_he.jpg>
+Package pdftex.def Info: figures/tsMean3mvrexp_he.jpg  used on input line 1409.
+
+(pdftex.def)             Requested size: 308.06367pt x 154.03212pt.
+
+Overfull \vbox (3.14047pt too high) detected at line 1409
+ []
+
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 53/58|  
  []
 
 [71
 
-]
-<figures/log_wage_sd_by_edu.png, id=4303, 585.18625pt x 425.59pt>
-File: figures/log_wage_sd_by_edu.png Graphic file (type png)
-<use figures/log_wage_sd_by_edu.png>
-Package pdftex.def Info: figures/log_wage_sd_by_edu.png  used on input line 147
-3.
-(pdftex.def)             Requested size: 157.45813pt x 114.5147pt.
-<figures/log_wage_shk_gr_sd_by_edu.png, id=4304, 585.18625pt x 425.59pt>
-File: figures/log_wage_shk_gr_sd_by_edu.png Graphic file (type png)
-<use figures/log_wage_shk_gr_sd_by_edu.png>
-Package pdftex.def Info: figures/log_wage_shk_gr_sd_by_edu.png  used on input l
-ine 1473.
-(pdftex.def)             Requested size: 157.45813pt x 114.5147pt.
+ <./figures/tsMean3mvrexp_he.jpg>]
+Overfull \hbox (13.6674pt too wide) in alignment at lines 1444--1444
+ [][][] []
+ []
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 54/56|  
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 54/58|  
  []
 
 [72
 
- <./figures/log_wage_sd_by_edu.png> <./figures/log_wage_shk_gr_sd_by_edu.png>]
-LaTeX Font Info:    Trying to load font information for U+bbm on input line 150
-4.
- (/usr/local/texlive/2020/texmf-dist/tex/latex/bbm-macros/ubbm.fd
-File: ubbm.fd 1999/03/15 V 1.2 Font definition for bbm font - TH
-)
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 55/56|  
+]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 55/58|  
  []
 
 [73
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 56/56|  
+<figures/log_wage_sd_by_edu.png, id=4365, 585.18625pt x 425.59pt>
+File: figures/log_wage_sd_by_edu.png Graphic file (type png)
+<use figures/log_wage_sd_by_edu.png>
+Package pdftex.def Info: figures/log_wage_sd_by_edu.png  used on input line 149
+4.
+(pdftex.def)             Requested size: 157.45813pt x 114.5147pt.
+<figures/log_wage_shk_gr_sd_by_edu.png, id=4366, 585.18625pt x 425.59pt>
+File: figures/log_wage_shk_gr_sd_by_edu.png Graphic file (type png)
+<use figures/log_wage_shk_gr_sd_by_edu.png>
+Package pdftex.def Info: figures/log_wage_shk_gr_sd_by_edu.png  used on input l
+ine 1494.
+(pdftex.def)             Requested size: 157.45813pt x 114.5147pt.
+
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 56/58|  
  []
 
 [74
+
+ <./figures/log_wage_sd_by_edu.png> <./figures/log_wage_shk_gr_sd_by_edu.png>]
+LaTeX Font Info:    Trying to load font information for U+bbm on input line 152
+5.
+ (/usr/local/texlive/2020/texmf-dist/tex/latex/bbm-macros/ubbm.fd
+File: ubbm.fd 1999/03/15 V 1.2 Font definition for bbm font - TH
+)
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 57/58|  
+ []
+
+[75
+
+]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 58/58|  
+ []
+
+[76
 
 ] Excluding 'comment' comment. (./PIR_slides.bbl
 
@@ -1919,38 +2331,68 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\translate ' on input line 1.
 
 
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 56/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
-[75
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 58/58|  
+ []
+
+[77
 
 ]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 56/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
-[76]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 56/56|  
- []
 
-[77]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 56/56|  
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 58/58|  
  []
 
 [78]
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 56/56|  
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
  []
 
-[79])
-Overfull \hbox (40.00177pt too wide) has occurred while \output is active
- [][]|  []\OT1/cmr/m/n/6 56/56|  
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 58/58|  
+ []
+
+[79]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 58/58|  
  []
 
 [80]
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 58/58|  
+ []
+
+[81])
+Overfull \hbox (163.21638pt too wide) has occurred while \output is active
+ [][][][][][]  
+ []
+
+
+Overfull \hbox (44.74062pt too wide) has occurred while \output is active
+ [][]|  []\OT1/cmr/m/n/6 58/58|  
+ []
+
+[82]
 \tf@nav=\write7
 \openout7 = `PIR_slides.nav'.
 
@@ -1960,20 +2402,20 @@ Overfull \hbox (40.00177pt too wide) has occurred while \output is active
 \tf@snm=\write9
 \openout9 = `PIR_slides.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1555.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1555.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1576.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1576.
  (./PIR_slides.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1555.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1555.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1576.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1576.
 
 Package rerunfilecheck Info: File `PIR_slides.out' has not changed.
-(rerunfilecheck)             Checksum: 69267C4B027CF1C1A08C80B8D600ADAD;619.
+(rerunfilecheck)             Checksum: 8A58060D9EB75B28BA3137D5CB112DC6;619.
  ) 
 Here is how much of TeX's memory you used:
- 21715 strings out of 480608
- 420291 string characters out of 5903631
- 658495 words of memory out of 5000000
- 36771 multiletter control sequences out of 15000+600000
+ 21739 strings out of 480608
+ 420813 string characters out of 5903631
+ 658911 words of memory out of 5000000
+ 36787 multiletter control sequences out of 15000+600000
  544064 words of font info for 71 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  58i,30n,106p,1007b,810s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -2002,10 +2444,10 @@ mf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2020/texmf
 -dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2020/texmf-d
 ist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2020/texmf-di
 st/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on PIR_slides.pdf (80 pages, 3121141 bytes).
+Output written on PIR_slides.pdf (82 pages, 4130548 bytes).
 PDF statistics:
- 4691 PDF objects out of 5155 (max. 8388607)
- 2716 compressed objects within 28 object streams
- 253 named destinations out of 1000 (max. 500000)
- 409 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 4752 PDF objects out of 5155 (max. 8388607)
+ 2771 compressed objects within 28 object streams
+ 259 named destinations out of 1000 (max. 500000)
+ 419 words of extra memory for PDF output out of 10000 (max. 10000000)
 
