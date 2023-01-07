@@ -28,7 +28,7 @@ import zipfile      #Three packages we'll need to unzip the data
 import matplotlib.pyplot as plt                            
 
 
-# + code_folding=[]
+# + code_folding=[0]
 def unzip_survey_file(year = '2013'):
     """
     The next two lines of code converts the URL into a format that works
@@ -49,7 +49,7 @@ def unzip_survey_file(year = '2013'):
     return url_unzipped.extract(url_unzipped.namelist()[0])
 
 
-# +
+# + code_folding=[0]
 #df2019 = pd.read_stata(unzip_survey_file(year='2019'))
 df2016 = pd.read_stata(unzip_survey_file(year='2016'))
 #df2013 = pd.read_stata(unzip_survey_file(year='2013'))
@@ -88,6 +88,7 @@ list(df2016.columns)
 # +
 ## make new variables 
 lq_wealth = df2016['liq'] - df2016['ccbal']
+# lq_wealth = df2016['liq']+df2016['bond'] - df2016['ccbal']
 
 df2016['lqwealth'] = lq_wealth
 ### filters and clean variables 
@@ -191,7 +192,7 @@ plt.plot(np.log(age_av_lnorminc),label='average income')
 plt.plot(np.log(age_med_lnorminc),label='median income')
 plt.legend(loc=0)
 
-# + code_folding=[0]
+# + code_folding=[]
 ## merge all age profiles 
 
 to_merge = [age_med_wealth,
@@ -324,3 +325,6 @@ labels = ['2016']
 
 figureprefs(years_graph, variable = 'networth', legendlabels = labels)
 figureprefs(years_graph, variable = 'lqwealth', legendlabels = labels);
+# -
+
+
