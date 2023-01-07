@@ -85,21 +85,28 @@ list(df2016.columns)
 # - [code book for 2016](https://sda.berkeley.edu/sdaweb/docs/scfcomb2016/DOC/hcbk0007.htm)
 # - The [definition](https://www.federalreserve.gov/econres/files/Networth%20Flowchart.pdf) of networth 
 
-# +
+# + code_folding=[]
 ## make new variables 
-lq_wealth = df2016['liq'] - df2016['ccbal']
-# lq_wealth = df2016['liq']+df2016['bond'] - df2016['ccbal']
+#df2016['lqwealth'] = df2016['liq']+df2016['bond']+df2016['stocks']+df2016['nmmf'] - df2016['ccbal'] 
+## 2014 Brookings/Econmetrica paper definition
+df2016['lqwealth'] = df2016['liq'] - df2016['ccbal']
 
-df2016['lqwealth'] = lq_wealth
 ### filters and clean variables 
 
 df2016 = df2016[(df2016['age']>=25) & (df2016['age']<=85)]
+
 df2016 = df2016[df2016['income']>0]
 df2016 = df2016[df2016['norminc']>0]
 df2016['lincome'] = np.log(df2016['income'])
 df2016['lnorminc'] = np.log(df2016['norminc'])
 df2016['w2income']= df2016['networth']/ df2016['norminc']
 df2016['lw2income']= df2016['lqwealth']/ df2016['norminc']
+
+
+# +
+## drop negative liquid wealth 
+
+df2016 = df2016[df2016['lqwealth']>=0]
 
 # + code_folding=[0]
 ## age polynomials regressions 
@@ -171,7 +178,6 @@ plt.plot(np.log(age_av_lqwealth),label='average net liquid wealth')
 plt.plot(np.log(age_med_lqwealth),label='median net liquid wealth')
 
 
-
 plt.legend(loc=0)
 # -
 
@@ -223,7 +229,7 @@ SCF_age_profile
 
 # ### Wealth inequality 
 
-# + code_folding=[]
+# + code_folding=[0]
 def weighted_percentiles(data, variable, weights, percentiles = [], 
                          dollar_amt = False, subgroup = None, limits = []):
     """
@@ -325,6 +331,3 @@ labels = ['2016']
 
 figureprefs(years_graph, variable = 'networth', legendlabels = labels)
 figureprefs(years_graph, variable = 'lqwealth', legendlabels = labels);
-# -
-
-
