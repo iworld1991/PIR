@@ -19,7 +19,7 @@
 
 # ## Introduction
 #
-# This notebook fits truncated log normal distributions to the cross-sectional distribution of PRs, UE risks and growth rates expectations in SCE. 
+# This notebook fits truncated log normal distributions to the cross-sectional distribution of PRs, UE risks and growth rate expectations in SCE. 
 
 # +
 import numpy as np
@@ -74,7 +74,7 @@ print('est sigma:',str(sigma_fake_est))
 print('est loc:',str(loc))
 
 
-# + {"code_folding": [0]}
+# + {"code_folding": []}
 def Est_PR_log_normal_simple(PRs,
                              est_PR,
                              transform = True):
@@ -101,6 +101,7 @@ def Est_PR_log_normal_simple(PRs,
         mu_PR_est, sigma_PR_est= np.log(scale), shape  # mu, sigma ## mu=-sigma^2/2 for mean-one log normal 
         
     else:
+        ## if the PRs is non-negative, taking log and then fit a normal 
         mu_PR_est, sigma_PR_est = stats.norm.fit(np.log(PRs))
         
     av_PRs = np.mean(PRs)
@@ -176,14 +177,13 @@ print('nb of observations after dropping low numeracy/low education sample:',str
 SCEM['UE_f']= SCEM['UE_f']/100
 SCEM['UE_s']= SCEM['UE_s']/100
 
-## time aggregation to 1year
+## time aggregation to 1year from 3-month 
 
 SCEM['UE_f'] = 1-(1-SCEM['UE_f'])**4
 
 ## job finding and separation rates to U2U and E2E rate 
 SCEM['U2U'] = 1- SCEM['UE_f']
 SCEM['E2E'] = 1- SCEM['UE_s']*(1-SCEM['UE_f'])
-
 
 ## trucate 0 and 1s for probs 
 SCEM['U2U_truc'] = SCEM['U2U']
@@ -256,41 +256,65 @@ print('Std of E2E in SCE', str(np.std(prob_func(E2E_SCE))))
 
 
 
-# + {"code_folding": [10, 14]}
-## distributions of PR 
+# +
+import seaborn as sns
 
-plt.title('PR in SCE')
 
-hist = plt.hist(np.sqrt(PR_ind_av),
-                bins = 50,
-                color='red',
-                alpha = 0.3,
-                label='Dist of PRs',
-               density=True)
+plt.title('PRs in SCE')
+
+#hist = plt.hist(np.sqrt(PR_ind_av),
+#                bins = 50,
+#                color='red',
+#                alpha = 0.3,
+#                label='Dist of PRs',
+#               density=True)
+
+sns.histplot(np.sqrt(PR_ind_av), 
+             color="red", 
+             kde=True, 
+             stat="density", 
+             label='Observed PRs in SCE',
+             linewidth= 0.4,
+             fill = False)
 
 plt.axvline(np.sqrt(av_PR_SCE),
             color='black',
             label='Average PR=.{:.3f}'.format(np.sqrt(av_PR_SCE)))
+
 
 plt.axvline(np.sqrt(est_PR_Low),
             linestyle='--',
             color='blue',
             label='Estimated PR')
 
-plt.xlabel('PR (in std terms)')
+plt.xlim([0.0,0.14])
+plt.xlabel('PR in std terms')
 plt.legend(loc=1)
 
-# + {"code_folding": [11]}
+
+
+# + {"code_folding": []}
 ## distributions of U2U 
 
 plt.title('U2U in SCE' )
 
-hist = plt.hist(prob_func(U2U_SCE),
-                bins = 20,
-                color='red',
-                 alpha = 0.3,
-                label='Dist of U2U',
-               density=True)
+
+#hist = plt.hist(prob_func(U2U_SCE),
+#                bins = 20,
+#                color='red',
+#                 alpha = 0.3,
+#                label='Dist of U2U',
+#               density=True)
+
+sns.histplot(prob_func(U2U_SCE), 
+             color="red", 
+             bins = 40,
+             kde=True, 
+             stat="density", 
+             label='Observed U2U in SCE',
+             linewidth= 0.4,
+             fill = True)
+
 
 plt.axvline(np.mean(prob_func(U2U_SCE)),
             color='black',
@@ -304,12 +328,21 @@ plt.legend(loc=3)
 
 plt.title('E2E in SCE')
 
-hist = plt.hist(prob_func(E2E_SCE),
-                bins = 50,
-                color='red',
-                 alpha = 0.3,
-                label='Dist of E2E',
-               density=True)
+#hist = plt.hist(prob_func(E2E_SCE),
+#                bins = 50,
+#                color='red',
+#                 alpha = 0.3,
+#                label='Dist of E2E',
+#               density=True)
+
+sns.histplot(prob_func(E2E_SCE), 
+             color="red", 
+             bins = 40,
+             kde=True, 
+             stat="density", 
+             label='Observed E2E in SCE',
+             linewidth= 0.4,
+             fill = True)
 
 plt.axvline(np.mean(prob_func(E2E_SCE)),
             color='black',
@@ -320,7 +353,7 @@ plt.xlabel('E2E')
 plt.legend(loc=1)
 # -
 
-# ### Estimation 
+# ### Estimation of trucated log normal 
 
 # +
 ## estimating the parameters using SCE 
@@ -338,23 +371,42 @@ PRs_grid = np.linspace(np.min(PR_ind_av),
 
 PRs_sim_simple = np.exp(np.random.randn(10000)*sigma_PR_est_SCE+mu_PR_est_SCE)
 
-# + {"code_folding": [3, 4, 10]}
+# + {"code_folding": []}
 ## plot simulated data based on log normal estimates and the observed PRs
 
-plt.title('Heterogeneity in PR in SCE')
-plt.hist(np.sqrt(PRs_sim_simple),
-        bins = 200,
-         color='red',
-        label='Estimated distribution in PRs',
-         alpha = 0.3,
-        density = True)
+#plt.hist(np.sqrt(PRs_sim_simple),
+#        bins = 200,
+#         color='red',
+#        label='Estimated distribution in PRs',
+#         alpha = 0.3,
+#        density = True)
 
-plt.hist(np.sqrt(PR_ind_av),
-         bins = 200,
-         color='black',
-         label='Observed PRs in SCE',
-         density = True,
-         alpha=0.5)
+#plt.hist(np.sqrt(PR_ind_av),
+#         bins = 200,
+#         color='black',
+#         label='Observed PRs in SCE',
+#         density = True,
+#         alpha=0.5)
+
+plt.title('Heterogeneity in PR in SCE')
+
+sns.histplot(np.sqrt(PR_ind_av), 
+             color="red", 
+             kde= False,  
+             stat="density", 
+             label='Observed PRs in SCE',
+             linewidth= 0.4,
+             fill = True,
+            alpha =0.3)
+
+
+sns.histplot(np.sqrt(PRs_sim_simple), 
+             color="black", 
+             kde=True, 
+             stat="density", 
+             label='Estimated PR distribution',
+             linewidth= 0.4,
+             fill = False)
 
 plt.axvline(np.sqrt(av_PR_SCE),
             color='red',
@@ -363,9 +415,9 @@ plt.axvline(np.sqrt(av_PR_SCE),
 plt.axvline(np.sqrt(est_PR_Low),
             linestyle='--',
             color='blue',
-            label='Estimated PR')
+            label='Conventionally Calibrated PR')
 
-plt.xlim([0.0,0.2])
+plt.xlim([0.0,0.14])
 plt.xlabel('PR in std terms')
 plt.legend(loc=1)
 plt.savefig('../Graphs/sce/log_normal_pr_fit.pdf')
@@ -385,23 +437,41 @@ PRns_grid = np.linspace(np.min(PRn_ind_av),
 
 PRns_sim_simple = np.exp(np.random.randn(10000)*sigma_PRn_est_SCE+mu_PRn_est_SCE)
 
-# +
+# + {"code_folding": [17, 21]}
 ## plot simulated data based on log normal estimates and the observed PRs
 
 plt.title('Heterogeneity in nominal PR in SCE')
-plt.hist(np.sqrt(PRns_sim_simple),
-        bins = 200,
-         color='red',
-        label='Estimated distribution in nominal PRs',
-         alpha = 0.3,
-        density = True)
+#plt.hist(np.sqrt(PRns_sim_simple),
+#        bins = 200,
+#         color='red',
+#        label='Estimated distribution in nominal PRs',
+#         alpha = 0.3,
+#        density = True)
 
-plt.hist(np.sqrt(PRn_ind_av),
-         bins = 200,
-         color='black',
-         label='Observed PRs in SCE',
-         density = True,
-         alpha=0.5)
+#plt.hist(np.sqrt(PRn_ind_av),
+#         bins = 200,
+#         color='black',
+#         label='Observed PRs in SCE',
+#         density = True,
+#         alpha=0.5)
+
+sns.histplot(np.sqrt(PRn_ind_av), 
+             color="red", 
+             kde= False,  
+             stat="density", 
+             label='Observed nominal PRs in SCE',
+             linewidth= 0.4,
+             fill = True,
+            alpha =0.3)
+
+
+sns.histplot(np.sqrt(PRns_sim_simple), 
+             color="black", 
+             kde=True, 
+             stat="density", 
+             label='Estimated nominal PR distribution',
+             linewidth= 0.4,
+             fill = False)
 
 plt.axvline(np.sqrt(av_PRn_SCE),
             color='red',
@@ -412,13 +482,13 @@ plt.axvline(np.sqrt(est_PR_Low),
             color='blue',
             label='Estimated PR')
 
-plt.xlim([0.0,0.2])
+plt.xlim([0.0,0.15])
 plt.xlabel('Nominal PR in std terms')
 plt.legend(loc=1)
 plt.savefig('../Graphs/sce/log_normal_npr_fit.pdf')
 
-# + {"code_folding": []}
-## estimating the parameters using SCE U2U
+# + {"code_folding": [0, 31, 42, 54]}
+## estimating the parameters using SCE U2U and E2E 
 
 shape_U2U, loc_U2U, scale_U2U = stats.lognorm.fit(U2U_SCE)
 U2U_trans_mu_est, sigma_trans_U2U_est, loc_trans_U2U_est = np.log(scale_U2U), shape_U2U, loc_U2U
@@ -435,31 +505,52 @@ U2U_draws = U2U_est_dist.rvs(size = 10000)
 
 plt.title('Heterogeneity in U2U in SCE')
 
-hist = plt.hist(prob_func(U2U_SCE),
-                bins = 100,
-                color='black',
-                label='Dist of U2U',
-               density=True,
-               alpha=0.5)
+#hist = plt.hist(prob_func(U2U_SCE),
+#                bins = 100,
+#                color='black',
+#                label='Dist of U2U',
+#               density=True,
+#               alpha=0.5)
 
-hist2 = plt.hist(prob_func(U2U_draws),
-                bins = 100,
-                color='red',
-                label='Dist of Simulated U2U',
-               density=True,
-               alpha=0.2)
+#hist2 = plt.hist(prob_func(U2U_draws),
+#                bins = 100,
+#                color='red',
+#                label='Dist of Simulated U2U',
+#               density=True,
+#               alpha=0.2)
+
+sns.histplot(prob_func(U2U_SCE), 
+             color="red", 
+             bins = 100,
+             kde= False,  
+             stat="density", 
+             label='Dist of U2U in SCE',
+             linewidth= 0.4,
+             fill = True,
+            alpha =0.3)
+
+
+sns.histplot(prob_func(U2U_draws), 
+             color="black", 
+             bins = 100,
+             kde=True, 
+             stat="density", 
+             label='Estimated Distribution of U2U',
+             linewidth= 0.4,
+             fill = False)
+
 plt.xlim(0.0,0.2)
 
 
 plt.axvline(np.mean(prob_func(U2U_SCE)),
-            color='black',
+            color='blue',
             label='Average U2U={:.3f}'.format(np.mean(prob_func(U2U_SCE))))
 
 plt.xlabel('U2U (prob of staying unemployed)')
 plt.legend(loc=1)
 plt.savefig('../Graphs/sce/log_normal_u2u_fit.pdf')
 
-# + {"code_folding": [11, 18]}
+# + {"code_folding": [28, 38]}
 ## estimating the parameters using SCE E2E
 
 shape_E2E, loc_E2E, scale_E2E = stats.lognorm.fit(E2E_SCE)
@@ -474,43 +565,72 @@ E2E_draws = stats.lognorm.rvs(s = shape_E2E,
 
 plt.title('Heterogeneity in E2E in SCE')
 
-hist = plt.hist(prob_func(E2E_SCE),
-                bins = 100,
-                color='black',
-                label='Dist of E2E',
-               density=True,
-               alpha=0.5)
+#hist = plt.hist(prob_func(E2E_SCE),
+#                bins = 100,
+#                color='black',
+#                label='Dist of E2E',
+#               density=True,
+#               alpha=0.5)
 
-hist2 = plt.hist(prob_func(E2E_draws),
-                bins = 100,
-                color='red',
-                label='Dist of Simulated E2E',
-               density=True,
-                alpha=0.2)
-plt.xlim(0.7,1)
+#hist2 = plt.hist(prob_func(E2E_draws),
+#                bins = 100,
+#                color='red',
+#                label='Dist of Simulated E2E',
+#               density=True,
+#                alpha=0.2)
+
+sns.histplot(prob_func(E2E_SCE), 
+             color="red", 
+             bins = 100,
+             kde= False,  
+             stat="density", 
+             label='Dist of E2E in SCE',
+             linewidth= 0.4,
+             fill = True,
+            alpha =0.3)
+
+sns.histplot(prob_func(E2E_draws), 
+             color="black", 
+             bins = 100,
+             kde=True, 
+             stat="density", 
+             label='Estimated Distribution of E2E',
+             linewidth= 0.4,
+             fill = False)
+
+
+plt.xlim(0.8,1.0)
 plt.axvline(np.mean(prob_func(E2E_SCE)),
-            color='black',
+            color='blue',
             label='Average E2E={:.3f}'.format(np.mean(prob_func(E2E_SCE))))
 
 plt.xlabel('E2E (prob of staying employed)')
-plt.legend(loc=1)
+plt.legend(loc=0)
 plt.savefig('../Graphs/sce/log_normal_e2e_fit.pdf')
 # -
 
 # ## Do the same thing for expected wage growth  
 
-# + {"code_folding": [1]}
+# + {"code_folding": []}
 plt.title('Data')
-hist = plt.hist(Exp_ind_av,
-                bins = 50,
-                color='red',
-                label='Dist of PRs',
-                alpha=0.3,
-               density=True)
+#hist = plt.hist(Exp_ind_av,
+#                bins = 50,
+#                color='red',
+#                label='Dist of PRs',
+#                alpha=0.3,
+#               density=True)
+
+sns.histplot(Exp_ind_av, 
+             color="red", 
+             kde=True, 
+             stat="density", 
+             label='Dist of Expected wage growth in SCE',
+             linewidth= 0.4,
+             fill = False)
 
 plt.axvline(av_Exp_SCE,
             color='black',
-            label='Average Exp=.{:.1f}'.format(av_Exp_SCE))
+            label='Average Exp=.{:.1f}'.format(round(av_Exp_SCE)))
 
 plt.legend(loc=2)
 # -
@@ -526,19 +646,40 @@ exp_mu_est, sigma_exp_est, loc_exp_est = np.log(scale_Exp), shape_Exp, loc_Exp  
 
 # +
 plt.title('Heterogeneity in expected wage growth in SCE')
-hist1= plt.hist(Exps_sim_simple,
-        bins = 100,
-         color='red',
-        label='Estimated distribution in expected growth',
-         alpha = 0.3,
-        density = True)
+#hist1= plt.hist(Exps_sim_simple,
+#        bins = 100,
+#         color='red',
+#        label='Estimated distribution in expected growth',
+#         alpha = 0.3,
+#        density = True)
 
-hist2 = plt.hist(Exp_ind_av,
-         bins = 100,
-         color='black',
-         label='Observed expected growth in SCE',
-         density = True,
-         alpha=0.5)
+#hist2 = plt.hist(Exp_ind_av,
+#         bins = 100,
+#         color='black',
+#         label='Observed expected growth in SCE',
+#         density = True,
+#         alpha=0.5)
+
+sns.histplot(Exp_ind_av, 
+             color="red", 
+             kde= False,  
+             bins = 50,
+             stat="density", 
+             label='Observed expected growth in SCE',
+             linewidth= 0.4,
+             fill = True,
+            alpha =0.3)
+
+
+sns.histplot(Exps_sim_simple, 
+             color="black",
+            bins = 50,
+             kde=True, 
+             stat="density", 
+             label='Estimated distribution of expected growth',
+             linewidth= 0.4,
+             fill = False)
+
 
 plt.xlabel('Expected wage growth')
 plt.legend(loc=1)
@@ -561,5 +702,3 @@ PR_est_dict = {'mu_pr':mu_PR_est_SCE,
               }
 
 pickle.dump(PR_est_dict,open('./parameters/PR_est.pkl','wb'))
-# -
-
