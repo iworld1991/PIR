@@ -14,7 +14,7 @@
 #     name: python3
 # ---
 
-# # A heterogeneous-risk model estimation using SCE
+# # Estimation of heterogeneous perceived risks using SCE
 #
 
 # ## Introduction
@@ -559,8 +559,8 @@ E2E_trans_mu_est, sigma_trans_E2E_est, loc_trans_E2E_est = np.log(scale_E2E), sh
 
 
 E2E_draws = stats.lognorm.rvs(s = shape_E2E,
-                             loc=loc_E2E,
-                             scale= scale_E2E,
+                             loc = loc_E2E,
+                             scale = scale_E2E,
                              size = 10000)
 
 plt.title('Heterogeneity in E2E in SCE')
