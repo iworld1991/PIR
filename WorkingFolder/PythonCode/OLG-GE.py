@@ -89,7 +89,7 @@ lc_paras_q = copy(lc_paras_Q)
 print(lc_paras_y)
 
 
-# + code_folding=[0]
+# + code_folding=[]
 ## a deterministic income profile 
 
 ## income profile 
@@ -103,7 +103,7 @@ plt.ylabel(r'$\hat Y$')
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0, 9]
+# + code_folding=[9]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -166,7 +166,14 @@ if calibrated_model == True:
                    'bequest_ratio':lc_paras['bequest_ratio'],
          ## solutions 
                    'shock_draw_size':10.0,
-                   'grid_max':10}
+                   'grid_max':10,
+        
+        ## bequest motives
+        ######################
+                   'q': 1.0,
+                   'ρ_b':lc_paras['ρ'] ## homothetic bequest motive
+        #######################
+                    }
     
     ## initialize the model with calibrated parameters 
     
@@ -191,7 +198,7 @@ if calibrated_model == True:
     lc_mkv_sub_true = LifeCycle(**lc_mkv_sub_true_paras)
 
 
-# + code_folding=[0, 20]
+# + code_folding=[]
 ## solve various models
 
 models = [lc_mkv,
