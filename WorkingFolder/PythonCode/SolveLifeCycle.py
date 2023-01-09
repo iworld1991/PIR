@@ -42,7 +42,7 @@ from copy import copy
 
 from resources_jit import MeanOneLogNormal as lognorm
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot configuration 
 
 plt.style.use('seaborn')
@@ -122,11 +122,15 @@ lc_data = [
     ('subjective',boolean),  ## belief is not necessarily equal to true 
     ('state_dependent_belief',boolean),  ## belief is state-dependent
     ('psi_shk_true_draws',float64[:]), ## draws of true permanent income shock 
-    ('eps_shk_true_draws',float64[:]) ## draws of true transitory income shock 
+    ('eps_shk_true_draws',float64[:]), ## draws of true transitory income shock 
+    
+    ## bequest motive 
+    ('q',float64), ## q = 0 if no bequest motive 
+    ('ρ_b',float64) ## elasticity of bequest 
 ]
 
 
-# + code_folding=[128, 160]
+# + code_folding=[1, 6, 133, 165]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -177,9 +181,14 @@ class LifeCycle:
                  transfer = 0.0,
                  bequest_ratio = 0.0,
                  sigma_psi_true = 0.10,     ## true size of permanent income shocks
-                 sigma_eps_true = 0.10     ## ture size of transitory income risks  
+                 sigma_eps_true = 0.10,     ## ture size of transitory income risks  
+                 q = 0.0,     # no bequest by default
+                 ρ_b = 1.0 
                 ): 
         self.ρ, self.β = ρ, β
+        #####################
+        self.q, self.ρ_b = q,ρ_b 
+        ######################
         self.R = R 
         self.W = W
         self.P, self.z_val = P, z_val
@@ -340,16 +349,27 @@ class LifeCycle:
         
     def terminal_solution(self):
         
+        ## depending on if bequest 
+        
         k = len(self.a_grid)
         k2 =len(self.eps_grid)
         n = len(self.P)
         σ_init = np.empty((k,k2,n))
         m_init = np.empty((k,k2,n))
-        
-        for z in range(n):
-            for j in range(k2):
-                m_init[:,j,z] = self.a_grid
-                σ_init[:,j,z] = m_init[:,j,z]
+        if self.q ==0.0:
+            for z in range(n):
+                for j in range(k2):
+                    m_init[:,j,z] = self.a_grid
+                    σ_init[:,j,z] = m_init[:,j,z]
+        else:
+            for z in range(n):
+                for j in range(k2):
+                    ## q*a**(-rho_b) = c**(-rho) 
+                    ## c = q*a**(rho_b/rho)
+                    ## m = a + c
+                    #m_init[:,j,z] = self.a_grid 
+                    σ_init[:,j,z] = (self.q*self.a_grid**(-self.ρ_b))**(-1/self.ρ)
+                    m_init[:,j,z] = self.a_grid + σ_init[:,j,z]
         return m_init,σ_init
 
 
@@ -833,7 +853,10 @@ if __name__ == "__main__":
                 'x':0.0,  # no MA shock 
                 'borrowing_cstr':True,
                 'b_y':0.0, #no persistent state
-                'unemp_insurance':0.15}
+                'unemp_insurance':0.15,
+                #'q':1.0,
+               #'ρ_b':2.0
+               }
 
 # + code_folding=[]
 if __name__ == "__main__":
@@ -851,7 +874,6 @@ if __name__ == "__main__":
     ## initial consumption functions 
     
     m_init,σ_init = lc.terminal_solution()
-    
     plt.title('Consumption in the last period')
     plt.plot(m_init[0:-1,0,1],
              σ_init[0:-1,0,1])
@@ -861,7 +883,6 @@ if __name__ == "__main__":
 
     t_start = time()
 
-  
     
     ### this line is very important!!!!
     #### need to regenerate shock draws for new sigmas
@@ -883,13 +904,13 @@ if __name__ == "__main__":
 
 # ### Different permanent/transitory risk (no MA)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     lc_pt_paras = copy(lc_paras)
     
     lc_pt = LifeCycle(**lc_pt_paras)
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     t_start = time()
@@ -912,7 +933,7 @@ if __name__ == "__main__":
         ## solve backward
         ms_star, σs_star = solve_model_backward_iter(lc_pt,
                                                      m_init,
-                                                     σ_init)
+                                                     0.5*σ_init)
         ms_stars.append(ms_star)
         σs_stars.append(σs_star)
 
@@ -1113,8 +1134,8 @@ if __name__ == "__main__":
     print('transitory probability is '+str(P[0,:]))
     print('average permanent risk is '+str(av_sigma_psi)+' compared to objective model '+str(lc.sigma_psi))
     print('average transitory risk is '+str(av_sigma_eps)+' compared to objective model '+str(lc.sigma_eps))
-# -
 
+# + code_folding=[0]
 if __name__ == "__main__":
 
     print('permanent risk state is '+str(sigma_psi_2mkv))
@@ -1162,7 +1183,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[11]
+# + code_folding=[0, 11]
 if __name__ == "__main__":
     ## compare two markov states low versus high risk 
 
@@ -1646,3 +1667,6 @@ if __name__ == "__main__":
         plt.xlabel('asset')
         plt.ylabel('c')
         plt.title('Infinite horizon solution')
+# -
+
+
