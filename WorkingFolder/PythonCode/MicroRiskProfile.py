@@ -14,9 +14,12 @@
 #     name: python3
 # ---
 
-# ### How do the perceived income moments correlate with other individual variables 
+# ### The basic facts about heterogeneity of perceived income risks 
 #
-# - this notebook runs regressions to inspects the covariants of individual perceived income moments
+#
+# - this notebook first plots the cross-sectional distribution of perceived income risks 
+#
+# - and, then it runs regressions to inspects the covariants of individual perceived income moments
 #   - individual demogrpahics, level of household income, education, etc.
 #   - job-types, part-time vs full-time, selfemployment, etc. 
 #   - other expectations: probability of unemployment, other job-related expectations 
@@ -34,36 +37,40 @@ import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
 from statsmodels.iolib.summary2 import summary_col
 
-""" 
-## matplotlib configurations
+# +
+## figure plotting configurations
 
-from IPython.display import set_matplotlib_formats
-set_matplotlib_formats('pdf','png','jpg')
-#plt.rcParams['savefig.dpi'] = 75
 
-#plt.rcParams['figure.autolayout'] = False
-plt.rcParams['figure.figsize'] = 10, 6
-plt.rcParams['axes.labelsize'] = 18
-plt.rcParams['axes.titlesize'] = 20
-#plt.rcParams['font.size'] = 16
-plt.rcParams['lines.linewidth'] = 2.0
-plt.rcParams['lines.markersize'] = 8
-plt.rcParams['legend.fontsize'] = 14
+plt.style.use('seaborn')
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['axes.labelweight'] = 'bold'
 
-plt.rcParams['text.usetex'] = True
-plt.rcParams['font.family'] = "serif"
-plt.rcParams['font.serif'] = "cm"
-"""
+## Set the 
+plt.rc('font', size=10)
+# Set the axes title font size
+plt.rc('axes', titlesize=20)
+# Set the axes labels font size
+plt.rc('axes', labelsize=20)
+# Set the font size for x tick labels
+plt.rc('xtick', labelsize=20)
+# Set the font size for y tick labels
+plt.rc('ytick', labelsize=20)
+# Set the legend font size
+plt.rc('legend', fontsize=20)
+# Set the font size of the figure title
+plt.rc('figure', titlesize=20)
+# -
 
 ## precision of showing float  
 pd.options.display.float_format = '{:,.2f}'.format
 
 dataset = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 dataset_est = pd.read_stata('../SurveyData/SCE/IncExpSCEDstIndM.dta')
-dataset_psid = pd.read_excel('../OtherData/psid/psid_history_vol.xls')
-dataset_psid_edu = pd.read_excel('../OtherData/psid/psid_history_vol_edu.xls')
-
-dataset_psid.columns
+#dataset_psid = pd.read_excel('../OtherData/psid/psid_history_vol.xls')
+#dataset_psid_edu = pd.read_excel('../OtherData/psid/psid_history_vol_edu.xls')
+sipp_individual = pd.read_stata('../OtherData/sipp/sipp_individual_risk.dta')
 
 # + {"code_folding": []}
 ## variable list by catogrories 
@@ -374,7 +381,8 @@ plt.savefig('../Graphs/ind/bar_by_educ')
 # + {"code_folding": []}
 ## by gender 
 
-fig,axes = plt.subplots(len(moms),figsize=(4,14))
+fig,axes = plt.subplots(len(moms),
+                        figsize=(4,14))
 
 for i,mom in enumerate(moms):
     #plt.style.use('ggplot')
@@ -470,7 +478,97 @@ plt.savefig('../Graphs/ind/boxplot.jpg')
 """
 # -
 
-# ### 4. Within-group heterogeneity 
+SCEM['incskew']
+
+# ### 4.1. Cross-sectional heterogeneity 
+
+# +
+mom_list = ['incexp',
+            'incvar',
+            'inciqr',
+            'rincexp',
+            'incstd',
+            'rincstd',
+            'rincvar',
+            'incskew']
+
+labels_list = ['expected nominal wage growth',
+            'perceived nominal wage risks',
+            'perceived nominal wage IQR',
+            'expected real wage growth',
+            'perceived nominal wage risks (std)',
+            'perceived real wage risks (std)',
+            'perceived nominal wage risks',
+            'perceived skewness of wage growth' ]
+
+SCEM['incstd'] = np.sqrt(SCEM['incvar'])
+SCEM['rincstd'] = np.sqrt(SCEM['rincvar'])
+
+# +
+### histograms
+
+for mom_id,mom in enumerate(mom_list):
+    if mom !='incskew':
+        to_plot = SCEM[mom]
+    else:
+        mom_nonan = SCEM[mom].dropna()
+        mom_lb, mom_ub = np.percentile(mom_nonan,2),np.percentile(mom_nonan,98) ## exclude top and bottom 3% observations
+        to_keep = (mom_nonan < mom_ub) & (mom_nonan > mom_lb) & (mom_nonan!=0)
+        to_plot = mom_nonan[to_keep]
+    
+    fig,ax = plt.subplots(figsize=(8,6))
+    sns.histplot(data = to_plot,
+                 kde = True,
+                stat="density", 
+                 color = 'red',
+                 bins = 40,
+                alpha = 0.3)
+    plt.xticks(fontsize = 14)
+    plt.yticks(fontsize = 14)
+    plt.xlabel(labels_list[mom_id], fontsize = 15)
+    #plt.ylabel("Frequency",fontsize = 15)
+    plt.savefig('../Graphs/ind/hist_'+str(mom)+'_uc.jpg')
+# -
+
+sipp_individual.describe()
+
+# + {"code_folding": []}
+## plot only perceived risks 
+
+fig,ax = plt.subplots(figsize=(8,6))
+sns.histplot(data = SCEM['rincstd'],
+             kde = True,
+             color = 'red',
+             bins = 60,
+            alpha = 0.3,
+             stat="density", 
+             fill = True,
+            label='Dist of PRs in SCE')
+
+
+## filter extreme values 
+individual_risk = sipp_individual['lwage_Y_id_shk_gr_sq'].dropna()
+lb, ub = np.percentile(individual_risk,10),np.percentile(individual_risk,70) ## exclude top and bottom 3% observations
+to_keep = (individual_risk < ub) & (individual_risk!=0)
+individual_risk_keep = individual_risk[to_keep]
+
+sns.histplot(data = individual_risk_keep,
+             kde = True,
+             color = 'blue',
+             bins = 60,
+             stat="density", 
+            alpha = 0.5,
+             fill = False,
+            label='Dist of wage volatility (SIPP)')
+
+plt.xticks(fontsize = 14)
+plt.yticks(fontsize = 14)
+plt.xlabel('PRs and Volatility in std', fontsize = 15)
+plt.legend(loc=0)
+plt.savefig('../Graphs/ind/hist_compare_PRs.jpg')
+# -
+
+# ### 4.2. Within-group heterogeneity 
 
 # +
 mean_std = np.sqrt(SCEM['incvar'].mean())
@@ -505,20 +603,10 @@ med_std = np.sqrt(SCEM['rincvar'].median())
 print("Median of risk perception is " 
       +str(round(med_std,3))
      +' in stv')
-# -
 
-SCEM['incstd'] = np.sqrt(SCEM['incvar'])
-SCEM['rincstd'] = np.sqrt(SCEM['rincvar'])
-
-# + {"code_folding": [1]}
+# + {"code_folding": []}
 ### first step regression 
-mom_list = ['incexp',
-            'incvar',
-            'inciqr',
-            'rincexp',
-            'incstd',
-            'rincstd',
-            'rincvar']
+
 
 for i,mom in enumerate(mom_list):
     model = smf.ols(formula = str(mom)
@@ -550,13 +638,7 @@ from matplotlib import cm
 
 labels=[y for y in list(SCEM.year.unique())]
 
-labels_list = ['Expected nominal wage growth',
-            'Perceived nominal wage risks',
-            'Perceived nominal wage IQR',
-            'Expected real wage growth',
-            'Perceived nominal wage risks (std)',
-            'Perceived real wage risks (std)',
-            'Perceived nominal wage risks']
+
 
 
 for mom_id,mom in enumerate(mom_list):
@@ -579,7 +661,7 @@ for mom_id,mom in enumerate(mom_list):
 # + {"code_folding": []}
 ### histograms
 
-for mom in mom_list:
+for mom_id,mom in enumerate(mom_list):
     if mom !='incskew':
         to_plot = SCEM[mom+str('_rd')]
     else:
@@ -593,14 +675,15 @@ for mom in mom_list:
     #print(mom_nonan_truc.shape)
     
     fig,ax = plt.subplots(figsize=(8,6))
-    sns.distplot(to_plot,
+    sns.histplot(data = to_plot,
                  kde = True,
-                 color = 'red',
-                 bins = 60)
+                 stat="density", 
+                 color = 'gray',
+                 bins = 60,
+                alpha = 0.3)
     plt.xticks(fontsize = 14)
     plt.yticks(fontsize = 14)
-    plt.xlabel(mom, fontsize = 15)
-    plt.ylabel("Frequency",fontsize = 15)
+    plt.xlabel('Residuals of '+labels_list[mom_id], fontsize = 15)
     plt.savefig('../Graphs/ind/hist_'+str(mom)+'.jpg')
 # -
 
