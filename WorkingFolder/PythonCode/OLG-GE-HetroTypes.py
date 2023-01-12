@@ -100,7 +100,7 @@ plt.ylabel(r'$\hat Y$')
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[0]
+# + code_folding=[7]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -163,7 +163,12 @@ if calibrated_model == True:
                    'bequest_ratio':lc_paras['bequest_ratio'],
          ## solutions 
                    'shock_draw_size':10.0,
-                   'grid_max':30}
+                   'grid_max':30,
+         ## bequest
+        ##############################
+                    'q':1.0,
+                    'ρ_b':lc_paras['ρ']}
+    ####################################
     
     ## initialize the model with calibrated parameters 
     
@@ -478,7 +483,6 @@ U2U_grid_dist = lognorm(mu_trans_U2U_SCE,
 U2U_grid = prob_func(U2U_grid_dist.X + loc_trans_U2U_SCE)
 
 
-
 E2E_grid_dist = lognorm(mu_trans_E2E_SCE,
                         sigma_trans_E2E_SCE,
                         100000,
@@ -489,17 +493,16 @@ E2E_grid = prob_func(E2E_grid_dist.X + loc_trans_E2E_SCE)
 
 print('Equally probable U2U grid is', str(U2U_grid))
 
-
 print('Equally probable E2E grid is', str(E2E_grid))
 
 
-# +
+# + code_folding=[0]
 ## temporary solution: directly assign values 
 
 U2U_grid = [0.01,0.24]
 E2E_grid = [0.96,0.999]
 
-# + code_folding=[]
+# + code_folding=[0]
 ## make deterministic profiles 
 
 G_low_work = lc_paras['G'][:lc_paras['T']]-std_exp_SCE
@@ -537,47 +540,11 @@ G_types = [G_low,
            #lc_paras['G'],
            G_high]   
 
-
-# + code_folding=[2]
-## this function turn the size of unobservable heterogeneity into an equivalent initial 
-
-def average_heterogeneity(sigma_xi_psi,
-                          T,
-                          L,
-                          age_dist):
-    """
-    input
-    ======
-    sigma_xi_psi: sigma of annual permanent heterogeneity 
-    sigma_xi_eps: sigma of annual transitory heterogeneity 
-    T: retirement date
-    L: length of life
-    age_dist: age distributions 
-    
-    output
-    ======
-    sigma_xi_psi_av: average annual permanent 
-    
-    """
-    
-    sigma_xi_psi2 = np.ones(T)*sigma_xi_psi**2
-    sigma_xi_psi_cum2 = sigma_xi_psi2.cumsum()
-    sigma_xi_psi_cum2_after = np.ones(L-T)*sigma_xi_psi_cum2[-1]
-    
-    sigma_xi_psi_cum2_all = np.concatenate((sigma_xi_psi_cum2,
-                                         sigma_xi_psi_cum2_after))
-    
-    sigma_xi_psi2_av = np.mean(np.dot(sigma_xi_psi_cum2_all,age_dist))
-    
-    sigma_xi_psi_av = np.sqrt(sigma_xi_psi2_av)
-    
-    return sigma_xi_psi_av
-        
-
+# + code_folding=[]
+from Utility import average_heterogeneity,stationary_age_dist
 
 # + code_folding=[]
 ## stationary distribution of age 
-from Utility import stationary_age_dist
 
 age_dist_ss = stationary_age_dist(lc_paras['L'],
                                n = 0.0,
@@ -589,7 +556,7 @@ init_sigma_psi_av = average_heterogeneity(sigma_xi_psi,
 
 print('Adjusting initial p dispersion by {} to account of heterogeneity in p '.format(init_sigma_psi_av))
 
-# + code_folding=[25, 28, 35, 45, 55, 65, 75, 86, 97, 108]
+# + code_folding=[]
 ## create a list of consumer types with different risk parameters and any other primitive parameters 
 
 sigma_psi_types = np.array(sigma_psi_grid)
@@ -712,7 +679,7 @@ hetero_p_risk_beta_types = make_2dtypes(by_list = ['sigma_psi','β'],
                                                  beta_types]
                                     )
 
-# + code_folding=[4]
+# + code_folding=[]
 ## addting unobserved heterogeneity in permanent income 
 
 hetero_p_t_risk_uh_types = []
@@ -779,10 +746,10 @@ for this_type in hetero_p_ue_risk_G_beta_types:
 
 # ### Solve consumption policies
 
-# + code_folding=[12]
+# + code_folding=[0, 12]
 ## solve various models
 
-types = hetero_p_t_risk_uh_types
+types = hetero_p_t_ue_risk_beta_types
 
 specs = ['ob']*len(types)
 
@@ -2028,7 +1995,7 @@ ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_hetero_type.png')
 # -
 
-pickle.dump(results_combined_pe,open('./model_solutions/HPR_PE.pkl','wb'))
+pickle.dump(results_combined_pe,open('./model_solutions/HPRURTP_PE.pkl','wb'))
 
 # ## GE with multiple types 
 
@@ -2041,7 +2008,7 @@ market_OLG_mkv_this.get_equilibrium_k()
 
 results_combined_ge = market_OLG_mkv_this.get_equilibrium_dist()
 
-pickle.dump(results_combined_ge,open('./model_solutions/'+'HPR_GE.pkl','wb'))
+pickle.dump(results_combined_ge,open('./model_solutions/'+'HPRURTP_GE.pkl','wb'))
 # + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
