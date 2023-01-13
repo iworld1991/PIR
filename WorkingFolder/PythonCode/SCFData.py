@@ -22,6 +22,33 @@ import pandas as pd   #The data package
 import sys            #The code below wont work for any versions before Python 3. This just ensures that (allegedly).
 
 
+# +
+## figure plotting configurations
+
+import matplotlib.pyplot as plt 
+
+plt.style.use('seaborn')
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['axes.labelweight'] = 'bold'
+
+## Set the 
+plt.rc('font', size=15)
+# Set the axes title font size
+plt.rc('axes', titlesize=15)
+# Set the axes labels font size
+plt.rc('axes', labelsize=15)
+# Set the font size for x tick labels
+plt.rc('xtick', labelsize=15)
+# Set the font size for y tick labels
+plt.rc('ytick', labelsize=15)
+# Set the legend font size
+plt.rc('legend', fontsize=15)
+# Set the font size of the figure title
+plt.rc('figure', titlesize=15)
+# -
+
 import requests
 import io
 import zipfile      #Three packages we'll need to unzip the data
@@ -87,9 +114,8 @@ list(df2016.columns)
 
 # + code_folding=[]
 ## make new variables 
-#df2016['lqwealth'] = df2016['liq']+df2016['bond']+df2016['stocks']+df2016['nmmf'] - df2016['ccbal'] 
-## 2014 Brookings/Econmetrica paper definition
-df2016['lqwealth'] = df2016['liq'] - df2016['ccbal']
+df2016['lqwealth'] = df2016['liq']+df2016['govtbnd']+df2016['obnd']+df2016['stocks']+df2016['nmmf'] - df2016['ccbal'] 
+## Kaplan, Violante, and Weidner (2014)/Econmetrica paper definition
 
 ### filters and clean variables 
 
@@ -124,6 +150,211 @@ results = model.fit()
 df2016['lnorminc_pr'] = results.predict()
 
 # -
+# ### Cross-sectional distribution of income/wealth
+
+# +
+## distribution in monetary values 
+import seaborn as sns
+
+data_plot = df2016[['norminc','wgt']][df2016['norminc']<df2016['norminc'].quantile(0.90)]
+
+dist = sns.displot(data = data_plot,
+            x = 'norminc',
+            weights = 'wgt',
+            kde=True,
+            stat = 'density',
+            bins = 100).set(title='Distribution of annual permanent income (2016 SCF)',
+                            xlabel='Usual annual income (USD)')
+
+dist.fig.set_size_inches(8,6)
+
+# +
+data_plot = df2016[['lqwealth','wgt']][df2016['lqwealth']<df2016['lqwealth'].quantile(0.90)]
+
+dist = sns.displot(data = data_plot,
+            x = 'lqwealth',
+            weights = 'wgt',
+            kde=True,
+            stat = 'density',
+            color = 'brown',
+            bins = 100).set(title='Distribution of net liquid wealth (2016 SCF)',
+                            xlabel='Liquid wealth (USD)'
+)
+
+dist.fig.set_size_inches(8,6)
+
+# +
+data_plot = df2016[['lw2income','wgt']][df2016['lw2income']<df2016['lw2income'].quantile(0.90)]
+
+
+dist = sns.displot(data = data_plot,
+            x = 'lw2income',
+            weights = 'wgt',
+            kde=True,
+            stat = 'density',
+            color = 'blue',
+            bins = 100).set(title='Distribution of net-liquid-wealth/permanent-income ratio (2016 SCF)',
+                            xlabel='Liquid wealth/permanent income ratio')
+
+dist.fig.set_size_inches(8,6)
+# -
+
+# ### (Liquid) Wealth Inequality 
+
+# +
+from Utility import cal_ss_2markov,lorenz_curve, gini
+
+SCF_lqwealth, SCF_lqweights = np.array(df2016['lqwealth']), np.array(df2016['wgt'])
+
+## get the lorenz curve weights of liquid wealth from SCF 
+SCF_lqwealth_sort_id = SCF_lqwealth.argsort()
+SCF_lqwealth_sort = SCF_lqwealth[SCF_lqwealth_sort_id]
+SCF_lqweights_sort = SCF_lqweights[SCF_lqwealth_sort_id]
+SCF_lqweights_sort_norm = SCF_lqweights_sort/SCF_lqweights_sort.sum()
+
+SCF_lq_share_agents_ap, SCF_lq_share_ap = lorenz_curve(SCF_lqwealth_sort,
+                                                 SCF_lqweights_sort_norm,
+                                                 nb_share_grid = 200)
+
+## gini 
+
+gini_lq_SCF = gini(SCF_lq_share_agents_ap,
+                 SCF_lq_share_ap)
+
+
+# +
+## plot lorenz curve 
+fig, ax = plt.subplots(figsize=(6,6))
+
+ax.plot(SCF_lq_share_agents_ap,
+        SCF_lq_share_ap, 'r-.',
+        label='SCF,Gini={}'.format(round(gini_lq_SCF,2)))
+ax.plot(SCF_lq_share_ap,
+        SCF_lq_share_ap, 
+        'k-',
+        label='equality curve')
+
+ax.legend()
+plt.xlim([0,1])
+plt.ylim([0,1])
+
+
+# + code_folding=[2, 57]
+## two other functions that give Lorenz curve more details 
+
+def weighted_percentiles(data, variable, weights, percentiles = [], 
+                         dollar_amt = False, subgroup = None, limits = []):
+    """
+    data               specifies what dataframe we're working with
+    
+    variable           specifies the variable name (e.g. income, networth, etc.) in the dataframe
+    
+    percentiles = []   indicates what percentile(s) to return (e.g. 90th percentile = .90)
+    
+    weights            corresponds to the weighting variable in the dataframe
+    
+    dollar_amt = False returns the percentage of total income earned by that percentile 
+                       group (i.e. bottom 80% of earners earned XX% of total)
+                         
+    dollar_amt = True  returns the $ amount earned by that percentile (i.e. 90th percentile
+                       earned $X)
+                         
+    subgroup = ''      isolates the analysis to a particular subgroup in the dataset. For example
+                       subgroup = 'age' would return the income distribution of the age group 
+                       determined by the limits argument
+                       
+    limits = []        Corresponds to the subgroup argument. For example, if you were interesting in 
+                       looking at the distribution of income across heads of household aged 18-24,
+                       then you would input "subgroup = 'age', limits = [18,24]"
+                         
+    """
+    import numpy 
+    a  = list()
+    data[variable+weights] = data[variable]*data[weights]
+    if subgroup is None:
+        tt = data
+    else:
+        tt = data[data[subgroup].astype(int).isin(range(limits[0],limits[1]+1))] 
+    values, sample_weight = tt[variable], tt[weights]
+    
+    for index in percentiles: 
+        values = numpy.array(values)
+        index = numpy.array(index)
+        sample_weight = numpy.array(sample_weight)
+
+        sorter = numpy.argsort(values)
+        values = values[sorter]
+        sample_weight = sample_weight[sorter]
+
+        weighted_percentiles = numpy.cumsum(sample_weight) - 0.5 * sample_weight
+        weighted_percentiles /= numpy.sum(sample_weight)
+        a.append(numpy.interp(index, weighted_percentiles, values))
+    
+    if dollar_amt is False:    
+        return[tt.loc[tt[variable]<=a[x],
+                      variable+weights].sum()/tt[variable+weights].sum() for x in range(len(percentiles))]
+    else:
+        return a
+    
+    
+def figureprefs(data, 
+                variable = 'income', 
+                labels = False, 
+                legendlabels = []):
+    
+    percentiles = [i * 0.05 for i in range(20)]+[0.99, 1.00]
+
+    fig, ax = plt.subplots(figsize=(6,6));
+
+    ax.set_xticks([i*0.1 for i in range(11)]);       #Sets the tick marks
+    ax.set_yticks([i*0.1 for i in range(11)]);
+
+    vals = ax.get_yticks()                           #Labels the tick marks
+    ax.set_yticklabels(['{:3.0f}%'.format(x*100) for x in vals]);
+    ax.set_xticklabels(['{:3.0f}%'.format(x*100) for x in vals]);
+
+    ax.set_title('Lorenz Curve: United States in 2016',  #Axes titles
+                  fontsize=18, loc='center');
+    ax.set_ylabel('Cumulative Percent', fontsize = 12);
+    ax.set_xlabel('Percent of Agents', fontsize = 12);
+    
+    if type(data) == list:
+        values = [weighted_percentiles(data[x], variable,
+                    'wgt', dollar_amt = False, percentiles = percentiles) for x in range(len(data))]
+        for index in range(len(data)):
+            plt.plot(percentiles,values[index],
+                     linewidth=2.0, marker = 's',clip_on=False,label=legendlabels[index]);
+            for num in [10, 19, 20]:
+                ax.annotate('{:3.1f}%'.format(values[index][num]*100), 
+                    xy=(percentiles[num], values[index][num]),
+                    ha = 'right', va = 'center', fontsize = 12);
+
+    else:
+        values = weighted_percentiles(data, variable,
+                    'wgt', dollar_amt = False, percentiles = percentiles)
+        plt.plot(percentiles,values,
+                     linewidth=2.0, marker = 's',clip_on=False,label=legendlabels);
+
+    plt.plot(percentiles,percentiles, linestyle =  '--', color='k',
+            label='Perfect Equality');
+   
+    plt.legend(loc = 2)
+
+
+# + code_folding=[]
+## plot a different version of lorenz curve with percentile of wealth 
+
+years_graph = [df2016]
+labels = ['2016']
+
+figureprefs(years_graph, 
+            variable = 'networth', 
+            legendlabels = labels)
+figureprefs(years_graph, 
+            variable = 'lqwealth', 
+            legendlabels = labels);
+# -
+
 # ### Life-cycle wealth and income profile 
 
 import joypy
@@ -225,109 +456,3 @@ SCF_age_profile.to_pickle('data/SCF_age_profile.pkl')
 # -
 
 SCF_age_profile
-
-
-# ### Wealth inequality 
-
-# + code_folding=[0]
-def weighted_percentiles(data, variable, weights, percentiles = [], 
-                         dollar_amt = False, subgroup = None, limits = []):
-    """
-    data               specifies what dataframe we're working with
-    
-    variable           specifies the variable name (e.g. income, networth, etc.) in the dataframe
-    
-    percentiles = []   indicates what percentile(s) to return (e.g. 90th percentile = .90)
-    
-    weights            corresponds to the weighting variable in the dataframe
-    
-    dollar_amt = False returns the percentage of total income earned by that percentile 
-                       group (i.e. bottom 80% of earners earned XX% of total)
-                         
-    dollar_amt = True  returns the $ amount earned by that percentile (i.e. 90th percentile
-                       earned $X)
-                         
-    subgroup = ''      isolates the analysis to a particular subgroup in the dataset. For example
-                       subgroup = 'age' would return the income distribution of the age group 
-                       determined by the limits argument
-                       
-    limits = []        Corresponds to the subgroup argument. For example, if you were interesting in 
-                       looking at the distribution of income across heads of household aged 18-24,
-                       then you would input "subgroup = 'age', limits = [18,24]"
-                         
-    """
-    import numpy 
-    a  = list()
-    data[variable+weights] = data[variable]*data[weights]
-    if subgroup is None:
-        tt = data
-    else:
-        tt = data[data[subgroup].astype(int).isin(range(limits[0],limits[1]+1))] 
-    values, sample_weight = tt[variable], tt[weights]
-    
-    for index in percentiles: 
-        values = numpy.array(values)
-        index = numpy.array(index)
-        sample_weight = numpy.array(sample_weight)
-
-        sorter = numpy.argsort(values)
-        values = values[sorter]
-        sample_weight = sample_weight[sorter]
-
-        weighted_percentiles = numpy.cumsum(sample_weight) - 0.5 * sample_weight
-        weighted_percentiles /= numpy.sum(sample_weight)
-        a.append(numpy.interp(index, weighted_percentiles, values))
-    
-    if dollar_amt is False:    
-        return[tt.loc[tt[variable]<=a[x],
-                      variable+weights].sum()/tt[variable+weights].sum() for x in range(len(percentiles))]
-    else:
-        return a
-
-
-# + code_folding=[0]
-def figureprefs(data, variable = 'income', labels = False, legendlabels = []):
-    
-    percentiles = [i * 0.05 for i in range(20)]+[0.99, 1.00]
-
-    fig, ax = plt.subplots(figsize=(6,6));
-
-    ax.set_xticks([i*0.1 for i in range(11)]);       #Sets the tick marks
-    ax.set_yticks([i*0.1 for i in range(11)]);
-
-    vals = ax.get_yticks()                           #Labels the tick marks
-    ax.set_yticklabels(['{:3.0f}%'.format(x*100) for x in vals]);
-    ax.set_xticklabels(['{:3.0f}%'.format(x*100) for x in vals]);
-
-    ax.set_title('Lorenz Curve: United States in 2016',  #Axes titles
-                  fontsize=18, loc='center');
-    ax.set_ylabel('Cumulative Percent', fontsize = 12);
-    ax.set_xlabel('Percent of Agents', fontsize = 12);
-    
-    if type(data) == list:
-        values = [weighted_percentiles(data[x], variable,
-                    'wgt', dollar_amt = False, percentiles = percentiles) for x in range(len(data))]
-        for index in range(len(data)):
-            plt.plot(percentiles,values[index],
-                     linewidth=2.0, marker = 's',clip_on=False,label=legendlabels[index]);
-            for num in [10, 19, 20]:
-                ax.annotate('{:3.1f}%'.format(values[index][num]*100), 
-                    xy=(percentiles[num], values[index][num]),
-                    ha = 'right', va = 'center', fontsize = 12);
-
-    else:
-        values = weighted_percentiles(data, variable,
-                    'wgt', dollar_amt = False, percentiles = percentiles)
-        plt.plot(percentiles,values,
-                     linewidth=2.0, marker = 's',clip_on=False,label=legendlabels);
-
-    plt.plot(percentiles,percentiles, linestyle =  '--', color='k',
-            label='Perfect Equality');
-   
-    plt.legend(loc = 2)
-
-years_graph = [df2016]
-labels = ['2016']
-
-figureprefs(years_graph, variable = 'networth', legendlabels = labels)
-figureprefs(years_graph, variable = 'lqwealth', legendlabels = labels);
