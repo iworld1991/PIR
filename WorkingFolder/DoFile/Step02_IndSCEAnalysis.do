@@ -347,6 +347,7 @@ label var lrincvar "log perceived risk (real)"
 label var spending "expected growth in spending"
 label var spending_r "expected growth in spending (real)"
 
+/*
 *************************************
 *** Poisson rate in expectations 
 **************************************
@@ -363,6 +364,7 @@ label var exp_f "expected Poisson job-finding rate"
 gen exp_s_1y = log(1-UEprobInd)/(-12) 
 * can use exp_eu from micro data 
 label var exp_s_1y "expected Poisson separation rate (1 year)"
+*/
 
 *************************************
 *** Variables for overreaction test 
@@ -395,6 +397,7 @@ foreach var in prisk2_all trisk2_all prisk2_sub trisk2_sub rincvar_all_now rincv
 gen `var'_ch = `var'-l1.`var'
 }
 
+/*
 ** separation risk
 gen exp_s_1y_fe = exp_s_1y - f1.s
 label var exp_s_1y_fe "forecast error of separation rate"
@@ -413,6 +416,7 @@ label var exp_s_fe "forecast error of separation rate"
 
 gen exp_f_rv = exp_f - l1.exp_f
 label var exp_f_rv "revision in separation rate"
+*/
 
 ***********************************************
 **** Job experiences/transitions/search *****
@@ -671,7 +675,7 @@ graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
 		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "calibrated risk") label(5 "calibrated permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_educ.png", as(png) replace 
-ddd
+
 
 ********************************************************
 ** Compare risks between perception and realization **
@@ -779,7 +783,7 @@ esttab using "${sum_table_folder}/ind/month_of_year_effect.csv", ///
 eststo clear
 
 ************************************************
-** time series dynamics of risk perceptions ********
+** time series dynamics of risk perceptions *****
 ************************************************
 
 eststo clear

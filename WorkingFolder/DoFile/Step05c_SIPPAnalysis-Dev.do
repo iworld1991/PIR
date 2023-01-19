@@ -87,7 +87,7 @@ gen wage = ntot_earning_jb1/tot_hours_jb1
 ** TJB1_MWKHRS: Average number of hours worked per week at job 1 during the reference month. 
 ** Note: the average includes all weeks in the reference month. Weeks before the job began, 
 *** after the job ended, and during an away without pay spell are counted as 0 hours worked. 
-** Therefore, the total ours of worked for this job is essentially proportional to TJB1_MWKHRS given 
+** Therefore, the total hours of worked for this job is essentially proportional to TJB1_MWKHRS given 
 ** most of the months have approximately same number of weeks. 
 ** use the primary job monthly earning for now  
 gen wage_n = wage
@@ -271,8 +271,6 @@ label values gender gender_lb
 
 label define educ_lb 1 "HS dropout" 2 "HS graduate" 3 "college graduates/above"
 label values educ edu_lb
-
-
 
 
 ***********************
@@ -472,11 +470,37 @@ label var lwage_n_Y_gr3 "log 3-year  growth of real wage"
 label var lwage_Y_id_shk_gr3 "log 3-year growth of idiosyncratic unexplained wage"
 
 
+** computing risk at the individual level 
+
+egen lwage_id_shk_gr_sq = mean(sqrt(lwage_id_shk_gr^2)), by(uniqueid)
+label var lwage_id_shk_gr_sq "individual level monthly risk"
+
+egen lwage_Y_id_shk_gr_sq = mean(sqrt(lwage_Y_id_shk_gr^2)), by(uniqueid)
+label var lwage_Y_id_shk_gr_sq "individual level annual risk"
+
+egen lwage_id_shk_y2y_gr_sq = mean(sqrt(lwage_id_shk_y2y_gr^2)), by(uniqueid)
+label var lwage_id_shk_y2y_gr_sq "individual y2y risk"
+
+** generate predicted income risks 
+
+foreach var in lwage_id_shk_gr_sq lwage_Y_id_shk_gr_sq lwage_id_shk_y2y_gr_sq{
+reghdfe `var' age age2 age3, a(i.year_adj i.race i.gender i.educ i.TJB1_IND) resid
+predict `var'_pr, 
+}
+
+** exporting all distribution of 
+
+preserve 
+duplicates drop uniqueid,force
+keep lwage_id_shk_gr_sq* lwage_Y_id_shk_gr_sq* lwage_id_shk_y2y_gr_sq*
+save "${otherdatafolder}/sipp/sipp_individual_risk.dta",replace 
+restore 
+
+
 **  volatility 
 foreach wvar in lwage lwage_Q lwage_Y{
 egen `wvar'_id_shk_gr_sd = sd(`wvar'_id_shk_gr), by(date)
 label var `wvar'_id_shk_gr_sd "standard deviation of log idiosyncratic shocks"
-
 }
 
 
@@ -679,8 +703,6 @@ restore
 tabstat lwage_gr lwage_id_shk_gr, st(sd) by(educ)
 tabstat lwage_gr lwage_id_shk_gr, st(sd) by(age)
 tabstat lwage_gr lwage_id_shk_gr, st(sd) by(gender)
-
-
 
 ********************************************
 ** Generate income volatility data by group *****
