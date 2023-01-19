@@ -68,8 +68,8 @@ pd.options.display.float_format = '{:,.2f}'.format
 
 dataset = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 dataset_est = pd.read_stata('../SurveyData/SCE/IncExpSCEDstIndM.dta')
-#dataset_psid = pd.read_excel('../OtherData/psid/psid_history_vol.xls')
-#dataset_psid_edu = pd.read_excel('../OtherData/psid/psid_history_vol_edu.xls')
+dataset_psid = pd.read_excel('../OtherData/psid/psid_history_vol.xls')
+dataset_psid_edu = pd.read_excel('../OtherData/psid/psid_history_vol_edu.xls')
 sipp_individual = pd.read_stata('../OtherData/sipp/sipp_individual_risk.dta')
 
 # + {"code_folding": []}
@@ -409,76 +409,7 @@ for i,mom in enumerate(moms):
         axes[i].set_xlabel('group by numeracy',
               size = 15)
 plt.savefig('../Graphs/ind/bar_by_nlit')
-
-# + {"code_folding": [0]}
-## by income group 
-
-fontsize = 80
-figsize = (100,50)
-
-"""
-for mom in ['incvar','rincvar']:
-    for gp in ['HHinc','educ','gender']:
-        plt.style.use('seaborn-poster')
-        SCEM.boxplot(column=[mom],
-                     figsize = figsize,
-                     by = gp,
-                     patch_artist = True,
-                     fontsize = fontsize)
-        plt.xlabel(gp,
-                   fontsize = fontsize)
-        plt.ylabel(mom,
-                   fontsize = fontsize)
-        plt.ylim(0,40)
-        plt.suptitle('')
-        plt.title(mom, fontsize= fontsize)
-        plt.savefig('../Graphs/ind/boxplot'+str(mom)+'_'+str(gp)+'.jpg')
-        
-"""
-
-# + {"code_folding": [11, 16]}
-## variances by groups 
-"""
-gplist = ['HHinc','age_gr']
-momlist = ['incvar','rincvar']
-incg_lb = list(inc_grp.values())
-
-
-## plot 
-
-fig,axes = plt.subplots(len(gplist),2,figsize =(25,25))
-
-for i in range(len(gplist)):
-    for j in range(2):
-        gp = gplist[i]
-        mom = momlist[j]
-        if gplist[i] =='HHinc':
-            bp = sns.boxplot(x = gp,
-                            y = mom,
-                            data = SCEM, 
-                            color = 'skyblue',
-                            ax = axes[i,j],
-                            whis = True,
-                            showfliers = False)
-        else:
-            bp = sns.boxplot(x = gp,
-                             y = mom,
-                             data = SCEM,
-                             color = 'skyblue',
-                             ax = axes[i,j],
-                             showfliers = False)
-            
-        # settings 
-        bp.set_xlabel(gp,fontsize = 25)
-        bp.tick_params(labelsize = 25)
-        bp.set_ylabel(mom,fontsize = 25)
-        
-plt.savefig('../Graphs/ind/boxplot.jpg')
-
-"""
 # -
-
-SCEM['incskew']
 
 # ### 4.1. Cross-sectional heterogeneity 
 
@@ -566,6 +497,42 @@ plt.yticks(fontsize = 14)
 plt.xlabel('PRs and Volatility in std', fontsize = 15)
 plt.legend(loc=0)
 plt.savefig('../Graphs/ind/hist_compare_PRs.jpg')
+
+# +
+## plot only perceived risks 
+
+fig,ax = plt.subplots(figsize=(8,6))
+sns.histplot(data = SCEM['rincstd'],
+             kde = True,
+             color = 'red',
+             bins = 100,
+            alpha = 0.3,
+             stat="density", 
+             fill = True,
+            label='Dist of PRs in SCE')
+
+
+## filter extreme values 
+individual_risk = sipp_individual['lwage_Y_id_shk_gr_sq_pr'].dropna()
+lb, ub = np.percentile(individual_risk,10),np.percentile(individual_risk,90) ## exclude top and bottom 3% observations
+to_keep = (individual_risk < ub) & (individual_risk!=0)
+individual_risk_keep = individual_risk[to_keep]
+
+sns.histplot(data = individual_risk_keep,
+             kde = True,
+             color = 'blue',
+             bins = 100,
+             stat="density", 
+            alpha = 0.5,
+             fill = False,
+            label='Dist of fitted wage volatility (SIPP)')
+
+plt.xticks(fontsize = 14)
+plt.yticks(fontsize = 14)
+plt.xlabel('PRs and Predicted Volatility in std', 
+           fontsize = 15)
+plt.legend(loc=0)
+plt.savefig('../Graphs/ind/hist_compare_fitted_PRs.jpg')
 # -
 
 # ### 4.2. Within-group heterogeneity 
@@ -614,6 +581,7 @@ for i,mom in enumerate(mom_list):
                     data = SCEM)
     result = model.fit()
     SCEM[mom+'_rd']=result.resid
+    
 # -
 
 SCEM.columns
@@ -631,32 +599,6 @@ iqr = SCEM['incstd_rd'].quantile(q=0.9)-SCEM['incstd_rd'].quantile(q=0.1)
 print("10/90 IQR of nominal risk perception is " 
       +str(round(iqr,3))
      +' in stv')
-
-# +
-import joypy
-from matplotlib import cm
-
-labels=[y for y in list(SCEM.year.unique())]
-
-
-
-
-for mom_id,mom in enumerate(mom_list):
-    
-    fig, axes = joypy.joyplot(SCEM, 
-                              by="year", 
-                              column= mom+'_rd', 
-                              labels=labels, 
-                              kind="kde", 
-                              range_style='own', 
-                              grid="y", 
-                              linewidth=1, 
-                              legend=False, 
-                              figsize=(6,7),
-                              title=labels_list[mom_id],
-                              colormap=cm.Wistia
-                             )
-    plt.savefig('../Graphs/ind/joy_'+str(mom)+'.jpg')
 
 # + {"code_folding": []}
 ### histograms
@@ -685,6 +627,32 @@ for mom_id,mom in enumerate(mom_list):
     plt.yticks(fontsize = 14)
     plt.xlabel('Residuals of '+labels_list[mom_id], fontsize = 15)
     plt.savefig('../Graphs/ind/hist_'+str(mom)+'.jpg')
+
+# +
+import joypy
+from matplotlib import cm
+
+labels=[y for y in list(SCEM.year.unique())]
+
+
+
+
+for mom_id,mom in enumerate(mom_list):
+    
+    fig, axes = joypy.joyplot(SCEM, 
+                              by="year", 
+                              column= mom+'_rd', 
+                              labels=labels, 
+                              kind="kde", 
+                              range_style='own', 
+                              grid="y", 
+                              linewidth=1, 
+                              legend=False, 
+                              figsize=(6,7),
+                              title=labels_list[mom_id],
+                              colormap=cm.Wistia
+                             )
+    plt.savefig('../Graphs/ind/joy_'+str(mom)+'.jpg')
 # -
 
 # ### 5. Experienced volatility and risks
@@ -1122,7 +1090,7 @@ dep_list3 = ['incexp','incvar','rincvar','incskew','UEprobAgg']
 
 for i,mom in enumerate(dep_list3):
     ## model 1 
-    model = smf.ols(formula = 'spending'+ '+'+ mom,
+    model = smf.ols(formula = 'spending~'+ '+'+ mom,
                     data = SCEM)
     rs_list[nb_spc*i] = model.fit()
     
