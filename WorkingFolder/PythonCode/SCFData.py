@@ -114,25 +114,24 @@ list(df2016.columns)
 
 # + code_folding=[]
 ## make new variables 
-df2016['lqwealth'] = df2016['liq']+df2016['govtbnd']+df2016['obnd']+df2016['stocks']+df2016['nmmf'] - df2016['ccbal'] 
+#df2016['lqwealth'] = df2016['liq']+df2016['govtbnd']+df2016['obnd']+df2016['stocks']+df2016['nmmf'] - df2016['ccbal'] 
 ## Kaplan, Violante, and Weidner (2014)/Econmetrica paper definition
 
+df2016['lqwealth'] = df2016['liq']+df2016['govtbnd'] - df2016['ccbal'] 
+
 ### filters and clean variables 
-
 df2016 = df2016[(df2016['age']>=25) & (df2016['age']<=85)]
-
 df2016 = df2016[df2016['income']>0]
 df2016 = df2016[df2016['norminc']>0]
+## drop negative liquid wealth 
+df2016 = df2016[df2016['lqwealth']>=0]
+
+## compute ratios 
 df2016['lincome'] = np.log(df2016['income'])
 df2016['lnorminc'] = np.log(df2016['norminc'])
 df2016['w2income']= df2016['networth']/ df2016['norminc']
 df2016['lw2income']= df2016['lqwealth']/ df2016['norminc']
 
-
-# +
-## drop negative liquid wealth 
-
-df2016 = df2016[df2016['lqwealth']>=0]
 
 # + code_folding=[0]
 ## age polynomials regressions 
@@ -156,7 +155,7 @@ df2016['lnorminc_pr'] = results.predict()
 ## distribution in monetary values 
 import seaborn as sns
 
-data_plot = df2016[['norminc','wgt']][df2016['norminc']<df2016['norminc'].quantile(0.90)]
+data_plot = df2016[['norminc','wgt']][df2016['norminc']<df2016['norminc'].quantile(0.95)]
 
 dist = sns.displot(data = data_plot,
             x = 'norminc',
@@ -166,10 +165,13 @@ dist = sns.displot(data = data_plot,
             bins = 100).set(title='Distribution of annual permanent income (2016 SCF)',
                             xlabel='Usual annual income (USD)')
 
+norminc_av = (data_plot['norminc']*data_plot['wgt']).sum()/data_plot['wgt'].sum()
+print('mean permanent income: $', str(round(norminc_av,3)))
+
 dist.fig.set_size_inches(8,6)
 
 # +
-data_plot = df2016[['lqwealth','wgt']][df2016['lqwealth']<df2016['lqwealth'].quantile(0.90)]
+data_plot = df2016[['lqwealth','wgt']][df2016['lqwealth']<df2016['lqwealth'].quantile(0.95)]
 
 dist = sns.displot(data = data_plot,
             x = 'lqwealth',
@@ -181,11 +183,14 @@ dist = sns.displot(data = data_plot,
                             xlabel='Liquid wealth (USD)'
 )
 
+lqwealth_av = (data_plot['lqwealth']*data_plot['wgt']).sum()/data_plot['wgt'].sum()
+
+print('mean net liquid wealth: $', str(lqwealth_av))
+
 dist.fig.set_size_inches(8,6)
 
 # +
-data_plot = df2016[['lw2income','wgt']][df2016['lw2income']<df2016['lw2income'].quantile(0.90)]
-
+data_plot = df2016[['lw2income','wgt']][df2016['lw2income']<df2016['lw2income'].quantile(0.95)]
 
 dist = sns.displot(data = data_plot,
             x = 'lw2income',
@@ -195,6 +200,9 @@ dist = sns.displot(data = data_plot,
             color = 'blue',
             bins = 100).set(title='Distribution of net-liquid-wealth/permanent-income ratio (2016 SCF)',
                             xlabel='Liquid wealth/permanent income ratio')
+
+lw2income_av = (data_plot['lw2income']*data_plot['wgt']).sum()/data_plot['wgt'].sum()
+print('mean net liquid wealth/income ratio: ', str(round(lw2income_av,2)))
 
 dist.fig.set_size_inches(8,6)
 # -
@@ -408,7 +416,6 @@ plt.plot(np.log(age_med_wealth),label='median net wealth')
 plt.plot(np.log(age_av_lqwealth),label='average net liquid wealth')
 plt.plot(np.log(age_med_lqwealth),label='median net liquid wealth')
 
-
 plt.legend(loc=0)
 # -
 
@@ -429,7 +436,7 @@ plt.plot(np.log(age_av_lnorminc),label='average income')
 plt.plot(np.log(age_med_lnorminc),label='median income')
 plt.legend(loc=0)
 
-# + code_folding=[]
+# + code_folding=[0, 2]
 ## merge all age profiles 
 
 to_merge = [age_med_wealth,
@@ -456,3 +463,5 @@ SCF_age_profile.to_pickle('data/SCF_age_profile.pkl')
 # -
 
 SCF_age_profile
+
+
