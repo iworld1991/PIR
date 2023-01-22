@@ -617,10 +617,10 @@ graph bar rincsd, ///
 graph export "${sum_graph_folder}/boxplot_rvar_earning.png", as(png) replace 
 
 graph bar rincsd rincsd_sub_rl, ///
-		   bar(1, color(navy) ) ///
-		   bar(2, color(orange)) ///
-		   title("Perceived and realized risk",size(med)) ///
-		   ytitle("Average perceived risk (std)")  ///
+		   bar(1, color(red) ) ///
+		   bar(2, lcolor(navy) fcolor(gs15) lpattern(dash) lwidth(medium)) ///
+		   title("Perceived and calibrated risk",size(med)) ///
+		   ytitle("Average risk (std)")  ///
 		   legend(row(2) label(1 "perceived risk") label(2 "calibrated risk") )
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_simple.png", as(png) replace 
@@ -632,8 +632,8 @@ graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
 		   bar(3, color(gray)) ///
 		   bar(4, color(cranberry)) ///
 		   bar(5, color(orange)) ///
-		   title("Perceived and realized risk by education",size(med)) ///
-		   ytitle("Average perceived risk (std)")  ///
+		   title("Perceived and calibrated risk by education",size(med)) ///
+		   ytitle("Average risk (std)")  ///
 		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "calibrated risk") label(5 "calibrated permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare.png", as(png) replace 
@@ -645,8 +645,8 @@ graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl if educ
 		   bar(3, color(gray)) ///
 		   bar(4, color(cranberry)) ///
 		   bar(5, color(orange)) ///
-		   title("Perceived and realized risk by age",size(med)) ///
-		   ytitle("Average perceived risk (std)")  ///
+		   title("Perceived and calibrated risk by age",size(med)) ///
+		   ytitle("Average risk (std)")  ///
 		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility") label(4 "calibrated risk") label(5 "calibrated permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_age.png", as(png) replace 
@@ -654,14 +654,13 @@ graph export "${sum_graph_folder}/boxplot_rvar_compare_age.png", as(png) replace
 
 graph bar rincsd rincsd_sub_rl, ///
            over(educ,relabel(1 "HS dropout" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
-		   bar(1, color(navy) ) ///
-		   bar(2, color(orange)) ///
-		   title("Perceived and realized risk by education",size(med)) ///
-		   ytitle("Average perceived risk (std)")  ///
+		   bar(1, fcolor(red)) ///
+		   bar(2, lcolor(navy) fcolor(gs15) lpattern(dash) lwidth(medium)) ///
+		   title("Perceived and calibrated risk by education",size(med)) ///
+		   ytitle("Average risk (std)")  ///
 		   legend(row(2) label(1 "perceived risk") label(2 "calibrated risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_educ_simple.png", as(png) replace 
-
 
 graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
            over(educ,relabel(1 "HS dropout" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
@@ -670,8 +669,8 @@ graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
 		   bar(3, color(gray)) ///
 		   bar(4, color(cranberry)) ///
 		   bar(5, color(orange)) ///
-		   title("Perceived and realized risk by education",size(med)) ///
-		   ytitle("Average perceived risk (std)")  ///
+		   title("Perceived and calibrated risk by education",size(med)) ///
+		   ytitle("Average risk (std)")  ///
 		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "calibrated risk") label(5 "calibrated permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_educ.png", as(png) replace 
