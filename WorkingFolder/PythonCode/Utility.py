@@ -86,8 +86,7 @@ def policyfuncMAjit(lc,
     return σ
 
 
-# -
-
+# + code_folding=[4]
 # ==============================================================================
 # ============== Functions for generating state space grids  ===================
 # ============= Copied from HARK  ==============================================
@@ -136,6 +135,8 @@ def make_grid_exp_mult(ming, maxg, ng, timestonest=20):
     return grid
 
 
+# -
+
 # ## Tools used for wealth distributions 
 
 # + code_folding=[]
@@ -164,6 +165,81 @@ def lorenz_curve(grid_distribution,
         lc_vals.append(this_lc_val)
     return np.array(lc_vals),share_grids
 
+
+
+# + code_folding=[]
+## lorenz curve
+def wealth_share(grid_distribution,
+                 pdfs,
+                 top_agents_share = 0.01):
+    """
+    parameters
+    ======
+    grid_distribution: grid on which distribution is defined
+    pdfs: the fractions/pdfs of each grid ranges 
+    top_agents_share: the top x share of agents for which wealth share is computed 
+    
+    return
+    ======
+    wealth_share: the fraction of wealth corresponding to the top x share of agents
+    """
+    total = np.dot(grid_distribution,pdfs)
+    share_cum = np.multiply(grid_distribution,pdfs).cumsum()/total
+    pdfs_cum = np.cumsum(pdfs) ## share of agents 
+    where = min([x for x in range(len(pdfs_cum)) if pdfs_cum[x]>=(1-top_agents_share)])
+    wealth_share = 1-share_cum[where]
+    return wealth_share
+
+
+# -
+
+# ## Gini coefficient 
+#
+# \begin{equation}
+# \text{Gini} = 1- 2G\int^1_0 L(x)dx  
+# \end{equation}
+#
+# where $L(x)$ is the lorenz function for x between $0$ to $1$.
+#
+
+# + code_folding=[0]
+def gini(agents_share,
+         value_share):
+    """
+    input
+    =====
+    agents_share: an array of fraction the agents from 0 to 1
+    value_share: an array of value (wealth) share of the corresponding fraction of agents 
+    
+    output
+    ======
+    gini coefficients = B/(A+B) in lorenz curve where A+B = 1/2
+    
+    """
+    agents_share_grid = agents_share[1:]-agents_share[:-1]
+    gini = 1- 2*np.dot(value_share[1:],agents_share_grid)
+    return gini 
+
+
+# + code_folding=[0]
+def h2m_ratio(a_grid,
+              a_pdfs,
+              cutoff):
+    """
+    input
+    =====
+    a_grid: an array of a grid: asset to permanent income ratio
+    a_pdfs: an array of probabilities associated with these grids that sum up to one
+    cutoff: the cutoff ratio for hands-to-month consumers, i.e. asset to income ratio below the cutooff is h2m
+    
+    output
+    ======
+    h2m_share: scalar indicating the share of h2m
+    """
+    h2m_where = np.where(a_grid<=cutoff)
+    h2m_share = a_pdfs[h2m_where].sum()
+
+    return h2m_share 
 
 
 # -
@@ -462,36 +538,6 @@ def SS2tax(SS, ## social security /pension replacement ratio
     return λ_SS
 
 
-# -
-
-# ## Gini coefficient 
-#
-# \begin{equation}
-# \text{Gini} = 1- 2G\int^1_0 L(x)dx  
-# \end{equation}
-#
-# where $L(x)$ is the lorenz function for x between $0$ to $1$.
-#
-
-# + code_folding=[]
-def gini(agents_share,
-         value_share):
-    """
-    input
-    =====
-    agents_share: an array of fraction the agents from 0 to 1
-    value_share: an array of value (wealth) share of the corresponding fraction of agents 
-    
-    output
-    ======
-    gini coefficients = B/(A+B) in lorenz curve where A+B = 1/2
-    
-    """
-    agents_share_grid = agents_share[1:]-agents_share[:-1]
-    gini = 1- 2*np.dot(value_share[1:],agents_share_grid)
-    return gini 
-
-
 # + code_folding=[1, 95]
 @njit
 def jump_to_grid(m_vals,
@@ -663,3 +709,43 @@ def gen_tran_matrix(dist_mGrid,
                                                              dist_mGrid, 
                                                             dist_pGrid) 
     return TranMatrix
+
+
+# +
+### heterogeneity 
+
+# + code_folding=[3]
+
+## this function turn the size of unobservable heterogeneity into an equivalent initial 
+
+def average_heterogeneity(sigma_xi_psi,
+                          T,
+                          L,
+                          age_dist):
+    """
+    input
+    ======
+    sigma_xi_psi: sigma of annual permanent heterogeneity 
+    sigma_xi_eps: sigma of annual transitory heterogeneity 
+    T: retirement date
+    L: length of life
+    age_dist: age distributions 
+    
+    output
+    ======
+    sigma_xi_psi_av: average annual permanent 
+    
+    """
+    
+    sigma_xi_psi2 = np.ones(T)*sigma_xi_psi**2
+    sigma_xi_psi_cum2 = sigma_xi_psi2.cumsum()
+    sigma_xi_psi_cum2_after = np.ones(L-T)*sigma_xi_psi_cum2[-1]
+    
+    sigma_xi_psi_cum2_all = np.concatenate((sigma_xi_psi_cum2,
+                                         sigma_xi_psi_cum2_after))
+    
+    sigma_xi_psi2_av = np.mean(np.dot(sigma_xi_psi_cum2_all,age_dist))
+    
+    sigma_xi_psi_av = np.sqrt(sigma_xi_psi2_av)
+    
+    return sigma_xi_psi_av
