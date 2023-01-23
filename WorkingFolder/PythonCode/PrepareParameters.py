@@ -262,7 +262,7 @@ SCE_est_q
 # + code_folding=[]
 ## create a dictionary of parameters 
 life_cycle_paras_q = {'ρ': 2.0, 
-                    'β': 0.98**(1/4), 
+                    'β': 0.97**(1/4), 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
                     'z_val': np.array([0., 1.]), 
@@ -315,7 +315,7 @@ life_cycle_paras_q
 # + code_folding=[]
 ## create a dictionary of parameters 
 life_cycle_paras_y = {'ρ': 2.0, 
-                    'β': 0.98, 
+                    'β': 0.97, 
                     'P': np.array([[0.18, 0.82],
                                    [0.04, 0.96]]), 
                     'z_val': np.array([0., 1.]), 
@@ -483,18 +483,19 @@ model_paras_by_block_df
 # +
 ## add source of the parameters 
 
-model_paras_by_block_df.loc['risk','source']='Median estimates from the literature'
-model_paras_by_block_df.loc['initial condition','source']='Estimated for age 25 in the 2016 SCF'
+model_paras_by_block_df.loc['risk','source']='median estimates from the literature'
+model_paras_by_block_df.loc['initial condition','source']='estimated for age 25 in the 2016 SCF'
 model_paras_by_block_df.loc[('initial condition','bequest_ratio'),'source']='assumption'
-model_paras_by_block_df.loc['life cycle','source']='standard assumption'
-model_paras_by_block_df.loc['preference','source']='standard assumption'
+model_paras_by_block_df.loc['life cycle','source']='standard calibration'
+model_paras_by_block_df.loc[('preference','β'),'source']='calibrated to match average wealth/income ratio'
+model_paras_by_block_df.loc[('preference','ρ'),'source']='standard calibration'
 model_paras_by_block_df.loc['policy','source']='U.S. average'
 model_paras_by_block_df.loc[('policy','λ'),'values']=np.nan
 model_paras_by_block_df.loc[('policy','λ'),'source']='endogenously determined'
 model_paras_by_block_df.loc[('policy','λ_SS'),'source']='U.S. average'
 model_paras_by_block_df.loc[('policy','λ_SS'),'values']=np.nan
 
-model_paras_by_block_df.loc['production','source']='standard assumption'
+model_paras_by_block_df.loc['production','source']='standard calibration'
 model_paras_by_block_df.loc[('production','W'),'source']='target values in steady state'
 model_paras_by_block_df.loc[('production','K2Y ratio'),'source']='target values in steady state'
 model_paras_by_block_df.loc['subjective','source']='estimated from SCE'
@@ -537,3 +538,5 @@ model_paras_by_block_df=model_paras_by_block_df.reset_index(level=1, drop=True)
 model_paras_by_block_df.to_excel('../Tables/calibration.xlsx')
 
 model_paras_by_block_df
+
+
