@@ -86,10 +86,16 @@ from PrepareParameters import life_cycle_paras_y as lc_paras_Y
 lc_paras_y = copy(lc_paras_Y)
 lc_paras_q = copy(lc_paras_Q)
 
+##############
+## low_beta for liquid 
+lc_paras_y['β'] = 0.96
+lc_paras_y['β_h'] = 0.96
+###############
+
 print(lc_paras_y)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## a deterministic income profile 
 
 ## income profile 
@@ -103,7 +109,10 @@ plt.ylabel(r'$\hat Y$')
 
 # ### Solve the model with a Markov state: unemployment and employment 
 
-# + code_folding=[9]
+# + code_folding=[]
+from Utility import average_heterogeneity,stationary_age_dist
+
+# + code_folding=[0, 7, 35]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -121,6 +130,23 @@ if calibrated_model == True:
     elif model_frequency=='quarterly':
         ## yearly parameters 
         lc_paras = lc_paras_q
+        
+        
+    ## recalibrate initial heterogeneity 
+
+    age_dist_ss = stationary_age_dist(lc_paras['L'],
+                                       n = 0.0,
+                                       LivPrb = lc_paras['LivPrb'])
+    sigma_xi_psi = 0.13
+
+    init_sigma_psi_av = average_heterogeneity(sigma_xi_psi,
+                                             lc_paras['T'],
+                                             lc_paras['L'],
+                                             age_dist_ss)
+    
+    print('Adjusting initial p dispersion by {} to account of heterogeneity in p '.format(init_sigma_psi_av))
+    
+    init_sigma_psi_av_new = np.sqrt(lc_paras['σ_ψ_init']**2+init_sigma_psi_av**2)
 
     lc_mkv_paras = { 
         ## primitives
@@ -174,7 +200,7 @@ if calibrated_model == True:
                    'ρ_b':lc_paras['ρ'] ## homothetic bequest motive
         #######################
                     }
-    
+        
     ## initialize the model with calibrated parameters 
     
     lc_mkv = LifeCycle(**lc_mkv_paras)    
@@ -182,6 +208,7 @@ if calibrated_model == True:
     ## for the subjective model, only change the belief 
     lc_mkv_sub_paras = copy(lc_mkv_paras)
     lc_mkv_sub_paras['subjective'] = True 
+    lc_mkv_sub_paras['sigma_p_init'] = init_sigma_psi_av_new
     lc_mkv_sub_paras['sigma_psi'] = lc_paras['σ_ψ_sub']
     lc_mkv_sub_paras['sigma_eps'] = lc_paras['σ_θ_sub']
     lc_mkv_sub = LifeCycle(**lc_mkv_sub_paras)
@@ -191,6 +218,7 @@ if calibrated_model == True:
         
     lc_mkv_sub_true_paras = copy(lc_mkv_sub_paras)
     lc_mkv_sub_true_paras['subjective'] = False
+    lc_mkv_sub_paras['sigma_p_init'] = init_sigma_psi_av_new
     lc_mkv_sub_true_paras['sigma_psi_true'] = lc_paras['σ_ψ_sub']
     lc_mkv_sub_true_paras['sigma_eps_true'] =  lc_paras['σ_θ_sub']
     #lc_mkv_sub_true_paras['sigma_p_init'] = np.sqrt(lc_paras['σ_ψ_init']**2+ 0.6**2)
@@ -198,7 +226,7 @@ if calibrated_model == True:
     lc_mkv_sub_true = LifeCycle(**lc_mkv_sub_true_paras)
 
 
-# + code_folding=[]
+# + code_folding=[0]
 ## solve various models
 
 models = [lc_mkv,
@@ -261,7 +289,7 @@ plt.hist(ojb_minus_sub.flatten(),
 plt.title('Consumption in objective model minus subjective model')
 print('should be NEGATIVE!!!!!')
 
-# + code_folding=[0]
+# + code_folding=[0, 12]
 ## compare solutions 
 
 m_grid = np.linspace(0.0,10.0,200)
@@ -651,7 +679,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 17, 111, 237, 251, 270, 281, 312]
+# + code_folding=[0, 17, 111, 176, 246, 268, 287, 298, 329]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -865,7 +893,15 @@ class HH_OLG_Markov:
         # a policy grid 
         ap_ratio_PolGrid_list = [ap_ratio_u_PolGrid_list,
                                  ap_eratio_e_PolGrid_list]
-
+        
+        ## get the permanent income grid over life cycle
+        p_u_list = [np.multiply.outer(np.ones_like(a_PolGrid_list[0][k]),
+                                      p_dist_grid_list[k]).flatten() for k in range(model.L)]
+        p_e_list = [np.multiply.outer(np.ones_like(a_PolGrid_list[1][k]),
+                                      p_dist_grid_list[k]).flatten() for k in range(model.L)]
+        
+        p_list = [p_u_list,
+                 p_e_list]
         
         time_end = time()
         print('time taken to get SS dist:'+str(time_end-time_start))
@@ -874,6 +910,7 @@ class HH_OLG_Markov:
         print('memory usage: '+str(memory))
         
         self.dist_lists = dist_lists
+        self.p_list = p_list
         self.ap_PolGrid_list = ap_PolGrid_list
         ## also store flatten list of level of a and c
         self.ap_grid_dist, self.ap_pdfs_dist = flatten_list(ap_PolGrid_list,
@@ -892,6 +929,7 @@ class HH_OLG_Markov:
     def Aggregate(self):
         ## compute aggregate A 
         ap_PolGrid_list = self.ap_PolGrid_list
+        p_list = self.p_list 
         dist_lists = self.dist_lists
         ss_dstn = self.ss_dstn
         age_dist = self.age_dist
@@ -900,6 +938,13 @@ class HH_OLG_Markov:
                               dist_lists,
                               ss_dstn,
                               age_dist)
+        
+        self.P = AggregateDist(p_list,
+                              dist_lists,
+                              ss_dstn,
+                              age_dist)
+        
+        self.A_norm = self.A/self.P 
 
     ### Aggregate within age 
     
@@ -1248,7 +1293,7 @@ SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
 
 # ## compare different models 
 
-# + code_folding=[3, 87]
+# + code_folding=[0, 3, 81, 94]
 ## This function bundles all procedures of solving stationary dist and StE for a particular model. 
 ## It also has a boelean argument that turns offs the general-equilibrium part of solutions for faster operation
 
@@ -1267,6 +1312,7 @@ def solve_1model(model,
                           σs_star = σ_star)
     HH_this.Aggregate()
     print('aggregate savings under stationary distribution:', str(HH_this.A))
+    print('average asset to permanent income ratio:', str(HH_this.A_norm))
 
     ## lorenz 
     share_agents_ap_this,share_ap_this = HH_this.Lorenz(variable='a')
@@ -1286,6 +1332,7 @@ def solve_1model(model,
        
     ## store all PE results
     model_pe_dct =  {'A':HH_this.A,
+                     'A_norm': HH_this.A_norm,
                     'A_life': HH_this.A_life,
                     'share_agents_ap':share_agents_ap_this,
                     'share_ap':share_ap_this,
@@ -1301,6 +1348,10 @@ def solve_1model(model,
     if ge:
         
         ## general equilibrium 
+        
+        ##################################
+        HH_this.model.β = lc_paras_y['β_h'] 
+        ##################################
 
         market_OLG_mkv_this = Market_OLG_mkv(households = HH_this,
                                             production = production)
@@ -1325,6 +1376,7 @@ def solve_1model(model,
         
         ## store all GE results
         model_ge_dct = {'A':market_OLG_mkv_this.households.A,
+                        'A_norm':market_OLG_mkv_this.households.A_norm,
                         'A_life':market_OLG_mkv_this.households.A_life,
                         'share_agents_ap':share_agents_ap_ge_this,
                         'share_ap':share_ap_ge_this,
@@ -1354,7 +1406,7 @@ def solve_models(model_list,
                      model_name = model_name_list[k],
                      ge = ge)
 
-# + code_folding=[0, 2]
+# + code_folding=[2]
 ## solve a list of models and save all solutions as pickles 
 
 model_results = solve_models(models,
@@ -1375,6 +1427,8 @@ line_patterns =['g-v',
                 'r-.',
                 'b--',
                 ]
+
+h2m_cut_off = round(1/24,2)
 
 ## Lorenz curve of steady state wealth distribution
 
@@ -1442,7 +1496,7 @@ for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
     
     ## get h2m fraction: an arbitrary definition for now. a2p ratio smaller than 5 
-    h2m_pe_where = np.where(model_solution['a_grid_dist']<=0.5)
+    h2m_pe_where = np.where(model_solution['a_grid_dist']<=h2m_cut_off)
     h2m_share =model_solution['a_pdfs_dist'][h2m_pe_where].sum()
 
     ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
@@ -1524,7 +1578,7 @@ for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
     
     ## get h2m fraction: an arbitrary definition for now. a2p ratio smaller than 5 
-    h2m_ge_where = np.where(model_solution['a_grid_dist']<=0.5)
+    h2m_ge_where = np.where(model_solution['a_grid_dist']<=h2m_cut_off)
     h2m_share =model_solution['a_pdfs_dist'][h2m_ge_where].sum()
 
     ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
@@ -1540,5 +1594,7 @@ ax.set_xlim([-10,30])
 #fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
 
 # -
+
+
 
 
