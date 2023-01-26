@@ -74,7 +74,7 @@ print('est sigma:',str(sigma_fake_est))
 print('est loc:',str(loc))
 
 
-# + {"code_folding": []}
+# + {"code_folding": [0]}
 def Est_PR_log_normal_simple(PRs,
                              est_PR,
                              transform = True):
@@ -229,9 +229,9 @@ SCE_av.corr()
 # + {"code_folding": []}
 ## some commonly used parameters, e.g. from Low et al.
 
-sigma_perm_Low_est = 0.1
+sigma_perm_Low_est = 0.15
 print('Estimated perm risk', str(sigma_perm_Low_est))
-sigma_tran_Low_est = 0.08
+sigma_tran_Low_est = 0.15
 print('Estimated tran risk', str(sigma_tran_Low_est))
 est_PR_Low = sigma_perm_Low_est**2 + sigma_tran_Low_est**2
 print('Implied Estimated PR in std term', str(np.sqrt(est_PR_Low)))
@@ -279,21 +279,21 @@ sns.histplot(np.sqrt(PR_ind_av),
 
 plt.axvline(np.sqrt(av_PR_SCE),
             color='black',
-            label='Average PR=.{:.3f}'.format(np.sqrt(av_PR_SCE)))
+            label='Average PR=.{:.2f}'.format(np.sqrt(av_PR_SCE)))
 
 
 plt.axvline(np.sqrt(est_PR_Low),
             linestyle='--',
             color='blue',
-            label='Estimated PR')
+            label='Calibrated PR=.{:.2f}'.format(np.mean(np.sqrt(est_PR_Low))))
 
-plt.xlim([0.0,0.14])
+plt.xlim([0.0,0.25])
 plt.xlabel('PR in std terms')
 plt.legend(loc=1)
 
 
 
-# + {"code_folding": []}
+# + {"code_folding": [0]}
 ## distributions of U2U 
 
 plt.title('U2U in SCE' )
@@ -415,9 +415,9 @@ plt.axvline(np.sqrt(av_PR_SCE),
 plt.axvline(np.sqrt(est_PR_Low),
             linestyle='--',
             color='blue',
-            label='Conventionally Calibrated PR')
+            label='Calibrated PR={:.2f}'.format(np.mean(np.sqrt(est_PR_Low))))
 
-plt.xlim([0.0,0.14])
+plt.xlim([0.0,0.25])
 plt.xlabel('PR in std terms')
 plt.legend(loc=1)
 plt.savefig('../Graphs/sce/log_normal_pr_fit.pdf')
@@ -482,7 +482,7 @@ plt.axvline(np.sqrt(est_PR_Low),
             color='blue',
             label='Estimated PR')
 
-plt.xlim([0.0,0.15])
+plt.xlim([0.0,0.25])
 plt.xlabel('Nominal PR in std terms')
 plt.legend(loc=1)
 plt.savefig('../Graphs/sce/log_normal_npr_fit.pdf')
@@ -702,3 +702,5 @@ PR_est_dict = {'mu_pr':mu_PR_est_SCE,
               }
 
 pickle.dump(PR_est_dict,open('./parameters/PR_est.pkl','wb'))
+# -
+
