@@ -1,7 +1,0 @@
-\beamer@sectionintoc {1}{Motivation}{3}{0}{1}
-\beamer@sectionintoc {2}{Empirical evidence}{8}{0}{2}
-\beamer@subsectionintoc {2}{1}{Cross-sectional patterns}{11}{0}{2}
-\beamer@subsectionintoc {2}{2}{Permanent versus transitory risks}{19}{0}{2}
-\beamer@subsectionintoc {2}{3}{Perceived risks and decisions}{21}{0}{2}
-\beamer@sectionintoc {3}{Model}{26}{0}{3}
-\beamer@sectionintoc {4}{Conclusion}{28}{0}{4}
