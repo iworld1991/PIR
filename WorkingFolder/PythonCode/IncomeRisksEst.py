@@ -48,8 +48,8 @@ dt.sigmas = sigmas
 
 def estimate_sample(sample):
     """
-    this function take a sample of the first differences of income in different time(column) of all individuals(row)
-    and returns the estimates of the permanent and transitory sigmas. 
+    this function take a sample of the first differences of income in different periods (column) of all individuals (row)
+    and returns the estimates of the potentially time-varying permanent and transitory sigmas. 
     """
     data = np.array(sample)
     data_mean = np.nanmean(data,axis=0)
