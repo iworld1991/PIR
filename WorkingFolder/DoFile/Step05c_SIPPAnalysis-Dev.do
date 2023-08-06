@@ -446,9 +446,10 @@ label var lwage_n_id_shk_gr "log nominal growth of idiosyncratic unexplained wag
 label var lwage_n_ag_shk_gr "log nominal growth of idiosyncratic unexplained wage"
 
 
-foreach var in lwage_id_shk{
+foreach var in lwage lwage_id_shk{
 gen `var'_y2y_gr = `var'- l12.`var'
 }
+label var lwage_y2y_gr "log YoY growth of wage"
 label var lwage_id_shk_y2y_gr "log YoY growth of unexplained wage"
 
 ** 1-year 2-year 3-year difference for yearly 
@@ -766,6 +767,22 @@ drop year month
 reshape wide lwage_gr, i(uniqueid educ gender age_5yr) j(date_temp)
 save "${datafolder}sipp_wage_growth_matrix.dta",replace 
 restore 
+
+
+preserve 
+tsset uniqueid date 
+tsfill,full						
+replace year=year(dofm(date)) if year==.
+replace month=month(dofm(date)) if month==.
+*replace lwage_gr=. if month==1
+keep uniqueid year month lwage_y2y_gr educ gender age_5yr
+gen date_temp = year*100+month
+drop if date_temp==.
+drop year month 
+reshape wide lwage_y2y_gr, i(uniqueid educ gender age_5yr) j(date_temp)
+save "${datafolder}sipp_wage_y2y_growth_matrix.dta",replace 
+restore 
+
 
 preserve 
 tsset uniqueid date 
