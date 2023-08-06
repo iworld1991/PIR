@@ -16,7 +16,7 @@
 
 # ## Income Risks Estimation 
 #
-# This notebook draws from the integrated moving average (IMA) process class to estimate the income risks using PSID data(annual/biennial) and SIPP panel(monthly).
+# This notebook draws from the integrated moving average (IMA) process class to estimate the income risks using PSID data (annual/biennial) and SIPP panel (monthly).
 
 import numpy as np
 import numpy.ma as ma
@@ -128,7 +128,7 @@ sample_full.columns
 year_str = [string.replace('lwage_Y_id_shk_gr','') for string in sample_full.columns if 'lwage_Y_id_shk_gr' in string]
 years = np.array(year_str) 
 
-# + {"code_folding": []}
+# + {"code_folding": [3]}
 ## plot estimate 
 
 lw = 3
@@ -375,7 +375,7 @@ for i,paras_est in enumerate([data_para_est_full]):
                     hspace=0.4)
     plt.savefig('../Graphs/sipp/permanent-transitory-risk.jpg')
 
-# + {"code_folding": [0]}
+# + {"code_folding": [5]}
 ## generate a dataset of date, permanent and transitory 
 
 est_df = pd.DataFrame()
@@ -389,7 +389,8 @@ for i,para_est in enumerate([data_para_est_full]):
                              np.abs(para_est[1][0]), 
                              np.abs(para_est[1][1])] 
                            ).transpose()
-    est_df = est_df.append(this_est)
+    est_df = pd.concat([est_df,
+                        this_est])
     
     
 ## post-processing
@@ -398,7 +399,7 @@ est_df=est_df.dropna(how='any')
 for var in ['YM']:
     est_df[var] = est_df[var].astype('int32')
 
-est_df['permanent']=est_df['permanent'].astype('float')
+est_df['permanent']= est_df['permanent'].astype('float')
 est_df['transitory']=est_df['transitory'].astype('float')
 
 # +
@@ -409,7 +410,7 @@ for date in [201303,201401,201501,201601,201701]:
 est_df
 # -
 
-est_df[['permanent','transitory']].plot()
+est_df[['permanent','transitory']].plot(figsize=(13,5))
 
 ## export to stata
 est_df.to_stata('../OtherData/sipp/sipp_history_vol_decomposed.dta')
@@ -422,7 +423,7 @@ for sample in sub_samples:
     data_para_est = estimate_sample(sample)
     para_est_list.append(data_para_est)
 
-# + {"code_folding": [0]}
+# + {"code_folding": []}
 ## generate a dataset of year, edu, gender, byear_5yr permanent and transitory 
 
 est_df = pd.DataFrame()
@@ -440,7 +441,8 @@ for i,para_est in enumerate(para_est_list):
                              np.abs(para_est[1][0]), 
                              np.abs(para_est[1][1])] 
                            ).transpose()
-    est_df = est_df.append(this_est)
+    est_df = pd.concat([est_df,
+                         this_est])
 
 # +
 ## post-processing
@@ -461,3 +463,5 @@ for date in [201303,201401,201501,201601,201701]:
 est_df.to_stata('../OtherData/sipp/sipp_history_vol_decomposed_edu_gender_age5.dta')
 
 est_df.head()
+
+
