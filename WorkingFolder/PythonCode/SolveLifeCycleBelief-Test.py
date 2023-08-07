@@ -24,7 +24,6 @@ import numpy as np
 from interpolation import interp
 import matplotlib as mp
 import matplotlib.pyplot as plt
-# %matplotlib inline
 from time import time
 from copy import copy
 
@@ -61,7 +60,7 @@ from SolveLifeCycleBelief import LifeCycle, solve_model_backward_iter,compare_2s
 
 # ## Parameters
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## parameters 
@@ -99,7 +98,7 @@ if __name__ == "__main__":
 
 # ## Life-Cycle Problem 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     
     lc_paras_baseline = {
@@ -186,7 +185,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
@@ -206,6 +205,8 @@ if __name__ == "__main__":
                      lw = 3
                     )
         axes[x].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt[-2])))
+        axes[x].set_ylim((0.0,np.max(c_plt[-2])))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -215,7 +216,7 @@ if __name__ == "__main__":
 #
 # - the consumption function should be non-linear throughout life cycle because of income risks 
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     lc_a_max_paras = copy(lc_paras_baseline)
     lc_a_max_paras['T'] = lc_a_max_paras['L']
@@ -261,6 +262,8 @@ if __name__ == "__main__":
                      lw = 3
                     )
         axes[x].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt[-2])))
+        axes[x].set_ylim((0.0,np.max(c_plt[-2])))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -269,7 +272,7 @@ if __name__ == "__main__":
 # ## A special case of different periods
 #
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     lc_2t_paras = copy(lc_paras_baseline)
     lc_2t_paras['T'] = 25
@@ -295,7 +298,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
@@ -315,6 +318,8 @@ if __name__ == "__main__":
                      lw = 3
                     )
         axes[x].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt[-2])))
+        axes[x].set_ylim((0.0,np.max(c_plt[-2])))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -347,7 +352,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
@@ -367,6 +372,8 @@ if __name__ == "__main__":
                      lw = 3
                     )
         axes[x].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt[-2])))
+        axes[x].set_ylim((0.0,np.max(c_plt[-2])))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -398,7 +405,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
@@ -418,6 +425,8 @@ if __name__ == "__main__":
                      lw = 3
                     )
         axes[x].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt[-2])))
+        axes[x].set_ylim((0.0,np.max(c_plt[-2])))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -497,6 +506,8 @@ if __name__ == "__main__":
                          label = model_name,
                          lw = 3
                         )
+            axes[x].set_xlim((0.0,np.max(m_plt[-2])))
+            axes[x].set_ylim((0.0,np.max(c_plt[-2])))
         axes[x].legend()
         axes[x].set_xlim(0.0,np.max(m_grid))
         axes[x].set_xlabel('asset')
@@ -540,7 +551,7 @@ if __name__ == "__main__":
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))
 
-# + code_folding=[]
+# + code_folding=[0]
 # compare solutions
 
 sub_minus_obj = compare_2solutions(ms_stars,
@@ -551,7 +562,7 @@ plt.hist(sub_minus_obj.flatten(),
 plt.title('Consumption in low PR model minus in high PR')
 print('should be positive')
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
 
     m_grid = np.linspace(0.0,10.0,200)
@@ -574,7 +585,10 @@ if __name__ == "__main__":
                          label = model_name,
                          lw=3
                         )
+            
         axes[x].legend()
+        axes[x].set_xlim((0.0,np.max(m_plt[-2])))
+        axes[x].set_ylim((0.0,np.max(c_plt[-2])))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -586,7 +600,7 @@ if __name__ == "__main__":
 #
 #
 
-# + code_folding=[]
+# + code_folding=[0]
 if __name__ == "__main__":
     
     U_prb = 0.2
@@ -662,7 +676,8 @@ if __name__ == "__main__":
                          lw=3,
                         )
         axes[x].legend()
-        axes[x].set_xlim(0.0,np.max(m_plt))
+        axes[x].set_xlim(0.0,np.max(m_plt[-2]))
+        axes[x].set_ylim((0.0,np.max(c_plt[-2])))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
