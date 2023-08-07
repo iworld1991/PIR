@@ -19,7 +19,6 @@
 #
 # - This notebook first downloads macroeconomic series 
 # - Then we examine the correlation of higher moments of labor income risks and these macro series 
-# - It also inspects the cross-sectional pattern of the subjective moments
 
 # +
 import pandas_datareader.data as web
