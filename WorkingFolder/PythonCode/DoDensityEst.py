@@ -214,9 +214,10 @@ for i in range(nobs):
 print(ct_nan)
 
 ### exporting moments estimates to pkl
-IndSCE_est = pd.concat([IndSCE,IndSCE_moment_est], join='inner', axis=1)
-IndSCE_est.to_pickle("../../../IncExpProjectShadow/WorkingFolder/PythonCode/IndSCEDstIndM.pkl")
-IndSCE_pk = pd.read_pickle('../../../IncExpProjectShadow/WorkingFolder/PythonCode/IndSCEDstIndM.pkl')
+IndSCE_est = pd.concat([IndSCE,
+                        IndSCE_moment_est], join='inner', axis=1)
+IndSCE_est.to_pickle("IndSCEDstIndM.pkl")
+IndSCE_pk = pd.read_pickle('IndSCEDstIndM.pkl')
 
 columns_keep = ['date','year','month','userid','tenure','IncMean','IncVar','IncSkew','IncKurt']
 IndSCE_pk_new = IndSCE_pk[columns_keep]
