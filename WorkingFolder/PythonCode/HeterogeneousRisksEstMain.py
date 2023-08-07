@@ -260,15 +260,8 @@ print('Std of E2E in SCE', str(np.std(prob_func(E2E_SCE))))
 import seaborn as sns
 
 
+plt.figure(figsize=(6,4))
 plt.title('PRs in SCE')
-
-#hist = plt.hist(np.sqrt(PR_ind_av),
-#                bins = 50,
-#                color='red',
-#                alpha = 0.3,
-#                label='Dist of PRs',
-#               density=True)
-
 sns.histplot(np.sqrt(PR_ind_av), 
              color="red", 
              kde=True, 
@@ -279,25 +272,25 @@ sns.histplot(np.sqrt(PR_ind_av),
 
 plt.axvline(np.sqrt(av_PR_SCE),
             color='black',
-            label='Average PR=.{:.2f}'.format(np.sqrt(av_PR_SCE)))
+            label='Average PR={:.2f}'.format(np.sqrt(av_PR_SCE)))
 
 
 plt.axvline(np.sqrt(est_PR_Low),
             linestyle='--',
             color='blue',
-            label='Calibrated PR=.{:.2f}'.format(np.mean(np.sqrt(est_PR_Low))))
+            label='Calibrated PR={:.2f}'.format(np.mean(np.sqrt(est_PR_Low))))
 
 plt.xlim([0.0,0.25])
 plt.xlabel('PR in std terms')
-plt.legend(loc=1)
+plt.legend(loc=0)
 
 
 
-# + {"code_folding": [0]}
+# + {"code_folding": []}
 ## distributions of U2U 
 
+plt.figure(figsize=(6,4))
 plt.title('U2U in SCE' )
-
 
 #hist = plt.hist(prob_func(U2U_SCE),
 #                bins = 20,
@@ -318,14 +311,15 @@ sns.histplot(prob_func(U2U_SCE),
 
 plt.axvline(np.mean(prob_func(U2U_SCE)),
             color='black',
-            label='Average U2U=.{:.3f}'.format(np.mean(prob_func(U2U_SCE))))
+            label='Average U2U={:.3f}'.format(np.mean(prob_func(U2U_SCE))))
 
 plt.xlabel('U2U')
-plt.legend(loc=3)
+plt.legend(loc=0)
 
 # +
 ## distributions of E2E 
 
+plt.figure(figsize=(6,4))
 plt.title('E2E in SCE')
 
 #hist = plt.hist(prob_func(E2E_SCE),
@@ -346,11 +340,11 @@ sns.histplot(prob_func(E2E_SCE),
 
 plt.axvline(np.mean(prob_func(E2E_SCE)),
             color='black',
-            label='Average E2E=.{:.3f}'.format(np.mean(prob_func(E2E_SCE))))
+            label='Average E2E={:.3f}'.format(np.mean(prob_func(E2E_SCE))))
 
 
 plt.xlabel('E2E')
-plt.legend(loc=1)
+plt.legend(loc=0)
 # -
 
 # ### Estimation of trucated log normal 
@@ -388,6 +382,7 @@ PRs_sim_simple = np.exp(np.random.randn(10000)*sigma_PR_est_SCE+mu_PR_est_SCE)
 #         density = True,
 #         alpha=0.5)
 
+plt.figure(figsize=(6,4))
 plt.title('Heterogeneity in PR in SCE')
 
 sns.histplot(np.sqrt(PR_ind_av), 
@@ -440,6 +435,7 @@ PRns_sim_simple = np.exp(np.random.randn(10000)*sigma_PRn_est_SCE+mu_PRn_est_SCE
 # + {"code_folding": [17, 21]}
 ## plot simulated data based on log normal estimates and the observed PRs
 
+plt.figure(figsize=(6,4))
 plt.title('Heterogeneity in nominal PR in SCE')
 #plt.hist(np.sqrt(PRns_sim_simple),
 #        bins = 200,
@@ -487,7 +483,7 @@ plt.xlabel('Nominal PR in std terms')
 plt.legend(loc=1)
 plt.savefig('../Graphs/sce/log_normal_npr_fit.pdf')
 
-# + {"code_folding": [0, 31, 42, 54]}
+# + {"code_folding": [31, 42, 54]}
 ## estimating the parameters using SCE U2U and E2E 
 
 shape_U2U, loc_U2U, scale_U2U = stats.lognorm.fit(U2U_SCE)
@@ -503,6 +499,7 @@ U2U_grid = np.linspace(np.min(U2U_ind_av),
 U2U_pdfs = U2U_est_dist.pdf(U2U_grid)
 U2U_draws = U2U_est_dist.rvs(size = 10000)
 
+plt.figure(figsize=(6,4))
 plt.title('Heterogeneity in U2U in SCE')
 
 #hist = plt.hist(prob_func(U2U_SCE),
@@ -562,7 +559,7 @@ E2E_draws = stats.lognorm.rvs(s = shape_E2E,
                              loc = loc_E2E,
                              scale = scale_E2E,
                              size = 10000)
-
+plt.figure(figsize=(6,4))
 plt.title('Heterogeneity in E2E in SCE')
 
 #hist = plt.hist(prob_func(E2E_SCE),
@@ -612,7 +609,8 @@ plt.savefig('../Graphs/sce/log_normal_e2e_fit.pdf')
 # ## Do the same thing for expected wage growth  
 
 # + {"code_folding": []}
-plt.title('Data')
+plt.figure(figsize=(7,5))
+plt.title('Heterogeneity in Expected Wage Growth')
 #hist = plt.hist(Exp_ind_av,
 #                bins = 50,
 #                color='red',
@@ -624,15 +622,15 @@ sns.histplot(Exp_ind_av,
              color="red", 
              kde=True, 
              stat="density", 
-             label='Dist of Expected wage growth in SCE',
+             label='Dist of expected wage growth in SCE',
              linewidth= 0.4,
              fill = False)
 
 plt.axvline(av_Exp_SCE,
             color='black',
-            label='Average Exp=.{:.1f}'.format(round(av_Exp_SCE)))
+            label='Average Exp={:.1f}'.format(round(av_Exp_SCE)))
 
-plt.legend(loc=2)
+plt.legend(loc=0)
 # -
 
 ## expectation heterogeneity
@@ -645,6 +643,8 @@ exp_mu_est, sigma_exp_est, loc_exp_est = np.log(scale_Exp), shape_Exp, loc_Exp  
 #Exps_sim_simple = np.exp(np.random.randn(100000)*sigma_exp_est+exp_mu_est)+loc_Exp
 
 # +
+plt.figure(figsize=(8,6))
+
 plt.title('Heterogeneity in expected wage growth in SCE')
 #hist1= plt.hist(Exps_sim_simple,
 #        bins = 100,
@@ -702,5 +702,3 @@ PR_est_dict = {'mu_pr':mu_PR_est_SCE,
               }
 
 pickle.dump(PR_est_dict,open('./parameters/PR_est.pkl','wb'))
-# -
-
