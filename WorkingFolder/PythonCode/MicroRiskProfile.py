@@ -14,7 +14,7 @@
 #     name: python3
 # ---
 
-# ### The basic facts about heterogeneity of perceived income risks 
+# ### Basic facts about heterogeneity of perceived income risks 
 #
 #
 # - this notebook first plots the cross-sectional distribution of perceived income risks 
@@ -125,14 +125,6 @@ SCEM = pd.merge(SCEM_base,
                 how='left', 
                 left_on = vars_id, 
                 right_on = vars_id)
-# -
-
-SCEM['Q24_rvar'].mean()
-
-# +
-## describe data 
-
-#SCEM.describe(include = all)
 
 # + {"code_folding": []}
 ## renaming 
@@ -243,6 +235,17 @@ SCEM['month'] = SCEM.date.dt.month
 
 len(SCEM)
 
+# +
+## filter the data sample 
+import datetime as dt 
+
+date_before = dt.datetime(2020, 3, 1)
+
+SCEM = SCEM[SCEM['date']<=date_before]
+# -
+
+len(SCEM)
+
 # ### 2. Correlation pattern 
 
 # +
@@ -298,18 +301,18 @@ SCEM['byear_gr'] = pd.cut(SCEM['byear'],
 
 vars_cat = ['HHinc','fulltime','parttime','selfemp',
             'gender','educ','userid','date','byear',
-            'year','HHinc_gr','educ_gr','nlit_gr']
+            'year','HHinc_gr','educ_gr','nlit_gr'] 
 
 for var in vars_cat:
     SCEM[var] = pd.Categorical(SCEM[var],ordered = False)
 
 # + {"code_folding": []}
-#pp = sns.pairplot(SCEM)
-
-# + {"code_folding": []}
 # correlation heatmap 
+
+non_categorical = [var for var in SCEM.columns if var not in vars_cat+ ['age_gr','byear_gr']]
+
 fig, ax = plt.subplots(figsize=(20,20))
-sns.heatmap(SCEM.corr(), annot = True)
+sns.heatmap(SCEM[non_categorical].corr(), annot = True)
 # -
 
 # ###  3. Histograms
@@ -318,7 +321,7 @@ sns.heatmap(SCEM.corr(), annot = True)
 moms = ['incexp','rincexp','incvar','rincvar','incskew']
 
 ## by age 
-fig,axes = plt.subplots(len(moms),figsize=(4,14))
+fig,axes = plt.subplots(len(moms),figsize=(6,14))
 
 for i,mom in enumerate(moms):
     #plt.style.use('ggplot')
@@ -328,12 +331,13 @@ for i,mom in enumerate(moms):
     if i == len(moms)-1:
         axes[i].set_xlabel('group by the year of birth \n (from young to old)',
               size = 15)
+plt.tight_layout()
 plt.savefig('../Graphs/ind/bar_by_age')
 
 # + {"code_folding": []}
 ## by cohort 
 
-fig,axes = plt.subplots(len(moms),figsize=(4,14))
+fig,axes = plt.subplots(len(moms),figsize=(6,14))
 
 for i,mom in enumerate(moms):
     #plt.style.use('ggplot')
@@ -343,13 +347,15 @@ for i,mom in enumerate(moms):
     if i == len(moms)-1:
         axes[i].set_xlabel('group by the year of birth \n (from older generation to the young)',
               size = 15)
+plt.tight_layout()
+
 plt.savefig('../Graphs/ind/bar_by_cohort')
 
 
 # +
 ## by hh income 
 
-fig,axes = plt.subplots(len(moms),figsize=(4,14))
+fig,axes = plt.subplots(len(moms),figsize=(6,14))
 
 for i,mom in enumerate(moms):
     #plt.style.use('ggplot')
@@ -359,13 +365,15 @@ for i,mom in enumerate(moms):
     if i == len(moms)-1:
         axes[i].set_xlabel('group by household income (from low to high)',
               size = 15)
+plt.tight_layout()
+
 plt.savefig('../Graphs/ind/bar_by_inc')
 
 
 # + {"code_folding": []}
 ## by education
 
-fig,axes = plt.subplots(len(moms),figsize=(4,14))
+fig,axes = plt.subplots(len(moms),figsize=(6,14))
 
 for i,mom in enumerate(moms):
     #plt.style.use('ggplot')
@@ -374,7 +382,8 @@ for i,mom in enumerate(moms):
     
     if i == len(moms)-1:
         axes[i].set_xlabel('group by education (from low to high)',
-              size = 15)
+                          size = 15)
+plt.tight_layout()
 plt.savefig('../Graphs/ind/bar_by_educ')
 
 
@@ -382,7 +391,7 @@ plt.savefig('../Graphs/ind/bar_by_educ')
 ## by gender 
 
 fig,axes = plt.subplots(len(moms),
-                        figsize=(4,14))
+                        figsize=(6,14))
 
 for i,mom in enumerate(moms):
     #plt.style.use('ggplot')
@@ -392,13 +401,14 @@ for i,mom in enumerate(moms):
     if i == len(moms)-1:
         axes[i].set_xlabel('group by gender',
               size = 15)
+plt.tight_layout()
 plt.savefig('../Graphs/ind/bar_by_gender')
 
 
 # +
 ## by numeracy literacy  
 
-fig,axes = plt.subplots(len(moms),figsize=(4,14))
+fig,axes = plt.subplots(len(moms),figsize=(6,14))
 
 for i,mom in enumerate(moms):
     #plt.style.use('ggplot')
@@ -408,6 +418,8 @@ for i,mom in enumerate(moms):
     if i == len(moms)-1:
         axes[i].set_xlabel('group by numeracy',
               size = 15)
+plt.tight_layout()
+
 plt.savefig('../Graphs/ind/bar_by_nlit')
 # -
 
@@ -421,7 +433,8 @@ mom_list = ['incexp',
             'incstd',
             'rincstd',
             'rincvar',
-            'incskew']
+            'incskew'
+           ]
 
 labels_list = ['expected nominal wage growth',
             'perceived nominal wage risks',
@@ -450,10 +463,11 @@ for mom_id,mom in enumerate(mom_list):
     fig,ax = plt.subplots(figsize=(8,6))
     sns.histplot(data = to_plot,
                  kde = True,
-                stat="density", 
+                 stat="density", 
                  color = 'red',
                  bins = 40,
-                alpha = 0.3)
+                alpha = 0.3
+                )
     plt.xticks(fontsize = 14)
     plt.yticks(fontsize = 14)
     plt.xlabel(labels_list[mom_id], fontsize = 15)
@@ -463,7 +477,7 @@ for mom_id,mom in enumerate(mom_list):
 
 sipp_individual.describe()
 
-# + {"code_folding": []}
+# + {"code_folding": [0, 3, 19]}
 ## plot only perceived risks 
 
 fig,ax = plt.subplots(figsize=(8,6))
@@ -498,7 +512,7 @@ plt.xlabel('PRs and Volatility in std', fontsize = 15)
 plt.legend(loc=0)
 plt.savefig('../Graphs/ind/hist_compare_PRs.jpg')
 
-# +
+# + {"code_folding": [0]}
 ## plot only perceived risks 
 
 fig,ax = plt.subplots(figsize=(8,6))
@@ -698,7 +712,7 @@ for var in vars_log:
 
 SCEM.columns
 
-# + {"code_folding": []}
+# + {"code_folding": [0, 7]}
 ## full-table for risks  
 
 rs_list = {}  ## list to store results 
@@ -843,7 +857,7 @@ indep_list_ct = ['UEprobInd','UEprobAgg']
 indep_list_dc = ['HHinc','selfemp','fulltime','nlit_gr']
 
 
-# + {"code_folding": []}
+# + {"code_folding": [0, 5, 52]}
 ## full-table for risks  
 
 rs_list = {}  ## list to store results 
@@ -1079,7 +1093,7 @@ f.close()
 
 # ### 6. Perceived risks and decisions
 
-# + {"code_folding": []}
+# + {"code_folding": [0]}
 ## full-table for risks  
 
 rs_list = {}  ## list to store results 
