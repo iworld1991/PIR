@@ -3,6 +3,12 @@
 - Derivative project from "Perceived Income Risks"
 - Author: Tao Wang
 
+
+## To-do 
+-  Commuting zone/local labor market outcomes
+-  Aggregate realizations from SF Fed
+-  Historic vols from SIPP instead of PSID
+
 ## To-knows
 
 - To download the entire working repo, go to the shell, navigate to the desirable locaiton, and type
