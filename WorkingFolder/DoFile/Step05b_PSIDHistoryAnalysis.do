@@ -1,11 +1,11 @@
 clear
-global mainfolder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder"
-global scefolder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder/SurveyData/SCE/"
+global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
+global scefolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/SurveyData/SCE/"
 global folder "${mainfolder}/SurveyData/"
 global other "${mainfolder}/OtherData/"
 global sum_graph_folder "${mainfolder}/Graphs/ind"
 global sum_table_folder "${mainfolder}/Tables/"
-global graph_folder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder/Graphs/psid/"
+global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/psid/"
 
 cd ${folder}
 pwd
@@ -262,7 +262,7 @@ label var age_gp "age group"
 ** generate variables 
 *******************************************
 
-foreach var in incvar rincvar var_shk var_shk_gr var_id_shk var_id_shk_gr var_ag_shk var_ag_shk_gr permanent transitory{
+foreach var in incvar inciqr rincvar var_shk var_shk_gr var_id_shk var_id_shk_gr var_ag_shk var_ag_shk_gr permanent transitory{
 gen l`var' = log(`var')
 }
 
@@ -699,11 +699,11 @@ esttab using "${sum_table_folder}/micro_reg_history_vol_state.csv", ///
 ***********************************************
 
 
-label var lQ24_var "log perceived risk"
-label var lQ24_iqr "log perceived iqr"
+label var lincvar "log perceived risk"
+label var linciqr "log perceived iqr"
 
 eststo clear
-foreach var in lQ24_var lQ24_iqr{
+foreach var in lincvar linciqr{
 
 eststo: reg `var' c.lrmse##c.nlit i.age_gp i.Q36 i.inc_gp
 estadd local hasage "Yes",replace
