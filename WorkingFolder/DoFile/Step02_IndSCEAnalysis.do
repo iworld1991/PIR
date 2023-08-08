@@ -196,7 +196,6 @@ rename _merge IndEst_merge
 
 duplicates report year month userid
 
-
 ** merge labor market module  
 merge 1:1 year month userid using "${otherdata_folder}/LaborExpSCEIndM", keep(master match)
 rename _merge labor_merge
@@ -347,7 +346,7 @@ label var lrincvar "log perceived risk (real)"
 label var spending "expected growth in spending"
 label var spending_r "expected growth in spending (real)"
 
-/*
+
 *************************************
 *** Poisson rate in expectations 
 **************************************
@@ -364,7 +363,6 @@ label var exp_f "expected Poisson job-finding rate"
 gen exp_s_1y = log(1-UEprobInd)/(-12) 
 * can use exp_eu from micro data 
 label var exp_s_1y "expected Poisson separation rate (1 year)"
-*/
 
 *************************************
 *** Variables for overreaction test 
@@ -848,7 +846,7 @@ esttab using "${sum_table_folder}/ind/extrapolation_earning_risk.csv", ///
        drop(_cons) replace
 eststo clear
 
-
+/*
 ** event expectations 
 
 eststo clear
@@ -868,7 +866,7 @@ esttab using "${sum_table_folder}/ind/extrapolation_ue_risk.csv", label mtitles 
        stats(hasid r2 N, label("Individual FE" "R-squared" "Sample Size")) ///
 	   drop(_cons) replace 
 eststo clear
-
+*/
 
 *** earning risks at individual level within SCE  
 

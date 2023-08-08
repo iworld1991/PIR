@@ -1,5 +1,5 @@
 clear
-global mainfolder "/Users/Myworld/Dropbox/IncExpProject/WorkingFolder"
+global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
 global folder "${mainfolder}/SurveyData/"
 global sum_graph_folder "${mainfolder}/Graphs/ind"
 global sum_table_folder "${mainfolder}/Tables"
