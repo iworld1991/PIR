@@ -45,7 +45,7 @@
 
 ## Other derivative results (not in the main body of the paper)
 
-1. [Markov regime switching model of subjective PR](./WorkingFolder/PythonCode/SubjectiveProfileEst.ipynb)
+1. [Markov regime switching model of subjective PR](./WorkingFolder/PythonCode/SubjectiveProfileEst.ipynb) which draws from [model class](./WorkingFolder/PythonCode/MarkovSwitchingEst.ipynb)
 2. [An extended life-cycle model with a Markov belief state](./WorkingFolder/PythonCode/SolveLifeCycleBelief.ipynb)
 3. [An extended OLG-GE model with state-dependent beliefs of income risks](./WorkingFolder/PythonCode/OLG-GE-Belief.ipynb)
 
