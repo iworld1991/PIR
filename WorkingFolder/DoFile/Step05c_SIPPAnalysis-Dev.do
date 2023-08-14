@@ -1221,7 +1221,6 @@ twoway (scatter lwage_shk_gr_sd_age_sex age_h, color(ltblue)) ///
 graph export "${graph_folder}/real_log_wage_shk_gr_by_age_gender_compare.png", as(png) replace 
 
 restore
-*/
 
 ** age/gender/educ profile 
 
