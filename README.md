@@ -27,6 +27,7 @@
 ### Calibration
 1.  [SCFMoments](./WorkingFolder/PythonCode/SCFData.ipynb)
 2. [Parameters](./WorkingFolder/PythonCode/PrepareParameters.ipynb): stored as a dictionary, to be directly imported into model notebooks
+3. [Calibration of the heterogeneous wage/unemployment risks from SCE](./WorkingFolder/PythonCode/HeterogeneousRisksEstMain.ipynb)
 
 ### Model
 1. [Life-cycle consumption/saving model with permanent/persistent/transitory income risks](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
@@ -39,7 +40,6 @@
 
 3. [Compare model results and data](./WorkingFolder/PythonCode/PlotModelResults.ipynb) 
 
-4. [Calibration of the heterogeneous wage/unemployment risks from SCE](./WorkingFolder/PythonCode/HeterogeneousRisksEstMain.ipynb)
 
 ## Other derivative results (not in the main body of the paper)
 
