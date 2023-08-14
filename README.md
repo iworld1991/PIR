@@ -22,8 +22,6 @@
 
 3. [Micro empirical analysis](./WorkingFolder/PythonCode/MicroRiskProfile.ipynb) on the cross-sectional heterogeneity of perceived risks (PR)
 
-4. [Macro empirical analysis](./WorkingFolder/PythonCode/MacroRiskProfile.ipynb) on how PR correlate with macroeconomic conditions, i.e. labor market tightness
-
 ## Model
 
 ### Calibration
