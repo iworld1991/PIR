@@ -301,7 +301,7 @@ for i,mom in enumerate(moms):
         axes[i].set_xlabel('group by the year of birth \n (from young to old)',
               size = 15)
 plt.tight_layout()
-plt.savefig('../Graphs/ind/bar_by_age')
+#plt.savefig('../Graphs/ind/bar_by_age')
 
 # + {"code_folding": []}
 ## by cohort 
@@ -318,7 +318,7 @@ for i,mom in enumerate(moms):
               size = 15)
 plt.tight_layout()
 
-plt.savefig('../Graphs/ind/bar_by_cohort')
+#plt.savefig('../Graphs/ind/bar_by_cohort')
 
 
 # +
@@ -336,7 +336,7 @@ for i,mom in enumerate(moms):
               size = 15)
 plt.tight_layout()
 
-plt.savefig('../Graphs/ind/bar_by_inc')
+#plt.savefig('../Graphs/ind/bar_by_inc')
 
 
 # + {"code_folding": []}
@@ -353,7 +353,7 @@ for i,mom in enumerate(moms):
         axes[i].set_xlabel('group by education (from low to high)',
                           size = 15)
 plt.tight_layout()
-plt.savefig('../Graphs/ind/bar_by_educ')
+#plt.savefig('../Graphs/ind/bar_by_educ')
 
 
 # + {"code_folding": []}
@@ -371,7 +371,7 @@ for i,mom in enumerate(moms):
         axes[i].set_xlabel('group by gender',
               size = 15)
 plt.tight_layout()
-plt.savefig('../Graphs/ind/bar_by_gender')
+#plt.savefig('../Graphs/ind/bar_by_gender')
 
 
 # +
@@ -389,7 +389,7 @@ for i,mom in enumerate(moms):
               size = 15)
 plt.tight_layout()
 
-plt.savefig('../Graphs/ind/bar_by_nlit')
+#plt.savefig('../Graphs/ind/bar_by_nlit')
 # -
 
 # ### 4.1. Cross-sectional heterogeneity 
