@@ -68,11 +68,9 @@ pd.options.display.float_format = '{:,.2f}'.format
 
 dataset = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 dataset_est = pd.read_stata('../SurveyData/SCE/IncExpSCEDstIndM.dta')
-dataset_psid = pd.read_excel('../OtherData/psid/psid_history_vol.xls')
-dataset_psid_edu = pd.read_excel('../OtherData/psid/psid_history_vol_edu.xls')
 sipp_individual = pd.read_stata('../OtherData/sipp/sipp_individual_risk.dta')
 
-# + {"code_folding": []}
+# + {"code_folding": [0, 14]}
 ## variable list by catogrories 
 
 vars_id = ['userid','date']
@@ -104,7 +102,7 @@ vars_empexp = ['Q13new']  ## probability of unemployment
 vars_macroexp = ['Q6new',  ## stock market going up 
                  'Q4new']  ## UE goes up 
 
-# + {"code_folding": []}
+# + {"code_folding": [0, 2, 15]}
 ## subselect variables 
 
 vars_all_reg_long = (vars_id+moms_nom + moms_real + vars_job + 
@@ -126,7 +124,7 @@ SCEM = pd.merge(SCEM_base,
                 left_on = vars_id, 
                 right_on = vars_id)
 
-# + {"code_folding": []}
+# + {"code_folding": [0]}
 ## renaming 
 
 SCEM = SCEM.rename(columns={'Q24_mean': 'incexp',
@@ -151,7 +149,7 @@ SCEM = SCEM.rename(columns = {'D6':'HHinc',
                               'Q36':'educ',
                               'Q26v2': 'spending_dum',
                               'Q26v2part2':'spending'})
-dataset_psid_edu = dataset_psid_edu.rename(columns={'edu':'educ_gr'})
+#dataset_psid_edu = dataset_psid_edu.rename(columns={'edu':'educ_gr'})
 
 SCEM.columns
 
@@ -173,38 +171,9 @@ SCEM['educ_gr'].value_counts()
 SCEM['year'] = pd.DatetimeIndex(SCEM['date']).year
 
 # + {"code_folding": []}
-## Merge with historical volatilty 
-dataset_psid['age'] = dataset_psid['year']-dataset_psid['cohort'] + 20
-dataset_psid_edu['age'] = dataset_psid_edu['year']-dataset_psid_edu['cohort'] + 20
 SCEM['age'] = SCEM['age'].astype('int',
                                  errors='ignore')
-## for education subgroup 
 
-SCEM = pd.merge(SCEM, 
-                dataset_psid_edu,  
-                how= 'outer', 
-                left_on = ['year','age','educ_gr'], 
-                right_on = ['year','age','educ_gr'])
-
-## no education subgroup
-#SCEM = pd.merge(SCEM, 
-#                dataset_psid,  
-#                how= 'outer', 
-#                left_on = ['year','age'], 
-#                right_on = ['year','age'])
-
-# + {"code_folding": []}
-SCEM = SCEM.rename(columns={'av_shk_gr':'ExpGr',          ##  experience of income growth
-                            'var_shk':'ExpVol',      ## experienced lvel vol
-                            'var_shk_gr':'ExpGrVol',  ## experienced growth vol
-                           'av_id_shk_gr':'IdExpGr',    ## idiosyncratic experience of income growth
-                           'var_id_shk':'IdExpVol',  ## idiosyncratic experienced of level vol
-                            'var_id_shk_gr':'IdExpGrVol',  ## idiosyncratic experienced growth vol
-                           'av_ag_shk_gr':'AgExpGr',     ## aggregate experience of income growth
-                           'var_ag_shk':'AgExpVol',  ## aggregate experienced level vol
-                           'var_ag_shk_gr':'AgExpGrVol',  ## aggregate experienced growth vol
-                           'ue_av':'AgExpUE',       ## aggregate experience of UE 
-                           'ue_var':'AgExpUEVol'}) ## aggregate experience of UE vol
 
 # +
 ## creat some less fine groups 
@@ -669,182 +638,7 @@ for mom_id,mom in enumerate(mom_list):
     plt.savefig('../Graphs/ind/joy_'+str(mom)+'.jpg')
 # -
 
-# ### 5. Experienced volatility and risks
-
-# + {"code_folding": []}
-keeps = ['incexp','incvar','inciqr','rincexp','rincvar','incskew','ExpGr',
-         'ExpVol','ExpGrVol','IdExpGr','IdExpGrVol','IdExpVol']
-
-SCEM_cohort = pd.pivot_table(data = SCEM,
-                             index=['year','age','educ_gr'],
-                             values = keeps,
-                             aggfunc= 'mean').reset_index().rename(columns={'incexp': 'expMean',
-                                                                            'rincexp':'rexpMean',
-                                                                            'incvar': 'varMean',
-                                                                            'inciqr': 'iqrMean',
-                                                                            'rincvar':'rvarMean',
-                                                                            'incskew':'skewMean'})
-# -
-
-SCEM_cohort.columns
-
-# + {"code_folding": []}
-## scatter plot of experienced volatility and perceived risk 
-
-plt.plot(figsize =(30,30))
-plt.plot(np.log(SCEM_cohort['ExpVol']),
-         np.log(SCEM_cohort['varMean']),
-         '*',
-         lw = 5)
-plt.xlabel('logged experienced volatility')
-plt.ylabel('logged perceived risk')
-
-plt.savefig('../Graphs/ind/scatter_history_vol_var.jpg')
-
-# + {"code_folding": []}
-## generate logs 
-
-vars_log = ['incvar','rincvar','inciqr','ExpVol','ExpGrVol','IdExpVol','IdExpGrVol','AgExpVol','AgExpGrVol','UEprobAgg','UEprobInd']
-
-for var in vars_log:
-    SCEM[var] = np.log(SCEM[var]+0.00000000001)
-# -
-
-SCEM.columns
-
-# + {"code_folding": [0, 7]}
-## full-table for risks  
-
-rs_list = {}  ## list to store results 
-nb_spc = 4  ## number of specifications 
-
-dep_list = ['rincvar','inciqr'] 
-
-for i,mom in enumerate(dep_list):
-    ## model 1 
-    model = smf.ols(formula = str(mom)
-                    +'~ ExpVol+ExpGr+ C(age_gr)',
-                    data = SCEM)
-    rs_list[nb_spc*i] = model.fit()
-    
-    ## model 2
-    model2 = smf.ols(formula = str(mom)
-                    +'~ IdExpVol+IdExpGr+ C(age_gr)+C(educ_gr)',
-                    data = SCEM)
-    rs_list[nb_spc*i+1] = model2.fit()
-    
-    ## model 3
-    model3 = smf.ols(formula = str(mom)
-                    +'~ AgExpUEVol+AgExpUE+ C(age_gr) + C(HHinc_gr)+C(educ_gr)',
-                    data = SCEM)
-    rs_list[nb_spc*i+2] = model3.fit()
-    
-    
-    ## model 4
-    model4 = smf.ols(formula = str(mom)
-                    +'~ IdExpVol+IdExpGr+AgExpUEVol+AgExpUE+ C(age_gr) + C(HHinc_gr)+C(educ_gr)',
-                    data = SCEM)
-    rs_list[nb_spc*i+3] = model4.fit()
-
-    
-rs_names = [rs_list[i] for i in range(len(rs_list))]
-
-dfoutput = summary_col(rs_names,
-                        float_format='%0.2f',
-                        stars = True,
-                        regressor_order = ['ExpVol',
-                                           'ExpGr',
-                                           'IdExpVol'
-                                           'IdExpGr',
-                                           'AgExpUEVol',
-                                           'AgExpUE',
-                                           'C(age_gr)[T.30-39]',
-                                           'C(age_gr)[T.40-48]',
-                                           'C(age_gr)[T.49-57]',
-                                           'C(age_gr)[T.>57]',
-                                           'C(HHinc_gr)[T.low inc]'
-                                          ],
-                        info_dict={'N':lambda x: "{0:d}".format(int(x.nobs)),
-                                  'R2':lambda x: "{:.2f}".format(x.rsquared)}
-                      )
-
-dfoutput.title = 'Experienced Volatility and Perceived Income Risks'
-print(dfoutput)
-
-# + {"code_folding": [19, 40]}
-## output tables 
-
-beginningtex = """
-\\begin{table}[p]
-\\centering
-\\begin{adjustbox}{width=\\textwidth}
-\\begin{threeparttable}
-\\caption{Experienced Volatility and Perceived Income Risks}
-\\label{micro_reg_history_vol}"""
-
-endtex = """\\begin{tablenotes}\item Standard errors are clustered by household. *** p$<$0.001, ** p$<$0.01 and * p$<$0.05. 
-\item This table reports regression results of perceived income risks on experienced volatility.
-\\end{tablenotes}
-\\end{threeparttable}
-\\end{adjustbox}
-\\end{table}"""
-
-## relabel rows 
-
-def CatRename(table):
-    relabels = {}
-    rows = [idx for idx in table.index if ')[T.' in idx]
-    for i in range(len(rows)):
-        string = rows[i]
-        var = string.split('C(')[1].split(')[T')[0]
-        val = string.split('[T.')[1].split(']')[0]
-        if '.0' in val:
-            val = val.split('.0')[0]
-        else:
-            val = val 
-        relabels[rows[i]] = var + '=' + str(val)
-    table = table.rename(index = relabels)
-    return table 
-
-table = CatRename(dfoutput.tables[0])
-
-## excluding rows that are not to be exported 
-
-## drop the columns not wanted as well as rows below it 
-
-def droptables(table,
-              to_drop):
-    table = table.reset_index()
-    to_drop_ids = []
-
-    for var in to_drop:
-        to_drop_idx = table[table['index']==var].index[0]
-        to_drop_ids.append(to_drop_idx)
-        to_drop_ids.append(to_drop_idx+1)
-
-    table = table.drop(index = to_drop_ids)
-    table = table.set_index('index')
-    table.index.name = ''
-    return table
-
-to_drop = ['Intercept','R-squared']
- 
-tb = droptables(table,
-                to_drop)
-"""
-## write to latex 
-f = open('../Tables/latex/micro_reg_history_vol.tex', 'w')
-f.write(beginningtex)
-tb_ltx = tb.to_latex().replace('lllllllll','ccccccccc')   # hard coded here 
-#print(tb)
-f.write(tb_ltx)
-f.write(endtex)
-f.close()
-"""
-## save
-
-tb.to_excel('../Tables/micro_reg_history_vol.xlsx')
-# -
+# ### 5. Experienced volatility and risks (not used)
 
 # ###  6. Main regression
 
@@ -857,55 +651,50 @@ indep_list_ct = ['UEprobInd','UEprobAgg']
 indep_list_dc = ['HHinc','selfemp','fulltime','nlit_gr']
 
 
-# + {"code_folding": [0, 5, 52]}
+# + {"code_folding": [5, 47]}
 ## full-table for risks  
 
 rs_list = {}  ## list to store results 
-nb_spc = 6  ## number of specifications 
+nb_spc = 5  ## number of specifications 
 
 for i,mom in enumerate(dep_list):
-    ## model 1 only with experienced volatility 
-    model = smf.ols(formula = str(mom)
-                    +'~ IdExpVol+AgExpVol+AgExpUE',
-                    data = SCEM)
-    rs_list[nb_spc*i] = model.fit()
+   
+    ## model 1  age 
     
-    ## model 2 experienced vol and age 
+    model1 = smf.ols(formula = str(mom)
+                    +'~ age+age2+age3',
+                    data = SCEM)
+    rs_list[nb_spc*i+0] = model1.fit()
+    
+    ## model 2 experienced vol, age, income, education 
     
     model2 = smf.ols(formula = str(mom)
-                    +'~ IdExpVol+AgExpVol+AgExpUE+ age',
+                    +'~ age+age2+age3 + C(gender)+ C(nlit_gr)',
                     data = SCEM)
     rs_list[nb_spc*i+1] = model2.fit()
     
-    ## model 3 experienced vol, age, income, education 
+    ## model 3 + job characteristics 
     
     model3 = smf.ols(formula = str(mom)
-                    +'~ IdExpVol+AgExpVol+AgExpUE+ age + C(gender)+ C(nlit_gr)',
+                    +'~ age+age2+age3+C(gender)+ C(nlit_gr)+C(educ_gr)',
                     data = SCEM)
     rs_list[nb_spc*i+2] = model3.fit()
     
-    ## model 4 + job characteristics 
     
+    ## model 4 + job characteristics 
     model4 = smf.ols(formula = str(mom)
-                    +'~ IdExpVol+AgExpVol+AgExpUE+ age+C(gender)+ C(nlit_gr)+C(educ_gr)',
+                    +'~ age+age2+age3+C(parttime) + C(selfemp) + C(gender)+ C(HHinc_gr) + C(nlit_gr)+C(educ_gr)',
                     data = SCEM)
     rs_list[nb_spc*i+3] = model4.fit()
     
     
     ## model 5 + job characteristics 
-    model5 = smf.ols(formula = str(mom)
-                    +'~ IdExpVol+AgExpVol+AgExpUE+ age+C(parttime) + C(selfemp) + C(gender)+ C(HHinc_gr) + C(nlit_gr)+C(educ_gr)',
-                    data = SCEM)
-    rs_list[nb_spc*i+4] = model5.fit()
-    
-    
-    ## model 6 + job characteristics 
     ct_str = '+'.join([var for var in indep_list_ct])
-    model6 = smf.ols(formula = str(mom)
-                    +'~ IdExpVol+AgExpVol+AgExpUE+age+C(parttime) + C(selfemp) + C(gender)+ C(HHinc_gr) + C(nlit_gr) +C(educ_gr)+'
+    model5 = smf.ols(formula = str(mom)
+                    +'~age+age2+age3+C(parttime) + C(selfemp) + C(gender)+ C(HHinc_gr) + C(nlit_gr) +C(educ_gr)+'
                      + ct_str,
                     data = SCEM)
-    rs_list[nb_spc*i+5] = model6.fit()
+    rs_list[nb_spc*i+4] = model5.fit()
     
     
 rs_names = [rs_list[i] for i in range(len(rs_list))]
@@ -913,19 +702,9 @@ rs_names = [rs_list[i] for i in range(len(rs_list))]
 dfoutput = summary_col(rs_names,
                         float_format='%0.2f',
                         stars = True,
-                        regressor_order = [#'ExpVol',
-                                           #'ExpGr',
-                                           'IdExpVol',
-                                           #'IdExpGr',
-                                           'AgExpVol',
-                                           #'AgExpGr',
-                                           #'AgExpUEVol',
-                                           'AgExpUE',
-                                           'age',
-                                           #'C(age_gr)[T.30-39]',
-                                           #'C(age_gr)[T.40-48]',
-                                           #'C(age_gr)[T.49-57]',
-                                           #'C(age_gr)[T.>57]',
+                        regressor_order = ['age',
+                                           'age2',
+                                           'age3',
                                            'C(HHinc_gr)[T.low inc]',
                                            'C(gender)[T.male]',
                                            'C(nlit_gr)[T.low nlit]',
@@ -939,7 +718,24 @@ dfoutput = summary_col(rs_names,
 dfoutput.title = 'Perceived Income Risks'
 print(dfoutput)
 
-# + {"code_folding": [19]}
+
+# -
+
+def droptables(table,
+    to_drop):
+    table = table.reset_index()
+    to_drop_ids = []
+    for var in to_drop:
+        to_drop_idx = table[table['index']==var].index[0]
+        to_drop_ids.append(to_drop_idx)
+        to_drop_ids.append(to_drop_idx+1)
+    table = table.drop(index = to_drop_ids)
+    table = table.set_index('index')
+    table.index.name = ''
+    return table
+
+
+# + {"code_folding": []}
 ## output tables 
 
 beginningtex = """
@@ -993,9 +789,6 @@ f.close()
 
 ## save
 tb.to_excel('../Tables/micro_reg.xlsx')
-# -
-
-tb
 
 # + {"code_folding": [5, 7, 37]}
 ## full-table for expected growth, appendix 
@@ -1013,21 +806,21 @@ for i,mom in enumerate(dep_list2):
     ## model 2
     ct_str = '+'.join([var for var in indep_list_ct])
     model2 = smf.ols(formula = str(mom)
-                    +'~ C(parttime)+C(selfemp) + '
+                    +'~ age+age2+age3+C(parttime)+C(selfemp) + '
                      + ct_str,
                     data = SCEM)
     rs_list[nb_spc*i+1] = model2.fit()
     
     ## model 3 
     model3 = smf.ols(formula = str(mom)
-                    +'~ C(parttime) + C(selfemp) + C(HHinc_gr) + C(educ_gr) +'
+                    +'~age+age2+age3+ C(parttime) + C(selfemp) + C(HHinc_gr) + C(educ_gr) +'
                      + ct_str,
                     data = SCEM)
     rs_list[nb_spc*i+2] = model3.fit()
     
     ## model 4 
     model4 = smf.ols(formula = str(mom)
-                    +'~ C(parttime) + C(selfemp) + C(gender)+ C(educ_gr) + + C(HHinc_gr) +'
+                    +'~age+age2+age3+ C(parttime) + C(selfemp) + C(gender)+ C(educ_gr) + + C(HHinc_gr) +'
                      + ct_str,
                     data = SCEM)
     rs_list[nb_spc*i+3] = model4.fit()
@@ -1038,7 +831,10 @@ rs_names = [rs_list[i] for i in range(len(rs_list))]
 dfoutput2 = summary_col(rs_names,
                         float_format='%0.2f',
                         stars = True,
-                        regressor_order = ['C(parttime)[T.yes]',
+                        regressor_order = ['age',
+                                           'age2',
+                                           'age3',
+                                           'C(parttime)[T.yes]',
                                            'C(selfemp)[T.yes]',
                                            'UEprobAgg','UEprobInd',
                                            'C(HHinc_gr)[T.low inc]',
@@ -1178,7 +974,4 @@ tb_ltx = tb.to_latex().replace('llllll','cccccc')   # hard coded here
 f.write(tb_ltx)
 f.write(endtex)
 f.close()
-
-
-# -
 
