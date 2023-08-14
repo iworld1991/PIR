@@ -332,7 +332,7 @@ for i,mom in enumerate(moms):
         axes[i].set_xlabel('group by the year of birth \n (from young to old)',
               size = 15)
 plt.tight_layout()
-plt.savefig('../Graphs/ind/bar_by_age')
+#plt.savefig('../Graphs/ind/bar_by_age')
 
 # + {"code_folding": []}
 ## by cohort 
@@ -420,7 +420,7 @@ for i,mom in enumerate(moms):
               size = 15)
 plt.tight_layout()
 
-plt.savefig('../Graphs/ind/bar_by_nlit')
+#plt.savefig('../Graphs/ind/bar_by_nlit')
 # -
 
 # ### 4.1. Cross-sectional heterogeneity 
@@ -448,7 +448,7 @@ labels_list = ['expected nominal wage growth',
 SCEM['incstd'] = np.sqrt(SCEM['incvar'])
 SCEM['rincstd'] = np.sqrt(SCEM['rincvar'])
 
-# +
+# + {"code_folding": []}
 ### histograms
 
 for mom_id,mom in enumerate(mom_list):
@@ -476,78 +476,6 @@ for mom_id,mom in enumerate(mom_list):
 # -
 
 sipp_individual.describe()
-
-# + {"code_folding": [0, 3, 19]}
-## plot only perceived risks 
-
-fig,ax = plt.subplots(figsize=(8,6))
-sns.histplot(data = SCEM['rincstd'],
-             kde = True,
-             color = 'red',
-             bins = 60,
-            alpha = 0.3,
-             stat="density", 
-             fill = True,
-            label='Dist of PRs in SCE')
-
-
-## filter extreme values 
-individual_risk = sipp_individual['lwage_Y_id_shk_gr_sq'].dropna()
-lb, ub = np.percentile(individual_risk,10),np.percentile(individual_risk,70) ## exclude top and bottom 3% observations
-to_keep = (individual_risk < ub) & (individual_risk!=0)
-individual_risk_keep = individual_risk[to_keep]
-
-sns.histplot(data = individual_risk_keep,
-             kde = True,
-             color = 'blue',
-             bins = 60,
-             stat="density", 
-            alpha = 0.5,
-             fill = False,
-            label='Dist of wage volatility (SIPP)')
-
-plt.xticks(fontsize = 14)
-plt.yticks(fontsize = 14)
-plt.xlabel('PRs and Volatility in std', fontsize = 15)
-plt.legend(loc=0)
-plt.savefig('../Graphs/ind/hist_compare_PRs.jpg')
-
-# + {"code_folding": [0]}
-## plot only perceived risks 
-
-fig,ax = plt.subplots(figsize=(8,6))
-sns.histplot(data = SCEM['rincstd'],
-             kde = True,
-             color = 'red',
-             bins = 100,
-            alpha = 0.3,
-             stat="density", 
-             fill = True,
-            label='Dist of PRs in SCE')
-
-
-## filter extreme values 
-individual_risk = sipp_individual['lwage_Y_id_shk_gr_sq_pr'].dropna()
-lb, ub = np.percentile(individual_risk,10),np.percentile(individual_risk,90) ## exclude top and bottom 3% observations
-to_keep = (individual_risk < ub) & (individual_risk!=0)
-individual_risk_keep = individual_risk[to_keep]
-
-sns.histplot(data = individual_risk_keep,
-             kde = True,
-             color = 'blue',
-             bins = 100,
-             stat="density", 
-            alpha = 0.5,
-             fill = False,
-            label='Dist of fitted wage volatility (SIPP)')
-
-plt.xticks(fontsize = 14)
-plt.yticks(fontsize = 14)
-plt.xlabel('PRs and Predicted Volatility in std', 
-           fontsize = 15)
-plt.legend(loc=0)
-plt.savefig('../Graphs/ind/hist_compare_fitted_PRs.jpg')
-# -
 
 # ### 4.2. Within-group heterogeneity 
 
@@ -640,15 +568,13 @@ for mom_id,mom in enumerate(mom_list):
     plt.xticks(fontsize = 14)
     plt.yticks(fontsize = 14)
     plt.xlabel('Residuals of '+labels_list[mom_id], fontsize = 15)
-    plt.savefig('../Graphs/ind/hist_'+str(mom)+'.jpg')
+    #plt.savefig('../Graphs/ind/hist_'+str(mom)+'.jpg')
 
-# +
+# + {"code_folding": [8]}
 import joypy
 from matplotlib import cm
 
 labels=[y for y in list(SCEM.year.unique())]
-
-
 
 
 for mom_id,mom in enumerate(mom_list):
@@ -712,7 +638,7 @@ for var in vars_log:
 
 SCEM.columns
 
-# + {"code_folding": [0, 7]}
+# + {"code_folding": [36]}
 ## full-table for risks  
 
 rs_list = {}  ## list to store results 
@@ -771,7 +697,40 @@ dfoutput = summary_col(rs_names,
 dfoutput.title = 'Experienced Volatility and Perceived Income Risks'
 print(dfoutput)
 
-# + {"code_folding": [19, 40]}
+
+# +
+def droptables(table,
+              to_drop):
+    table = table.reset_index()
+    to_drop_ids = []
+
+    for var in to_drop:
+        to_drop_idx = table[table['index']==var].index[0]
+        to_drop_ids.append(to_drop_idx)
+        to_drop_ids.append(to_drop_idx+1)
+
+    table = table.drop(index = to_drop_ids)
+    table = table.set_index('index')
+    table.index.name = ''
+    return table
+
+def CatRename(table):
+    relabels = {}
+    rows = [idx for idx in table.index if ')[T.' in idx]
+    for i in range(len(rows)):
+        string = rows[i]
+        var = string.split('C(')[1].split(')[T')[0]
+        val = string.split('[T.')[1].split(']')[0]
+        if '.0' in val:
+            val = val.split('.0')[0]
+        else:
+            val = val 
+        relabels[rows[i]] = var + '=' + str(val)
+    table = table.rename(index = relabels)
+    return table 
+
+
+# + {"code_folding": []}
 ## output tables 
 
 beginningtex = """
@@ -791,59 +750,21 @@ endtex = """\\begin{tablenotes}\item Standard errors are clustered by household.
 
 ## relabel rows 
 
-def CatRename(table):
-    relabels = {}
-    rows = [idx for idx in table.index if ')[T.' in idx]
-    for i in range(len(rows)):
-        string = rows[i]
-        var = string.split('C(')[1].split(')[T')[0]
-        val = string.split('[T.')[1].split(']')[0]
-        if '.0' in val:
-            val = val.split('.0')[0]
-        else:
-            val = val 
-        relabels[rows[i]] = var + '=' + str(val)
-    table = table.rename(index = relabels)
-    return table 
-
 table = CatRename(dfoutput.tables[0])
 
 ## excluding rows that are not to be exported 
 
 ## drop the columns not wanted as well as rows below it 
 
-def droptables(table,
-              to_drop):
-    table = table.reset_index()
-    to_drop_ids = []
-
-    for var in to_drop:
-        to_drop_idx = table[table['index']==var].index[0]
-        to_drop_ids.append(to_drop_idx)
-        to_drop_ids.append(to_drop_idx+1)
-
-    table = table.drop(index = to_drop_ids)
-    table = table.set_index('index')
-    table.index.name = ''
-    return table
 
 to_drop = ['Intercept','R-squared']
  
-tb = droptables(table,
+c = droptables(table,
                 to_drop)
-"""
-## write to latex 
-f = open('../Tables/latex/micro_reg_history_vol.tex', 'w')
-f.write(beginningtex)
-tb_ltx = tb.to_latex().replace('lllllllll','ccccccccc')   # hard coded here 
-#print(tb)
-f.write(tb_ltx)
-f.write(endtex)
-f.close()
-"""
+
 ## save
 
-tb.to_excel('../Tables/micro_reg_history_vol.xlsx')
+#tb.to_excel('../Tables/micro_reg_history_vol.xlsx')
 # -
 
 # ###  6. Main regression
@@ -857,7 +778,7 @@ indep_list_ct = ['UEprobInd','UEprobAgg']
 indep_list_dc = ['HHinc','selfemp','fulltime','nlit_gr']
 
 
-# + {"code_folding": [0, 5, 52]}
+# + {"code_folding": [52]}
 ## full-table for risks  
 
 rs_list = {}  ## list to store results 
@@ -939,7 +860,7 @@ dfoutput = summary_col(rs_names,
 dfoutput.title = 'Perceived Income Risks'
 print(dfoutput)
 
-# + {"code_folding": [19]}
+# + {"code_folding": []}
 ## output tables 
 
 beginningtex = """
@@ -957,22 +878,7 @@ endtex = """\\begin{tablenotes}\item Standard errors are clustered by household.
 \\end{adjustbox}
 \\end{table}"""
 
-## relabel rows 
 
-def CatRename(table):
-    relabels = {}
-    rows = [idx for idx in table.index if ')[T.' in idx]
-    for i in range(len(rows)):
-        string = rows[i]
-        var = string.split('C(')[1].split(')[T')[0]
-        val = string.split('[T.')[1].split(']')[0]
-        if '.0' in val:
-            val = val.split('.0')[0]
-        else:
-            val = val 
-        relabels[rows[i]] = var + '=' + str(val)
-    table = table.rename(index = relabels)
-    return table 
 table = CatRename(dfoutput.tables[0])
 
 ## excluding rows that are not to be exported 
@@ -988,7 +894,7 @@ f.write(beginningtex)
 tb_ltx = tb.to_latex().replace('lllllllll','ccccccccc')   # hard coded here 
 #print(tb)
 f.write(tb_ltx)
-f.write(endtex)
+#f.write(endtex)
 f.close()
 
 ## save
@@ -1123,7 +1029,7 @@ dfoutput = summary_col(rs_names,
                                   'R2':lambda x: "{:.2f}".format(x.rsquared)})
 dfoutput.title = 'Perceived Income Risks and Household Spending'
 print(dfoutput)
-# + {"code_folding": [20]}
+# + {"code_folding": []}
 ## output tables 
 
 beginningtex = """
@@ -1144,20 +1050,6 @@ endtex = """\\begin{tablenotes}\item Standard errors are clustered by household.
 
 ## relabel rows 
 
-def CatRename(table):
-    relabels = {}
-    rows = [idx for idx in table.index if ')[T.' in idx]
-    for i in range(len(rows)):
-        string = rows[i]
-        var = string.split('C(')[1].split(')[T')[0]
-        val = string.split('[T.')[1].split(']')[0]
-        if '.0' in val:
-            val = val.split('.0')[0]
-        else:
-            val = val 
-        relabels[rows[i]] = var + '=' + str(val)
-    table = table.rename(index = relabels)
-    return table 
 table = CatRename(dfoutput.tables[0])
 
 ## excluding rows that are not to be exported 
@@ -1168,16 +1060,16 @@ tb = droptables(table,
                 to_drop)
 
 ## excel version 
-tb.to_excel('../Tables/spending_reg.xlsx')
+#tb.to_excel('../Tables/spending_reg.xlsx')
 
 ## write to latex 
-f = open('../Tables/latex/spending_reg.tex', 'w')
-f.write(beginningtex)
-tb_ltx = tb.to_latex().replace('llllll','cccccc')   # hard coded here 
+#f = open('../Tables/latex/spending_reg.tex', 'w')
+#f.write(beginningtex)
+#tb_ltx = tb.to_latex().replace('llllll','cccccc')   # hard coded here 
 #print(tb)
-f.write(tb_ltx)
-f.write(endtex)
-f.close()
+#f.write(tb_ltx)
+#f.write(endtex)
+#f.close()
 
 
 # -
