@@ -635,7 +635,7 @@ for mom_id,mom in enumerate(mom_list):
                               title=labels_list[mom_id],
                               colormap=cm.Wistia
                              )
-    plt.savefig('../Graphs/ind/joy_'+str(mom)+'.jpg')
+    #plt.savefig('../Graphs/ind/joy_'+str(mom)+'.jpg')
 # -
 
 # ### 5. Experienced volatility and risks (not used)
