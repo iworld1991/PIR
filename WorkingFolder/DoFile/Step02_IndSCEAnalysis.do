@@ -235,7 +235,6 @@ gen EUprobInd = Q22new/100
 ** merge other data ***
 **************************
 
-
 **macro data
 merge m:1 date using "${mainfolder}/OtherData/macroM.dta",keep(master match)
 rename cpi CPIAU
@@ -556,41 +555,6 @@ gen lwage_1y_shk_gr_var = lwage_1y_shk_gr_sd^2
 label var lwage_1y_shk_gr_sd "var of log shocks"
 
 
-/*
-***********************************************
-** summary chart of unconditional wages ********
-************************************************
-
-preserve
-
-collapse (mean) lwage_1y lwage_1y_sd, by(date year month) 
-** average log wage whole sample
-twoway  (connected lwage_1y date) if lwage_1y!=., title("The mean of log real wages") 
-graph export "${graph_folder}/log_wage_av.png", as(png) replace 
-
-** std log wage whole sample
-twoway  (connected lwage_1y_sd date) if lwage_1y_sd!=., title("The standard deviation of log real wages") 
-graph export "${graph_folder}/log_wage_sd.png", as(png) replace 
-restore 
-
-
-************************************************
-** summary chart of conditional wages ********
-************************************************
-
-preserve
-
-collapse (mean) lwage_1y_shk_gr lwage_1y_shk_gr_sd, by(year month date) 
-** average log wage shock whole sample
-twoway  (connected lwage_1y_shk_gr date) if lwage_1y_shk_gr!=., title("The mean of log real wage shocks") 
-graph export "${graph_folder}/log_wage_shk_gr.png", as(png) replace 
-
-** std log wage whole sample
-twoway  (connected lwage_1y_shk_gr_sd date) if lwage_1y_shk_gr_sd!=., title("The standard deviation of log real wage shocks") 
-graph export "${graph_folder}/log_wage_shk_gr_sd.png", as(png) replace
-restore 
-*/
-
 ***************************************
 **** earning level and risk perceptions
 ***************************************
@@ -614,80 +578,10 @@ graph bar rincsd, ///
 		   ytitle("Average perceived risk (std)") 
 graph export "${sum_graph_folder}/boxplot_rvar_earning.png", as(png) replace 
 
-graph bar rincsd rincsd_sub_rl, ///
-		   bar(1, color(red) ) ///
-		   bar(2, lcolor(navy) fcolor(gs15) lpattern(dash) lwidth(medium)) ///
-		   title("Perceived and calibrated risk",size(med)) ///
-		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "perceived risk") label(2 "calibrated risk") )
-
-graph export "${sum_graph_folder}/boxplot_rvar_compare_simple.png", as(png) replace 
-
-
-graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
-		   bar(1, color(navy) ) ///
-		   bar(2, color(khaki)) ///
-		   bar(3, color(gray)) ///
-		   bar(4, color(cranberry)) ///
-		   bar(5, color(orange)) ///
-		   title("Perceived and calibrated risk by education",size(med)) ///
-		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "calibrated risk") label(5 "calibrated permanent risk"))
-
-graph export "${sum_graph_folder}/boxplot_rvar_compare.png", as(png) replace 
-
-graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl if educ!=1 & age_5yr>25, ///
-           over(age_5yr) over(gender,relabel(1 "Male" 2 "Female")) ///
-		   bar(1, color(navy)) ///
-		   bar(2, color(khaki)) ///
-		   bar(3, color(gray)) ///
-		   bar(4, color(cranberry)) ///
-		   bar(5, color(orange)) ///
-		   title("Perceived and calibrated risk by age",size(med)) ///
-		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility") label(4 "calibrated risk") label(5 "calibrated permanent risk"))
-
-graph export "${sum_graph_folder}/boxplot_rvar_compare_age.png", as(png) replace 
-
-
-graph bar rincsd rincsd_sub_rl, ///
-           over(educ,relabel(1 "HS dropout" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
-		   bar(1, fcolor(red)) ///
-		   bar(2, lcolor(navy) fcolor(gs15) lpattern(dash) lwidth(medium)) ///
-		   title("Perceived and calibrated risk by education",size(med)) ///
-		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "perceived risk") label(2 "calibrated risk"))
-
-graph export "${sum_graph_folder}/boxplot_rvar_compare_educ_simple.png", as(png) replace 
-
-graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
-           over(educ,relabel(1 "HS dropout" 2 "HS" 3 "College")) over(gender,relabel(1 "Male" 2 "Female")) ///
-		   bar(1, color(navy) ) ///
-		   bar(2, color(khaki)) ///
-		   bar(3, color(gray)) ///
-		   bar(4, color(cranberry)) ///
-		   bar(5, color(orange)) ///
-		   title("Perceived and calibrated risk by education",size(med)) ///
-		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "calibrated risk") label(5 "calibrated permanent risk"))
-
-graph export "${sum_graph_folder}/boxplot_rvar_compare_educ.png", as(png) replace 
-
-
-********************************************************
-** Compare risks between perception and realization **
-********************************************************
-
-tabout gender edu_g age_5 using "${sum_table_folder}/risks_compare.csv", ///
-            c(mean rincsd median rincsd mean lwage_shk_gr_sd_age_sex mean rincsd_sub_rl mean psd2_sub_rl mean tsd2_sub_rl ) ///
-			f(3c 3c 3c 3c 3c 4c 4c) ///
-			clab(PR(mean) PR(median) Volatility(median) RealizedRisk PRisk TRisk) ///
-			sum npos(tufte) rep style(csv) bt cl2(2-4 5-6) cltr2(.75em 1.5em) 
 
 ***************************************
 **** unemployment experience and risk perceptions
 ***************************************
-
 
 graph bar rincsd, over(u2e,relabel(1 "other" 2 "recently unemployed")) ///
          title("Perceived risk by unemployment experience") ///
@@ -700,8 +594,7 @@ graph bar rincsd, over(u2em12,relabel(1 "other" 2 "unemployed within past year")
 		 ytitle("Average perceived risk (std)") 
 graph export "${sum_graph_folder}/boxplot_rvar_ue_peperience_m12.png", as(png) replace 
 
-
-
+/*
 ************************************************
 ** exploring seasonal patterns ********
 ************************************************
@@ -778,6 +671,7 @@ esttab using "${sum_table_folder}/ind/month_of_year_effect.csv", ///
 	   replace
 
 eststo clear
+*/
 
 ************************************************
 ** time series dynamics of risk perceptions *****
