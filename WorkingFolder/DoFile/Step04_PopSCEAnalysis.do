@@ -91,7 +91,7 @@ graph export "${sum_graph_folder}/median_`mom'.png",as(png) replace
 
 
 *********************************************************
-**  Times Series Plots  of PR agains estimate risks **
+**  Times Series Plots of PR agains estimate risks **
 *******************************************************
 
 ** real PR 

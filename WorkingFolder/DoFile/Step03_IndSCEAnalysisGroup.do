@@ -100,15 +100,6 @@ foreach var in `Moments'{
 	  replace `var' = . if `var' <`var'pl | (`var' >`var'pu & `var'!=.)
 }
 
-/*
-* other thresholds 
-
-foreach var in `Moments'{
-      egen `var'l_truc=pctile(`var'),p(8)
-	  egen `var'u_truc=pctile(`var'),p(92)
-	  replace `var' = . if `var' <`var'l_truc | (`var' >`var'u_truc & `var'!=.)
-}
-*/
 
 *****************************
 *** generate other vars *****
@@ -175,29 +166,6 @@ label define nlilb 0 "low" 1 "high"
 label value nlit_g nlitlb
 
 local group_vars byear_g age_g edu_g HHinc_g fbetter nlit_g
-
-/*
-*********************************
-*** bar charts *****
-**********************************
-
-graph bar incvar, ///
-           over(HHinc,relabel(1 "<10k" 2 "<20k" 3 "<30k" 4 "<40k" 5 "<50k" 6 "<60k" 7 "<75k" 8 "<100k" 9 "<150k" 10 "<200k" 11 ">200k")) ///
-		   bar(1, color(navy)) ///
-		   title("Perceived Risk by Household Income") ///
-		   b1title("Household income") ///
-		   ytitle("Average perceived risk") 
-graph export "${sum_graph_folder}/boxplot_var_HHinc_stata.png", as(png) replace 
-
-
-graph bar rincvar, ///
-           over(HHinc,relabel(1 "<10k" 2 "<20k" 3 "<30k" 4 "<40k" 5 "<50k" 6 "<60k" 7 "<75k" 8 "<100k" 9 "<150k" 10 "<200k" 11 ">200k")) ///
-		   bar(1, color(navy)) ///
-		   title("Perceived Real Income Risk by Household Income") ///
-		   b1title("Household income") ///
-		   ytitle("Average perceived risk of real income") 
-graph export "${sum_graph_folder}/boxplot_rvar_HHinc_stata.png", as(png) replace 
-*/
 
 *********************************
 *** generate group summary data file *****
@@ -279,95 +247,12 @@ collapse `SCEgroup', by(byear_5yr edu_g gender)
 save "${folder}/SCE/incvar_by_byear_5yr_edu_gender.dta",replace
 restore 
 
-/*
-**********************************
-*** tables and hists of Vars *****
-**********************************
-
-
-local Moments incmean incvar inciqr rincmean rincvar incskew
-
-foreach gp in `group_vars' {
-tabstat `Moments', st(p10 p50 p90) by(`gp')
-}
-
-
-foreach gp in `group_vars' {
-table `gp', c(median incvar mean incvar median rincvar mean rincvar) by(year)
-}
-
-
-** histograms 
-
-foreach mom in `Moments'{
-
-twoway (hist `mom',fcolor(ltblue) lcolor(none)), ///
-	   ytitle("") ///
-	   title("`mom'")
-graph export "${sum_graph_folder}/hist/hist_`mom'.png",as(png) replace  
-
-}
-
-
-* 4 groups 
-foreach gp in byear_g{
-foreach mom in `Moments'{
-twoway (hist `mom' if `gp'==0,fcolor(gs15) lcolor("")) /// 
-       (hist `mom' if `gp'==1,fcolor(ltblue) lcolor("")) ///
-	   (hist `mom' if `gp'==2,fcolor(red) lcolor("")) ///
-	   (hist `mom' if `gp'==3,fcolor(green) lcolor("")), ///
-	   xtitle("") ///
-	   ytitle("") ///
-	   title("`mom'") ///
-	   legend(label(1 `gp'=0) label(2 `gp'=1) label(3 `gp'=2) label(4 `gp'=3) col(1))
-
-graph export "${sum_graph_folder}/hist/hist_`mom'_`gp'.png",as(png) replace  
-}
-}
-
-* 3 groups 
-foreach gp in HHinc_g age_g{
-foreach mom in `Moments'{
-
-twoway (hist `mom' if `gp'==0,fcolor(gs15) lcolor("")) /// 
-       (hist `mom' if `gp'==1,fcolor(ltblue) lcolor("")) ///
-	   (hist `mom' if `gp'==2,fcolor(red) lcolor("")), ///
-	   xtitle("") ///
-	   ytitle("") ///
-	   title("`mom'") ///
-	   legend(label(1 `gp'=0) label(2 `gp'=1) label(3 `gp'=2) col(1))
-
-graph export "${sum_graph_folder}/hist/hist_`mom'_`gp'.png",as(png) replace  
-
-}
-}
-
-* 2 groups 
-
-
-foreach gp in edu_g fbetter{
-foreach mom in `Moments'{
-
-twoway (hist `mom' if `gp'==0,fcolor(gs15) lcolor("")) /// 
-       (hist `mom' if `gp'==1,fcolor(ltblue) lcolor("")), ///
-	   xtitle("") ///
-	   ytitle("") ///
-	   title("`mom'") ///
-	   legend(label(1 `gp'=0) label(2 `gp'=1) col(1))
-
-graph export "${sum_graph_folder}/hist/hist_`mom'_`gp'.png",as(png) replace  
-
-}
-}
-*/
-
 
 *******************************************
 *** comparison with SIPP realizations *****
 ********************************************
 
 gen YM = year*100+month
-
 
 
 ** sub sample
