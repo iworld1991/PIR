@@ -975,9 +975,9 @@ def solve_and_simulate(model,
 
 sim_moments = solve_and_simulate(lc_mkv)
 
-# ### Plotting all simulated results
+# ### Plotting the simulated results of an example model 
 
-# +
+# + code_folding=[0]
 ## Lorenz curve of steady state wealth distribution
 
 fig, ax = plt.subplots(figsize=(5,5))
@@ -993,7 +993,8 @@ ax.legend()
 plt.xlim([0,1])
 plt.ylim([0,1])
 
-# +
+
+## wealth distribution
 
 fig, ax = plt.subplots(figsize=(6,4))
 ax.set_title('Wealth distribution')
@@ -1004,7 +1005,6 @@ ax.set_xlabel(r'$a$')
 ax.set_ylabel(r'$prob(a)$')
 
 
-# + code_folding=[]
 ## plot life cycle profile
 age_lc =  np.arange(25,86)
 fig, ax = plt.subplots(figsize=(10,6))
@@ -1016,4 +1016,49 @@ ax.plot(age_lc[1:-1],
 ax.set_xlabel('Age')
 ax.set_ylabel('Log wealth in model')
 ax.legend(loc=1)
+
+# -
+
+# ### Objective function of indirect inference
+
+# + code_folding=[0]
+def model_data_diff_func(model,
+                  data_moments_dict,
+                  moments_choice):
+    model_sim_moments = solve_and_simulate(model)
+    distance_list = [np.array(data_moments_dict[mom])-np.array(model_sim_moments[mom]) for mom in moments_choice]
+    # Initialize an empty list to store the flattened elements
+    flattened_elements = []
+
+    # Flatten the elements into the list
+    for arr in distance_list:
+        if arr.ndim == 0:  # Zero-dimensional (scalar) array
+            flattened_elements.append(arr.item())
+        else:
+            flattened_elements.extend(arr)
+
+    # Convert the list of flattened elements into a numpy array
+    flattened_array = np.array(flattened_elements)
+    
+    ## calculate distance as a scalor
+    distance = np.linalg.norm(flattened_array)
+    return distance
+
+
+# + code_folding=[]
+## create some fake data moments for experiments 
+data_moments_dict = sim_moments
+moments_choice = ['A',
+                  'A_life']
+
+# + code_folding=[]
+print('The distance with the model-simulated moments should be zer...')
+
+distance_test = model_data_diff_func(lc_mkv,
+              data_moments_dict,
+              moments_choice)
+
+print('The distance of the moments is '+str(distance_test))
+# -
+
 
