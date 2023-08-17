@@ -19,20 +19,21 @@
 # - author: Tao Wang
 # - this is a derivative notebook from the paper ["Perceived income risks"](https://github.com/iworld1991/PIR/blob/master/PIR.pdf)
 #
-# This notebook includes the code that estimates preference parameters based on the simulated stationary distribution of households by mactching chosen moments of the model and data, including 
-#    - mean/median wealth
+# This notebook includes the code that estimates preference parameters based on simulated stationary distributions of households by mactching chosen moments of the model and data, including but not limiting to  
+#    - mean/median wealth to (permanent) income ratio
 #    - lorenz curve (wealth quantiles)
 #    - life cycle wealth to income ratio
 #    - life cycle consumption profiles
 #    - ...
 #       
-# The general structure of the codes is the following 
-#    - a wrapper function that takes household block as input, and parameters to be estimated as inputs and then spit out the model simulated moments stored in a dictionary
-#    - an objective function that takes parameters only and generate moments distances with data 
+# The general structure of the code is the following 
+#    - __solve_and_simulate__, a wrapper function that takes household block as input, and parameters to be estimated as inputs and then spit out the model simulated moments stored in a dictionary;
+#    - __model_data_diff__, a general function that takes a model, data moments and moment choices, and generate moments distance between model and data ;
+#    - objective function specific to the parameters to be estimated;
 #    - a general estimtor function that allows users to choose consumer model, data moments and parameters to estimate. 
 #   
 # A few additional features:
-#    - the model implied moments could include cross-sectional distribution of income expectations/income risks and expected consumption growth. 
+#    - the model implied moments could include cross-sectional distribution of income expectations/income risks and expected consumption growth.
 #    - more importantly, the covariance of the two.  
 
 from psutil import Process 
@@ -50,7 +51,7 @@ import scipy.optimize as op
 from matplotlib import cm
 import joypy
 from copy import copy
-from Utility import cal_ss_2markov,lorenz_curve, gini
+from Utility import cal_ss_2markov,lorenz_curve, gini,h2m_ratio,wealth_share
 from Utility import mean_preserving_spread
 from Utility import jump_to_grid,jump_to_grid_fast,gen_tran_matrix,gen_tran_matrix_fast
 from Utility import stationary_age_dist
@@ -104,9 +105,9 @@ lc_paras_q = copy(lc_paras_Q)
 print(lc_paras_y)
 
 
-# ### Solve the individual consuption/saving model
+# ### Initialize a consuption/saving model
 
-# + code_folding=[0, 17]
+# + code_folding=[0, 7, 17]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -524,7 +525,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 17, 111, 245, 268, 287, 298, 328]
+# + code_folding=[0, 5, 17, 111, 245, 268, 299, 329]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -816,6 +817,7 @@ class HH_OLG_Markov:
                                   dist_lists,
                                   ss_dstn,
                                   age_dist_sparse)
+            
             A_life.append(A_this_age)
             
         self.A_life = A_life
@@ -886,7 +888,7 @@ class HH_OLG_Markov:
             
             return share_agents_cp,share_cp
 
-# + code_folding=[]
+# + code_folding=[0]
 ## nb of grids used for transition matrix  
 n_m = 60
 n_p = 50
@@ -897,7 +899,7 @@ n_p = 50
 
 # ### Solve and simulate a model 
 
-# + code_folding=[0]
+# + code_folding=[]
 def solve_and_simulate(model,
                        n_m = n_m,
                        n_p = n_p):
@@ -942,8 +944,8 @@ def solve_and_simulate(model,
 
     ap_grid_dist = HH.ap_grid_dist
     ap_pdfs_dist = HH.ap_pdfs_dist
-
-
+    
+    
     ## life cycle 
     HH.AggregatebyAge()
 
@@ -952,7 +954,8 @@ def solve_and_simulate(model,
     ## get the within-age distribution 
     HH.get_lifecycle_dist()
     ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
-             
+    
+    
     ## store all PE results
     model_moments =  {'A':HH.A,
                      'A_norm': HH.A_norm,
@@ -975,58 +978,264 @@ def solve_and_simulate(model,
 
 sim_moments = solve_and_simulate(lc_mkv)
 
-# ### Plotting the simulated results of an example model 
+# ### Comapre the model moments and SCF Data
 
-# + code_folding=[0]
-## Lorenz curve of steady state wealth distribution
+# + code_folding=[]
+## get the wealth distribution from SCF (net worth)
 
-fig, ax = plt.subplots(figsize=(5,5))
-ax.plot(sim_moments['share_agents_ap'],
-        sim_moments['share_ap'], 
-        'r--',
-        label='Model'+', Gini={:.2f}'.format(sim_moments['gini']))
-ax.plot(sim_moments['share_agents_ap'],
-        sim_moments['share_agents_ap'], 
-        'k-',
-        label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
+SCF2016 = pd.read_stata('rscfp2016.dta')
+
+## some filters of the data 
+SCF2016 = SCF2016.drop_duplicates(subset=['yy1'])
+SCF2016 = SCF2016[(SCF2016['age']>=25) & (SCF2016['age']<=85)]
+SCF2016 = SCF2016[SCF2016['income']>0]
+SCF2016 = SCF2016[SCF2016['norminc']>0]
+
+## redefine networth 
+SCF2016 = SCF2016[SCF2016['networth']<SCF2016['networth'].quantile(0.95)]
+#SCF2016 = SCF2016[SCF2016['networth']>=0]
+
+## liquid net wealth
+#SCF2016['lqwealth'] = SCF2016['liq']+SCF2016['govtbnd']- SCF2016['ccbal']
+SCF2016['lqwealth'] = SCF2016['liq']+SCF2016['govtbnd']+SCF2016['nmmf']-SCF2016['stmutf']-SCF2016['obmutf'] - SCF2016['ccbal'] 
+#SCF2016['lqwealth'] = SCF2016['liq']+SCF2016['govtbnd']+SCF2016['nmmf'] - SCF2016['ccbal'] 
+
+## exclude negative liquid wealth and top 5% net wealth
+SCF2016 = SCF2016[SCF2016['lqwealth']>=0]
+
+## wealth 2 income ratio 
+SCF2016['w2income'] = SCF2016['networth']/ SCF2016['norminc']
+## liquid wealth 2 income ratio
+SCF2016['lw2income'] = SCF2016['lqwealth']/ SCF2016['norminc']
+
+## get all arrays 
+
+SCF_inc, SCF_inc_weights = np.array(SCF2016['norminc']), np.array(SCF2016['wgt'])
+
+SCF_wealth, SCF_weights = np.array(SCF2016['networth']), np.array(SCF2016['wgt'])
+SCF_w2inc, SCF_w2incweights = np.array(SCF2016['w2income']), np.array(SCF2016['wgt'])
+
+SCF_lqwealth, SCF_lqweights = np.array(SCF2016['lqwealth']), np.array(SCF2016['wgt'])
+SCF_lqw2inc, SCF_lqw2incweights = np.array(SCF2016['lw2income']), np.array(SCF2016['wgt'])
+
+## get the lorenz curve weights from SCF 
+
+SCF_inc_sort_id = SCF_inc.argsort()
+SCF_inc_sort = SCF_inc[SCF_inc_sort_id]
+SCF_inc_weights_sort = SCF_inc_weights[SCF_inc_sort_id]
+SCF_inc_weights_sort_norm = SCF_inc_weights_sort/SCF_inc_weights_sort.sum()
+
+SCF_wealth_sort_id = SCF_wealth.argsort()
+SCF_wealth_sort = SCF_wealth[SCF_wealth_sort_id]
+SCF_weights_sort = SCF_weights[SCF_wealth_sort_id]
+SCF_weights_sort_norm = SCF_weights_sort/SCF_weights_sort.sum()
+
+SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
+                                                 SCF_weights_sort_norm,
+                                                 nb_share_grid = 200)
+
+## get the lorenz curve weights of liquid wealth from SCF 
+SCF_lqwealth_sort_id = SCF_lqwealth.argsort()
+SCF_lqwealth_sort = SCF_lqwealth[SCF_lqwealth_sort_id]
+SCF_lqweights_sort = SCF_lqweights[SCF_lqwealth_sort_id]
+SCF_lqweights_sort_norm = SCF_lqweights_sort/SCF_lqweights_sort.sum()
+
+SCF_lq_share_agents_ap, SCF_lq_share_ap = lorenz_curve(SCF_lqwealth_sort,
+                                                 SCF_lqweights_sort_norm,
+                                                 nb_share_grid = 200)
+
+## get the weights of wealth to income ratio from SCF
+
+SCF_w2inc_sort_id = SCF_w2inc.argsort()
+SCF_w2inc_sort = SCF_w2inc[SCF_w2inc_sort_id]
+SCF_w2incweights_sort = SCF_w2incweights[SCF_w2inc_sort_id]
+SCF_w2incweights_sort_norm = SCF_w2incweights_sort/SCF_w2incweights_sort.sum()
 
 
+## get the weights of liquid wealth to income ratio from SCF
+
+SCF_lqw2inc_sort_id = SCF_lqw2inc.argsort()
+SCF_lqw2inc_sort = SCF_lqw2inc[SCF_lqw2inc_sort_id]
+SCF_lqw2incweights_sort = SCF_lqw2incweights[SCF_lqw2inc_sort_id]
+SCF_lqw2incweights_sort_norm = SCF_lqw2incweights_sort/SCF_lqw2incweights_sort.sum()
+
+## gini 
+
+gini_SCF = gini(SCF_share_agents_ap,
+                 SCF_share_ap)
+
+gini_lq_SCF = gini(SCF_lq_share_agents_ap,
+                 SCF_lq_share_ap)
+
+
+## age profile 
+
+SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
+
+SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
+SCF_profile['mv_lqwealth'] = SCF_profile['av_lqwealth'].rolling(3).mean()
+
+
+##h2m ratio
+h2m_cut_off = round(1/24,2)
+
+h2m_lq_share_SCF = h2m_ratio(SCF_lqw2inc_sort,
+                          SCF_lqw2incweights_sort_norm,
+                          h2m_cut_off)
+
+print('H2M ratio liquid asset in SCF is:',(h2m_lq_share_SCF))
+
+
+h2m_share_SCF = h2m_ratio(SCF_w2inc_sort,
+                          SCF_w2incweights_sort_norm,
+                          h2m_cut_off)
+
+print('H2M ratio networth in SCF is:',(h2m_share_SCF))
+
+## wealth shares
+
+top_shares = [0.1,0.3,0.5,0.8]
+
+for top_share in top_shares:
+    wealth_share_this = wealth_share(SCF_lqwealth_sort,
+                         SCF_lqweights_sort_norm,
+                         top_agents_share=top_share)
+    print('Wealth share of top {} of households in SCF'.format(top_share),str(wealth_share_this))
+    
+## income/wealth 
+inc_av = np.dot(SCF_inc_sort,
+               SCF_inc_weights_sort_norm)
+
+print('Average permanent income in SCF is $', str(inc_av))
+
+w_av = np.dot(SCF_wealth_sort,
+              SCF_weights_sort_norm)
+
+print('Average net worth in SCF is $', str(w_av))
+
+w2inc_av0 = w_av/inc_av
+print('Ratio of average net worth to average permanent income in SCF is ', str(w2inc_av0))
+
+
+lqw_av = np.dot(SCF_lqwealth_sort,
+                SCF_lqweights_sort_norm)
+
+print('Average liquid wealth in SCF is $', str(lqw_av))
+
+lqw2inc_av0 = lqw_av/inc_av
+print('Ratio of average liquid wealth to average permanent income in SCF is ', str(lqw2inc_av0))
+
+
+lqw2inc_av = np.dot(SCF_w2inc_sort,
+                    SCF_w2incweights_sort_norm)
+
+print('Average networth to permanent income ratio in SCF is ', str(lqw2inc_av))
+
+lqw2inc_av = np.dot(SCF_lqw2inc_sort,
+                    SCF_lqw2incweights_sort_norm)
+
+print('Average net liquid wealth to permanent income ratio in SCF is ', str(lqw2inc_av))
+
+
+SCF_liq_dict = {}
+
+SCF_liq_dict['share_agents_ap'],SCF_liq_dict['share_ap'] = SCF_share_agents_ap, SCF_share_ap 
+
+SCF_liq_dict['gini'] = gini_lq_SCF
+
+for top_share in top_shares:
+    wealth_share_this = wealth_share(SCF_lqwealth_sort,
+                                     SCF_lqweights_sort_norm,
+                                     top_agents_share=top_share)
+    SCF_liq_dict['Top {}'.format(top_share)] = wealth_share_this
+SCF_liq_h2m_share = h2m_ratio(SCF_lqw2inc_sort,
+                      SCF_lqw2incweights_sort_norm,
+                      h2m_cut_off)
+
+SCF_liq_dict['A_norm'] = lqw2inc_av0
+
+SCF_liq_dict['H2M share'] = SCF_liq_h2m_share
+
+SCF_liq_dict['A_life'] = np.array(SCF_profile['av_lqwealth'][:-1])/np.array(SCF_profile['av_lqwealth'])[0]
+### normalized the life cycle wealth by the first observations 
+
+
+# + code_folding=[1, 5]
+plt.title('Lorenz Curve')
+plt.plot(SCF_liq_dict['share_agents_ap'],
+         SCF_liq_dict['share_ap'],
+         'k-',
+         label='data')
+plt.plot(sim_moments['share_agents_ap'],
+         sim_moments['share_ap'],
+         'r-o',
+         label='model')
+plt.legend(loc=1)
+
+# + code_folding=[4, 11, 12]
 ## wealth distribution
 
-fig, ax = plt.subplots(figsize=(6,4))
-ax.set_title('Wealth distribution')
-ax.plot(np.log(sim_moments['ap_grid_dist']+1e-5),
-         sim_moments['ap_pdfs_dist'])
+## first make comparable bins and probabilities 
 
-ax.set_xlabel(r'$a$')
-ax.set_ylabel(r'$prob(a)$')
+n_SCF,bins_SCF,_ = plt.hist(np.log(SCF_lqwealth_sort+1e-4),
+                             weights = SCF_lqweights_sort_norm,
+                             density=True,
+                             bins=300,
+                            color='black',
+                            alpha=0.3,
+                           label='data')
+n_model,bins_model,_ = plt.hist(np.log(sim_moments['ap_grid_dist']+1e-4),
+                                weights = sim_moments['ap_pdfs_dist'],
+                                 density=True,
+                                bins=300,
+                                alpha=0.9,
+                                color='red',
+                                label='model')
+plt.legend(loc=0)
 
 
-## plot life cycle profile
-age_lc =  np.arange(25,86)
-fig, ax = plt.subplots(figsize=(10,6))
-plt.title('Life cycle profile of wealth')
-ax.plot(age_lc[1:-1],
-       np.log(sim_moments['A_life'][:-1]),
-       'r-o',
-       label='model')
-ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth in model')
-ax.legend(loc=1)
+# + code_folding=[0, 5, 8]
+def simple_moving_average(data, window_size):
+    return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
+
+## life cycle pattern 
+plt.title('Life Cycle Liquid Wealth Profile')
+plt.plot(simple_moving_average(SCF_liq_dict['A_life'],6),
+         'k-',
+         label='data')
+plt.plot(sim_moments['A_life'],
+         'r-o',
+         label='model')
+plt.legend(loc=1)
+
 
 # -
 
 # ### Objective function of indirect inference
 
 # + code_folding=[0]
-def model_data_diff_func(model,
-                  data_moments_dict,
-                  moments_choice):
+def model_data_diff(model,
+                          data_moments_dict,
+                          moments_choice):
     model_sim_moments = solve_and_simulate(model)
+    
+    ## get wealth shares 
+    wealth_share_moms = [mom for mom in moments_choice if 'Top' in mom]
+    print('Shares:'+str(wealth_share_moms))
+
+    top_shares = [float(mom.replace('Top ','')) for mom in moments_choice if 'Top' in mom]
+    
+    print('Shares:'+str(top_shares))
+    ## to deal with wealth shares for given cut offs 
+    for top_share in top_shares:
+        wealth_share_this = wealth_share(model_sim_moments['ap_grid_dist'],
+                                        model_sim_moments['ap_pdfs_dist'],
+                                     top_agents_share = top_share)
+        model_sim_moments['Top {}'.format(top_share)] = wealth_share_this
+        
+        
     distance_list = [np.array(data_moments_dict[mom])-np.array(model_sim_moments[mom]) for mom in moments_choice]
+
     # Initialize an empty list to store the flattened elements
     flattened_elements = []
 
@@ -1044,21 +1253,66 @@ def model_data_diff_func(model,
     distance = np.linalg.norm(flattened_array)
     return distance
 
-
-# + code_folding=[]
+# + code_folding=[0, 2]
 ## create some fake data moments for experiments 
-data_moments_dict = sim_moments
-moments_choice = ['A',
-                  'A_life']
+
+moments_choice = ['A_norm',
+                  'Top 0.3',
+                  'Top 0.5',
+                  'Top 0.8',
+                  #'gini'
+                 #'A_life'
+                 ]
+
+distance_SCF = model_data_diff(lc_mkv,
+                               SCF_liq_dict,
+                               moments_choice)
+
+print('The moment distance between model and data is '+str(distance_SCF))
+# -
+
+print('SCF moments: '+str(SCF_liq_dict['A_norm']))
+print('Model simulated moments: '+str(sim_moments['A_norm']))
+
+
+# + code_folding=[8]
+### objective funcitons for different parameters 
+
+def objective_est_beta_point(β):
+    lc_mkv.β = β
+    return model_data_diff(lc_mkv,
+                           SCF_liq_dict,
+                           moments_choice)
+
+def objective_est_rho_point(ρ):
+    lc_mkv.ρ = ρ
+    return model_data_diff(lc_mkv,
+                           SCF_liq_dict,
+                           moments_choice)
+
+
+# -
+
+SCF_liq_dict
+
+## the objective function as a function of 
+objective_est_beta_point(0.98)
 
 # + code_folding=[]
-print('The distance with the model-simulated moments should be zer...')
+## different risk aversion coefficients 
 
-distance_test = model_data_diff_func(lc_mkv,
-              data_moments_dict,
-              moments_choice)
+ρ_list = [1.01,
+          2,
+          3]
 
-print('The distance of the moments is '+str(distance_test))
+ρ_distance_list = []
+
+for ρ in ρ_list:
+    ρ_distance_list.append(objective_est_rho_point(ρ))
+
+plt.plot(ρ_list,
+         ρ_distance_list,
+        '*')
 # -
 
 
