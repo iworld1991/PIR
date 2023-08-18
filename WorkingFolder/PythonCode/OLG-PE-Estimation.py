@@ -22,7 +22,7 @@
 # This notebook includes the code that estimates preference parameters based on simulated stationary distributions of households by mactching chosen moments of the model and data, including but not limiting to  
 #    - mean/median wealth to (permanent) income ratio
 #    - lorenz curve (wealth quantiles)
-#    - life cycle wealth to income ratio
+#    - life cycle wealth profile
 #    - life cycle consumption profiles
 #    - ...
 #       
@@ -899,7 +899,7 @@ n_p = 50
 
 # ### Solve and simulate a model 
 
-# + code_folding=[]
+# + code_folding=[0, 58]
 def solve_and_simulate(model,
                        n_m = n_m,
                        n_p = n_p):
@@ -957,8 +957,9 @@ def solve_and_simulate(model,
     
     
     ## store all PE results
+    
     model_moments =  {'A':HH.A,
-                     'A_norm': HH.A_norm,
+                      'A_norm': HH.A_norm,
                       'A_life': HH.A_life,
                       'share_agents_ap':share_agents_ap,
                       'share_ap':share_ap,
@@ -972,15 +973,15 @@ def solve_and_simulate(model,
     
     print("Time taken, in seconds: "+ str(t_finish - t_start))
                      
-    return model_moments
+    return model_moments,HH
 # -
 
 
-sim_moments = solve_and_simulate(lc_mkv)
+sim_moments,sim_HH_block = solve_and_simulate(lc_mkv)
 
 # ### Comapre the model moments and SCF Data
 
-# + code_folding=[]
+# + code_folding=[0]
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
@@ -1172,11 +1173,10 @@ plt.plot(sim_moments['share_agents_ap'],
          label='model')
 plt.legend(loc=1)
 
-# + code_folding=[4, 11, 12]
+# + code_folding=[0, 3, 11]
 ## wealth distribution
 
-## first make comparable bins and probabilities 
-
+plt.title('Wealth Distribution')
 n_SCF,bins_SCF,_ = plt.hist(np.log(SCF_lqwealth_sort+1e-4),
                              weights = SCF_lqweights_sort_norm,
                              density=True,
@@ -1192,9 +1192,11 @@ n_model,bins_model,_ = plt.hist(np.log(sim_moments['ap_grid_dist']+1e-4),
                                 color='red',
                                 label='model')
 plt.legend(loc=0)
+plt.xlabel('Log Net Wealth')
+plt.ylabel('Density')
 
 
-# + code_folding=[0, 5, 8]
+# + code_folding=[0, 5]
 def simple_moving_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
@@ -1207,6 +1209,8 @@ plt.plot(sim_moments['A_life'],
          'r-o',
          label='model')
 plt.legend(loc=1)
+plt.ylabel('Log Net Wealth')
+plt.xlabel('Working Age')
 
 
 # -
@@ -1215,10 +1219,129 @@ plt.legend(loc=1)
 
 # + code_folding=[0]
 def model_data_diff(model,
-                          data_moments_dict,
-                          moments_choice):
-    model_sim_moments = solve_and_simulate(model)
+                    data_moments_dict,
+                    moments_choice):
+    model_sim_moments,sim_HH_block = solve_and_simulate(model)
     
+    ## get wealth shares 
+    wealth_share_moms = [mom for mom in moments_choice if 'Top' in mom]
+    print('Shares:'+str(wealth_share_moms))
+
+    top_shares = [float(mom.replace('Top ','')) for mom in moments_choice if 'Top' in mom]
+    
+    print('Shares:'+str(top_shares))
+    ## to deal with wealth shares for given cut offs 
+    for top_share in top_shares:
+        wealth_share_this = wealth_share(model_sim_moments['ap_grid_dist'],
+                                        model_sim_moments['ap_pdfs_dist'],
+                                     top_agents_share = top_share)
+        model_sim_moments['Top {}'.format(top_share)] = wealth_share_this
+        
+        
+    distance_list = [np.array(data_moments_dict[mom])-np.array(model_sim_moments[mom]) for mom in moments_choice]
+
+    # Initialize an empty list to store the flattened elements
+    flattened_elements = []
+
+    # Flatten the elements into the list
+    for arr in distance_list:
+        if arr.ndim == 0:  # Zero-dimensional (scalar) array
+            flattened_elements.append(arr.item())
+        else:
+            flattened_elements.extend(arr)
+
+    # Convert the list of flattened elements into a numpy array
+    flattened_array = np.array(flattened_elements)
+    
+    ## calculate distance as a scalor
+    distance = np.linalg.norm(flattened_array)
+    return distance
+
+
+# + code_folding=[0, 66]
+def combine_moments(results_by_type):
+    """
+    input
+    =====
+    results_by_type: a list of dictioary storing all results by type
+    
+    output
+    ======
+    a dictionary storing results combining all types 
+    
+    """
+    
+    nb_types = len(results_by_type)
+    probs = 1/nb_types 
+    
+    ## aggregate wealth 
+    A_pe = np.sum(
+        np.array([result['A'] 
+                  for result in results_by_type])
+    )*probs
+    
+    ## aggregate wealth 
+    A_norm_pe = np.sum(
+        np.array([result['A_norm'] 
+                  for result in results_by_type])
+    )*probs
+    
+    ## life cycle wealth
+    A_life_pe = np.sum(np.array([result['A_life'] for result in results_by_type]),axis=0)*probs
+    
+    ## distribution 
+    ap_grid_dist_pe = np.array([result['ap_grid_dist'] for result in results_by_type]).flatten()
+    ap_pdfs_dist_pe = np.array([result['ap_pdfs_dist'] for result in results_by_type]).flatten()*probs
+    ap_grid_dist_pe_sort = ap_grid_dist_pe.argsort()
+    ap_grid_dist_pe = ap_grid_dist_pe[ap_grid_dist_pe_sort]
+    ap_pdfs_dist_pe = ap_pdfs_dist_pe[ap_grid_dist_pe_sort]
+    
+    a_grid_dist_pe = np.array([result['a_grid_dist'] for result in results_by_type]).flatten()
+    a_pdfs_dist_pe = np.array([result['a_pdfs_dist'] for result in results_by_type]).flatten()*probs
+    a_grid_dist_pe_sort = a_grid_dist_pe.argsort()
+    a_grid_dist_pe = a_grid_dist_pe[a_grid_dist_pe_sort]
+    a_pdfs_dist_pe = a_pdfs_dist_pe[a_grid_dist_pe_sort]
+    
+
+    ## lorenz share
+    share_agents_ap_pe,share_ap_pe = Lorenz(results_by_type)
+    
+    ## gini
+    gini_this_pe = gini(share_agents_ap_pe,
+                        share_ap_pe)
+
+
+    model_dct_pe =  {'A':A_pe,
+                     'A_norm':A_norm_pe,
+                  'A_life': A_life_pe,
+                  'share_agents_ap':share_agents_ap_pe,
+                  'share_ap':share_ap_pe,
+                  'ap_grid_dist':ap_grid_dist_pe,
+                  'ap_pdfs_dist':ap_pdfs_dist_pe,
+                   'a_grid_dist':a_grid_dist_pe,
+                   'a_pdfs_dist':a_pdfs_dist_pe,
+                  'gini':gini_this_pe,
+                   }
+    
+    return model_dct_pe
+
+def models_data_diff(model_list,
+                    data_moments_dict,
+                    moments_choice):
+    if len(model_list)==1:
+        model_sim_moments,sim_HH_block = solve_and_simulate(model)
+    else:
+        sim_moments_list = [] 
+        #HH_blocks_list = []
+        for i,model in model_list:
+            sim_moments_this,sim_HH_block_this = solve_and_simulate(model)
+            sim_moments_list.append(sim_moments_this)
+            #HH_blocks_list.append(sim_HH_block_this)
+            
+        ## combine moments of different types 
+        model_sim_moments = combine_moments(sim_moments_list)
+    
+    ## the rest is the same regardless of one type or multiple types 
     ## get wealth shares 
     wealth_share_moms = [mom for mom in moments_choice if 'Top' in mom]
     print('Shares:'+str(wealth_share_moms))
@@ -1257,62 +1380,79 @@ def model_data_diff(model,
 ## create some fake data moments for experiments 
 
 moments_choice = ['A_norm',
-                  'Top 0.3',
-                  'Top 0.5',
-                  'Top 0.8',
+                  #'Top 0.3',
+                  #'Top 0.5',
+                  #'Top 0.8',
                   #'gini'
                  #'A_life'
                  ]
 
-distance_SCF = model_data_diff(lc_mkv,
-                               SCF_liq_dict,
-                               moments_choice)
+#distance_SCF = model_data_diff(lc_mkv,
+#                               SCF_liq_dict,
+#                               moments_choice)
 
-print('The moment distance between model and data is '+str(distance_SCF))
+#print('The moment distance between model and data is '+str(distance_SCF))
 # -
 
 print('SCF moments: '+str(SCF_liq_dict['A_norm']))
 print('Model simulated moments: '+str(sim_moments['A_norm']))
 
 
-# + code_folding=[8]
-### objective funcitons for different parameters 
+# + code_folding=[0]
+def ParaEst(ObjSpec,
+            para_guess,
+            method = 'Nelder-Mead',
+            bounds = None,
+            jac = None,
+            options = {'disp': True,
+                      'maxiter': 1500}):
+    """
+    an estimating function that minimizes OjbSpec function that gives parameter estimates
+    """
+    results = minimize(ObjSpec,
+                         x0 = para_guess,
+                         method = method,
+                         bounds = bounds,
+                         jac = jac,
+                         options = options)
+    if results['success']==True:
+        parameter = results['x']
+    else:
+        #parameter = np.array([])
+        parameter = np.nan
+    return parameter 
 
+
+# -
+
+# ### Test 1. Estimating mean $\beta$ to fit average wealth to permanent income ratio 
+
+# + code_folding=[0, 9]
 def objective_est_beta_point(β):
     lc_mkv.β = β
     return model_data_diff(lc_mkv,
                            SCF_liq_dict,
                            moments_choice)
 
+from scipy.optimize import minimize
+
+## estimate the parameter 
+ParaEst(objective_est_beta_point,
+       np.array([0.98]),
+       method = 'trust-constr',
+       bounds = ((0.9,0.99),)
+       )
+
+
+# + [markdown] code_folding=[]
+# ### Test 2. Estimating mean risk aversion $\rho$ to fit life-cycle wealth profile
+
+# +
+### objective funcitons for different parameters 
+
 def objective_est_rho_point(ρ):
     lc_mkv.ρ = ρ
     return model_data_diff(lc_mkv,
                            SCF_liq_dict,
                            moments_choice)
-
-
-# -
-
-SCF_liq_dict
-
-## the objective function as a function of 
-objective_est_beta_point(0.98)
-
-# + code_folding=[]
-## different risk aversion coefficients 
-
-ρ_list = [1.01,
-          2,
-          3]
-
-ρ_distance_list = []
-
-for ρ in ρ_list:
-    ρ_distance_list.append(objective_est_rho_point(ρ))
-
-plt.plot(ρ_list,
-         ρ_distance_list,
-        '*')
-# -
-
 
