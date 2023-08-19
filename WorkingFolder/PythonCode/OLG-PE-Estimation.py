@@ -27,8 +27,8 @@
 #    - ...
 #       
 # The general structure of the code is the following 
-#    - __solve_and_simulate__, a wrapper function that takes household block as input, and parameters to be estimated as inputs and then spit out the model simulated moments stored in a dictionary;
-#    - __model_data_diff__, a general function that takes a model, data moments and moment choices, and generate moments distance between model and data ;
+#    - __solve_and_simulate__, a wrapper function that takes the household block as input and then spit out the model solutions and simulated moments stored in a dictionary;
+#    - __model_data_diff__, a general function that takes a household model type, data moments and moment choices, and generate moments distance between model and data ;
 #    - objective function specific to the parameters to be estimated;
 #    - a general estimtor function that allows users to choose consumer model, data moments and parameters to estimate. 
 #   
@@ -38,6 +38,7 @@
 
 from psutil import Process 
 
+# +
 import numpy as np
 import pandas as pd
 from interpolation import interp, mlinterp
@@ -57,6 +58,10 @@ from Utility import jump_to_grid,jump_to_grid_fast,gen_tran_matrix,gen_tran_matr
 from Utility import stationary_age_dist
 import pickle
 from scipy import sparse 
+
+## for estimation 
+from scipy.optimize import minimize
+
 
 
 # + code_folding=[0]
@@ -1180,6 +1185,10 @@ plt.plot(sim_moments['share_agents_ap'],
          label='model')
 plt.legend(loc=1)
 
+
+
+# + code_folding=[]
+
 ## wealth distribution
 
 plt.title('Wealth Distribution')
@@ -1202,6 +1211,9 @@ plt.xlabel('Log Net Wealth')
 plt.ylabel('Density')
 
 
+
+# + code_folding=[0]
+
 ## life cycle
 def simple_moving_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
@@ -1218,10 +1230,6 @@ plt.legend(loc=1)
 plt.ylabel('Log Net Wealth')
 plt.xlabel('Working Age')
 
-# + code_folding=[3, 11]
-
-
-# + code_folding=[0, 5]
 
 # -
 
@@ -1462,8 +1470,6 @@ def objective_est_beta_point(β):
                            SCF_liq_dict,
                            moments_choice)
 
-from scipy.optimize import minimize
-
 ## estimate the parameter 
 β_mean_est = ParaEst(objective_est_beta_point,
        np.array([0.98]),
@@ -1494,9 +1500,31 @@ def objective_est_rho_point(ρ):
 print('The average $\rho$ estimated to match life-cycle liquid wealth profile in SCF is'+ str(ρ_mean_est))
 # -
 
+# ### Test 3 jointly estimating $\beta$ and $\rho$ to match mean wealth and life cycle wealth
+
+# + code_folding=[2, 11]
+moments_choice = ['A_life']
+
+def objective_est_rho_beta_point(paras):
+    lc_mkv.β,lc_mkv.ρ = paras
+    return model_data_diff(lc_mkv,
+                           SCF_liq_dict,
+                           moments_choice)
+
+
+
+## estimate the parameter 
+β_mean_est_joint, ρ_mean_est_joint= ParaEst(objective_est_rho_beta_point,
+                                   np.array([0.92,2.3]),
+                                   method = 'trust-constr',
+                                   bounds = ((0.9,0.99),(0.9,3.0),)
+                                   )
+print('The average $\beta$ and $\rho$ estimated to match life-cycle liquid wealth profile in SCF are '+ str(β_mean_est_joint) +', '+str(ρ_mean_est_joint))
+# -
+
 # ### resimulate the model to get the moments based on the estimated parameter value
 
-# + code_folding=[0]
+# + code_folding=[]
 ## resolve and resimulate the model
 
 #set the grid to be finner 
@@ -1507,8 +1535,7 @@ n_p = 50
 sim_moments_est_paras = solve_and_simulate(lc_mkv,
                                            life_cycle = True)
 
-# +
-
+# + code_folding=[2]
 ## lorenz curve 
 plt.title('Lorenz Curve')
 plt.plot(SCF_liq_dict['share_agents_ap'],
@@ -1522,8 +1549,7 @@ plt.plot(sim_moments['share_agents_ap'],
 plt.legend(loc=1)
 
 
-# +
-
+# + code_folding=[4, 11]
 ## wealth distribution
 
 plt.title('Wealth Distribution')
@@ -1546,8 +1572,7 @@ plt.xlabel('Log Net Wealth')
 plt.ylabel('Density')
 
 
-# +
-
+# + code_folding=[6]
 ## life cycle
 def simple_moving_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
