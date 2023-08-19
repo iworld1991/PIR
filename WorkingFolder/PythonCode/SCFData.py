@@ -27,7 +27,7 @@ import sys            #The code below wont work for any versions before Python 3
 
 import matplotlib.pyplot as plt 
 
-plt.style.use('seaborn')
+plt.style.use('seaborn-v0_8')
 plt.rcParams["font.family"] = "Times New Roman" #'serif'
 plt.rcParams['font.serif'] = 'Ubuntu'
 plt.rcParams['font.monospace'] = 'Ubuntu Mono'
@@ -76,31 +76,15 @@ def unzip_survey_file(year = '2013'):
     return url_unzipped.extract(url_unzipped.namelist()[0])
 
 
-# + code_folding=[0]
-#df2019 = pd.read_stata(unzip_survey_file(year='2019'))
-df2016 = pd.read_stata(unzip_survey_file(year='2016'))
-#df2013 = pd.read_stata(unzip_survey_file(year='2013'))
-#df2001 = pd.read_stata(unzip_survey_file(year = '2001'))
-#df1983 = pd.read_stata(unzip_survey_file(year = '1983'))
-#df1992 = pd.read_stata(unzip_survey_file(year = '1992'))
+# + code_folding=[]
+## keep the code for each year for future use
 
+## which year? choose from 1983,1992,2001,2013,2016,2019 
+year = '2016'  
 
-"""
-There is no Summary Extract dataset for 1983, so we'll rename the variable names in the 1983 Full 
-dataset so that they correspond to the variable names in the other survey years.
+df2016 = pd.read_stata(unzip_survey_file(year=year))
 
-Also, 161 out of the 4262 total households covered in the 1983 survey actually reported having 
-negative income. This isn't the case for the other survey years we are considering, and it 
-complicates our analysis a bit below. Because of this, we drop any obs. that report negative 
-incomes before proceeding. This has a near-zero impact on any of our results, since all but 2 
-of these observations recieve a weight of zero. The two non-zero weight observations reporting
-negative incomes account for only <0.05% of the total population, so not much is lost be 
-excluding them.
-
-Going forward: it might be worthwhile to figure out why there are instances of negative incomes
-in the 1983 survey yet none for the other years. 
-"""
-
+## to rename some variables for 1983 vintage 
 #df1983 = df1983.rename(columns = {'b3201':'income', 'b3324':'networth', 'b3015' : 'wgt'})
 #df1983 = df1983[df1983['income']>=0]
 # -
@@ -121,14 +105,22 @@ df2016['lqwealth'] = df2016['liq']+df2016['govtbnd'] - df2016['ccbal']
 
 ### filters and clean variables 
 df2016 = df2016[(df2016['age']>=25) & (df2016['age']<=85)]
+df2016 = df2016[df2016['wageinc']>0]
+
 df2016 = df2016[df2016['income']>0]
 df2016 = df2016[df2016['norminc']>0]
 ## drop negative liquid wealth 
 df2016 = df2016[df2016['lqwealth']>=0]
 
-## compute ratios 
+## compute log values 
+df2016['lwage_income'] = np.log(df2016['wageinc'])
 df2016['lincome'] = np.log(df2016['income'])
 df2016['lnorminc'] = np.log(df2016['norminc'])
+
+## compute ratios 
+df2016['w2wage_income']= df2016['networth']/ df2016['wageinc']
+df2016['lw2wage_income']= df2016['lqwealth']/ df2016['wageinc']
+
 df2016['w2income']= df2016['networth']/ df2016['norminc']
 df2016['lw2income']= df2016['lqwealth']/ df2016['norminc']
 
@@ -149,7 +141,7 @@ results = model.fit()
 df2016['lnorminc_pr'] = results.predict()
 
 # -
-# ### Cross-sectional distribution of income/wealth
+# ### Cross-sectional distribution of income and wealth
 
 # +
 ## distribution in monetary values 
@@ -167,6 +159,24 @@ dist = sns.displot(data = data_plot,
 
 norminc_av = (data_plot['norminc']*data_plot['wgt']).sum()/data_plot['wgt'].sum()
 print('mean permanent income: $', str(round(norminc_av,3)))
+
+dist.fig.set_size_inches(8,6)
+
+# + code_folding=[4]
+## distribution in monetary values 
+
+data_plot = df2016[['wageinc','wgt']][df2016['wageinc']<df2016['wageinc'].quantile(0.95)]
+
+dist = sns.displot(data = data_plot,
+            x = 'wageinc',
+            weights = 'wgt',
+            kde=True,
+            stat = 'density',
+            bins = 100).set(title='Distribution of wage income (2016 SCF)',
+                            xlabel='Wage income (USD)')
+
+wageinc_av = (data_plot['wageinc']*data_plot['wgt']).sum()/data_plot['wgt'].sum()
+print('mean wage income: $', str(round(wageinc_av,3)))
 
 dist.fig.set_size_inches(8,6)
 
@@ -368,18 +378,32 @@ figureprefs(years_graph,
 import joypy
 from matplotlib import cm
 
-# + code_folding=[1]
+# + code_folding=[0, 1]
 #labels=[y if y%10==0 else None for y in list(df2016.age.unique())]
 fig, axes = joypy.joyplot(df2016, 
                           by="age", 
-                          column="lnorminc", 
+                          column= "lwage_income", 
                           #labels=labels, 
                           range_style='own', 
                           grid="y", 
                           linewidth=1, 
                           legend=False, 
                           figsize=(6,20),
-                          title="income over life cycle",
+                          title="Wage income over life cycle",
+                          colormap=cm.summer)
+
+# + code_folding=[]
+#labels=[y if y%10==0 else None for y in list(df2016.age.unique())]
+fig, axes = joypy.joyplot(df2016, 
+                          by="age", 
+                          column= "lnorminc", 
+                          #labels=labels, 
+                          range_style='own', 
+                          grid="y", 
+                          linewidth=1, 
+                          legend=False, 
+                          figsize=(6,20),
+                          title="Permanent income over life cycle",
                           colormap=cm.summer)
 
 # +
@@ -408,6 +432,10 @@ age_med_lincome = df2016.groupby('age').agg(med_lincome=('lincome','median'))
 age_av_lnorminc = df2016.groupby('age').agg(av_lnorminc = ('lnorminc',wm))
 age_med_lnorminc = df2016.groupby('age').agg(med_lnorminc=('lnorminc','median'))
 
+age_av_lwage_income = df2016.groupby('age').agg(av_lwage_income= ('lwage_income',wm))
+age_med_lwage_income = df2016.groupby('age').agg(med_lwage_income= ('lwage_income','median'))
+
+
 
 # +
 plt.title('Net wealth over life cycle')
@@ -426,17 +454,21 @@ plt.plot(np.log(age_av_lqw2i),label='average net liquid wealth/income ratio')
 plt.plot(np.log(age_med_lqw2i),label='median net liquid wealth/income ratio')
 plt.legend(loc=0)
 
+# +
 plt.title('Income over life cycle')
+
+plt.plot(np.log(age_av_lwage_income),label='wage income')
 plt.plot(np.log(age_av_lincome),label='average income')
 plt.plot(np.log(age_med_lincome),label='median income')
 plt.legend(loc=0)
+# -
 
 plt.title('Permanent income over life cycle')
 plt.plot(np.log(age_av_lnorminc),label='average income')
 plt.plot(np.log(age_med_lnorminc),label='median income')
 plt.legend(loc=0)
 
-# + code_folding=[0, 2]
+# + code_folding=[]
 ## merge all age profiles 
 
 to_merge = [age_med_wealth,
@@ -449,7 +481,9 @@ to_merge = [age_med_wealth,
             age_av_lincome,
             age_med_lincome,
             age_av_lnorminc,
-            age_med_lnorminc]
+            age_med_lnorminc,
+           age_av_lwage_income,
+           age_med_lwage_income]
 
 SCF_age_profile = age_av_wealth
 
