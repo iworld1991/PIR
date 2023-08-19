@@ -107,7 +107,7 @@ print(lc_paras_y)
 
 # ### Initialize a consuption/saving model
 
-# + code_folding=[0, 7, 17]
+# + code_folding=[0]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -184,7 +184,7 @@ if calibrated_model == True:
     
 
 
-# + code_folding=[0, 8, 237, 272, 308, 322]
+# + code_folding=[0, 8, 69, 236, 271, 307, 321]
 #################################
 ## general functions used 
 # for computing transition matrix
@@ -253,8 +253,7 @@ def calc_transition_matrix(model,
         ## This is for the fast method 
         shk_prbs_ntrl =  np.multiply(shk_prbs,perm_shks)
                         
-        
-                        
+                         
         for k in range(model.L): ## loop over agents at different ages, k
             
             age_id = k
@@ -525,7 +524,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 17, 111, 245, 268, 299, 329]
+# + code_folding=[0, 5, 17, 111, 245, 267, 298, 328]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -791,7 +790,6 @@ class HH_OLG_Markov:
         
         self.A_norm = self.A/self.P 
 
-
     ### Aggregate within age 
     
     def AggregatebyAge(self):
@@ -887,11 +885,14 @@ class HH_OLG_Markov:
                                                  nb_share_grid = 100)
             
             return share_agents_cp,share_cp
+# -
 
-# + code_folding=[0]
+# #### Be careful here: try to keep the size of grid small
+
+# + code_folding=[]
 ## nb of grids used for transition matrix  
-n_m = 60
-n_p = 50
+n_m = 30
+n_p = 30
 
 
 # -
@@ -899,10 +900,11 @@ n_p = 50
 
 # ### Solve and simulate a model 
 
-# + code_folding=[0, 58]
+# + code_folding=[0, 12, 24, 38, 46, 60]
 def solve_and_simulate(model,
                        n_m = n_m,
-                       n_p = n_p):
+                       n_p = n_p,
+                       life_cycle = False):
     print('Solve the model...')
     t_start = time()
 
@@ -945,16 +947,17 @@ def solve_and_simulate(model,
     ap_grid_dist = HH.ap_grid_dist
     ap_pdfs_dist = HH.ap_pdfs_dist
     
-    
-    ## life cycle 
-    HH.AggregatebyAge()
+    if life_cycle:
+        ## life cycle 
+        HH.AggregatebyAge()
+        A_life = HH.A_life
 
-    A_life = HH.A_life
-
-    ## get the within-age distribution 
-    HH.get_lifecycle_dist()
-    ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
-    
+        ## get the within-age distribution if needed
+        #HH.get_lifecycle_dist()
+        #ap_grid_dist_life,ap_pdfs_dist_life = HH.ap_grid_dist_life,HH.ap_pdfs_dist_life
+    else:
+        print('No life cycle profile is generated')
+        HH.A_life = None
     
     ## store all PE results
     
@@ -973,11 +976,14 @@ def solve_and_simulate(model,
     
     print("Time taken, in seconds: "+ str(t_finish - t_start))
                      
-    return model_moments,HH
+    return model_moments
+
+
 # -
 
 
-sim_moments,sim_HH_block = solve_and_simulate(lc_mkv)
+sim_moments = solve_and_simulate(lc_mkv,
+                                life_cycle = True)
 
 # ### Comapre the model moments and SCF Data
 
@@ -1162,6 +1168,7 @@ SCF_liq_dict['A_life'] = np.array(SCF_profile['av_lqwealth'][:-1])/np.array(SCF_
 
 
 # + code_folding=[1, 5]
+## lorenz curve 
 plt.title('Lorenz Curve')
 plt.plot(SCF_liq_dict['share_agents_ap'],
          SCF_liq_dict['share_ap'],
@@ -1173,7 +1180,6 @@ plt.plot(sim_moments['share_agents_ap'],
          label='model')
 plt.legend(loc=1)
 
-# + code_folding=[0, 3, 11]
 ## wealth distribution
 
 plt.title('Wealth Distribution')
@@ -1196,7 +1202,7 @@ plt.xlabel('Log Net Wealth')
 plt.ylabel('Density')
 
 
-# + code_folding=[0, 5]
+## life cycle
 def simple_moving_average(data, window_size):
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
@@ -1212,32 +1218,46 @@ plt.legend(loc=1)
 plt.ylabel('Log Net Wealth')
 plt.xlabel('Working Age')
 
+# + code_folding=[3, 11]
+
+
+# + code_folding=[0, 5]
 
 # -
 
 # ### Objective function of indirect inference
 
-# + code_folding=[0]
+# + code_folding=[0, 14, 36]
 def model_data_diff(model,
                     data_moments_dict,
                     moments_choice):
-    model_sim_moments,sim_HH_block = solve_and_simulate(model)
     
-    ## get wealth shares 
-    wealth_share_moms = [mom for mom in moments_choice if 'Top' in mom]
-    print('Shares:'+str(wealth_share_moms))
+    ## get all the model moments 
+    
+    ## only get life cycle moments if needed 
+    if any('life' in item for item in moments_choice):
+        model_sim_moments = solve_and_simulate(model,life_cycle=True)
+    else:
+        model_sim_moments = solve_and_simulate(model,life_cycle=False)
+    
+    ## only calculate shares if included in the moment choices 
+    
+    if any('Top' in item for item in moments_choice):
+        ## get wealth shares 
+        wealth_share_moms = [mom for mom in moments_choice if 'Top' in mom]
+        print('Shares:'+str(wealth_share_moms))
 
-    top_shares = [float(mom.replace('Top ','')) for mom in moments_choice if 'Top' in mom]
-    
-    print('Shares:'+str(top_shares))
-    ## to deal with wealth shares for given cut offs 
-    for top_share in top_shares:
-        wealth_share_this = wealth_share(model_sim_moments['ap_grid_dist'],
-                                        model_sim_moments['ap_pdfs_dist'],
-                                     top_agents_share = top_share)
-        model_sim_moments['Top {}'.format(top_share)] = wealth_share_this
-        
-        
+        top_shares = [float(mom.replace('Top ','')) for mom in moments_choice if 'Top' in mom]
+
+        print('Shares:'+str(top_shares))
+        ## to deal with wealth shares for given cut offs 
+        for top_share in top_shares:
+            wealth_share_this = wealth_share(model_sim_moments['ap_grid_dist'],
+                                            model_sim_moments['ap_pdfs_dist'],
+                                         top_agents_share = top_share)
+            model_sim_moments['Top {}'.format(top_share)] = wealth_share_this
+
+    ## calculate the moment-specific distances        
     distance_list = [np.array(data_moments_dict[mom])-np.array(model_sim_moments[mom]) for mom in moments_choice]
 
     # Initialize an empty list to store the flattened elements
@@ -1255,6 +1275,7 @@ def model_data_diff(model,
     
     ## calculate distance as a scalor
     distance = np.linalg.norm(flattened_array)
+    
     return distance
 
 
@@ -1329,12 +1350,12 @@ def models_data_diff(model_list,
                     data_moments_dict,
                     moments_choice):
     if len(model_list)==1:
-        model_sim_moments,sim_HH_block = solve_and_simulate(model)
+        model_sim_moments = solve_and_simulate(model)
     else:
         sim_moments_list = [] 
         #HH_blocks_list = []
         for i,model in model_list:
-            sim_moments_this,sim_HH_block_this = solve_and_simulate(model)
+            sim_moments_this = solve_and_simulate(model)
             sim_moments_list.append(sim_moments_this)
             #HH_blocks_list.append(sim_HH_block_this)
             
@@ -1376,7 +1397,7 @@ def models_data_diff(model_list,
     distance = np.linalg.norm(flattened_array)
     return distance
 
-# + code_folding=[0, 2]
+# + code_folding=[0]
 ## create some fake data moments for experiments 
 
 moments_choice = ['A_norm',
@@ -1398,7 +1419,7 @@ print('SCF moments: '+str(SCF_liq_dict['A_norm']))
 print('Model simulated moments: '+str(sim_moments['A_norm']))
 
 
-# + code_folding=[0]
+# + code_folding=[0, 13]
 def ParaEst(ObjSpec,
             para_guess,
             method = 'Nelder-Mead',
@@ -1409,6 +1430,9 @@ def ParaEst(ObjSpec,
     """
     an estimating function that minimizes OjbSpec function that gives parameter estimates
     """
+    print('Started the estimation...')
+    t_start = time()
+
     results = minimize(ObjSpec,
                          x0 = para_guess,
                          method = method,
@@ -1420,6 +1444,10 @@ def ParaEst(ObjSpec,
     else:
         #parameter = np.array([])
         parameter = np.nan
+        
+    t_finish = time()
+    print('Finished the estimation')
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
     return parameter 
 
 
@@ -1437,18 +1465,19 @@ def objective_est_beta_point(β):
 from scipy.optimize import minimize
 
 ## estimate the parameter 
-ParaEst(objective_est_beta_point,
+β_mean_est = ParaEst(objective_est_beta_point,
        np.array([0.98]),
        method = 'trust-constr',
        bounds = ((0.9,0.99),)
        )
-
+print('The average $\beta$ estimated to match mean wealth/income ratio in SCF is'+ str(β_mean_est))
 
 # + [markdown] code_folding=[]
 # ### Test 2. Estimating mean risk aversion $\rho$ to fit life-cycle wealth profile
 
-# +
+# + code_folding=[3, 10]
 ### objective funcitons for different parameters 
+moments_choice = ['A_life']
 
 def objective_est_rho_point(ρ):
     lc_mkv.ρ = ρ
@@ -1456,3 +1485,81 @@ def objective_est_rho_point(ρ):
                            SCF_liq_dict,
                            moments_choice)
 
+## estimate the parameter 
+ρ_mean_est = ParaEst(objective_est_rho_point,
+                   np.array([2.0]),
+                   method = 'trust-constr',
+                   bounds = ((0.9,3.0),)
+                   )
+print('The average $\rho$ estimated to match life-cycle liquid wealth profile in SCF is'+ str(ρ_mean_est))
+# -
+
+# ### resimulate the model to get the moments based on the estimated parameter value
+
+# + code_folding=[0]
+## resolve and resimulate the model
+
+#set the grid to be finner 
+
+n_m = 50
+n_p = 50
+
+sim_moments_est_paras = solve_and_simulate(lc_mkv,
+                                           life_cycle = True)
+
+# +
+
+## lorenz curve 
+plt.title('Lorenz Curve')
+plt.plot(SCF_liq_dict['share_agents_ap'],
+         SCF_liq_dict['share_ap'],
+         'k-',
+         label='data')
+plt.plot(sim_moments['share_agents_ap'],
+         sim_moments['share_ap'],
+         'r-o',
+         label='model')
+plt.legend(loc=1)
+
+
+# +
+
+## wealth distribution
+
+plt.title('Wealth Distribution')
+n_SCF,bins_SCF,_ = plt.hist(np.log(SCF_lqwealth_sort+1e-4),
+                             weights = SCF_lqweights_sort_norm,
+                             density=True,
+                             bins=300,
+                            color='black',
+                            alpha=0.3,
+                           label='data')
+n_model,bins_model,_ = plt.hist(np.log(sim_moments['ap_grid_dist']+1e-4),
+                                weights = sim_moments['ap_pdfs_dist'],
+                                 density=True,
+                                bins=300,
+                                alpha=0.9,
+                                color='red',
+                                label='model')
+plt.legend(loc=0)
+plt.xlabel('Log Net Wealth')
+plt.ylabel('Density')
+
+
+# +
+
+## life cycle
+def simple_moving_average(data, window_size):
+    return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
+
+## life cycle pattern 
+plt.title('Life Cycle Liquid Wealth Profile')
+plt.plot(simple_moving_average(SCF_liq_dict['A_life'],6),
+         'k-',
+         label='data')
+plt.plot(sim_moments['A_life'],
+         'r-o',
+         label='model')
+plt.legend(loc=1)
+plt.ylabel('Log Net Wealth')
+plt.xlabel('Working Age')
