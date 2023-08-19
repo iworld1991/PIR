@@ -26,7 +26,7 @@ from copy import copy
 ## figure plotting configurations
 
 
-plt.style.use('seaborn')
+plt.style.use('seaborn-v0_8')
 plt.rcParams["font.family"] = "Times New Roman" #'serif'
 plt.rcParams['font.serif'] = 'Ubuntu'
 plt.rcParams['font.monospace'] = 'Ubuntu Mono'
@@ -50,7 +50,7 @@ plt.rc('figure', titlesize=20)
 
 # ### Age profile of income 
 
-# +
+# + code_folding=[0]
 ## some life cycle paras 
 T = 40
 L = 60
@@ -82,11 +82,11 @@ def y2q_interpolate(xs_y):
     return xs_q
 
 
-# -
-
-age_profile = pd.read_stata('../OtherData/age_profile.dta')  
-
 # + code_folding=[]
+#############################################
+### Choose the data source of age profile here
+#############################################
+
 age_profile_data ='SIPP'
 
 if age_profile_data=='SIPP':
@@ -125,24 +125,45 @@ if age_profile_data=='SIPP':
 elif age_profile_data=='SCF':
     ## import age income profile 
     SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
-    SCF_profile = SCF_profile[(SCF_profile.index>=24) & (SCF_profile.index<=85)]
-    lc_p_incom = np.exp(np.array(SCF_profile['av_lnorminc']))
-    lc_G_full = lc_p_incom[1:]/lc_p_incom[:-1] 
+    SCF_profile = SCF_profile[(SCF_profile.index>=24) & (SCF_profile.index<=65)]
+    ## make age profile using age polynomial regressions 
+    
+    import statsmodels.api as sm
+    # Extract age and lwage_income from the data Series
+    age = SCF_profile.index+25
+    lwage_income = SCF_profile['av_lwage_income']
+        
+    # Create a design matrix with polynomial features
+    X = np.column_stack((age, age**2,age**3,age**4))  # Third-order polynomial
+    # Add a constant term for the intercept
+    X = sm.add_constant(X)
+    # Fit the OLG-regression model
+    ols_results = sm.OLS(lwage_income, X).fit()
+    # Predict values using the fitted model
+    predicted_values = ols_results.predict(X)
+    SCF_profile['av_lwage_income_pr'] = predicted_values
+
+    lc_p_incom = np.exp(np.array(SCF_profile['av_lwage_income_pr']))
+    lc_G = lc_p_incom[1:]/lc_p_incom[:-1]
+    
+    lc_G_rt = np.ones(L-T)
+    lc_G_rt[0] = 1/np.cumprod(lc_G)[-1]
+
+    lc_G_full = np.concatenate([lc_G,lc_G_rt])
     assert len(lc_G_full) == L,'length of G needs to be equal to L'
+    
     lc_G_q_full = y2q_interpolate(lc_G_full)
 
 
-# -
-
+# + code_folding=[2]
 if __name__ == "__main__":
     plt.title('Determinstic life-cycle wage profile')
     plt.plot(np.cumprod(lc_G_full),
             'k-v')
     plt.savefig('../Graphs/sipp/age_wage_profile.pdf')
 
-# +
+# + code_folding=[0]
 ## subjective growth expectations 
-
 
 SCE = pd.read_stata('../SurveyData/SCE/IncExpSCEProbIndM.dta')   
 SCE = SCE.rename(columns={'Q24_mean': 'incexp',
