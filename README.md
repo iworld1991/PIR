@@ -4,6 +4,12 @@
 - Author: Tao Wang
 
 
+## Data source 
+- [QECM[(https://www.bls.gov/cew/additional-resources/open-data/)
+- [LAUS](https://www.bls.gov/lau/data.htm)
+- County-level wage growth
+- [Job flow data](https://www.frbsf.org/economic-research/sf-fed-data-explorer/app/)
+
 ## To-do 
 -  Commuting zone/local labor market outcomes
 -  Aggregate realizations from SF Fed
@@ -11,7 +17,7 @@
 
 ## To-knows
 
-- To download the entire working repo, go to the shell, navigate to the desirable locaiton, and type
+- To download the entire working repo, go to the shell, navigate to the desirable location, and type
   - `git init`
   - `git clone https://github.com/iworld1991/PIR.git`.   
 
