@@ -46,11 +46,8 @@ plt.rc('ytick', labelsize=20)
 plt.rc('legend', fontsize=20)
 # Set the font size of the figure title
 plt.rc('figure', titlesize=20)
-# -
 
-# ### Age profile of income 
-
-# + code_folding=[0]
+# +
 ## some life cycle paras 
 T = 40
 L = 60
@@ -82,7 +79,19 @@ def y2q_interpolate(xs_y):
     return xs_q
 
 
-# + code_folding=[]
+# -
+
+# ### Survival probability
+
+#https://www.ssa.gov/oact/STATS/table4c6.html
+life_table = pd.read_excel("../OtherData/lifetable.xlsx",sheet_name='data')
+life_table['av_survial'] = 1-(life_table['male_D']+life_table['female_D'])/2
+LivProbs_y = np.array(life_table[(life_table['age']>25)&(life_table['age']<=25+L)]['av_survial'])
+LivProbs_q = y2q_interpolate(LivProbs_y)
+
+# ### Age profile of income 
+
+# + code_folding=[6, 39]
 #############################################
 ### Choose the data source of age profile here
 #############################################
@@ -155,7 +164,7 @@ elif age_profile_data=='SCF':
     lc_G_q_full = y2q_interpolate(lc_G_full)
 
 
-# + code_folding=[2]
+# + code_folding=[0, 2]
 if __name__ == "__main__":
     plt.title('Determinstic life-cycle wage profile')
     plt.plot(np.cumprod(lc_G_full),
@@ -290,7 +299,7 @@ life_cycle_paras_q = {'ρ': 2.0,
                     'σ_ψ': np.sqrt(0.15**2*4/11), 
                     'σ_θ': np.sqrt(0.15**2*4), 
                     'U': 0.0, 
-                    'LivPrb': (1.0-0.00625)*np.ones_like(lc_G_q_full_sub), 
+                    'LivPrb': LivProbs_q, 
                     'R': 1.01**(1/4), 
                     'W': 1.0, 
                     'T': T_q, 
@@ -343,7 +352,7 @@ life_cycle_paras_y = {'ρ': 2.0,
                     'σ_ψ': np.sqrt(0.15**2), 
                     'σ_θ': np.sqrt(0.15**2), 
                     'U': 0.0, 
-                    'LivPrb': (1.0-0.00625)*np.ones_like(lc_G_full), 
+                    'LivPrb': LivProbs_y, 
                     'R': 1.01, 
                     'W': 1.0, 
                     'T': T, 
@@ -561,5 +570,3 @@ model_paras_by_block_df=model_paras_by_block_df.reset_index(level=1, drop=True)
 model_paras_by_block_df.to_excel('../Tables/calibration.xlsx')
 
 model_paras_by_block_df
-
-
