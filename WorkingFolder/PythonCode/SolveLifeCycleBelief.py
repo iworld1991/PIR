@@ -75,7 +75,7 @@ plt.rc('figure', titlesize=20)
 
 # ## The Model Class and Solver
 
-# + code_folding=[0]
+# + code_folding=[]
 lc_data = [
     ## model paras
     ('ρ', float64),              # utility parameter CRRA
@@ -97,7 +97,7 @@ lc_data = [
     ('T',int64),                 # years of work                          *   
     ('L',int64),                 # years of life                          * 
     ('G',float64[:]),            # growth rate of permanent income    *
-    ('LivPrb',float64),         # the probability of being alive next period 
+    ('LivPrb',float64[:]),         # the probability of being alive next period 
     ('unemp_insurance',float64),   ## Unemployment insurance replacement ratio 
     ('pension',float64),           ## pension payment to permanent income ratio
     ('ue_markov', boolean),        ## True if 2-state emp/uemp markov 
@@ -130,7 +130,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[1, 6, 128]
+# + code_folding=[128]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -412,7 +412,7 @@ def EGM_combine(mϵ_in,
     
     ## model
     borrowing_cstr = lc.borrowing_cstr 
-    LivProb = lc.LivPrb  ## live probability
+   
     unemp_insurance = lc.unemp_insurance
     adjust_prob = lc.adjust_prob  ## exogenous adjustment probability
 
@@ -422,6 +422,7 @@ def EGM_combine(mϵ_in,
     ####################################
     age = age_id + 1
     G = lc.G[age_id+1]  ## get the age specific growth rate, G[T] is the sudden drop in retirement from working age
+    LivProb = lc.LivPrb[age_id+1]  ## live probability
     ####################################
 
     λ = lc.λ
@@ -751,7 +752,7 @@ if __name__ == "__main__":
         m_vec = np.copy(m_next)
         σ_vec = np.copy(σ_next)
     ax.legend(loc=0)
-    
+
 
 # + code_folding=[0]
 if __name__ == "__main__":

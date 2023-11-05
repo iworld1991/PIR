@@ -290,7 +290,7 @@ life_cycle_paras_q = {'ρ': 2.0,
                     'σ_ψ': np.sqrt(0.15**2*4/11), 
                     'σ_θ': np.sqrt(0.15**2*4), 
                     'U': 0.0, 
-                    'LivPrb': 1.0-0.00625, 
+                    'LivPrb': (1.0-0.00625)*np.ones_like(lc_G_q_full_sub), 
                     'R': 1.01**(1/4), 
                     'W': 1.0, 
                     'T': T_q, 
@@ -343,7 +343,7 @@ life_cycle_paras_y = {'ρ': 2.0,
                     'σ_ψ': np.sqrt(0.15**2), 
                     'σ_θ': np.sqrt(0.15**2), 
                     'U': 0.0, 
-                    'LivPrb': 1.0-0.00625, 
+                    'LivPrb': (1.0-0.00625)*np.ones_like(lc_G_full), 
                     'R': 1.01, 
                     'W': 1.0, 
                     'T': T, 
@@ -429,12 +429,12 @@ life_cycle_paras_y_copy['U2U'] = life_cycle_paras_y['P'][0,0]
 life_cycle_paras_y_copy['E2E'] = life_cycle_paras_y['P'][1,1]
 
 ## rename some 
-life_cycle_paras_y_copy['1-D'] =  life_cycle_paras_y_copy.pop('LivPrb')
+#life_cycle_paras_y_copy['1-D'] =  life_cycle_paras_y_copy.pop('LivPrb')
 life_cycle_paras_y_copy['μ'] =  life_cycle_paras_y_copy.pop('unemp_insurance')
 life_cycle_paras_y_copy['b_init'] =  life_cycle_paras_y_copy.pop('init_b')
 
 ## rounding 
-life_cycle_paras_y_copy['1-D'] = round(life_cycle_paras_y_copy['1-D'],3)
+#life_cycle_paras_y_copy['1-D'] = round(life_cycle_paras_y_copy['1-D'],3)
 life_cycle_paras_y_copy['σ_ψ_init'] = round(life_cycle_paras_y_copy['σ_ψ_init'],3)
 life_cycle_paras_y_copy['b_init'] = round(life_cycle_paras_y_copy['b_init'],3)
 
@@ -459,7 +459,9 @@ blocknames =['risk',
             'subjective']
 
 prefernece = ['ρ','β']
-lifecycle = ['T','L','1-D']
+lifecycle = ['T','L'
+             #'1-D'
+            ]
 risk  = ['σ_ψ','σ_θ','U2U','E2E']
 initial = ['σ_ψ_init','init_b','bequest_ratio']
 policy = ['μ','pension','λ','λ_SS']
@@ -534,7 +536,7 @@ para_latex = ['$\\sigma_\\psi$',
               'bequest ratio',
               '$T$',
               '$L$',
-              '$1-D$',
+              #'$1-D$',
               '$\\rho$',
               '$\\beta$',
               '$\\mathbb{S}$',

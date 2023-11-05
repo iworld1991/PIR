@@ -71,7 +71,7 @@ plt.rc('figure', titlesize=20)
 
 # ## The Model Class and Solver
 
-# + code_folding=[0]
+# + code_folding=[]
 lc_data = [
     ## model paras
     ('ρ', float64),              # utility parameter CRRA
@@ -93,7 +93,7 @@ lc_data = [
     ('T',int64),                 # years of work                          *   
     ('L',int64),                 # years of life                          * 
     ('G',float64[:]),            # growth rate of permanent income    *
-    ('LivPrb',float64),         # the probability of being alive next period 
+    ('LivPrb',float64[:]),         # the probability of being alive next period 
     ('unemp_insurance',float64),   ## Unemployment insurance replacement ratio 
     ('pension',float64),           ## pension payment to permanent income ratio
     ('ue_markov', boolean),        ## True if 2-state emp/uemp markov 
@@ -130,7 +130,7 @@ lc_data = [
 ]
 
 
-# + code_folding=[1, 6, 133, 165]
+# + code_folding=[133, 165]
 @jitclass(lc_data)
 class LifeCycle:
     """
@@ -149,7 +149,7 @@ class LifeCycle:
                  x = 0.0,            ## MA(1) coefficient of non-permanent income shocks
                  borrowing_cstr = True,  ## artificial zero borrowing constraint 
                  U = 0.0,   ## unemployment risk probability (0-1)
-                 LivPrb = 0.995,       ## living probability 
+                 LivPrb = 0.995*np.ones(60),       ## living probability 
                  b_y = 0.0,          ## loading of markov state on income  
                  R = 1.02,           ## interest factor 
                  W = 1.0,            ## Wage rate
@@ -373,7 +373,7 @@ class LifeCycle:
         return m_init,σ_init
 
 
-# + code_folding=[7]
+# + code_folding=[]
 ## This function takes the consumption values at different 
 ## grids of state variables from period t+1, and
 ## the model class, then generates the consumption values at t.
@@ -382,9 +382,9 @@ class LifeCycle:
 
 @njit
 def EGM_combine(mϵ_in,
-        σ_in,
-        age_id, ## the period id for which the c policy is computed, the first period age_id=0, last period age_id=L-1, retirement after age_id=T-1
-        lc):
+                σ_in,
+                age_id, ## the period id for which the c policy is computed, the first period age_id=0, last period age_id=L-1, retirement after age_id=T-1
+                lc):
     """
     The Coleman--Reffett operator for the life-cycle consumption problem,
     using the endogenous grid method.
@@ -410,7 +410,6 @@ def EGM_combine(mϵ_in,
     psi_shk_mkv_draws, eps_shk_mkv_draws = lc.psi_shk_mkv_draws, lc.eps_shk_mkv_draws
     borrowing_cstr = lc.borrowing_cstr 
     ue_prob = lc.U  ## uemp prob
-    LivProb = lc.LivPrb  ## live probability
     unemp_insurance = lc.unemp_insurance
     adjust_prob = lc.adjust_prob  ## exogenous adjustment probability
      
@@ -419,6 +418,7 @@ def EGM_combine(mϵ_in,
     Γ = lc.Γ
     ####################################
     G = lc.G[age_id+1]  ## get the age specific growth rate, G[T] is the sudden drop in retirement from working age
+    LivProb = lc.LivPrb[age_id+1]  ## live probabilities
     ####################################
 
     x = lc.x
@@ -523,7 +523,7 @@ def EGM_combine(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[0, 3]
+# + code_folding=[3]
 ## this function describes asymmetric extrapolation rule from realized income shock to the perceived risk
 
 @njit
@@ -543,7 +543,7 @@ def extrapolate(theta,
     return x_sub
 
 
-# + code_folding=[4]
+# + code_folding=[]
 ## subjective agent
 ### transitory shock affects risk perceptions
 
@@ -574,7 +574,7 @@ def EGM_br(mϵ_in,
     borrowing_cstr = lc.borrowing_cstr
     ue_prob = lc.U  ## uemp prob
     unemp_insurance = lc.unemp_insurance
-    LivProb = lc.LivPrb  ## live probabilituy
+    
     adjust_prob = lc.adjust_prob  ## exogenous adjustment probability
     Y = lc.Y
     ####################
@@ -582,6 +582,7 @@ def EGM_br(mϵ_in,
     Γ = lc.Γ
     ####################################
     G = lc.G[age_id+1]   ## get the age specific 
+    LivProb = lc.LivPrb[age_id+1]  ## live probabilituy
     ####################################  
     x = lc.x
     λ = lc.λ
@@ -695,7 +696,7 @@ def EGM_br(mϵ_in,
     return mϵ_out, σ_out
 
 
-# + code_folding=[0, 1]
+# + code_folding=[]
 ## for life-cycle/finite horizon problem 
 def solve_model_backward_iter(model,        # Class with model information
                               mϵ_vec,        # Initial condition for assets and MA shocks
@@ -728,7 +729,7 @@ def solve_model_backward_iter(model,        # Class with model information
     return mϵs_new, σs_new
 
 
-# + code_folding=[1]
+# + code_folding=[]
 ## for infinite horizon problem 
 def solve_model_iter(model,        # Class with model information
                      me_vec,        # Initial condition for assets and MA shocks
@@ -810,7 +811,7 @@ def compare_2solutions(ms_stars,
 
 # ## Initialize the model
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
 
@@ -1667,6 +1668,3 @@ if __name__ == "__main__":
         plt.xlabel('asset')
         plt.ylabel('c')
         plt.title('Infinite horizon solution')
-# -
-
-

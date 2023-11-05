@@ -139,7 +139,7 @@ def make_grid_exp_mult(ming, maxg, ng, timestonest=20):
 
 # ## Tools used for wealth distributions 
 
-# + code_folding=[]
+# + code_folding=[1]
 ## lorenz curve
 def lorenz_curve(grid_distribution,
                  pdfs,
@@ -167,7 +167,7 @@ def lorenz_curve(grid_distribution,
 
 
 
-# + code_folding=[]
+# + code_folding=[1]
 ## lorenz curve
 def wealth_share(grid_distribution,
                  pdfs,
@@ -270,7 +270,7 @@ def combine_ind_markov(Ps):
     return P_combined 
 
 
-# +
+# + code_folding=[3, 12, 40, 76, 95]
 ## some functions used for markov-related calculations 
 ## a simple function that computes steady state of 2-state markov
 @njit
@@ -406,7 +406,7 @@ def mean_preserving_spread(mean,
 # ## Tools for the economy and market 
 
 
-# + code_folding=[31, 34]
+# + code_folding=[0, 31, 34]
 class CDProduction:
     ## An economy class that saves market and production parameters 
     
@@ -476,7 +476,7 @@ class CDProduction:
         print('R',R_fake)
 
 
-# + code_folding=[2, 22, 43]
+# + code_folding=[22, 43]
 ## get the stationary age distribution 
 @njit
 def stationary_age_dist(L,
@@ -486,17 +486,18 @@ def stationary_age_dist(L,
     stationary age distribution of the economy given 
     T: nb of periods of life 
     n: Population growth rate 
-    ProbLiv: survival probability 
+    ProbLiv: survival probability as a list of length of L
     """
     cum = 0.0
+    LivPrb_cum = np.cumprod(LivPrb)
     for i in range(L):
-        cum = cum + LivPrb**i/(1+n)
+        cum = cum + LivPrb_cum[i]/(1+n)
     sigma1 = 1/cum
     
     dist = np.empty(L)
     
     for i in range(L):
-        dist[i] = sigma1*LivPrb**i/(1+n)
+        dist[i] = sigma1*LivPrb_cum[i]/(1+n)
     return dist 
 
 def unemp_insurance2tax(μ,

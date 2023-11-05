@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.13.0
+#       jupytext_version: 1.11.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -65,7 +65,7 @@ inf_paras['unemp_insurance'] = 0.0
 inf_paras['P'] = np.array([[0.9,0.1],[0.2,0.8]])
 
 
-# + code_folding=[0]
+# + code_folding=[]
 inf_mkv_paras_dict = { 'U':inf_paras['U'], ## transitory ue risk
                     'unemp_insurance':inf_paras['unemp_insurance'],
                     'pension':inf_paras['pension'], ## pension
