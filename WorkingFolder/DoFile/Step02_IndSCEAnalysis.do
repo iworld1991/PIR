@@ -1,14 +1,21 @@
 clear
-global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
-global folder "${mainfolder}/SurveyData/"
-global otherdata_folder "${mainfolder}/OtherData"
-global graph_folder "${mainfolder}/Graphs/sce/"
-global sum_graph_folder "${mainfolder}/Graphs/ind"
-global sum_table_folder "${mainfolder}/Tables"
+*global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
+*global folder "${mainfolder}/SurveyData/"
+*global otherdata_folder "${mainfolder}/OtherData"
+*global graph_folder "${mainfolder}/Graphs/sce/"
+*global sum_graph_folder "${mainfolder}/Graphs/ind"
+*global sum_table_folder "${mainfolder}/Tables"
 
 
-cd ${folder}
-pwd
+global mainfolder XXXX\PIR\WorkingFolder\
+global folder XXXX\PIR\WorkingFolder\SurveyData\
+global otherdata_folder XXXX\PIR\WorkingFolder\OtherData\
+global graph_folder XXXX\PIR\WorkingFolder\Graphs\sce\
+global sum_graph_folder XXXX\PIR\WorkingFolder\Graphs\ind\
+global sum_table_folder XXXX\PIR\WorkingFolder\Tables\
+
+*cd ${folder}
+*pwd
 set more off 
 capture log close
 log using "${mainfolder}/indSCE_log",replace
@@ -18,7 +25,7 @@ log using "${mainfolder}/indSCE_log",replace
 *** before working with SCE, clean the macro monthly data 
 ********************************************************
 
-use "${mainfolder}/OtherData/macroM_raw.dta",clear 
+use "${otherdata_folder}macroM_raw.dta",clear 
 
 generate new_date = dofc(DATE)
 *format new_date %tm
@@ -347,7 +354,7 @@ label var lrincvar "log perceived risk (real)"
 label var spending "expected growth in spending"
 label var spending_r "expected growth in spending (real)"
 
-/*
+
 *************************************
 *** Poisson rate in expectations 
 **************************************
@@ -364,7 +371,7 @@ label var exp_f "expected Poisson job-finding rate"
 gen exp_s_1y = log(1-UEprobInd)/(-12) 
 * can use exp_eu from micro data 
 label var exp_s_1y "expected Poisson separation rate (1 year)"
-*/
+
 
 *************************************
 *** Variables for overreaction test 
@@ -621,7 +628,7 @@ graph bar rincsd rincsd_sub_rl, ///
 		   bar(2, lcolor(navy) fcolor(gs15) lpattern(dash) lwidth(medium)) ///
 		   title("Perceived and calibrated risk",size(med)) ///
 		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "perceived risk") label(2 "calibrated risk") )
+		   legend(pos(6) row(2) label(1 "perceived risk") label(2 "calibrated risk") )
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_simple.png", as(png) replace 
 
@@ -634,7 +641,7 @@ graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
 		   bar(5, color(orange)) ///
 		   title("Perceived and calibrated risk by education",size(med)) ///
 		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "calibrated risk") label(5 "calibrated permanent risk"))
+		   legend(pos(6) row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "calibrated risk") label(5 "calibrated permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare.png", as(png) replace 
 
@@ -647,7 +654,7 @@ graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl if educ
 		   bar(5, color(orange)) ///
 		   title("Perceived and calibrated risk by age",size(med)) ///
 		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility") label(4 "calibrated risk") label(5 "calibrated permanent risk"))
+		   legend(pos(6)  row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility") label(4 "calibrated risk") label(5 "calibrated permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_age.png", as(png) replace 
 
@@ -658,7 +665,7 @@ graph bar rincsd rincsd_sub_rl, ///
 		   bar(2, lcolor(navy) fcolor(gs15) lpattern(dash) lwidth(medium)) ///
 		   title("Perceived and calibrated risk by education",size(med)) ///
 		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "perceived risk") label(2 "calibrated risk"))
+		   legend(pos(6) row(2) label(1 "perceived risk") label(2 "calibrated risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_educ_simple.png", as(png) replace 
 
@@ -671,7 +678,7 @@ graph bar rincsd incsd lwage_shk_gr_sd_age_sex rincsd_sub_rl psd2_sub_rl, ///
 		   bar(5, color(orange)) ///
 		   title("Perceived and calibrated risk by education",size(med)) ///
 		   ytitle("Average risk (std)")  ///
-		   legend(row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "calibrated risk") label(5 "calibrated permanent risk"))
+		   legend(pos(6) row(2) label(1 "PR") label(2 "PR (nominal)") label(3 "volatility")  label(4 "calibrated risk") label(5 "calibrated permanent risk"))
 
 graph export "${sum_graph_folder}/boxplot_rvar_compare_educ.png", as(png) replace 
 
@@ -683,7 +690,7 @@ graph export "${sum_graph_folder}/boxplot_rvar_compare_educ.png", as(png) replac
 tabout gender edu_g age_5 using "${sum_table_folder}/risks_compare.csv", ///
             c(mean rincsd median rincsd mean lwage_shk_gr_sd_age_sex mean rincsd_sub_rl mean psd2_sub_rl mean tsd2_sub_rl ) ///
 			f(3c 3c 3c 3c 3c 4c 4c) ///
-			clab(PR(mean) PR(median) Volatility(median) RealizedRisk PRisk TRisk) ///
+			clab(PR(mean) PR(median) Volatility CalibratedRisk PermanentRisk TransitoryRisk) ///
 			sum npos(tufte) rep style(csv) bt cl2(2-4 5-6) cltr2(.75em 1.5em) 
 
 ***************************************
@@ -808,91 +815,6 @@ esttab using "${sum_table_folder}/ind/autoreg_perceived_risk.csv", ///
 	   label mtitles se r2 ///
 	   drop(*.date) replace
 
-eststo clear
-
-************************************************
-** income shock /volatility and risk perceptions ********
-************************************************
-
-** earning risks 
-
-eststo clear
-label var prisk2_all_ch  "change in p risk"
-label var trisk2_all_ch "change in t risk"
-label var rincvar_all_now_ch "change in annual risk"
-label var rincvar_sub_now_ch "change in annual group risk"
-label var rincvar_all_now "realized annual earning risk"
-label var rincvar_sub_now "realized annual group earning risk"
-
-eststo: reghdfe rincvar_rv prisk2_all trisk2_all, a(ID)
-estadd local hasid "Yes",replace
-
-eststo: reghdfe rincvar_rv prisk2_sub trisk2_sub, a(ID)
-estadd local hasid "Yes",replace
-
-eststo: reghdfe rincvar_rv prisk2_all_ch trisk2_all_ch, a(ID)
-estadd local hasid "Yes",replace
-
-eststo: reghdfe rincvar_rv prisk2_sub_ch trisk2_sub_ch, a(ID)
-estadd local hasid "Yes",replace
-
-eststo: reghdfe rincvar_rv rincvar_all_now_ch, a(ID)
-estadd local hasid "Yes",replace
-
-eststo: reghdfe rincvar_rv rincvar_sub_now_ch, a(ID)
-estadd local hasid "Yes",replace
-
-esttab using "${sum_table_folder}/ind/extrapolation_earning_risk.csv", ///
-       stats(hasid r2 N, label("Individual FE" "R-squared" "Sample Size")) ///
-	   label mtitles se r2 ///
-       drop(_cons) replace
-eststo clear
-
-
-** event expectations 
-
-eststo clear
-
-** event risk perceptions 
-
-eststo: reghdfe exp_s_1y_rv l(1/4).exp_s_1y_fe, a(ID)
-estadd local hasid "Yes",replace
-
-eststo: reghdfe exp_s_rv l4.exp_s_fe, a(ID)
-estadd local hasid "Yes",replace
-
-eststo: reghdfe exp_f_rv l(1/4).exp_f_fe, a(ID)
-estadd local hasid "Yes",replace
-
-esttab using "${sum_table_folder}/ind/extrapolation_ue_risk.csv", label mtitles se r2 ///
-       stats(hasid r2 N, label("Individual FE" "R-squared" "Sample Size")) ///
-	   drop(_cons) replace 
-eststo clear
-
-
-*** earning risks at individual level within SCE  
-
-eststo clear
-
-label var lwage_1y_id_shk_gr "ind shock"
-label var lwage_1y_shk_gr "income shock"
-label var lwage_1y_shk_gr2 "income shock squared"
-
-** risk perceptions and experienced volatility 
-
-eststo: reghdfe lrincvar lwage_1y_shk_gr2, a(date)
-
-eststo: reghdfe lrincvar lwage_1y_shk_gr2, a(age edu_g gender)
-
-** risk perceptions and ue experience 
-
-eststo: reghdfe lrincvar u2e lwage_1y_shk_gr2, a(age edu_g gender)
-
-** risk perceptions and macroeconomy  
-eststo: reghdfe lrincvar uerate lwage_1y_shk_gr2, a(age edu_g gender)
-
-esttab using "${sum_table_folder}/ind/extrapolation_earning_risk_ind.csv", label mtitles se r2 ///
-drop(_cons) replace
 eststo clear
 
 

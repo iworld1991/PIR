@@ -8,24 +8,31 @@
 
 
 clear
-global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
-global folder "${mainfolder}/SurveyData/"
-global big_data_folder "/Users/Myworld/Dropbox/InfVar-local/workingfolder/SurveyData/SCE/"
-global otherfolder "${mainfolder}/OtherData/"
-global sum_graph_folder "${mainfolder}/Graphs/pop"
-global sum_table_folder "${mainfolder}/Tables"
 
-cd ${folder}
-pwd
+*global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
+*global folder "${mainfolder}/SurveyData/"
+*global big_data_folder "/Users/Myworld/Dropbox/InfVar-local/workingfolder/SurveyData/SCE/"
+*global otherfolder "${mainfolder}/OtherData/"
+*global sum_graph_folder "${mainfolder}/Graphs/pop"
+*global sum_table_folder "${mainfolder}/Tables"
+
+global mainfolder XXXX\PIR\WorkingFolder\
+global folder XXXX\PIR\WorkingFolder\SurveyData\
+global big_data_folder XXXX\PIR\WorkingFolder\SurveyData\SCE\
+global otherfolder XXXX\PIR\WorkingFolder\OtherData\
+global sum_graph_folder XXXX\PIR\WorkingFolder\Graphs\pop\
+global sum_table_folder XXXX\PIR\WorkingFolder\Tables\
+
+*cd ${folder}
+*pwd
 set more off 
-
 
 use "${big_data_folder}NYFED_SCE_13_16.dta",clear
 append using "${big_data_folder}NYFED_SCE_17_19.dta",force
 append using  "${big_data_folder}NYFED_SCE_20.dta",force
 
 sort date
-unique userid
+codebook userid
 
 ********************
 *** Date format ****

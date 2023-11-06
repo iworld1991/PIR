@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -23,7 +23,32 @@ import numpy.ma as ma
 import matplotlib.pyplot as plt
 import pandas as pd
 import copy as cp
-plt.style.use('ggplot')
+
+
+# +
+## figure plotting configurations
+
+plt.style.use('seaborn')
+plt.rcParams["font.family"] = "Times New Roman" #'serif'
+plt.rcParams['font.serif'] = 'Ubuntu'
+plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+plt.rcParams['axes.labelweight'] = 'bold'
+
+## Set the 
+plt.rc('font', size=25)
+# Set the axes title font size
+plt.rc('axes', titlesize=20)
+# Set the axes labels font size
+plt.rc('axes', labelsize=20)
+# Set the font size for x tick labels
+plt.rc('xtick', labelsize=20)
+# Set the font size for y tick labels
+plt.rc('ytick', labelsize=20)
+# Set the legend font size
+plt.rc('legend', fontsize=20)
+# Set the font size of the figure title
+plt.rc('figure', titlesize=20)
+# -
 
 from IncomeProcess import IMAProcess as ima
 
@@ -136,11 +161,11 @@ for i,paras_est in enumerate([data_para_est_full]):
     print('whole sample')
     fig = plt.figure(figsize=([13,12]))
     this_est = paras_est
-    p_risk = this_est[1][0][1:]**2
-    p_risk[p_risk<1e-4]= np.nan ## replace non-identified with nan
+    p_risk = abs(this_est[1][0][1:])
+    p_risk[p_risk<1e-5]= np.nan ## replace non-identified with nan
     print('Average permanent risk (std): ',str(np.nanmean(np.sqrt(p_risk))))
-    t_risk = this_est[1][1][1:]**2
-    t_risk[t_risk<1e-4]= np.nan ## replace non-identified with nan
+    t_risk = abs(this_est[1][1][1:])
+    t_risk[t_risk<1e-5]= np.nan ## replace non-identified with nan
     print('Average transitory risk (std): ',str(np.nanmean(np.sqrt(t_risk))))
     plt.subplot(2,1,1)
     plt.title('Permanent Risk')
@@ -149,7 +174,8 @@ for i,paras_est in enumerate([data_para_est_full]):
              'bv',
              markersize=20,
              label='Estimation')
-    plt.ylim(0.0,0.2)
+    plt.ylim(0.0,0.5)
+    plt.ylabel('std of permanent risk')
     plt.xticks(years,
                rotation='vertical')
     plt.grid(True)
@@ -163,7 +189,8 @@ for i,paras_est in enumerate([data_para_est_full]):
              label='Estimation')
     plt.xticks(years,
                rotation='vertical')
-    plt.ylim(0.0,0.1)
+    plt.ylim(0.0,0.35)
+    plt.ylabel('std of transitory risk')
     #plt.legend(loc=0)
     plt.grid(True)
     plt.savefig('../Graphs/sipp/permanent-transitory-risk-yearly.jpg')
@@ -222,6 +249,7 @@ data_para_est_full = estimate_sample(sample_full)
 
 ## time stamp 
 quarter_str = [string.replace('lwage_Q_id_shk_gr','') for string in sample_full.columns if 'lwage_Q_id_shk_gr' in string]
+quarter_str = [qst[:4]+'Q'+qst[4:] for qst in quarter_str]
 quarters = np.array(quarter_str) 
 
 # +
@@ -232,16 +260,20 @@ for i,paras_est in enumerate([data_para_est_full]):
     print('whole sample')
     fig = plt.figure(figsize=([13,12]))
     this_est = paras_est
-    p_risk = this_est[1][0][1:]**2
-    t_risk = this_est[1][1][1:]**2
-
+    p_risk = abs(this_est[1][0][1:])
+    t_risk = abs(this_est[1][1][1:])
+    p_risk[p_risk<1e-6]= np.nan
+    t_risk[t_risk<1e-6]= np.nan
     plt.subplot(2,1,1)
     plt.title('Permanent Risk')
     plt.plot(quarters,
              p_risk,
-             'r-o',
+             'c--o',
+             markersize=10,
+             #markerfacecolor='none',
              lw=lw,
              label='Estimation')
+    plt.ylabel('std of permanent risk')
     plt.xticks(quarters,
                rotation='vertical')
     plt.grid(True)
@@ -249,12 +281,15 @@ for i,paras_est in enumerate([data_para_est_full]):
     plt.subplot(2,1,2)
     plt.title('Transitory Risk')
     plt.plot(quarters,
-             t_risk,
-             'r-o',
+             t_risk, 
+             'c--o',
+             markersize=10,
+             #markerfacecolor='none',
              lw=lw,
              label='Estimation')
     plt.xticks(quarters,
                rotation='vertical')
+    plt.ylabel('std of transitory risk')
     plt.legend(loc=0)
     plt.grid(True)
     plt.subplots_adjust(
@@ -329,7 +364,9 @@ data_para_est_full = estimate_sample(sample_full)
 # + {"code_folding": []}
 ## time stamp 
 months_str = [string.replace('lwage_id_shk_gr','') for string in sample_full.columns if 'lwage_id_shk_gr' in string]
-months = np.array(months_str) # notice I dropped the first month 
+months = np.array(months_str)
+#months_str2 = [mst[:4]+'M'+mst[4:] for mst in months_str]
+#months2 = np.array(months_str2) # notice I dropped the first month 
 
 
 # + {"code_folding": [0]}
@@ -340,17 +377,21 @@ for i,paras_est in enumerate([data_para_est_full]):
     print('whole sample')
     fig = plt.figure(figsize=([13,12]))
     this_est = paras_est
-    p_risk = this_est[1][0][1:]**2
-    t_risk = this_est[1][1][1:]**2
+    p_risk = abs(this_est[1][0][1:])
+    t_risk = abs(this_est[1][1][1:])
+    p_risk[p_risk<1e-4]= np.nan
+    t_risk[t_risk<1e-4]= np.nan
     p_risk_mv = (p_risk[0:-2]+p_risk[1:-1]+p_risk[2:])/3
     t_risk_mv = (t_risk[0:-2]+t_risk[1:-1]+t_risk[2:])/3
     plt.subplot(2,1,1)
     plt.title('Permanent Risk')
     plt.plot(months[2:],
              p_risk_mv,
-             'r-o',
+             'r--o',
+             markersize=8,
              lw=lw,
              label='Estimation')
+    plt.ylabel('std of permanent risk')
     plt.xticks(months[2::4],
                rotation='vertical')
     plt.grid(True)
@@ -359,11 +400,13 @@ for i,paras_est in enumerate([data_para_est_full]):
     plt.title('Transitory Risk')
     plt.plot(months[2:],
              t_risk_mv,
-             'r-o',
+             'r--o',
+             markersize=8,
              lw=lw,
              label='Estimation')
     plt.xticks(months[2::4],
                rotation='vertical')
+    plt.ylabel('std of transitory risk')
     plt.legend(loc=0)
     plt.grid(True)
     plt.subplots_adjust(

@@ -1,14 +1,18 @@
 clear
-global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
-global folder "${mainfolder}/SurveyData/"
+*global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
+*global folder "${mainfolder}/SurveyData/"
+*global sum_graph_folder "${mainfolder}/Graphs/pop"
+*global sum_table_folder "${mainfolder}/Tables"
+*global otherdata_folder "${mainfolder}/OtherData"
+*global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/sipp/"
 
-global sum_graph_folder "${mainfolder}/Graphs/pop"
-global sum_table_folder "${mainfolder}/Tables"
-global otherdata_folder "${mainfolder}/OtherData"
-global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/sipp/"
+global mainfolder XXXX\PIR\WorkingFolder\
+global folder XXXX\PIR\WorkingFolder\SurveyData\
+global sum_graph_folder XXXX\PIR\WorkingFolder\Graphs\pop
+global sum_table_folder XXXX\PIR\WorkingFolder\Tables\
+global otherdata_folder XXXX\PIR\WorkingFolder\OtherData\
+global graph_folder XXXX\PIR\WorkingFolder\Graphs\sipp\
 
-cd ${folder}
-pwd
 set more off 
 
 ***************************
@@ -24,7 +28,7 @@ duplicates report year month userid
 *** Merge with demographics **
 *****************************
 
-merge 1:1 year month userid using "${folder}/SCE/IncExpSCEProbIndM",keep(master match) 
+merge 1:1 year month userid using "${folder}/SCE/IncExpSCEProbIndM",keep(master match using) 
 rename _merge hh_info_merge
 
 ************************************
@@ -82,7 +86,7 @@ label var `mom'mv3 "`mom' (3-month average)"
 foreach mom in incmean incvar inciqr rincmean rincvar{
 twoway (tsline `mom',lwidth(med) lpattern(dash)) ///
        (tsline `mom'mv3,lwidth(thick) lpattern(solid)), ///
-	   legend(label(1 "`mom'") label(2 "3-month moving average `mom'")) ///
+	   legend(pos(6) label(1 "`mom'") label(2 "3-month moving average `mom'")) ///
 	   title("`mom' of expected income growth") ///
        ytitle("`mom'") 
 	   
@@ -98,7 +102,7 @@ graph export "${sum_graph_folder}/median_`mom'.png",as(png) replace
 
 twoway (tsline rincvarmv3,lwidth(thick)  lcolor(navy) lpattern(dash)) ///
        (tsline rincvar_all_rlmv3,lwidth(thick) lpattern(solid) lcolor(red) yaxis(2)), ///
-	   legend(label(1 "Perceived") label(2 "Estimated (RHS)")) ///
+	   legend(pos(6) label(1 "Perceived") label(2 "Estimated (RHS)")) ///
 	   title("Perceived and estimated risk") ///
        ytitle("Perceived Risk") ///
 	   ytitle("Estimated Risk", axis(2)) 
@@ -108,7 +112,7 @@ graph export "${graph_folder}/real_volatility_compare.png",as(png) replace
 
 twoway (tsline rincvarmv3,lwidth(thick)  lcolor(navy) lpattern(dash)) ///
        (tsline prisk2_all_rlmv3,lwidth(thick) lpattern(solid)  lcolor(red) yaxis(2)), ///
-	   legend(label(1 "Perceived") label(2 "Estimated (RHS)")) ///
+	   legend(pos(6) label(1 "Perceived") label(2 "Estimated (RHS)")) ///
 	   title("Perceived and estimated permanent risk") ///
        ytitle("Perceived Risk") ///
 	   ytitle("Estimated Risk", axis(2)) 
@@ -118,7 +122,7 @@ graph export "${graph_folder}/real_permanent_compare.png",as(png) replace
 
 twoway (tsline rincvarmv3,lwidth(thick)  lcolor(navy) lpattern(dash)) ///
        (tsline trisk2_all_rlmv3,lwidth(thick) lpattern(solid)  lcolor(red) yaxis(2)), ///
-	   legend(label(1 "Perceived") label(2 "Estimated (RHS)")) ///
+	   legend(pos(6) label(1 "Perceived") label(2 "Estimated (RHS)")) ///
 	   title("Perceived and estimated transitory risk") ///
        ytitle("Permanent Risk") ///
 	   ytitle("Estimated Risk", axis(2)) 

@@ -1,11 +1,17 @@
 clear
-global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
-global folder "${mainfolder}/SurveyData/"
-global graph_folder "${mainfolder}/Graphs/"
-global sum_table_folder "${mainfolder}/Tables"
-global otherdata_folder "${mainfolder}/OtherData"
-cd ${folder}
-pwd
+*global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
+*global folder "${mainfolder}/SurveyData/"
+*global graph_folder "${mainfolder}/Graphs/"
+*global sum_table_folder "${mainfolder}/Tables"
+*global otherdata_folder "${mainfolder}/OtherData"
+
+
+global mainfolder XXXX\PIR\WorkingFolder\
+global folder XXXX\WorkingFolder\SurveyData\
+global graph_folder XXXX\PIR\WorkingFolder\Graphs\
+global sum_table_folder XXXX\PIR\WorkingFolder\Tables
+global otherdata_folder XXXX\PIR\WorkingFolder\OtherData\
+
 set more off 
 capture log close
 
@@ -368,7 +374,7 @@ graph export "${sum_graph_folder}/hist/hist_`mom'_`gp'.png",as(png) replace
 
 gen YM = year*100+month
 
-
+/*
 
 ** sub sample
 
@@ -399,35 +405,35 @@ egen rincvarmv3 = filter(rincvar), coef(1 1 1) lags(-1/1) normalise
 
 
 twoway (tsline rincvarmv3 if educ==3,lwidth(thick)) ///
-       (tsline tvarmv3 if educ==3,lcolor(red) lwidth(thick) yaxis(2)), ///
+       (tsline tvarmv3 if educ==3,lcolor(red) lwidth(thick)), ///
 	    xtitle("date") ///
 	   ytitle("") ///
 	   ytitle("") ///
-	   legend(label(1 "perceived") label(2 "realized transitory risk(RHS)") col(2)) ///
+	   legend(pos(6) label(1 "perceived") label(2 "realized transitory risk(RHS)") col(2)) ///
 	   title("Perceived and realized transitory risk") 
 graph export "${graph_folder}/sipp/real_transitory_by_edu_compare.png",as(png) replace  
 
  
 twoway (tsline rincvarmv3 if educ==3,lwidth(thick)) ///
-       (tsline pvarmv3 if educ==3,lcolor(red) lwidth(thick) yaxis(2)), ///
+       (tsline pvarmv3 if educ==3,lcolor(red) lwidth(thick)), ///
 	   xtitle("date") ///
 	   ytitle("") ///
 	   ytitle("") ///
-	   	legend(label(1 "perceived") label(2 "realized permanent risk(RHS)") col(2)) ///
+	   	legend(pos(6) label(1 "perceived") label(2 "realized permanent risk(RHS)") col(2)) ///
 	   title("Perceived and realized permanent risk") 
 graph export "${graph_folder}/sipp/real_permanent_by_edu_compare.png",as(png) replace 
 
 
 twoway  (tsline rincvarmv3 if educ==3,lwidth(thick)) ///
-       (tsline rincvar_sub_rlmv3 if educ==3,lcolor(red) lwidth(thick) yaxis(2)), ///
+       (tsline rincvar_sub_rlmv3 if educ==3,lcolor(red) lwidth(thick)), ///
 	    xtitle("date") ///
 	   ytitle("") ///
-	   legend(label(1 "perceived") label(2 "realized volatility (RHS)") col(2)) ///
+	   legend(pos(6) label(1 "perceived") label(2 "realized volatility (RHS)") col(2)) ///
 	   title("Perceived and realized volatility") 
 graph export "${graph_folder}/sipp/real_volatility_by_edu_compare.png",as(png) replace
  
 restore
-
+*/
 
 ********************
 ** Regression ******

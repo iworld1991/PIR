@@ -1,18 +1,17 @@
 ****************************************************
-***   This do files cleans SCE individual density **
-***   forecasts and moments. It exclude the top and *
-***   bottom 5 percentiles of mean and uncertainty. *
-***   It also plots histograms of mean forecast and *
-***   uncertainty. **********************************
+***   This do files cleans CPS_worker_flows_SA **
 *****************************************************
 
 
 clear
-global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
-global datafolder "${mainfolder}/OtherData/"
+*global mainfolder "/Users/Myworld/Dropbox/PIR/WorkingFolder"
+*global datafolder "${mainfolder}/OtherData/"
 
-cd ${folder}
-pwd
+global mainfolder XXXX\PIR\WorkingFolder\
+global datafolder XXXX\PIR\WorkingFolder\OtherData\
+
+*cd ${datafolder}
+*pwd
 set more off 
 
 import delimited "${datafolder}CPS_worker_flows_SA.csv", clear

@@ -2,11 +2,20 @@
 *! SIPP data cleaning
 *! Last modified: Feb 2022 by Tao 
 **************************************************************
-global datafolder "/Users/Myworld/Dropbox/SIPP/"
-global scefolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/SurveyData/SCE/"
-global otherdatafolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/"
-global table_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/sipp/"
-global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/sipp/"
+*global datafolder "/Users/Myworld/Dropbox/SIPP/"
+*global scefolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/SurveyData/SCE/"
+*global otherdatafolder "/Users/Myworld/Dropbox/PIR/WorkingFolder/OtherData/"
+*global table_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Tables/sipp/"
+*global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/sipp/"
+
+
+global datafolder XXXX\SIPP\
+global scefolder XXXX\PIR\WorkingFolder\SurveyData\SCE\
+global otherdatafolder XXXX\PIR\WorkingFolder\OtherData\
+global table_folder XXXX\PIR\WorkingFolder\Tables\sipp\
+global graph_folder XXXX\PIR\WorkingFolder\Graphs\sipp\
+
+
 
 clear
 use "${datafolder}sipp.dta"
@@ -37,7 +46,7 @@ drop date_str
 table date
 
 xtset uniqueid date
-unique uniqueid
+codebook uniqueid
 
 by uniqueid: gen tenure = _N if TJB1_MSUM!=.
 
@@ -79,6 +88,26 @@ by uniqueid: egen start_month = sum(start_survey*month)
 label var start_month "the month of year entering the survey"
 by uniqueid: egen end_month = sum(end_survey*month)
 label var end_month "the month of year exiting the survey"
+
+
+****************************
+** some prefiltering 
+**************************
+
+** exclude obs with irregular nb of hours worked. 
+
+foreach var in tot_hours_jb1{
+	egen `var'_mean = mean(`var'),by(uniqueid)
+	label var `var' "average hours worked by the individual"
+	replace `var'=. if `var'<0.5* `var'_mean | `var'>1.5*`var'_mean
+}
+
+
+foreach var in tot_hours_jb1{
+egen `var'_p1 = pctile(`var'),p(1) by(date)
+egen `var'_p99 = pctile(`var'),p(99) by(date)
+replace `var'=. if `var'<`var'_p1 | `var'>=`var'_p99
+}
 
 
 ** monthly 
@@ -162,7 +191,7 @@ label var wage_n_Y "nominal yearly wage rate of primary job"
 
 *************************************
 ***** Focus on job-stayers *********
-***** following Low et al 2010 *********
+***** following Low et al 2010 ******
 **************************************
 
 *****CREATES A NO-GAP SEQUENCE OF FIRM IDS: 123... OR 213...; 
@@ -238,6 +267,7 @@ drop if TJB1_IND>=9400
 table AJB1_MSUM
 **9 indicates allocation flags for the components
 
+** drop extreme values of hours worked. 
 
 
 **************************
@@ -489,7 +519,7 @@ reghdfe `var' age age2 age3, a(i.year_adj i.race i.gender i.educ i.TJB1_IND) res
 predict `var'_pr, 
 }
 
-** exporting all distribution of 
+** exporting all distribution 
 
 preserve 
 duplicates drop uniqueid,force
@@ -529,6 +559,10 @@ label var pvar_est_all3 "Yearly permanent risks in variance"
 ************************************************
 
 ** histograms of wage distribution 
+
+hist tot_hours_jb1, title("distribution of hours of worked") 
+graph export "${graph_folder}/hist_hours.png", as(png) replace 
+
 hist  wage, title("distribution of real wage rate") 
 graph export "${graph_folder}/hist_wage.png", as(png) replace 
 
@@ -574,7 +608,7 @@ twoway  (connected lwage_av_educ date if lwage_av!=. & educ==1) ///
         (connected lwage_av_educ date if lwage_av!=. & educ==2) ///
 		(connected lwage_av_educ date if lwage_av!=. & educ==3), ///
         title("The mean of log real wages") ///
-		legend(label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
+		legend(pos(6) label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
 graph export "${graph_folder}/log_wage_av_by_edu.png", as(png) replace 
 
 * standard deviation log wage
@@ -582,7 +616,7 @@ twoway  (connected lwage_sd_educ date if lwage_sd_educ!=. & educ==1) ///
         (connected lwage_sd_educ date if lwage_sd_educ!=. & educ==2) ///
 		(connected lwage_sd_educ date if lwage_sd_educ!=. & educ==3), ///
         title("The standard deviation of log real wages") ///
-		legend(label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
+		legend(pos(6) label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
 graph export "${graph_folder}/log_wage_sd_by_edu.png", as(png) replace 
 
 restore 
@@ -596,8 +630,8 @@ label define edu_glb 1 "HS dropout" 2 "HS graduate" 3 "College/above"
 label value educ edu_glb
 
 tabout year educ gender using "${table_folder}sum_table_sipp.csv", ///
-            c(N lwage_id_shk_gr sd lwage_id_shk_gr) ///
-			 f(0c 2c) clab(Obs Volatility) sum ///
+            c(N lwage_id_shk_gr sd lwage_id_shk_gr sd lwage_id_shk_y2y_gr) ///
+			 f(0c 2c) clab(Obs Volatility VolatilityY2Y) sum ///
 			  npos(tufte) style(csv) rep bt cltr2(.75em) 
 
 ************************************************
@@ -684,7 +718,7 @@ twoway  (connected avmv3 date if avmv3!=. & educ==1) ///
         (connected avmv3 date if avmv3!=. & educ==2) ///
 		(connected avmv3 date if avmv3!=. & educ==3), ///
         title("The mean of log real wage shocks") ///
-		legend(label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
+		legend(pos(6) label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
 graph export "${graph_folder}/log_wage_shk_gr_by_edu.png", as(png) replace 
 
 * standard deviation log wage
@@ -692,7 +726,7 @@ twoway  (connected sdmv3 date if sdmv3!=. & educ==1) ///
         (connected sdmv3 date if sdmv3!=. & educ==2) ///
 		(connected sdmv3 date if sdmv3!=. & educ==3), ///
         title("The standard deviation of log real wage shocks") ///
-		legend(label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
+		legend(pos(6) label(1 "HS dropout") label(2 "HS") label(3 "college") col(1)) 
 graph export "${graph_folder}/log_wage_shk_gr_sd_by_edu.png", as(png) replace 
  
 restore 
@@ -711,8 +745,8 @@ tabstat lwage_gr lwage_id_shk_gr, st(sd) by(gender)
 ** can be done by other grouping method  
 preserve 
 
-collapse  (count) ct = lwage_id_shk_gr ///
-          (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_gr , by(age_5yr gender educ) 
+collapse  (count) ct = lwage_id_shk_y2y_gr ///
+          (sd) lwage_shk_gr_sd_age_sex = lwage_id_shk_y2y_gr , by(age_5yr gender educ) 
 
 
 save "${otherdatafolder}/sipp/sipp_vol_edu_gender_age5.dta",replace
