@@ -145,7 +145,7 @@ if calibrated_model == True:
                    'L':lc_paras['L'],
                    'G':lc_paras['G'],
                    'LivPrb':lc_paras['LivPrb'],       ## living probability 
-        
+
         ## income risks 
                    'x':0.0,
                    'b_y':0.0,
@@ -614,7 +614,7 @@ class HH_OLG_Markov:
         self.model = model
         
         self.age_dist = stationary_age_dist(model.L,
-                                            n = 0.0,
+                                            n = lc_paras['n'],   ### be careful here!!!! mannually update the growth rate
                                             LivPrb = model.LivPrb)
         
         self.ss_dstn = cal_ss_2markov(model.P)

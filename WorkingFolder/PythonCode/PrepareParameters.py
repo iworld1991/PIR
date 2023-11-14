@@ -32,7 +32,7 @@ plt.rcParams['font.serif'] = 'Ubuntu'
 plt.rcParams['font.monospace'] = 'Ubuntu Mono'
 plt.rcParams['axes.labelweight'] = 'bold'
 
-## Set the 
+## Set the plotting style
 plt.rc('font', size=25)
 # Set the axes title font size
 plt.rc('axes', titlesize=20)
@@ -88,6 +88,11 @@ life_table = pd.read_excel("../OtherData/lifetable.xlsx",sheet_name='data')
 life_table['av_survial'] = 1-(life_table['male_D']+life_table['female_D'])/2
 LivProbs_y = np.array(life_table[(life_table['age']>25)&(life_table['age']<=25+L)]['av_survial'])
 LivProbs_q = y2q_interpolate(LivProbs_y)
+
+# ### Population growth rate 
+#
+
+pop_n = 0.005
 
 # ### Age profile of income 
 
@@ -300,6 +305,7 @@ life_cycle_paras_q = {'ρ': 2.0,
                     'σ_θ': np.sqrt(0.15**2*4), 
                     'U': 0.0, 
                     'LivPrb': LivProbs_q, 
+                    'n': (1+pop_n)**(1/4)-1,
                     'R': 1.01**(1/4), 
                     'W': 1.0, 
                     'T': T_q, 
@@ -352,7 +358,8 @@ life_cycle_paras_y = {'ρ': 2.0,
                     'σ_ψ': np.sqrt(0.15**2), 
                     'σ_θ': np.sqrt(0.15**2), 
                     'U': 0.0, 
-                    'LivPrb': LivProbs_y, 
+                    'LivPrb': LivProbs_y,
+                    'n': pop_n,
                     'R': 1.01, 
                     'W': 1.0, 
                     'T': T, 
@@ -468,7 +475,7 @@ blocknames =['risk',
             'subjective']
 
 prefernece = ['ρ','β']
-lifecycle = ['T','L'
+lifecycle = ['T','L','n',
              #'1-D'
             ]
 risk  = ['σ_ψ','σ_θ','U2U','E2E']
@@ -518,7 +525,9 @@ model_paras_by_block_df
 model_paras_by_block_df.loc['risk','source']='median estimates from the literature'
 model_paras_by_block_df.loc['initial condition','source']='estimated for age 25 in the 2016 SCF'
 model_paras_by_block_df.loc[('initial condition','bequest_ratio'),'source']='assumption'
-model_paras_by_block_df.loc['life cycle','source']='standard calibration'
+model_paras_by_block_df.loc[('life cycle','T'),'source']='standard calibration'
+model_paras_by_block_df.loc[('life cycle','L'),'source']='standard calibration'
+model_paras_by_block_df.loc[('life cycle','n'),'source']='U.S. Census'
 model_paras_by_block_df.loc[('preference','β'),'source']='calibrated to match average wealth/income ratio'
 model_paras_by_block_df.loc[('preference','ρ'),'source']='standard calibration'
 model_paras_by_block_df.loc['policy','source']='U.S. average'
@@ -543,8 +552,9 @@ para_latex = ['$\\sigma_\\psi$',
               '$E2E$',
               '$\\sigma_\\psi^{\\text{init}}$',
               'bequest ratio',
+               '$n$',
               '$T$',
-              '$L$',
+              '$L$',        
               #'$1-D$',
               '$\\rho$',
               '$\\beta$',
@@ -570,3 +580,5 @@ model_paras_by_block_df=model_paras_by_block_df.reset_index(level=1, drop=True)
 model_paras_by_block_df.to_excel('../Tables/calibration.xlsx')
 
 model_paras_by_block_df
+
+

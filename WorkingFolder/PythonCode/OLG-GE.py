@@ -691,7 +691,7 @@ class HH_OLG_Markov:
         self.model = model
         
         self.age_dist = stationary_age_dist(model.L,
-                                            n = 0.0,
+                                            n = lc_paras['n'],
                                             LivPrb = model.LivPrb)
         
         self.ss_dstn = cal_ss_2markov(model.P)
@@ -1461,29 +1461,30 @@ fig, ax = plt.subplots(figsize=(16,8))
 
 for k,model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
+    scale_adjust = np.mean(np.log(np.array(SCF_profile['mv_wealth'][2:])))-np.mean(np.log(model_solution['A_life']))
+    ## scale adjust computed by the initial difference in size of model and data 
     ax.plot(age_lc[1:],
-           np.log(model_solution['A_life']),
+           np.log(model_solution['A_life'])+scale_adjust,
            line_patterns[k],
-           label= model_names[k])
-ax.set_ylim([-0.5,3.5])
+           label= model_name)
+    
+ax.set_ylim([8,15])
 
-ax2 = ax.twinx()
-ax2.set_ylim([10.5,15])
-ax2.vlines(lc_mkv.T+25,
-          10.5,
+ax.vlines(lc_mkv.T+25,
+          8,
           15,
           color='k',
           label='retirement'
          )
-ax2.bar(age_lc[1:],
-        np.log(SCF_profile['mv_wealth'][1:]),
-       label='SCF (RHS)')
-
+ax.bar(age_lc,
+        np.log(SCF_profile['mv_wealth']),
+          alpha = 0.4,
+       label='SCF wealth')
 ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth in model')
-ax2.set_ylabel('Log wealth SCF')
+ax.set_ylabel('Log wealth')
+ax.legend(loc=0)
+
 ax.legend(loc=1)
-ax2.legend(loc=2)
 #fig.savefig('../Graphs/model/life_cycle_a_compare_pe.png')
 
 
@@ -1497,7 +1498,7 @@ for k, model in enumerate(models):
     
     ## get h2m fraction: an arbitrary definition for now. a2p ratio smaller than 5 
     h2m_pe_where = np.where(model_solution['a_grid_dist']<=h2m_cut_off)
-    h2m_share =model_solution['a_pdfs_dist'][h2m_pe_where].sum()
+    h2m_share = model_solution['a_pdfs_dist'][h2m_pe_where].sum()
 
     ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
             model_solution['ap_pdfs_dist'],
@@ -1543,30 +1544,28 @@ plt.title('Life cycle profile of wealth')
 
 for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
-    ax.plot(age_lc[:-2],
-            np.log(model_solution['A_life'])[:-1],
-            line_patterns[k],
-           label = model_names[k])
+    scale_adjust = np.mean(np.log(np.array(SCF_profile['mv_wealth'][2:])))-np.mean(np.log(model_solution['A_life']))
+    ## scale adjust computed by the initial difference in size of model and data 
+    ax.plot(age_lc[1:],
+           np.log(model_solution['A_life'])+scale_adjust,
+           line_patterns[k],
+           label= model_name)
 
-ax.set_ylim([-0.5,3.5])
+ax.set_ylim([10,15])
 
-ax2 = ax.twinx()
-ax2.set_ylim([10.5,15])
-ax2.vlines(lc_mkv.T+25,
-          10.5,
+ax.vlines(lc_mkv.T+25,
+          10,
           15,
           color='k',
           label='retirement')
-ax2.bar(age_lc,
+ax.bar(age_lc,
         np.log(SCF_profile['mv_wealth']),
        #'k--',
        label='SCF (RHS)')
 
 ax.set_xlabel('Age')
 ax.set_ylabel('Log wealth')
-ax2.set_ylabel('Log wealth SCF')
 ax.legend(loc=1)
-ax2.legend(loc=2)
 #fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
 
 
@@ -1592,9 +1591,3 @@ ax.set_xlim([-10,30])
 
 
 #fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
-
-# -
-
-
-
-
