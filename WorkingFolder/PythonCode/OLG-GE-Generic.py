@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -331,7 +331,7 @@ def calc_transition_matrix(model,
         
                         
         for k in range(model.L): ## loop over agents at different ages, k
-            
+            #print("Calculating transition matrix for age "+str(k))
             age_id = k
             age = age_id + 1
             year_left = model.L-age
@@ -347,7 +347,7 @@ def calc_transition_matrix(model,
             
             n_mgrid = len(this_dist_mGrid)
             
-            Cnow_u= np.empty(n_mgrid,dtype = np.float64)
+            Cnow_u = np.empty(n_mgrid,dtype = np.float64)
             Cnow_e = np.empty(n_mgrid,dtype = np.float64)
 
             fix_epsGrid = 1.0 ## can be anything because c is not a function of eps
@@ -431,7 +431,7 @@ def calc_transition_matrix(model,
 
             else:  ## slow method  (2-state Markov implemented)
 
-                    
+                #print('calculating U2U transition')
                 # Generate Transition Matrix for u2u 
                 TranMatrix_uu = gen_tran_matrix(this_dist_mGrid,
                                                this_dist_pGrid,
@@ -440,7 +440,7 @@ def calc_transition_matrix(model,
                                                perm_shks_G_ef,
                                                tran_shks_ef_u)
                 
-    
+                #print('calculating U2E transition')
                 # Generate Transition Matrix for u2e
                 
                 TranMatrix_ue = gen_tran_matrix(this_dist_mGrid,
@@ -452,14 +452,14 @@ def calc_transition_matrix(model,
 
                         
                 # Generate Transition Matrix for e2u 
-                
+                #print('calculating E2U transition')
                 TranMatrix_eu = gen_tran_matrix(this_dist_mGrid,
                                                this_dist_pGrid,
                                                 bNext_e,
                                                shk_prbs,
                                                perm_shks_G_ef,
                                                tran_shks_ef_u)
-                        
+                #print('calculating E2E transition')
                 # Generate Transition Matrix for e2e 
                 TranMatrix_ee = gen_tran_matrix(this_dist_mGrid,
                                                this_dist_pGrid,
@@ -480,6 +480,8 @@ def calc_transition_matrix(model,
             tran_matrix_u_list.append( tran_matrix_u ) #This is the transition for someone who's state today is unemployed
             tran_matrix_e_list.append( tran_matrix_e )
             
+            
+            #print("Done with calculating transition matrix for age "+str(k))
                 
         tran_matrix_list = List([tran_matrix_u_list,
                                  tran_matrix_e_list])
@@ -696,7 +698,7 @@ class HH_OLG_Markov:
                         std_p = model.sigma_psi
                     else:
                         std_p = 1e-2
-                    max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
+                    max_p = max_p_fac*std_p*(1/(1-model.LivPrb[i]))**0.5 # Consider probability of staying alive this period
                     right_sided_grid = make_grid_exp_mult(1.05+1e-3, np.exp(max_p), num_pointsP, 2)
                     left_sided_gird = np.append(1.0/np.fliplr([right_sided_grid])[0],np.ones(1))
                     left_sided_gird = 1.0/np.fliplr([right_sided_grid])[0]
@@ -1164,8 +1166,8 @@ production = CDProduction(α = production_paras['α'],
                          target_W = production_paras['W']) 
 
 ## nb of grids used for transition matrix  
-n_m = 60
-n_p = 50
+n_m = 50
+n_p = 60
 # -
 
 
@@ -1325,7 +1327,7 @@ ax.plot(age_lc[:-2],
         np.log(market_OLG_mkv.households.A_life)[:-1],
        'r-o',
        label='model')
-ax.set_ylim([-0.5,3.5])
+ax.set_ylim([-2.5,2.5])
 
 ax.set_xlabel('Age')
 ax.set_ylabel('Log wealth')
@@ -1361,3 +1363,6 @@ ax.plot(np.log(market_OLG_mkv.households.ap_grid_dist+1e-5),
          market_OLG_mkv.households.ap_pdfs_dist)
 ax.set_xlabel(r'$log(a)$')
 ax.set_ylabel(r'$prob(a)$')
+# -
+
+

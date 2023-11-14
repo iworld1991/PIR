@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -484,7 +484,7 @@ def stationary_age_dist(L,
                        LivPrb):
     """
     stationary age distribution of the economy given 
-    T: nb of periods of life 
+    L: nb of periods of life 
     n: Population growth rate 
     ProbLiv: survival probability as a list of length of L
     """

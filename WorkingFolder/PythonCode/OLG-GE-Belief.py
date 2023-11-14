@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -991,7 +991,7 @@ class HH_OLG_Markov:
                         std_p = model.sigma_psi
                     else:
                         std_p = 1e-4
-                    max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
+                    max_p = max_p_fac*std_p*(1/(1-model.LivPrb[i]))**0.5 # Consider probability of staying alive this period
                     right_sided_grid = make_grid_exp_mult(1.05+1e-3, np.exp(max_p), num_pointsP, 2)
                     left_sided_gird = np.append(1.0/np.fliplr([right_sided_grid])[0],np.ones(1))
                     left_sided_gird = 1.0/np.fliplr([right_sided_grid])[0]
