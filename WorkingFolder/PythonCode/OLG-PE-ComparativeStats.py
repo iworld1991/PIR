@@ -152,7 +152,14 @@ if calibrated_model == True:
                    'bequest_ratio':lc_paras['bequest_ratio'],
          ## solutions 
                    'shock_draw_size':10.0,
-                   'grid_max':10}
+                   'grid_max':10,
+    
+           ## bequest motives
+        ######################
+                   'q': 1.0,
+                   'ρ_b':lc_paras['ρ'] ## homothetic bequest motive
+        #######################
+    }
     
     ## initialize the model with calibrated parameters 
     
@@ -1359,13 +1366,14 @@ ax.vlines(lc_mkv.T+25,
           color='k',
           label='retirement'
          )
-ax.bar(age_lc[1:],
+ax.plot(age_lc[1:],
         np.log(SCF_profile['mv_lqwealth'][1:]),
+        'k-',
        label='SCF (RHS)')
 
 ax.set_xlabel('Age')
 ax.set_ylabel('Log wealth')
-ax.legend(loc=1)
+ax.legend(loc=0)
 #fig.savefig('../Graphs/model/life_cycle_a_compare_pe.png')
 
 
@@ -1394,82 +1402,5 @@ ax.set_ylabel(r'$prob(a)$')
 
 #fig.savefig('../Graphs/model/distribution_a_compare_pe.png')
 
-
-## lorenz curve in ge
-
-fig, ax = plt.subplots(figsize=(6,6))
-for k,model in enumerate(models):
-    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
-    ax.plot(model_solution['share_agents_ap'],
-            model_solution['share_ap'],
-            line_patterns[k],
-            label = model_names[k]+', Gini={:.2f}'.format(model_solution['gini']))
-
-ax.plot(SCF_share_agents_ap,
-        SCF_share_ap, 'k-.',
-        label='SCF')
-ax.plot(model_solution['share_agents_ap'],
-        model_solution['share_agents_ap'], 
-        'k-',
-        label='equality curve')
-ax.legend()
-plt.xlim([0,1])
-plt.ylim([0,1])
-#fig.savefig('../Graphs/model/lorenz_a_compare_ge.png')
-
-
-## life cycle profile in ge
-
-fig, ax = plt.subplots(figsize=(16,8))
-plt.title('Life cycle profile of wealth')
-
-for k,model in enumerate(models):
-    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
-    scale_adjust = np.log(np.array(SCF_profile['mv_lqwealth'])[2])-np.log(model_solution['A_life'][1])
-    ax.plot(age_lc[1:],
-           np.log(model_solution['A_life'])+scale_adjust,
-           line_patterns[k],
-           label= model_names[k])
-ax.set_ylim([7.5,12])
-ax.vlines(lc_mkv.T+25,
-          7.5,
-          12,
-          color='k',
-          label='retirement'
-         )
-ax.bar(age_lc[1:],
-        np.log(SCF_profile['mv_lqwealth'][1:]),
-       label='SCF (RHS)')
-
-ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth')
-ax.legend(loc=1)
-#fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
-
-
-## wealth distributions in ge
-
-fig, ax = plt.subplots(figsize=(8,6))
-ax.set_title('Wealth distribution')
-for k, model in enumerate(models):
-    model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
-    
-    ## get h2m fraction: an arbitrary definition for now. a2p ratio smaller than 5 
-    h2m_ge_where = np.where(model_solution['a_grid_dist']<=0.5)
-    h2m_share =model_solution['a_pdfs_dist'][h2m_ge_where].sum()
-
-    ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
-            model_solution['ap_pdfs_dist'],
-            label=model_names[k]+', H2M={:.2f}'.format(h2m_share),
-            alpha = 0.8)
-ax.set_xlabel(r'$a$')
-ax.legend(loc=0)
-ax.set_ylabel(r'$prob(a)$')
-ax.set_xlim([-10,30])
-
-
-#fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
-
 # -
-
 
