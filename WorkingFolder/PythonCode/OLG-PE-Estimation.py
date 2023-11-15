@@ -112,7 +112,7 @@ print(lc_paras_y)
 
 # ### Initialize a consuption/saving model
 
-# + code_folding=[0]
+# + code_folding=[]
 ## initialize a class of life-cycle model with either calibrated or test parameters 
 
 #################################
@@ -529,7 +529,7 @@ def flatten_list(grid_lists,      ## nb.z x T x nb x nm x np
 
 
 
-# + code_folding=[0, 5, 17, 111, 245, 267, 298, 328]
+# + code_folding=[5, 111, 245, 267, 298, 328]
 class HH_OLG_Markov:
     """
     A class that deals with distributions of the household (HH) block
@@ -625,7 +625,7 @@ class HH_OLG_Markov:
                         std_p = model.sigma_psi
                     else:
                         std_p = 1e-2
-                    max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
+                    max_p = max_p_fac*std_p*(1/(1-model.LivPrb[i]))**0.5 # Consider probability of staying alive this period
                     right_sided_grid = make_grid_exp_mult(1.05+1e-3, np.exp(max_p), num_pointsP, 2)
                     left_sided_gird = np.append(1.0/np.fliplr([right_sided_grid])[0],np.ones(1))
                     left_sided_gird = 1.0/np.fliplr([right_sided_grid])[0]
@@ -992,7 +992,7 @@ sim_moments = solve_and_simulate(lc_mkv,
 
 # ### Comapre the model moments and SCF Data
 
-# + code_folding=[0]
+# + code_folding=[]
 ## get the wealth distribution from SCF (net worth)
 
 SCF2016 = pd.read_stata('rscfp2016.dta')
