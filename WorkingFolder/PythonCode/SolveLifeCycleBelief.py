@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -126,7 +126,11 @@ lc_data = [
     ('subjective',boolean),  ## belief is not necessarily equal to true 
     ('state_dependent_belief',boolean),  ## belief is state-dependent
     ('psi_shk_true_draws',float64[:]), ## draws of true permanent income shock 
-    ('eps_shk_true_draws',float64[:]) ## draws of true transitory income shock 
+    ('eps_shk_true_draws',float64[:]), ## draws of true transitory income shock 
+    
+    ## bequest motive 
+    ('q',float64), ## q = 0 if no bequest motive 
+    ('ρ_b',float64) ## elasticity of bequest 
 ]
 
 
@@ -149,7 +153,7 @@ class LifeCycle:
                  x = 0.0,            ## MA(1) coefficient of non-permanent income shocks
                  borrowing_cstr = True,  ## artificial zero borrowing constraint 
                  U = 0.0,   ## unemployment risk probability (0-1)
-                 LivPrb = 0.995,       ## living probability 
+                 LivPrb = np.ones(60)*0.995,       ## living probability 
                  b_y = 0.0,          ## loading of markov state on income  
                  R = 1.02,           ## interest factor 
                  W = 1.0,            ## Wage rate
@@ -181,9 +185,15 @@ class LifeCycle:
                  transfer = 0.0,
                  bequest_ratio = 0.0,
                  sigma_psi_true = 0.10,     ## true size of permanent income shocks
-                 sigma_eps_true = 0.10     ## ture size of transitory income risks  
+                 sigma_eps_true = 0.10,     ## ture size of transitory income risks  
+                 q = 0.0,     # no bequest by default
+                 ρ_b = 1.0 
                 ): 
         self.ρ, self.β = ρ, β
+        #####################
+        self.q, self.ρ_b = q,ρ_b 
+        ######################
+        
         self.R = R 
         self.W = W
         self.P, self.z_val = P, z_val
@@ -352,11 +362,19 @@ class LifeCycle:
         σ_init = np.empty((k,k2,n_z,n_f))
         m_init = np.empty((k,k2,n_z,n_f))
         
-        for z in range(n_z):
-            for f in range(n_f):
-                for j in range(k2):
-                    m_init[:,j,z,f] = self.a_grid
-                    σ_init[:,j,z,f] = m_init[:,j,z,f]
+        if self.q==0.0:
+            for z in range(n_z):
+                for f in range(n_f):
+                    for j in range(k2):
+                        m_init[:,j,z,f] = self.a_grid
+                        σ_init[:,j,z,f] = m_init[:,j,z,f]
+        else:
+            for z in range(n_z):
+                for f in range(n_f):
+                    for j in range(k2):
+                        σ_init[:,j,z,f] = (self.q*self.a_grid**(-self.ρ_b))**(-1/self.ρ)
+                        m_init[:,j,z,f] = self.a_grid + σ_init[:,j,z,f]
+    
         return m_init,σ_init
 
 

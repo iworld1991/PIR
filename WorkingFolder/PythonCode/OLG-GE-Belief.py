@@ -183,7 +183,14 @@ if calibrated_model == True:
                    'bequest_ratio':lc_paras['bequest_ratio'],
          ## solutions 
                    'shock_draw_size':10.0,
-                   'grid_max':10}
+                   'grid_max':10,
+        
+         ## bequest motives
+        ######################
+                   'q': 1.0,
+                   'ρ_b':lc_paras['ρ'] ## homothetic bequest motive
+        #######################
+    }
     ## initialize the model with calibrated parameters 
     lc_mkv = LifeCycle(**lc_mkv_paras)
    
@@ -1544,6 +1551,7 @@ SCF_share_agents_ap, SCF_share_ap = lorenz_curve(SCF_wealth_sort,
 SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
 
 SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
+SCF_profile['mv_lqwealth'] = SCF_profile['av_lqwealth'].rolling(3).mean()
 
 
 # -
@@ -1675,7 +1683,7 @@ line_patterns =['g-v',
 
 ## Lorenz curve of steady state wealth distribution
 
-fig, ax = plt.subplots(figsize=(6,6))
+fig, ax = plt.subplots(figsize=(8,6))
 for k,model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
     ax.plot(model_solution['share_agents_ap'],
@@ -1699,34 +1707,33 @@ plt.ylim([0,1])
 
 age_lc = SCF_profile.index
 
-fig, ax = plt.subplots(figsize=(16,8))
-plt.title('Life cycle profile of wealth')
+fig, ax = plt.subplots(figsize=(10,6))
+#plt.title('Life cycle profile of wealth')
 
 for k,model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
-    ax.plot(age_lc[1:-1],
-           np.log(model_solution['A_life'][:-1]),
+    scale_adjust = np.log(np.array(SCF_profile['mv_lqwealth'])[2])-np.log(model_solution['A_life'][0])
+    ## scale adjust computed by the initial difference in size of model and data 
+    ax.plot(age_lc[1:],
+           np.log(model_solution['A_life'])+scale_adjust,
            line_patterns[k],
            label= model_names[k])
-#ax.set_ylim([-0.5,3.5])
+    
+#ax.set_ylim([0,13])
 
-ax2 = ax.twinx()
-ax2.set_ylim([10.5,15])
-ax2.vlines(lc_mkv.T+25,
-          10.5,
-          15,
+ax.vlines(lc_mkv.T+25,
+          8,
+          12,
           color='k',
           label='retirement'
          )
-ax2.bar(age_lc[1:],
-        np.log(SCF_profile['mv_wealth'][1:]),
-       label='SCF (RHS)')
-
+ax.plot(age_lc,
+        np.log(SCF_profile['mv_lqwealth']),
+        'k-',
+       label='SCF liquid wealth')
 ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth in model')
-ax2.set_ylabel('Log wealth SCF')
-ax.legend(loc=1)
-ax2.legend(loc=2)
+ax.set_ylabel('Log liquid wealth')
+ax.legend(loc=0)
 #fig.savefig('../Graphs/model/Belief/life_cycle_a_compare_pe.png')
 
 
@@ -1777,35 +1784,33 @@ plt.ylim([0,1])
 
 ## life cycle profile in ge
 
-fig, ax = plt.subplots(figsize=(16,8))
-plt.title('Life cycle profile of wealth')
+fig, ax = plt.subplots(figsize=(10,6))
+#plt.title('Life cycle profile of wealth')
 
-for k, model in enumerate(models):
+for k,model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
-    ax.plot(age_lc[:-2],
-            np.log(model_solution['A_life'])[:-1],
-            line_patterns[k],
-           label = model_names[k])
+    scale_adjust = np.log(np.array(SCF_profile['mv_lqwealth'])[2])-np.log(model_solution['A_life'][0])
+    ## scale adjust computed by the initial difference in size of model and data 
+    ax.plot(age_lc[1:],
+           np.log(model_solution['A_life'])+scale_adjust,
+           line_patterns[k],
+           label= model_names[k])
+    
+#ax.set_ylim([0,13])
 
-#ax.set_ylim([-0.5,3.5])
-
-ax2 = ax.twinx()
-ax2.set_ylim([10.5,15])
-ax2.vlines(lc_mkv.T+25,
-          10.5,
-          15,
+ax.vlines(lc_mkv.T+25,
+          8,
+          12,
           color='k',
-          label='retirement')
-ax2.bar(age_lc,
-        np.log(SCF_profile['mv_wealth']),
-       #'k--',
-       label='SCF (RHS)')
-
+          label='retirement'
+         )
+ax.plot(age_lc,
+        np.log(SCF_profile['mv_lqwealth']),
+        'k-',
+       label='SCF liquid wealth')
 ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth')
-ax2.set_ylabel('Log wealth SCF')
-ax.legend(loc=1)
-ax2.legend(loc=2)
+ax.set_ylabel('Log liquid wealth')
+ax.legend(loc=0)
 #fig.savefig('../Graphs/model/Belief/life_cycle_a_compare_ge.png')
 
 
@@ -1827,3 +1832,5 @@ ax.legend(loc=0)
 ax.set_ylabel(r'$prob(a)$')
 
 #fig.savefig('../Graphs/model/Belief/distribution_a_compare_ge.png')
+# -
+
