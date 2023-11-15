@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -67,7 +67,7 @@ from scipy.optimize import minimize
 # + code_folding=[0]
 ## figure plotting configurations
 
-plt.style.use('seaborn-v0_8')
+plt.style.use('seaborn')
 plt.rcParams["font.family"] = "Times New Roman" #'serif'
 plt.rcParams['font.serif'] = 'Ubuntu'
 plt.rcParams['font.monospace'] = 'Ubuntu Mono'
@@ -109,6 +109,12 @@ lc_paras_q = copy(lc_paras_Q)
 
 print(lc_paras_y)
 
+
+# +
+## alter life cycle paramesters 
+
+lc_paras_y['LivPrb'] = np.ones_like(lc_paras_y['LivPrb'] )*(1-0.006)
+# -
 
 # ### Initialize a consuption/saving model
 
@@ -625,7 +631,7 @@ class HH_OLG_Markov:
                         std_p = model.sigma_psi
                     else:
                         std_p = 1e-2
-                    max_p = max_p_fac*std_p*(1/(1-model.LivPrb))**0.5 # Consider probability of staying alive this period
+                    max_p = max_p_fac*std_p*(1/(1-model.LivPrb[i]))**0.5 # Consider probability of staying alive this period
                     right_sided_grid = make_grid_exp_mult(1.05+1e-3, np.exp(max_p), num_pointsP, 2)
                     left_sided_gird = np.append(1.0/np.fliplr([right_sided_grid])[0],np.ones(1))
                     left_sided_gird = 1.0/np.fliplr([right_sided_grid])[0]
@@ -1497,7 +1503,7 @@ def objective_est_rho_point(ρ):
                    method = 'trust-constr',
                    bounds = ((0.9,3.0),)
                    )
-print('The average $\rho$ estimated to match life-cycle liquid wealth profile in SCF is'+ str(ρ_mean_est))
+print(r'The average $\rho$ estimated to match life-cycle liquid wealth profile in SCF is'+ str(ρ_mean_est))
 # -
 
 # ### Test 3 jointly estimating $\beta$ and $\rho$ to match mean wealth and life cycle wealth
@@ -1588,3 +1594,6 @@ plt.plot(sim_moments['A_life'],
 plt.legend(loc=1)
 plt.ylabel('Log Net Wealth')
 plt.xlabel('Working Age')
+# -
+
+

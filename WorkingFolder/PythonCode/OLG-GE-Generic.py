@@ -1327,7 +1327,7 @@ ax.plot(age_lc[:-2],
         np.log(market_OLG_mkv.households.A_life)[:-1],
        'r-o',
        label='model')
-ax.set_ylim([-2.5,2.5])
+#ax.set_ylim([-2.5,4])
 
 ax.set_xlabel('Age')
 ax.set_ylabel('Log wealth')

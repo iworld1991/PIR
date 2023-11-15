@@ -1287,6 +1287,7 @@ import pandas as pd
 SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
 
 SCF_profile['mv_wealth'] = SCF_profile['av_wealth'].rolling(3).mean()
+SCF_profile['mv_lqwealth'] = SCF_profile['av_lqwealth'].rolling(3).mean()
 
 
 # -
@@ -1432,7 +1433,7 @@ h2m_cut_off = round(1/24,2)
 
 ## Lorenz curve of steady state wealth distribution
 
-fig, ax = plt.subplots(figsize=(6,6))
+fig, ax = plt.subplots(figsize=(8,6))
 for k,model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
     ax.plot(model_solution['share_agents_ap'],
@@ -1456,35 +1457,33 @@ plt.ylim([0,1])
 
 age_lc = SCF_profile.index
 
-fig, ax = plt.subplots(figsize=(16,8))
+fig, ax = plt.subplots(figsize=(10,6))
 #plt.title('Life cycle profile of wealth')
 
 for k,model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
-    scale_adjust = np.mean(np.log(np.array(SCF_profile['mv_wealth'][2:])))-np.mean(np.log(model_solution['A_life']))
+    scale_adjust = np.log(np.array(SCF_profile['mv_lqwealth'])[2])-np.log(model_solution['A_life'][0])
     ## scale adjust computed by the initial difference in size of model and data 
     ax.plot(age_lc[1:],
            np.log(model_solution['A_life'])+scale_adjust,
            line_patterns[k],
-           label= model_name)
+           label= model_names[k])
     
-ax.set_ylim([8,15])
+ax.set_ylim([6,13])
 
 ax.vlines(lc_mkv.T+25,
-          8,
-          15,
+          6,
+          13,
           color='k',
           label='retirement'
          )
-ax.bar(age_lc,
-        np.log(SCF_profile['mv_wealth']),
-          alpha = 0.4,
-       label='SCF wealth')
+ax.plot(age_lc,
+        np.log(SCF_profile['mv_lqwealth']),
+        'k-',
+       label='SCF liquid wealth')
 ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth')
+ax.set_ylabel('Log liquid wealth')
 ax.legend(loc=0)
-
-ax.legend(loc=1)
 #fig.savefig('../Graphs/model/life_cycle_a_compare_pe.png')
 
 
@@ -1516,7 +1515,7 @@ ax.set_ylabel(r'$prob(a)$')
 
 ## lorenz curve in ge
 
-fig, ax = plt.subplots(figsize=(6,6))
+fig, ax = plt.subplots(figsize=(8,6))
 for k,model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
     ax.plot(model_solution['share_agents_ap'],
@@ -1539,33 +1538,33 @@ plt.ylim([0,1])
 
 ## life cycle profile in ge
 
-fig, ax = plt.subplots(figsize=(16,8))
+fig, ax = plt.subplots(figsize=(10,6))
 plt.title('Life cycle profile of wealth')
 
 for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_GE.pkl','rb'))
-    scale_adjust = np.mean(np.log(np.array(SCF_profile['mv_wealth'][2:])))-np.mean(np.log(model_solution['A_life']))
+    scale_adjust = np.log(np.array(SCF_profile['mv_lqwealth'])[2])-np.log(model_solution['A_life'][0])
     ## scale adjust computed by the initial difference in size of model and data 
     ax.plot(age_lc[1:],
            np.log(model_solution['A_life'])+scale_adjust,
            line_patterns[k],
-           label= model_name)
+           label= model_names[k])
 
-ax.set_ylim([10,15])
+ax.set_ylim([6,13])
 
 ax.vlines(lc_mkv.T+25,
-          10,
-          15,
+          6,
+          13,
           color='k',
           label='retirement')
-ax.bar(age_lc,
-        np.log(SCF_profile['mv_wealth']),
-       #'k--',
+ax.plot(age_lc,
+        np.log(SCF_profile['mv_lqwealth']),
+       'k-',
        label='SCF (RHS)')
 
 ax.set_xlabel('Age')
-ax.set_ylabel('Log wealth')
-ax.legend(loc=1)
+ax.set_ylabel('Log liquid wealth')
+ax.legend(loc=0)
 #fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
 
 
@@ -1591,3 +1590,6 @@ ax.set_xlim([-10,30])
 
 
 #fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
+# -
+
+

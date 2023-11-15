@@ -83,16 +83,24 @@ def y2q_interpolate(xs_y):
 
 # ### Survival probability
 
+# +
+constant_survial = True
+
 #https://www.ssa.gov/oact/STATS/table4c6.html
 life_table = pd.read_excel("../OtherData/lifetable.xlsx",sheet_name='data')
 life_table['av_survial'] = 1-(life_table['male_D']+life_table['female_D'])/2
 LivProbs_y = np.array(life_table[(life_table['age']>25)&(life_table['age']<=25+L)]['av_survial'])
 LivProbs_q = y2q_interpolate(LivProbs_y)
+                                            
+if constant_survial:
+    LivProbs_y = np.ones_like(LivProbs_y)*(1-0.006)
+    LivProbs_q = y2q_interpolate(LivProbs_y)
+# -
 
 # ### Population growth rate 
 #
 
-pop_n = 0.005
+pop_n = 0.005 ## population growth rate from U.S. census
 
 # ### Age profile of income 
 
@@ -101,7 +109,7 @@ pop_n = 0.005
 ### Choose the data source of age profile here
 #############################################
 
-age_profile_data ='SIPP'
+age_profile_data ='SCF'
 
 if age_profile_data=='SIPP':
     ## import age income profile 
@@ -580,5 +588,7 @@ model_paras_by_block_df=model_paras_by_block_df.reset_index(level=1, drop=True)
 model_paras_by_block_df.to_excel('../Tables/calibration.xlsx')
 
 model_paras_by_block_df
+
+
 
 
