@@ -15,7 +15,7 @@
 # ---
 
 # ## Aggregate dynamics, stationary distribution and GE of a life-cycle economy
-# ### -- Comparative statistics analysis 
+#     -- Comparative statistics analysis 
 #
 # - author: Tao Wang
 # - this is a companion notebook to the paper "Perceived income risks"
@@ -169,12 +169,12 @@ if calibrated_model == True:
 # + code_folding=[]
 ## comparative statics over various variables 
 
-λ_ss_list = [0.0,0.02,0.05,0.1]
+paras_list = [0.99,1.5,2.0,3.0]
 
 models = []
 
-for model_i,λ_SS in enumerate(λ_ss_list):
-    lc_mkv_paras['λ_SS'] = λ_SS
+for model_i,ρ in enumerate(paras_list):
+    lc_mkv_paras['ρ'] = ρ
     this_model = LifeCycle(**lc_mkv_paras) 
     models.append(this_model)
 
@@ -183,7 +183,7 @@ for model_i,λ_SS in enumerate(λ_ss_list):
 
 n_types = len(models)
 specs = ['ob']*n_types
-model_names= ['lambda_SS'+str(i) for i,λ_SS in enumerate(λ_ss_list)]
+model_names= ['rho'+str(i) for i,ρ in enumerate(paras_list)]
 
 ms_stars = []
 σs_stars = []
@@ -210,7 +210,10 @@ t_finish = time()
 
 print("Time taken, in seconds: "+ str(t_finish - t_start))
 
+# -
 
+
+model_names
 
 # + code_folding=[0]
 ## compare solutions 
@@ -307,6 +310,7 @@ def calc_transition_matrix(model,
         
         ## permanent income growth factor
         G = model.G
+        λ_SS = model.λ_SS
         
         ## grid holders
  
@@ -1354,21 +1358,22 @@ plt.title('Life cycle profile of wealth')
 
 for k,model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
-    scale_adjust = np.log(np.array(SCF_profile['mv_lqwealth'])[2])-np.log(model_solution['A_life'][1])
+    scale_adjust = np.log(np.array(SCF_profile['mv_lqwealth'])[3])-np.log(model_solution['A_life'])[0]
     ax.plot(age_lc[1:],
            np.log(model_solution['A_life'])+scale_adjust,
            line_patterns[k],
            label= model_names[k])
-ax.set_ylim([7.5,12])
+ax.set_ylim([5,12])
 ax.vlines(lc_mkv.T+25,
-          7.5,
+          5,
           12,
           color='k',
           label='retirement'
          )
-ax.plot(age_lc[1:],
+ax.bar(age_lc[1:],
         np.log(SCF_profile['mv_lqwealth'][1:]),
-        'k-',
+        color='navy',
+       alpha=0.3,
        label='SCF (RHS)')
 
 ax.set_xlabel('Age')
@@ -1386,7 +1391,7 @@ for k, model in enumerate(models):
     model_solution = pickle.load(open('./model_solutions/'+ model_names[k]+'_PE.pkl','rb'))
     
     ## get h2m fraction: an arbitrary definition for now. a2p ratio smaller than 5 
-    h2m_pe_where = np.where(model_solution['a_grid_dist']<=0.5)
+    h2m_pe_where = np.where(model_solution['a_grid_dist']<=1/24)
     h2m_share =model_solution['a_pdfs_dist'][h2m_pe_where].sum()
 
     ax.plot(np.log(model_solution['ap_grid_dist']+1e-5),
@@ -1403,4 +1408,6 @@ ax.set_ylabel(r'$prob(a)$')
 #fig.savefig('../Graphs/model/distribution_a_compare_pe.png')
 
 # -
+
+
 
