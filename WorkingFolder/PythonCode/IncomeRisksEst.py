@@ -100,7 +100,7 @@ def estimate_sample(sample):
 # ### Estimation using SIPP data (yearly)
 
 ## SIPP data 
-SIPP_Y = pd.read_stata('../../../SIPP/sipp_matrix_Y.dta',
+SIPP_Y = pd.read_stata('../../../SIPP/sipp_matrix_Y2Y.dta',
                     convert_categoricals=False)   
 SIPP_Y.index = SIPP_Y['uniqueid']
 SIPP_Y = SIPP_Y.drop(['uniqueid'], axis=1)
@@ -150,8 +150,10 @@ data_para_est_full = estimate_sample(sample_full)
 sample_full.columns
 
 ## time stamp 
-year_str = [string.replace('lwage_Y_id_shk_gr','') for string in sample_full.columns if 'lwage_Y_id_shk_gr' in string]
+year_str = [string.replace('lwage_id_shk_y2y_gr','') for string in sample_full.columns if 'lwage_id_shk_y2y_gr' in string]
 years = np.array(year_str) 
+
+years
 
 # + {"code_folding": [3]}
 ## plot estimate 
@@ -193,7 +195,13 @@ for i,paras_est in enumerate([data_para_est_full]):
     plt.ylabel('std of transitory risk')
     #plt.legend(loc=0)
     plt.grid(True)
-    plt.savefig('../Graphs/sipp/permanent-transitory-risk-yearly.jpg')
+    #plt.savefig('../Graphs/sipp/permanent-transitory-risk-yearly.jpg')
+
+# +
+sipp_ests = {'YearlyPermanent':np.nanmean(np.sqrt(p_risk)),
+                   'YearlyTransitory':np.nanmean(np.sqrt(t_risk))}
+
+print(sipp_ests)
 # -
 
 # ### Estimation using SIPP data (quarterly)
@@ -299,7 +307,22 @@ for i,paras_est in enumerate([data_para_est_full]):
                    # top=0.9, 
                     #wspace=0.4, 
                     hspace=0.4)
-    plt.savefig('../Graphs/sipp/permanent-transitory-risk-quarterly.jpg')
+    #plt.savefig('../Graphs/sipp/permanent-transitory-risk-quarterly.jpg')
+
+# +
+sipp_ests['QuarterlyPermanent']=np.nanmean(np.sqrt(p_risk))
+sipp_ests['QuarterlyTransitory']=np.nanmean(np.sqrt(t_risk))
+
+print(sipp_ests)
+
+# +
+sipp_est_df = pd.DataFrame.from_dict(sipp_ests, orient='index')
+
+# Export the DataFrame as LaTeX
+latex_table = sipp_est_df.to_latex(index=True)
+
+# Print or save the LaTeX table
+print(latex_table)
 # -
 
 # ### Estimation using SIPP data (monthly)
