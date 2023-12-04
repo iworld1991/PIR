@@ -89,7 +89,7 @@ lc_paras_q = copy(lc_paras_Q)
 ##############
 ## low_beta for liquid 
 lc_paras_y['β'] = 0.96
-lc_paras_y['β_h'] = 0.96
+lc_paras_y['β_h'] = 0.98
 ###############
 
 print(lc_paras_y)
@@ -208,7 +208,7 @@ if calibrated_model == True:
     ## for the subjective model, only change the belief 
     lc_mkv_sub_paras = copy(lc_mkv_paras)
     lc_mkv_sub_paras['subjective'] = True 
-    lc_mkv_sub_paras['sigma_p_init'] = init_sigma_psi_av_new
+    #lc_mkv_sub_paras['sigma_p_init'] = init_sigma_psi_av_new
     lc_mkv_sub_paras['sigma_psi'] = lc_paras['σ_ψ_sub']
     lc_mkv_sub_paras['sigma_eps'] = lc_paras['σ_θ_sub']
     lc_mkv_sub = LifeCycle(**lc_mkv_sub_paras)
@@ -218,10 +218,9 @@ if calibrated_model == True:
         
     lc_mkv_sub_true_paras = copy(lc_mkv_sub_paras)
     lc_mkv_sub_true_paras['subjective'] = False
-    lc_mkv_sub_paras['sigma_p_init'] = init_sigma_psi_av_new
+    #lc_mkv_sub_paras['sigma_p_init'] = init_sigma_psi_av_new
     lc_mkv_sub_true_paras['sigma_psi_true'] = lc_paras['σ_ψ_sub']
     lc_mkv_sub_true_paras['sigma_eps_true'] =  lc_paras['σ_θ_sub']
-    #lc_mkv_sub_true_paras['sigma_p_init'] = np.sqrt(lc_paras['σ_ψ_init']**2+ 0.6**2)
 
     lc_mkv_sub_true = LifeCycle(**lc_mkv_sub_true_paras)
 
@@ -239,8 +238,8 @@ specs = ['ob',
          ]
 
 model_names=['baseline',
-             'SLPR',
-             'LPR',
+             'SLPR_pure',
+             'LPR_pure',
              ]
 
 ms_stars = []
@@ -1419,10 +1418,6 @@ model_results = solve_models(models,
 # + code_folding=[0] pycharm={"name": "#%%\n"}
 ## plot results from different models
 
-model_names=['baseline',
-             'SLPR',
-             'LPR',
-             ]
 
 line_patterns =['g-v',
                 'r-.',
@@ -1510,7 +1505,6 @@ ax.set_xlim([-10,30])
 
 ax.set_ylabel(r'$prob(a)$')
 
-#fig.savefig('../Graphs/model/distribution_a_compare_pe.png')
 
 
 ## lorenz curve in ge
@@ -1565,7 +1559,6 @@ ax.plot(age_lc,
 ax.set_xlabel('Age')
 ax.set_ylabel('Log liquid wealth')
 ax.legend(loc=0)
-#fig.savefig('../Graphs/model/life_cycle_a_compare_ge.png')
 
 
 ## wealth distributions in ge
@@ -1589,7 +1582,8 @@ ax.set_ylabel(r'$prob(a)$')
 ax.set_xlim([-10,30])
 
 
-#fig.savefig('../Graphs/model/distribution_a_compare_ge.png')
 # -
+
+
 
 
