@@ -109,7 +109,7 @@ pop_n = 0.005 ## population growth rate from U.S. census
 ### Choose the data source of age profile here
 #############################################
 
-age_profile_data ='SCF'
+age_profile_data ='SIPP'
 
 if age_profile_data=='SIPP':
     ## import age income profile 
@@ -117,7 +117,7 @@ if age_profile_data=='SIPP':
     age_profile = pd.read_stata('../OtherData/age_profile.dta')   
 
     ## select age range for the model and turn it into an array 
-    lc_wages = np.array(age_profile[(age_profile['age']>=24) &(age_profile['age']<=64)]['wage_age'])
+    lc_wages = np.array(age_profile[(age_profile['age']>=24) &(age_profile['age']<=24+T)]['wage_age'])
     #print(str(len(lc_wages)),'years since age 25')
 
     ## growth rates since initial age over life cicle before retirement
@@ -125,7 +125,7 @@ if age_profile_data=='SIPP':
 
     ## growth rates after retirement
 
-    lc_G_rt = np.ones(L-T)
+    lc_G_rt = np.ones(L-len(lc_G)) ## fill the rest periods 
     lc_G_rt[0] = 1/np.cumprod(lc_G)[-1]
 
 
@@ -147,7 +147,7 @@ if age_profile_data=='SIPP':
 elif age_profile_data=='SCF':
     ## import age income profile 
     SCF_profile = pd.read_pickle('data/SCF_age_profile.pkl')
-    SCF_profile = SCF_profile[(SCF_profile.index>=24) & (SCF_profile.index<=65)]
+    SCF_profile = SCF_profile[(SCF_profile.index>=24) & (SCF_profile.index<=24+T)]
     ## make age profile using age polynomial regressions 
     
     import statsmodels.api as sm
@@ -168,7 +168,7 @@ elif age_profile_data=='SCF':
     lc_p_incom = np.exp(np.array(SCF_profile['av_lwage_income_pr']))
     lc_G = lc_p_incom[1:]/lc_p_incom[:-1]
     
-    lc_G_rt = np.ones(L-T)
+    lc_G_rt = np.ones(L-len(lc_G))
     lc_G_rt[0] = 1/np.cumprod(lc_G)[-1]
 
     lc_G_full = np.concatenate([lc_G,lc_G_rt])
@@ -182,6 +182,9 @@ if __name__ == "__main__":
     plt.title('Determinstic life-cycle wage profile')
     plt.plot(np.cumprod(lc_G_full),
             'k-v')
+    plt.xlabel('Working Age')
+    plt.ylabel('Wage Relative to 25yr old')
+    plt.tight_layout()
     plt.savefig('../Graphs/sipp/age_wage_profile.pdf')
 
 # + code_folding=[0]
@@ -536,7 +539,7 @@ model_paras_by_block_df.loc[('initial condition','bequest_ratio'),'source']='ass
 model_paras_by_block_df.loc[('life cycle','T'),'source']='standard calibration'
 model_paras_by_block_df.loc[('life cycle','L'),'source']='standard calibration'
 model_paras_by_block_df.loc[('life cycle','n'),'source']='U.S. Census'
-model_paras_by_block_df.loc[('preference','β'),'source']='calibrated to match average wealth/income ratio'
+model_paras_by_block_df.loc[('preference','β'),'source']='targeting average wealth/income ratio'
 model_paras_by_block_df.loc[('preference','ρ'),'source']='standard calibration'
 model_paras_by_block_df.loc['policy','source']='U.S. average'
 model_paras_by_block_df.loc[('policy','λ'),'values']=np.nan
