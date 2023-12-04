@@ -110,12 +110,6 @@ lc_paras_q = copy(lc_paras_Q)
 print(lc_paras_y)
 
 
-# +
-## alter life cycle paramesters 
-
-lc_paras_y['LivPrb'] = np.ones_like(lc_paras_y['LivPrb'] )*(1-0.006)
-# -
-
 # ### Initialize a consuption/saving model
 
 # + code_folding=[0]
@@ -1176,7 +1170,10 @@ SCF_liq_dict['H2M share'] = SCF_liq_h2m_share
 
 SCF_liq_dict['A_life'] = np.array(SCF_profile['av_lqwealth'][:-1])/np.array(SCF_profile['av_lqwealth'])[0]
 ### normalized the life cycle wealth by the first observations 
+# -
 
+
+SCF_liq_dict['A_life'] 
 
 # + code_folding=[1, 5]
 ## lorenz curve 
@@ -1478,7 +1475,7 @@ def objective_est_beta_point(β):
 
 ## estimate the parameter 
 β_mean_est = ParaEst(objective_est_beta_point,
-       np.array([0.98]),
+       np.array([0.94]),
        method = 'trust-constr',
        bounds = ((0.9,0.99),)
        )
@@ -1548,8 +1545,8 @@ plt.plot(SCF_liq_dict['share_agents_ap'],
          SCF_liq_dict['share_ap'],
          'k-',
          label='data')
-plt.plot(sim_moments['share_agents_ap'],
-         sim_moments['share_ap'],
+plt.plot(sim_moments_est_paras['share_agents_ap'],
+         sim_moments_est_paras['share_ap'],
          'r-o',
          label='model')
 plt.legend(loc=1)
@@ -1566,8 +1563,8 @@ n_SCF,bins_SCF,_ = plt.hist(np.log(SCF_lqwealth_sort+1e-4),
                             color='black',
                             alpha=0.3,
                            label='data')
-n_model,bins_model,_ = plt.hist(np.log(sim_moments['ap_grid_dist']+1e-4),
-                                weights = sim_moments['ap_pdfs_dist'],
+n_model,bins_model,_ = plt.hist(np.log(sim_moments_est_paras['ap_grid_dist']+1e-4),
+                                weights = sim_moments_est_paras['ap_pdfs_dist'],
                                  density=True,
                                 bins=300,
                                 alpha=0.9,
@@ -1588,7 +1585,7 @@ plt.title('Life Cycle Liquid Wealth Profile')
 plt.plot(simple_moving_average(SCF_liq_dict['A_life'],6),
          'k-',
          label='data')
-plt.plot(sim_moments['A_life'],
+plt.plot(sim_moments_est_paras['A_life'],
          'r-o',
          label='model')
 plt.legend(loc=1)
