@@ -100,7 +100,7 @@ def estimate_sample(sample):
 # ### Estimation using SIPP data (yearly)
 
 ## SIPP data 
-SIPP_Y = pd.read_stata('../../../SIPP/sipp_matrix_Y2Y.dta',
+SIPP_Y = pd.read_stata('../OtherData/sipp/sipp_matrix_Y2Y.dta',
                     convert_categoricals=False)   
 SIPP_Y.index = SIPP_Y['uniqueid']
 SIPP_Y = SIPP_Y.drop(['uniqueid'], axis=1)
@@ -209,7 +209,7 @@ print(sipp_ests)
 #
 
 ## SIPP data 
-SIPP_Q = pd.read_stata('../../../SIPP/sipp_matrix_Q.dta',
+SIPP_Q = pd.read_stata('../OtherData/sipp/sipp_matrix_Q.dta',
                     convert_categoricals=False)   
 SIPP_Q.index = SIPP_Q['uniqueid']
 SIPP_Q = SIPP_Q.drop(['uniqueid'], axis=1)
@@ -329,7 +329,7 @@ print(latex_table)
 
 # + {"code_folding": []}
 ## SIPP data 
-SIPP = pd.read_stata('../../../SIPP/sipp_matrix.dta',
+SIPP = pd.read_stata('../OtherData/sipp/sipp_matrix.dta',
                     convert_categoricals=False)   
 SIPP.index = SIPP['uniqueid']
 SIPP = SIPP.drop(['uniqueid'], axis=1)
