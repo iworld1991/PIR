@@ -299,7 +299,7 @@ dt_combIndM = pd.merge(macroM,
 
 dt_combIndM
 
-# ### 4. Correlation with stock market outcomes 
+# ### 4. Correlation across series 
 
 corr_table = dt_combM.corr()
 corr_table
@@ -559,7 +559,7 @@ for gr in gr_vars:
 #corr_df.T.to_excel('../Tables/macro_corr_age_stock_gr.xlsx')
 corr_df.T
 
-# + {"code_folding": []}
+# + {"code_folding": [0]}
 ## correlation coefficients by sub group HHinc
 
 ### subgroup population summary statistics
@@ -679,82 +679,6 @@ corr_df.T
 
 forward = 12
 
-# + {"code_folding": []}
-## plots of correlation for MEDIAN population stats
-
-figsize = (80,40)
-lw = 20
-fontsize = 80
-
-for i,moms in enumerate( ['exp','var','iqr','rexp','rvar']):
-    fig, ax = plt.subplots(figsize = figsize)
-    ax2 = ax.twinx()
-    time = dt_combM.index.get_level_values(level=0)
-    ax.bar(time[:-forward], 
-           dt_combM['sp500'][forward:],
-           color = 'gray', 
-           width = 25,
-           label = 'sp500 YoY '+str(forward)+'m later')
-    ax2.plot(dt_combM[str(moms)+'Med'],
-             'r--',
-             lw = lw,
-             label=str(mom_dict[moms])+' (RHS)')
-    #ax.set_xticklabels(dt_combM.index)
-    ax.legend(loc = 2,
-              fontsize = fontsize)
-    ax.set_xlabel("month",fontsize = fontsize)
-    ax.set_ylabel('% return',fontsize = fontsize)
-    ax.tick_params(axis='both', 
-                   which='major', 
-                   labelsize = fontsize)
-    ax2.tick_params(axis='both', 
-                   which='major', 
-                   labelsize = fontsize)
-    ax2.legend(loc = 1,
-               fontsize = fontsize)
-    ax2.set_ylabel(moms,fontsize = fontsize)
-    #plt.savefig('../Graphs/pop/tsMed'+str(moms)+'_stock.jpg')
-    #cor,pval =st.pearsonr(np.array(dt_combM['sp500']),
-    #                      np.array(dt_combM[str(moms)+'Med']))
-    #print('Correlation coefficient is '+str(round(cor,3)) + ', p-value is '+ str(round(pval,3)))
-
-
-
-# + {"code_folding": []}
-## plots of correlation for Mean population stats
-
-for i,moms in enumerate( ['exp','var','iqr','rexp','rvar']):
-    fig, ax = plt.subplots(figsize = figsize)
-    ax2 = ax.twinx()
-    time = dt_combM.index.get_level_values(level=0)
-    ax.bar(time[:-forward],
-           dt_combM['sp500'][forward:],
-           color='gray',
-           width= 25,
-           label= 'sp500 YoY '+str(forward)+'m later')
-    ax2.plot(dt_combM[str(moms)+'Mean'],
-             'r--',
-             lw = lw,
-             label = str(mom_dict[moms])+' (RHS)')
-    #ax.set_xticklabels(dt_combM.index)
-    ax.legend(loc = 2,
-             fontsize = fontsize)
-    ax.set_xlabel("month",fontsize = fontsize)
-    ax.set_ylabel('% return',fontsize = fontsize)
-    ax.tick_params(axis='both', 
-                   which='major', 
-                   labelsize = fontsize)
-    ax2.tick_params(axis='both', 
-                   which='major', 
-                   labelsize = fontsize)
-    ax2.legend(loc = 1,
-              fontsize = fontsize)
-    #plt.savefig('../Graphs/pop/tsMean'+str(moms)+'_stock.jpg')
-
-    #cor,pval = st.pearsonr(np.array(dt_combM['sp500']),
-    #                      np.array(dt_combM[str(moms)+'Mean']))
-    #print('Correlation coefficient is '+str(round(cor,3)) + ', p-value is '+ str(round(pval,3)))
-
 # +
 ## moving average
 
@@ -836,7 +760,7 @@ for i,moms in enumerate( ['exp','var','iqr','rexp','rvar']):
 
 # -
 
-# ### 7b. Individual regressions 
+# ### 7b. Predictive regressions
 
 # + {"code_folding": []}
 for i,moms in enumerate( ['incexp','incvar','inciqr','rincvar','incskew']):
