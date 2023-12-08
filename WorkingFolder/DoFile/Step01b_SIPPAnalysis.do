@@ -9,7 +9,7 @@
 *global graph_folder "/Users/Myworld/Dropbox/PIR/WorkingFolder/Graphs/sipp/"
 
 
-global datafolder XXX\SIPP\
+global datafolder XXX\PIR\WorkingFolder\OtherData\sipp\
 global scefolder XXX\PIR\WorkingFolder\SurveyData\SCE\
 global otherdatafolder XXX\PIR\WorkingFolder\OtherData\
 global table_folder XXX\PIR\WorkingFolder\Tables\sipp\

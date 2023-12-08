@@ -11,46 +11,43 @@
 - For the most recent draft, see [here](./PIR.pdf).
 
 
-## Structure of the code for replicating the results of the paper
+## Structure of the code
 
 ## Empirics
 
-1. [Income risks decomposition](./WorkingFolder/PythonCode/IncomeRisksEst.ipynb) that draws on the [income process class](./WorkingFolder/PythonCode/IncomeProcess.ipynb)
- 
-2. [Micro empirical analysis](./WorkingFolder/PythonCode/MicroRiskProfile.ipynb) on the cross-sectional heterogeneity of perceived risks (PR)
+0. [Download SCE Individual Data](./WorkingFolder/PythonCode/DownloadSCE.ipynb)
+1. [Density estimation of the survey answers](./WorkingFolder/PythonCode/DoDensityEst.ipynb) that draws from the general code [DensityEst](./WorkingFolder/PythonCode/DensityEst.py)
+
+2. [Income risks decomposition](./WorkingFolder/PythonCode/IncomeRisksEst.ipynb) that draws on the [income process class](./WorkingFolder/PythonCode/IncomeProcess.ipynb)
+   - [Evidence for infrequent shocks to monthly wage growth](./WorkingFolder/PythonCode/IncomeRisksInfrequentEst.ipynb) 
+
+3. [Micro empirical analysis](./WorkingFolder/PythonCode/MicroRiskProfile.ipynb) on the cross-sectional heterogeneity of perceived risks (PR)
 
 ## Model
 
 ### Calibration
-1.  [Household Wealth Data from SCF](./WorkingFolder/PythonCode/SCFData.ipynb)
+1.  [Household wealth stats from SCF used for model comparison](./WorkingFolder/PythonCode/SCFData.ipynb)
 2. [Parameters](./WorkingFolder/PythonCode/PrepareParameters.ipynb): stored as a dictionary, to be directly imported into model notebooks
 3. [Calibration of the heterogeneous wage/unemployment risks from SCE](./WorkingFolder/PythonCode/HeterogeneousRisksEstMain.ipynb)
 
 ### Model
 1. [Life-cycle consumption/saving model with permanent/persistent/transitory income risks](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
- 
+   - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleBelief-ComparisonHARK.ipynb)
+   - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleBelief-Test.ipynb)
+   - [indirect estimation of preference parameters to match data moments](./WorkingFolder/PythonCode/OLG-PE-Estimation.ipynb)
+   - [comparative statistics analysis](./WorkingFolder/PythonCode/OLG-PE-ComparativeStats.ipynb)
 
-2. [Stationary distribution and GE of the life cycle economy producing the baseline result](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
-   - [an extended version with heterogeneous income risks and growth rates for model experiment results](./WorkingFolder/PythonCode/OLG-GE-HetroTypes.ipynb)
+2. [Stationary distribution and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
+   - [an extended version with heterogeneous income risks, growth rates and time preference](./WorkingFolder/PythonCode/OLG-GE-HetroTypes.ipynb)
 
 3. [Compare model results and data](./WorkingFolder/PythonCode/PlotModelResults.ipynb) 
 
 
 ## Other derivative results (not in the main body of the paper)
 
-### Empirics 
-1. [Density estimation of the survey answers](./WorkingFolder/PythonCode/DoDensityEst.ipynb) that draws from the general code [DensityEst](./WorkingFolder/PythonCode/DensityEst.py)
-2. [Evidence for infrequent shocks to monthly wage growth](./WorkingFolder/PythonCode/IncomeRisksInfrequentEst.ipynb) 
-
-#### Model 
-1. Life cycle problem sovlver
-   - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleBelief-ComparisonHARK.ipynb)
-   - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleBelief-Test.ipynb)
-   - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
-2. [Markov regime switching model of subjective PR](./WorkingFolder/PythonCode/SubjectiveProfileEst.ipynb) which draws from [model class](./WorkingFolder/PythonCode/MarkovSwitchingEst.ipynb)
-3. [An extended life-cycle model with a Markov belief state](./WorkingFolder/PythonCode/SolveLifeCycleBelief.ipynb)
+1. [Markov regime switching model of subjective PR](./WorkingFolder/PythonCode/SubjectiveProfileEst.ipynb) which draws from [model class](./WorkingFolder/PythonCode/MarkovSwitchingEst.ipynb)
+2. [An extended life-cycle model with a Markov belief state](./WorkingFolder/PythonCode/SolveLifeCycleBelief.ipynb)
 3. [An extended OLG-GE model with state-dependent beliefs of income risks](./WorkingFolder/PythonCode/OLG-GE-Belief.ipynb)
-
 
 ## Supporting utilities/resources
 
