@@ -25,7 +25,7 @@
 ## Model
 
 ### Calibration
-1.  [SCFMoments](./WorkingFolder/PythonCode/SCFData.ipynb)
+1.  [Household wealth stats from SCF used for model comparison](./WorkingFolder/PythonCode/SCFData.ipynb)
 2. [Parameters](./WorkingFolder/PythonCode/PrepareParameters.ipynb): stored as a dictionary, to be directly imported into model notebooks
 3. [Calibration of the heterogeneous wage/unemployment risks from SCE](./WorkingFolder/PythonCode/HeterogeneousRisksEstMain.ipynb)
 
@@ -33,7 +33,7 @@
 1. [Life-cycle consumption/saving model with permanent/persistent/transitory income risks](./WorkingFolder/PythonCode/SolveLifeCycle.ipynb)
    - [cross-validating the solutions with HARK](./WorkingFolder/PythonCode/SolveLifeCycleBelief-ComparisonHARK.ipynb)
    - [code-testing](./WorkingFolder/PythonCode/SolveLifeCycleBelief-Test.ipynb)
-   - a model [extension](./WorkingFolder/PythonCode/SolveLifeCycle-DC.ipynb) to allow adjustment cost of consumption (under development)
+  
 
 2. [Stationary distribution and GE of the life cycle economy](./WorkingFolder/PythonCode/OLG-GE.ipynb) (no aggregate risks)
    - [an extended version with heterogeneous income risks, growth rates and time preference](./WorkingFolder/PythonCode/OLG-GE-HetroTypes.ipynb)
@@ -52,7 +52,6 @@
 
 1. [Utility](./WorkingFolder/PythonCode/Utility.ipynb)
 
-2. [Latex table manipulation](./WorkingFolder/PythonCode/TexTablesMover.ipynb)
 <!-- #endregion -->
 
 ```python
