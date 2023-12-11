@@ -10,6 +10,16 @@
   - `git clone https://github.com/iworld1991/PIR.git`.   
 - For the most recent draft, see [here](./PIR.pdf).
 
+## Data information 
+
+ - [SIPP](https://www.census.gov/programs-surveys/sipp.html)
+ - [SCE](https://www.newyorkfed.org/microeconomics/sce/background.html)
+ - [SCF](https://www.federalreserve.gov/econres/scfindex.htm)
+ - Other Data
+   - [CPS for job flow rates](https://www.census.gov/data/datasets/time-series/demo/cps/cps-basic.html)
+   - [Fred for all other macroeconomic series](https://fred.stlouisfed.org/)
+   - [Life Table](https://www.ssa.gov/oact/STATS/table4c6.html)
+
 
 ## Structure of the code
 
