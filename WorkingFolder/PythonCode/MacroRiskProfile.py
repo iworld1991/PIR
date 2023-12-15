@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.11.2
+#       jupytext_version: 1.15.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -44,7 +44,7 @@ plt.rcParams['font.monospace'] = 'Ubuntu Mono'
 plt.rcParams['font.size'] = 15
 plt.rcParams['axes.labelsize'] = 15
 plt.rcParams['axes.labelweight'] = 'bold'
-
+plt.rcParams['lines.linewidth'] = 3
 plt.rcParams['xtick.labelsize'] = 15
 plt.rcParams['ytick.labelsize'] = 15
 plt.rcParams['legend.fontsize'] = 15
@@ -71,7 +71,7 @@ pd.options.display.float_format = '{:,.2f}'.format
 ## time span 
 
 start = datetime.datetime(2000, 1, 30)
-end = datetime.datetime(2020, 3, 30)
+end = datetime.datetime(2023, 3, 30)
 
 # + {"code_folding": []}
 ## downloading the data from Fred
@@ -142,6 +142,38 @@ macroM
 ## save macroM for further analysis 
 macroM.to_stata('../OtherData/macroM_raw.dta')
 
+# ## 1.2 job flow rates 
+
+flow = pd.read_stata('../OtherData/CPS_worker_flows_SA.dta')
+
+# +
+flow['date'] = flow['year'].astype(int).astype(str) + '-' + flow['month'].astype(int).astype(str)
+
+# Convert 'date' column to datetime format
+flow['date'] = pd.to_datetime(flow['date'], format='%Y-%m')
+
+# Set the 'date' column as the index
+flow.set_index('date', inplace=True)
+
+# +
+## time aggregation 
+
+flow['eurate_sa_1y'] = (1 -flow['eurate_sa']).rolling(window=12).apply(lambda x: 1-x.prod() )
+flow['uerate_sa_3m'] = (1 -flow['uerate_sa']).rolling(window=3).apply(lambda x: 1-x.prod() )
+
+## move forward to get realizations
+flow['eurate_sa_1y_fr'] = flow['eurate_sa_1y'].shift(-12)
+flow['uerate_sa_3m_fr'] = flow['uerate_sa_3m'].shift(-3)
+# -
+
+macroM = pd.merge(macroM,
+                 flow,
+                 left_index=True,
+                 right_index=True,
+                 how='inner')
+
+macroM
+
 # ###  2. Loading and cleaning perceived income series
 
 # + {"code_folding": []}
@@ -155,7 +187,7 @@ SCEDstIndM = pd.read_stata('../SurveyData/SCE/IncExpSCEDstIndM.dta')
 SCEIndM = pd.merge(SCEProbIndM,
                    SCEDstIndM,
                    on = ['userid','date'],
-                  how='inner')
+                  how='outer')
 
 # + {"code_folding": []}
 ## subselect the dataframe
@@ -175,7 +207,10 @@ dem_var = ['Q32',  ## age
 
 sub_var2 = ['IncSkew']
 
-IncSCEIndMoms = SCEIndM[sub_var+dem_var+sub_var2]
+sub_var3 = ['Q13new', ## 1year separation
+            'Q22new'] ## 3m job finding
+
+IncSCEIndMoms = SCEIndM[sub_var+dem_var+sub_var2+sub_var3]
 
 #IncSCEIndMomsEst = SCEDstIndM[sub_var2]
 
@@ -192,6 +227,8 @@ IncSCEIndMoms = IncSCEIndMoms.rename(columns={'Q24_mean': 'incexp',
                                                'Q24_rmean':'rincexp',
                                                'Q24_rvar': 'rincvar',
                                               'IncSkew':'incskew',
+                                              'Q13new':'exp_s',
+                                              'Q22new':'exp_f',
                                               'D6':'HHinc',
                                               'Q32':'age',
                                               'Q33':'gender',
@@ -235,7 +272,7 @@ for var in vars_cat:
     IncSCEIndMoms[var] = pd.Categorical(IncSCEIndMoms[var],ordered = False)
 
 # + {"code_folding": []}
-moms = ['incexp','incvar','inciqr','rincexp','rincvar','incskew']
+moms = ['incexp','incvar','inciqr','rincexp','rincvar','incskew','exp_s','exp_f']
 #moms_est = ['IncSkew','IncKurt']
 
 ## compute population summary stats for these ind moms
@@ -247,7 +284,9 @@ IncSCEPopMomsMed = pd.pivot_table(data = IncSCEIndMoms,
                                                                                    'incvar': 'varMed',
                                                                                    'inciqr': 'iqrMed',
                                                                                    'rincvar':'rvarMed',
-                                                                                  'incskew':'skewMed'})
+                                                                                  'incskew':'skewMed',
+                                                                                     'exp_s':'exp_sMed',
+                                                                                    'exp_f':'exp_fMed'})
 
 IncSCEPopMomsMean = pd.pivot_table(data = IncSCEIndMoms,
                                    index = ['date'],
@@ -257,7 +296,9 @@ IncSCEPopMomsMean = pd.pivot_table(data = IncSCEIndMoms,
                                                                                    'incvar': 'varMean',
                                                                                    'inciqr': 'iqrMean',
                                                                                    'rincvar':'rvarMean',
-                                                                                  'incskew':'skewMean'})
+                                                                                  'incskew':'skewMean', 
+                                                                                   'exp_s':'exp_sMean',
+                                                                                    'exp_f':'exp_fMean'})
 
 
 
@@ -269,7 +310,9 @@ IncSCEPopMomsStd = pd.pivot_table(data = IncSCEIndMoms,
                                                                                    'incvar': 'varStd',
                                                                                    'inciqr': 'iqrStd',
                                                                                    'rincvar':'rvarStd',
-                                                                                  'incskew':'skewStd'})
+                                                                                  'incskew':'skewStd',
+                                                                                  'exp_s':'exp_sStd',
+                                                                                    'exp_f':'exp_fStd'})
 # -
 
 T = len(IncSCEPopMomsMed)
@@ -280,9 +323,6 @@ T = len(IncSCEPopMomsMed)
 ## streamline the dates for merging
 
 # adjusting the end-of-month dates to the begining-of-month for combining
-#sp500MR.index = sp500MR.index.shift(1,freq='D')
-#vixM.index = vixM.index.shift(1,freq='D')
-
 
 IncSCEPopMomsMed.index = pd.DatetimeIndex(IncSCEPopMomsMed['date'] ,freq='infer')
 IncSCEPopMomsMean.index = pd.DatetimeIndex(IncSCEPopMomsMean['date'] ,freq='infer')
@@ -444,29 +484,87 @@ dt_combM3mv = dt_combM.rolling(3).mean()
 ## plots of correlation for 3-month moving mean average
 
 for i,moms in enumerate( ['exp','var','iqr','rexp','rvar','skew']):
-    fig, ax = plt.subplots(figsize = figsize)
+    fig, ax = plt.subplots()
     ax2 = ax.twinx()
     ax.plot(dt_combM3mv['he'],
            color='black',
-           lw = lw,
            label=' wage YoY')
     ax2.plot(dt_combM3mv[str(moms)+'Mean'],
              'r--',
-             lw = lw,
              label=str(mom_dict[moms])+' (RHS)')
-    ax.legend(loc= 1,
-             fontsize = fontsize)
-    ax.set_xlabel("month",fontsize = fontsize)
-    ax.set_ylabel('log growth',fontsize = fontsize)
-    ax2.legend(loc = 2,
-             fontsize = fontsize)
+    ax.legend(loc= 1)
+    ax.set_xlabel("month")
+    ax.set_ylabel('log growth')
+    ax2.legend(loc = 2)
     ax.tick_params(axis='both', 
-                   which='major', 
-                   labelsize = fontsize)
+                   which='major')
     ax2.tick_params(axis='both',
-                    which='major',
-                    labelsize = fontsize)
+                    which='major')
     plt.savefig('../Graphs/pop/tsMean3mv'+str(moms)+'_he.jpg')
+# -
+# ## 5. Comparing job transition rates
+
+
+dt_combM.tail()
+
+# +
+## plots of correlation for 3-month moving mean average
+
+fig, ax = plt.subplots()
+
+#ax.plot(dt_combM['exp_s'+'Med']/100,
+#       color='black',
+#       lw = lw,
+#       label='Perceived job separation probs (median)')
+ax.plot(dt_combM['exp_s'+'Mean']/100,
+       color='tab:blue',
+       label='Perceived job separation probs (mean)')
+
+ax.plot(dt_combM['eurate_sa_1y_fr'],
+         'r--',
+         label='Realized job separation prob (RHS)')
+
+ax.legend(loc= 1)
+ax.set_xlabel("month")
+ax.set_ylabel('Probs (0-1)')
+
+
+ax.tick_params(axis='both', 
+               which='major'
+              )
+
+corr = round(dt_combM[['exp_sMean','eurate_sa_1y_fr']].corr().iloc[0,1],3)
+
+ax.text(dt_combM.index[0], 0.3, "Correlation coef="+str(corr))
+
+
+# +
+## plots of correlation for 3-month moving mean average
+
+fig, ax = plt.subplots()
+#ax.plot(dt_combM['exp_f'+'Med']/100,
+#       color='black',
+#       lw = lw,
+#       label='Perceived job finding probs (median)')
+ax.plot(dt_combM['exp_f'+'Mean']/100,
+       color='tab:blue',
+       label='Perceived job finding probs (mean)')
+
+ax.plot(dt_combM['uerate_sa_3m_fr'],
+         'r--',
+         label='Realized job finding prob (RHS)')
+
+corr = round(dt_combM[['exp_fMean','uerate_sa_3m_fr']].corr().iloc[0,1],3)
+
+ax.text(dt_combM.index[0], 0.6, "Correlation coef="+str(corr))
+
+ax.legend(loc= 1)
+ax.set_xlabel("month")
+ax.set_ylabel('Probs (0-1)')
+
+ax.tick_params(axis='both', 
+               which='major'
+              )
 # -
 
 
