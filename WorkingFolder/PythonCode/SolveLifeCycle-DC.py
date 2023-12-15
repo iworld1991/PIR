@@ -373,7 +373,7 @@ class LifeCycle:
         return m_init,σ_init
 
 
-# + code_folding=[7]
+# + code_folding=[]
 ## This function takes the consumption values at different 
 ## grids of state variables from period t+1, and
 ## the model class, then generates the consumption values at t.
@@ -420,7 +420,12 @@ def EGM_combine(mϵ_in,
     G = lc.G[age_id+1]  ## get the age specific growth rate, G[T] is the sudden drop in retirement from working age
     LivProb = lc.LivPrb[age_id+1]  ## live probabilities
     ####################################
-
+    
+    #################################################
+    ## get the expected marginal utility scalor
+    E_psi_rho = np.mean((G/Γ(psi_shk_draws))**(-ρ))
+     #################################################
+        
     x = lc.x
     λ = lc.λ
     λ_SS = lc.λ_SS
@@ -486,10 +491,12 @@ def EGM_combine(mϵ_in,
                             
                 Ez = Ez / (len(psi_shk_draws)*len(eps_shk_draws))
                 ## the last step depends on if adjustment is fully flexible
+                ## the two cases can collapse into one formula, but I keep them separately.
                 if adjust_prob ==1.0:
                     σ_out[i, j, z] =  u_prime_inv(β * R* Ez)
                 elif adjust_prob <1.0:
-                    σ_out[i, j, z] =  adjust_prob/(1-LivProb*β*R*(1-adjust_prob))*u_prime_inv(β * R* Ez)
+                    σ_out[i, j, z] =  u_prime_inv(β * R*adjust_prob/(1-β*R*(1-adjust_prob))* Ez)
+                    ## need to check if LivProb should be in the denominator
 
     # Calculate endogenous asset grid
     mϵ_out = np.empty_like(σ_out)
@@ -527,6 +534,8 @@ def EGM_combine(mϵ_in,
 ## this function takes the consumption values at different grids of state 
 ###  variables from period t+1, and model class 
 ### and generates the consumption values at t 
+
+### still under development 
 
 @njit
 def EGM_DC(aϵ_in, σ_in, d_in, v_in, lc): 
@@ -935,7 +944,7 @@ if __name__ == "__main__":
     G = np.ones(L)
     YPath = np.cumprod(G)
 
-# + code_folding=[]
+# + code_folding=[0, 1]
 ## a deterministic income profile 
 if __name__ == "__main__":
 
@@ -950,7 +959,7 @@ if __name__ == "__main__":
 # + code_folding=[0, 1]
 if __name__ == "__main__":
     lc_paras = {'sigma_psi':0.15, # permanent 
-                'sigma_eps': 0.0, #transitory
+                'sigma_eps': 0.1, #transitory
                 'U':U,
                 'ρ':2,
                 'R':1.01,
@@ -1031,7 +1040,7 @@ if __name__ == "__main__":
 
     ## Initialize a model instance
     imp_adjust_paras = copy(lc_paras)
-    imp_adjust_paras['adjust_prob'] = 0.6
+    imp_adjust_paras['adjust_prob'] = 0.1
     
     imp_adjust = LifeCycle(**imp_adjust_paras)
 
