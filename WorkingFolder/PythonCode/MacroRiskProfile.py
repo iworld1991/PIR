@@ -174,6 +174,35 @@ macroM = pd.merge(macroM,
 
 macroM
 
+# ### 1.3 median wage growth
+
+# +
+## URLs from Atlanta Fed wage tracker
+URL_wage_tracker = 'https://www.atlantafed.org/-/media/documents/datafiles/chcs/wage-growth-tracker/wage-growth-data.xlsx'
+
+## save it to stata
+wage_tracker = pd.read_excel(URL_wage_tracker,
+                             sheet_name='data_overall',
+                             skiprows= [0])
+
+wage_tracker = wage_tracker.rename(columns={'Unnamed: 0':'date'})
+wage_tracker.index = pd.to_datetime(wage_tracker['date'])
+wage_tracker.index.name='date'
+wage_tracker = wage_tracker.apply(pd.to_numeric, errors='coerce')
+
+for var in wage_tracker.columns:
+    wage_tracker = wage_tracker.rename(columns={var:'wage_gr_'+var})
+    
+    
+macroM = pd.merge(macroM,
+                  wage_tracker,
+                  left_index=True,
+                  right_index=True,
+                  how='inner')
+# -
+
+macroM.
+
 # ###  2. Loading and cleaning perceived income series
 
 # + {"code_folding": []}
@@ -360,7 +389,7 @@ dt_combIndM = pd.merge(macroM,
                        right_on ='date')
 # -
 
-dt_combIndM
+dt_combIndM['']
 
 ## export to stata
 dt_combIndM.to_stata('../SurveyData/SCE/IncExpSCEIndMacroM.dta')
@@ -501,7 +530,29 @@ for i,moms in enumerate( ['exp','var','iqr','rexp','rvar','skew']):
     ax2.tick_params(axis='both',
                     which='major')
     plt.savefig('../Graphs/pop/tsMean3mv'+str(moms)+'_he.jpg')
+# +
+## plots of correlation for 3-month moving mean average
+
+for i,moms in enumerate( ['exp','var','iqr','rexp','rvar','skew']):
+    fig, ax = plt.subplots()
+    ax2 = ax.twinx()
+    ax.plot(dt_combM3mv['wage_gr_Job Stayer'],
+           color='tab:blue',
+           label=' wage YoY: job stayer')
+    ax2.plot(dt_combM3mv[str(moms)+'Mean'],
+             'r--',
+             label=str(mom_dict[moms])+' (RHS)')
+    ax.legend(loc= 1)
+    ax.set_xlabel("month")
+    ax.set_ylabel('log growth')
+    ax2.legend(loc = 3)
+    ax.tick_params(axis='both', 
+                   which='major')
+    ax2.tick_params(axis='both',
+                    which='major')
+    #plt.savefig('../Graphs/pop/tsMean3mv'+str(moms)+'_wage_growth_job_stayer.jpg')
 # -
+
 # ## 5. Comparing job transition rates
 
 
@@ -565,6 +616,3 @@ ax.set_ylabel('Probs (0-1)')
 ax.tick_params(axis='both', 
                which='major'
               )
-# -
-
-
