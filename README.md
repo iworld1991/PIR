@@ -1,5 +1,5 @@
 <!-- #region -->
-# Perceived versus Calibrated Income Risks in Heterogeneous-agent Consumption Models 
+# Data and Code for "Perceived versus Calibrated Income Risks in Heterogeneous-agent Consumption Models" 
 - Originally circulated with the title "Perceived Income Risks"
 - Author: Tao Wang
 
@@ -12,16 +12,47 @@
 
 ## Data information 
 
- - [SIPP](https://www.census.gov/programs-surveys/sipp.html)
- - [SCE](https://www.newyorkfed.org/microeconomics/sce/background.html)
- - [SCF](https://www.federalreserve.gov/econres/scfindex.htm)
+This paper uses datasets drawn from the following public sources. 
+
+ - United States Census Bureau. Survey of Income and Program Participation [SIPP](https://www.census.gov/programs-surveys/sipp.html): 2014 Panel Wave 1-4 (2014-2017 data), and 2018, 2019, 2020, 2021 waves
+ - Federal Reserve Bank of New York. Survey of Consumer Expectations [SCE](https://www.newyorkfed.org/microeconomics/sce/background.html): 2013-2021 microdata 
+ - Board of Governors of the Federal Reserve Board. Survey of Consumer Finances [SCF](https://www.federalreserve.gov/econres/scfindex.htm):  2016 vintage
  - Other Data
-   - [CPS for job flow rates](https://www.census.gov/data/datasets/time-series/demo/cps/cps-basic.html)
-   - [Fred for all other macroeconomic series](https://fred.stlouisfed.org/)
-   - [Life Table](https://www.ssa.gov/oact/STATS/table4c6.html)
+   - United States Census Bureau. Basic Monthly Current Population Survey [CPS](https://www.census.gov/data/datasets/time-series/demo/cps/cps-basic.html): job separation and finding rates calculated from CPS micro data for 2013-2022
+   - Federal Reserve Bank of St Louis [Fred](https://fred.stlouisfed.org/): headline CPI inflation for 2013-2022
+   - Social Services Administration. Actuarial Life Table [Life Table](https://www.ssa.gov/oact/STATS/table4c6.html): 2020
+
+## Structure of the replication package 
+- DoFile
+
+	 This file contains all Stata do files that cleans the CPS data, SIPP data for income risk estimation, SCE micro data. 
+- Graphs
+   - Graphs\ind
+   - Graphs\model
+   - Graphs\pop
+   - Graphs\sce
+   - Graphs\sipp
+   - Graphs\model\Belief
+   - Graphs\pop\hist
+- SurveyData 
+	- SurveyData\SCE
+- OtherData (See data sources above}
+	- OtherData\sipp
+- PythonCode 
+
+  See section “Structure of the code and replication instructions” below for full detail.
+  
+  - PythonCode\data
+  - PythonCode\parameters
+
+- Tables
+   Tables\ind
+   Tables\latex
+   Tables\model
+   Tables\sipp
 
 
-## Structure of the code
+## Structure of the code and replication instructions
 
 ## Empirics
 
