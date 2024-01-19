@@ -201,7 +201,7 @@ macroM = pd.merge(macroM,
                   how='inner')
 # -
 
-macroM.
+macroM
 
 # ###  2. Loading and cleaning perceived income series
 
@@ -226,7 +226,10 @@ sub_var = ['date',
            'Q24_mean',
            'Q24_iqr',
            'Q24_rmean',
-           'Q24_rvar']
+           'Q24_rvar',
+            #'Q30_new'
+          ]
+
 dem_var = ['Q32',  ## age
            'Q33',  ## gender
            'Q36',  ## education (1-8 low to high, 9 other)
@@ -262,7 +265,8 @@ IncSCEIndMoms = IncSCEIndMoms.rename(columns={'Q24_mean': 'incexp',
                                               'Q32':'age',
                                               'Q33':'gender',
                                               'Q36':'educ',
-                                              'Q6new': 'Stkprob'
+                                              'Q6new': 'Stkprob',
+                                             # 'Q30new':'exp_del'
                                              })
 
 
@@ -369,7 +373,7 @@ dt_combM = pd.concat([macroM,
 
 dt_combM.tail()
 
-dt_combM['rexpStd'].rolling(3).mean().plot(title='Cross-sectionl std of expected Growth')
+dt_combM['rexpStd'].rolling(3).mean().plot(title='Cross-sectionl std of Expected Growth')
 
 ## export to stata
 dt_combM.to_stata('../SurveyData/SCE/IncExpSCEPopMacroM.dta')
@@ -389,7 +393,7 @@ dt_combIndM = pd.merge(macroM,
                        right_on ='date')
 # -
 
-dt_combIndM['']
+dt_combIndM
 
 ## export to stata
 dt_combIndM.to_stata('../SurveyData/SCE/IncExpSCEIndMacroM.dta')
