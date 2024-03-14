@@ -14,35 +14,29 @@
 #     name: python3
 # ---
 
-# ## A life-cycle consumption model with adjustment inertia or discrete choice
+# ## A life-cycle consumption model with a discrete choice
 #
 # - author: Tao Wang
-# - date: Nov 2023
-# - this is a companion notebook to the paper "Perceived income risks"
+# - date: Jan 2024
 
-# - This notebook builds on a standard life-cycle consumption model with uninsured income risks and extends it to allow subjective beliefs about income risks
-#   - Preference/income process
+# - This notebook extends the basic life cycle class to solve an additional discrete choice problem using upper-envolope EGM 
 #
-#       - CRRA utility 
-#       - During work: labor income risk: permanent + MA(1)/persistent/transitory/2-state Markov between UE and EMP or between low and high risk + i.i.d. unemployment shock
-#        -  a deterministic growth rate of permanent income over the life cycle 
-#       - During retirement: receives a constant pension proportional to permanent income (no permanent/transitory income risks)
-#       - A positive probability of death before terminal age 
-#   
+# - We consider a simple example of a discrete choice: invest in financial literacy or not. 
+#   - besides consumption, the agent chooses to invest in their own financial literacy, by incurring a utility cost in the current perior for the benefit of a higher return in saving next period. 
 
 import numpy as np
 from interpolation import interp, mlinterp
 from numba import njit, float64, int64, boolean
 from numba.experimental import jitclass
 import matplotlib.pyplot as plt
-# %matplotlib inline
 from time import time
 from Utility import cal_ss_2markov,mean_preserving_spread
 from copy import copy 
 
 from resources_jit import MeanOneLogNormal as lognorm
+from SolveLifeCycle import EGM_br
 
-# + code_folding=[]
+# + code_folding=[0]
 ## plot configuration 
 
 plt.style.use('seaborn')
@@ -126,13 +120,16 @@ lc_data = [
     
     ## bequest motive 
     ('q',float64), ## q = 0 if no bequest motive 
-    ('ρ_b',float64) ## elasticity of bequest 
+    ('ρ_b',float64), ## elasticity of bequest 
+    
+    ### new value func
+    ('value_func',boolean), ## boolean to decide if calculating value funcs 
 ]
 
 
-# + code_folding=[1, 133, 165]
+# + code_folding=[1, 151, 155, 167, 173, 186, 189, 239]
 @jitclass(lc_data)
-class LifeCycle:
+class LifeCycleDC:
     """
     A class that stores primitives for the life cycle consumption problem.
     """
@@ -183,7 +180,9 @@ class LifeCycle:
                  sigma_psi_true = 0.10,     ## true size of permanent income shocks
                  sigma_eps_true = 0.10,     ## ture size of transitory income risks  
                  q = 0.0,     # no bequest by default
-                 ρ_b = 1.0 
+                 ρ_b = 1.0,
+                 ####
+                 value_func = False
                 ): 
         self.ρ, self.β = ρ, β
         #####################
@@ -261,13 +260,23 @@ class LifeCycle:
         ## this is for infinite horizon problem 
         #assert β * R < 1, "Stability condition failed."  
 
-
+        
+        ############
+        self.value_func = value_func
+        ############################
+        
     ## utility function 
     def u(self,c):
         if self.ρ!=1:
-            return c**(1-self.ρ)/(1-ρ)
+            return c**(1-self.ρ)/(1-self.ρ)
         elif self.ρ==1:
             return np.log(c)
+        
+    def u_inv(self,u):
+        if self.ρ!=1:
+            return (u*(1-self.ρ))**(1/(1-self.ρ))
+        elif self.ρ==1:
+            return np.exp(u)
     
     # marginal utility
     def u_prime(self, c):
@@ -276,7 +285,20 @@ class LifeCycle:
     # inverse of marginal utility
     def u_prime_inv(self, c):
         return c**(-1/self.ρ)
-
+    
+    
+    #########################
+    ## transfer func for v func
+    #####
+    
+    def vTransf(self,v):
+        # inverse transform v function after linear interporlation\n",
+        return self.u_inv(v)
+    
+    def vUntransf(self,m):
+        # inverse transform v function after linear interporlation\n",
+        return self.u(m)
+    
     ## a function for the transitory/persistent income component
     ### the fork depending on if discrete-markov bool is on/off
     def Y(self, z, u_shk):
@@ -294,7 +316,6 @@ class LifeCycle:
     # a function from the log permanent shock to the income factor
     def Γ(self,psi_shk):
         return np.exp(psi_shk)
-    
     
     def prepare_shocks(self):
         subjective = self.subjective
@@ -346,7 +367,6 @@ class LifeCycle:
         self.eps_shk_mkv_draws = np.stack((np.log(sigma_eps_2mkv_l.X),
                                          np.log(sigma_eps_2mkv_h.X)))
         
-        
     def terminal_solution(self):
         
         ## depending on if bequest 
@@ -356,11 +376,17 @@ class LifeCycle:
         n = len(self.P)
         σ_init = np.empty((k,k2,n))
         m_init = np.empty((k,k2,n))
+        ################################
+        v_init = np.empty((k,k2,n))
+        d_init = np.ones((k,k2,n))
+        ###############################
         if self.q ==0.0:
             for z in range(n):
                 for j in range(k2):
                     m_init[:,j,z] = self.a_grid
                     σ_init[:,j,z] = m_init[:,j,z]
+                    if self.value_func:
+                        v_init[:,j,z] = self.u(σ_init[:,j,z])
         else:
             for z in range(n):
                 for j in range(k2):
@@ -370,23 +396,28 @@ class LifeCycle:
                     #m_init[:,j,z] = self.a_grid 
                     σ_init[:,j,z] = (self.q*self.a_grid**(-self.ρ_b))**(-1/self.ρ)
                     m_init[:,j,z] = self.a_grid + σ_init[:,j,z]
-        return m_init,σ_init
+                    if self.value_func:
+                        v_init[:,j,z] = self.u(σ_init[:,j,z])+self.q*self.u(m_init[:,j,z]-σ_init[:,j,z])
+        return m_init,σ_init,σ_init, d_init,v_init,v_init
 
+
+# -
+
+# ## Still under development
 
 # + code_folding=[]
-## This function takes the consumption values at different 
-## grids of state variables from period t+1, and
-## the model class, then generates the consumption values at t.
-## It depends on the age t since the income is different before 
-## after the retirement. 
-
-@njit
-def EGM_combine(mϵ_in,
-                σ_in,
-                age_id, ## the period id for which the c policy is computed, the first period age_id=0, last period age_id=L-1, retirement after age_id=T-1
-                lc):
+## This extends EGM_vfunc to incorporate upper envolope EGM for a hypothetic discrete choice 
+#@njit
+def EGM_DC(mϵ_in, 
+           σ_1_in, ## the consumption policy of discrete choice 1
+           σ_2_in, ## the consumption policy of discrete choice 2
+           d_in, 
+           v_1_in, ## the value function of discrete choice 1
+           v_2_in, ## the value function of discrete choice 2
+           age_id,
+           lc):
     """
-    The Coleman--Reffett operator for the life-cycle consumption problem,
+    The backward iterating operator for the life-cycle consumption problem,
     using the endogenous grid method.
 
         * lc is an instance of life cycle model
@@ -397,7 +428,9 @@ def EGM_combine(mϵ_in,
         * σ_in[i,j,z] is consumption at aϵ_in[i,j,z]
     """    
     # Simplify names
+    u_func = lc.u
     u_prime, u_prime_inv = lc.u_prime, lc.u_prime_inv
+    vTransf,vUntransf = lc.vTransf,lc.vUntransf
     ρ, β = lc.ρ, lc.β
     R = lc.R
 
@@ -412,7 +445,7 @@ def EGM_combine(mϵ_in,
     ue_prob = lc.U  ## uemp prob
     unemp_insurance = lc.unemp_insurance
     adjust_prob = lc.adjust_prob  ## exogenous adjustment probability
-     
+    #adjust_cost = lc.adjust_cost  ## adjustment cost of consumption 
     Y = lc.Y
     ####################
     Γ = lc.Γ
@@ -435,14 +468,44 @@ def EGM_combine(mϵ_in,
     
     n = len(P)
     
-
     # Create consumption functions by linear interpolation
     ########################################################
-    σ = lambda m,ϵ,z: mlinterp((mϵ_in[:,0,z],eps_grid),σ_in[:,:,z], (m,ϵ)) 
+    σ_1 = lambda m,ϵ,z: mlinterp((mϵ_in[:,0,z],eps_grid),σ_1_in[:,:,z], (m,ϵ)) 
+    σ_2 = lambda m,ϵ,z: mlinterp((mϵ_in[:,0,z],eps_grid),σ_2_in[:,:,z], (m,ϵ)) 
 
+    #########################################################
+    ## Create value functions by two-step interpolation 
+    #########################################################
+    ## (interpolate over transfored value function and inverse the transformation)
+    
+    if lc.value_func:
+        v_1_func_in = lambda m,ϵ,z: mlinterp((mϵ_in[:,0,z],
+                                             eps_grid),
+                                            vTransf(v_1_in[:,:,z]), 
+                                            (m,ϵ)) 
+        v_1_func_in  = lambda m,ϵ,z: vUntransf(v_1_func_in(m,ϵ,z))
+        
+        v_2_tfunc_in = lambda m,ϵ,z: mlinterp((mϵ_in[:,0,z],
+                                             eps_grid),
+                                            vTransf(v_2_in[:,:,z]), 
+                                            (m,ϵ)) 
+        v_2_func_in  = lambda m,ϵ,z: vUntransf(v_2_tfunc_in(m,ϵ,z))
+    
     # Allocate memory
-    σ_out = np.empty_like(σ_in)  ## grid_size_a X grid_size_ϵ X grid_size_z
+    σ_1_out = np.empty_like(σ_1_in)  ## grid_size_s X grid_size_ϵ X grid_size_z
+    σ_2_out = np.empty_like(σ_2_in)  ## grid_size_s X grid_size_ϵ X grid_size_z
 
+    d_out = np.empty_like(d_in)   
+    
+    v_1_out = np.empty_like(v_1_in)
+    v_2_out = np.empty_like(v_2_in)
+    
+    ############################################################################
+    ## repeat the following chunk for each discrete choice: adjust versus non-adjust
+    ### the policy next period will be useful to compute marginal utilities 
+    ##########################################################################
+    
+    ## for the choice=1 people, c is determined by foc as before
     # Obtain c_i at each a_i, z, store in σ_out[i, z], computing
     # the expectation term by computed by averaging over discretized equally probable points of the distributions
     for i, a in enumerate(a_grid):
@@ -450,6 +513,7 @@ def EGM_combine(mϵ_in,
             for z in range(n):
                 # Compute expectation
                 Ez = 0.0
+                Ev = 0.0
                 for z_hat in range(n):
                     z_val_hat = z_val[z_hat]
                     ########################################
@@ -467,17 +531,36 @@ def EGM_combine(mϵ_in,
                             age = age_id + 1
                             if age <=lc.T-1:   #till say 39, because consumption policy for t=40 changes   
                                 ## work 
-                                Y_hat = (1-λ)*(1-λ_SS)*Y(z_val_hat,u_shk) ## conditional on being employed 
-                                c_hat = σ(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
+                                Y_hat = (1-λ)*(1-λ_SS)*Y(z_val_hat,u_shk) ## conditional on being employed
+                                c_hat_1 = σ_1(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
+                                c_hat_2 = σ_2(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
+                                d_hat = d_in(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)==1
+                                c_hat = d_hat*c_hat_1+(1-d_hat)*c_hat_2
+                                    
                                 utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
+                                v_hat_1 = v_1_func_in(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
+                                v_hat_2 = v_2_func_in(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
+                                value = d_hat*v_hat_1+(1-d_hat)*v_hat_2
 
                                 ## for unemployed next period
                                 Y_hat_u = (1-λ)*unemp_insurance
-                                c_hat_u = σ(R/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
+                                c_hat_1_u = σ_1(R/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
+                                c_hat_2_u = σ_2(R/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
+                                d_hat_u = d_in(R/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)==1
+                                c_hat_u = d_hat_u*c_hat_1_u+(1-d_hat_u)*c_hat_2_u
+
                                 utility_u = (G*Γ_hat)**(1-ρ)*u_prime(c_hat_u)
                             
                                 Ez += LivProb*((1-ue_prob)*utility * P[z, z_hat]+
                                            ue_prob*utility_u* P[z, z_hat]
+                                          )
+                                
+                                v_hat_u_1 = v_1_func_in(R/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
+                                v_hat_u_2 = v_2_func_in(R/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
+                                value_u = d_hat_u*v_hat_u_1+(1-d_hat_u)*v_hat_u_2
+                                                                
+                                Ev += LivProb*((1-ue_prob)*value * P[z, z_hat]+
+                                           ue_prob*value_u* P[z, z_hat]
                                           )
                             else:
                                 ## retirement
@@ -485,35 +568,53 @@ def EGM_combine(mϵ_in,
                                 ## no income shocks affecting individuals
                                 Γ_hat = 1.0 
                                 eps_shk = 0.0
-                                c_hat = σ(R/(G*Γ_hat) * a + (Y_R+transfer),eps_shk,z_hat)
-                                utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
+                                c_hat_1_R = σ_1(R/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)
+                                c_hat_2_R = σ_2(R/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)
+                                m_cloest = np.digitize(R/(G*Γ_hat) * a + Y_R+transfer,mϵ_in[:,0,z_hat])
+                                
+                                d_hat_R = d_in[m_cloest,0,z_hat]==1
+                                c_hat_R = d_hat_R*c_hat_1_R+(1-d_hat_R)*c_hat_2_R
+                                                                    
+                                utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat_R)
                                 Ez += LivProb*utility * P[z, z_hat]
+                                
+                                v_hat_R_1 = v_1_func_in(R/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)
+                                v_hat_R_2 = v_2_func_in(R/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)
+                                value_R = d_hat_R*v_hat_R_1+(1-d_hat_R)*v_hat_R_2
+                                
+                                Ev += LivProb*value_R* P[z, z_hat]
                             
                 Ez = Ez / (len(psi_shk_draws)*len(eps_shk_draws))
+                Ev = Ev / (len(psi_shk_draws)*len(eps_shk_draws))
+
                 ## the last step depends on if adjustment is fully flexible
                 ## the two cases can collapse into one formula, but I keep them separately.
                 if adjust_prob ==1.0:
-                    σ_out[i, j, z] =  u_prime_inv(β * R* Ez)
+                    σ_1_out[i, j, z] =  u_prime_inv(β * R* Ez)
                 elif adjust_prob <1.0:
-                    σ_out[i, j, z] =  u_prime_inv(β * R*adjust_prob/(1-β*R*(1-adjust_prob))* Ez)
+                    σ_1_out[i, j, z] =  u_prime_inv(β * R*adjust_prob/(1-β*R*(1-adjust_prob))* Ez)
                     ## need to check if LivProb should be in the denominator
-
+                    
+                ## value func 
+                v_1_out[i,j,z] = u_func(σ_1_out[i, j, z])+β*LivProb*Ev
+                
+  
     # Calculate endogenous asset grid
-    mϵ_out = np.empty_like(σ_out)
+    mϵ_1_out = np.empty_like(σ_1_out)
 
     for j,ϵ in enumerate(eps_grid):
         for z in range(n):
-            mϵ_out[:,j,z] = a_grid + σ_out[:,j,z]
+            mϵ_1_out[:,j,z] = a_grid + σ_1_out[:,j,z]
 
     # Fixing a consumption-asset pair at for the constraint region
     for j,ϵ in enumerate(eps_grid):
         for z in range(n):
             if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
-                σ_out[0,j,z] = 0.0
-                mϵ_out[0,j,z] = 0.0
+                σ_1_out[0,j,z] = 0.0
+                mϵ_1_out[0,j,z] = 0.0
             else:
                 if age <=lc.T-1:
-                    σ_out[0,j,z] = 0.0
+                    σ_1_out[0,j,z] = 0.0
                     ## the lowest transitory draw at state z  
                     if lc.state_dependent_belief:
                         self_min_a = - np.exp(np.min(eps_shk_mkv_draws[z,:]))*G/R 
@@ -521,130 +622,155 @@ def EGM_combine(mϵ_in,
                         self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
 
                     self_min_a = min(self_min_a,-unemp_insurance/R)
-                    mϵ_out[0,j,z] = self_min_a
+                    mϵ_1_out[0,j,z] = self_min_a
                 else:
-                    σ_out[0,j,z] = 0.0
+                    σ_1_out[0,j,z] = 0.0
                     self_min_a = - pension*G/R
-                    mϵ_out[0,j,z] = self_min_a
-
-    return mϵ_out, σ_out
-
-
-# + code_folding=[5]
-## this function takes the consumption values at different grids of state 
-###  variables from period t+1, and model class 
-### and generates the consumption values at t 
-
-### still under development 
-
-@njit
-def EGM_DC(aϵ_in, σ_in, d_in, v_in, lc): 
-    """
-    The Coleman--Reffett operator for the life-cycle consumption problem,
-    using the endogenous grid method.
-
-        * lc is an instance of life cycle model
-        * σ_in is a n1 x n2 x n3 dimension consumption policy 
-             * n1 = dim(s), n2 = dim(eps), n3 = dim(z)
-        * d_in is the same sized optimal discrete choices 
-        * v_in is the same sized values at different grid
-        * aϵ_in is the same sized grid points of the three state variable 
-           * aϵ_in[:,j,z] is the vector of asset grids corresponding to j-th grid of eps and z-th grid of z 
-           * σ_in[i,j,z] is consumption at aϵ_in[i,j,z]
-    """
-
-    # Simplify names
-    u_prime, u_prime_inv = lc.u_prime, lc.u_prime_inv
-    R, ρ, P, β = lc.R, lc.ρ, lc.P, lc.β
-    z_val = lc.z_val
-    s_grid,eps_grid = lc.s_grid,lc.eps_grid
-    n_shk_draws, eps_shk_draws= lc.n_shk_draws, lc.eps_shk_draws
-    borrowing_cstr = lc.borrowing_cstr 
-    ue_prob = lc.U  ## uemp prob
-    LivProb = lc.LivPrb  ## live probabilituy 
-    unemp_insurance = lc.unemp_insurance
-    ue_markov = lc.ue_markov            ## bool for 2-state markov transition probability 
-    adjust_prob = lc.adjust_prob  ## exogenous adjustment probability 
-    adjust_cost = lc.adjust_cost  ## adjustment cost of consumption 
-    Y = lc.Y
-    ρ = lc.ρ
-    Γ = lc.Γ
-    G = lc.G
-    x = lc.x
-     
-    n = len(P)
-
-    # Create consumption function by linear interpolation
-    ########################################################
-    σ = lambda a,ϵ,z: mlinterp((aϵ_in[:,0,z],eps_grid),σ_in[:,:,z], (a,ϵ)) 
+                    mϵ_1_out[0,j,z] = self_min_a
+                    
+                    
+     ## for the choice=2 people
     
-    ## Create value functions by two-step interpolation 
-    #########################################################
-    ## (interpolate over transfored value function and inverse the transformation)
-    
-    v_tfunc_in = lambda a,ϵ,z: mlinterp((aϵ_in[:,0,z],
-                                         eps_grid),
-                                        self.vTransf(v_in[:,:,z]), 
-                                        (a,ϵ)) 
-    v_func_in  = lambda a,ϵ,z: self.vUntransf(v_tfunc_in(a),ϵ,z)
-    
-    # Allocate memory
-    σ_out = np.empty_like(σ_in)  ## grid_size_s X grid_size_ϵ X grid_size_z
-    d_out = np.empty_like(d_in)   
-    v_out = np.empty_like(v_in)
-    
-    ############################################################################
-    ## repeat the following chunk for each discrete choice: adjust versus non-adjust
-    ### the policy next period will be useful to compute marginal utilities 
-    ##########################################################################
-    
-    # Obtain c_ijz and d_ijz at each s_i, eps_j, z, store in σ_out[i,j,z], computing
-    # the expectation term by Monte Carlo
-    for i, s in enumerate(s_grid):
+    R_high = R*1.1 ## 1.1 is the factor of benefit of financial literacy investment
+    for i, a in enumerate(a_grid):
         for j, eps in enumerate(eps_grid):
             for z in range(n):
                 # Compute expectation
                 Ez = 0.0
+                Ev = 0.0
                 for z_hat in range(n):
                     z_val_hat = z_val[z_hat]
+                    ########################################
+                    if lc.state_dependent_risk == False:
+                        pass
+                    else:
+                        psi_shk_draws = psi_shk_mkv_draws[z_hat,:]
+                        eps_shk_draws = eps_shk_mkv_draws[z_hat,:]
+                    ########################################
                     for eps_shk in eps_shk_draws:
-                        for n_shk in n_shk_draws:
-                            Γ_hat = Γ(n_shk) 
+                        for psi_shk in psi_shk_draws:
+                            ## for employed next period 
+                            Γ_hat = Γ(psi_shk) 
                             u_shk = x*eps+eps_shk
-                            Y_hat = LivProb*(Y(z_val_hat,u_shk)*(1-ue_prob)+unemp_insurance)+0.0 ## conditional on being employed 
-                            c_hat = σ(R/(G*Γ_hat) * s + Y_hat,eps_shk,z_hat)
-                            utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
-                            Ez += utility * P[z, z_hat]
-                Ez = Ez / (len(n_shk_draws)*len(eps_shk_draws))
-                
-                
-                ## the last step depends on if adjustment is fully flexible
-                if adjust_prob ==1.0:
-                    σ_out[i, j, z] =  u_prime_inv(β * R* Ez)
-                elif adjust_prob <1.0:
-                    σ_out[i, j, z] =  adjust_prob*β*R/(1-LivProb*β*R*(1-adjust_prob))*u_prime_inv(β * R* Ez)
+                            age = age_id + 1
+                            if age <=lc.T-1:   #till say 39, because consumption policy for t=40 changes   
+                                ## work 
+                                Y_hat = (1-λ)*(1-λ_SS)*Y(z_val_hat,u_shk) ## conditional on being employed
+                                c_hat_1 = σ_1(R_high/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
+                                c_hat_2 = σ_2(R_high/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
+                                #######################################################
+                                #closest_m = np.digitize(R_high/(G*Γ_hat) * a + Y_R+transfer,mϵ_in[:,0,z_hat])
+                                d_hat = d_in(R_high/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)
+                                c_hat = d_hat*c_hat_1+(1-d_hat)*c_hat_2
+                                    
+                                utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
+                                v_hat_1 = v_1_func_in(R_high/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
+                                v_hat_2 = v_2_func_in(R_high/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
+                                value = d_hat*v_hat_1+(1-d_hat)*v_hat_2
 
+                                ## for unemployed next period
+                                Y_hat_u = (1-λ)*unemp_insurance
+                                c_hat_1_u = σ_1(R_high/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
+                                c_hat_2_u = σ_2(R_high/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
+                                d_hat_u = d_in(R_high/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)==1
+                                c_hat_u = d_hat_u*c_hat_1_u+(1-d_hat_u)*c_hat_2_u
+
+                                utility_u = (G*Γ_hat)**(1-ρ)*u_prime(c_hat_u)
+                            
+                                Ez += LivProb*((1-ue_prob)*utility * P[z, z_hat]+
+                                           ue_prob*utility_u* P[z, z_hat]
+                                          )
+                                
+                                v_hat_u_1 = v_1_func_in(R_high/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
+                                v_hat_u_2 = v_2_func_in(R_high/(G*Γ_hat) * a + Y_hat_u+transfer,eps_shk,z_hat)
+                                value_u = d_hat_u*v_hat_u_1+(1-d_hat_u)*v_hat_u_2
+                                                                
+                                Ev += LivProb*((1-ue_prob)*value * P[z, z_hat]+
+                                           ue_prob*value_u* P[z, z_hat]
+                                          )
+                            else:
+                                ## retirement
+                                Y_R = pension
+                                ## no income shocks affecting individuals
+                                Γ_hat = 1.0 
+                                eps_shk = 0.0
+                                c_hat_1_R = σ_1(R_high/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)
+                                c_hat_2_R = σ_2(R_high/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)
+                                d_hat_R = d_in(R_high/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)==1
+                                c_hat_R = d_hat_R*c_hat_1_u+(1-d_hat_R)*c_hat_2_u
+                                                                    
+                                utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat_R)
+                                Ez += LivProb*utility * P[z, z_hat]
+                                v_hat_R_1 = v_1_func_in(R_high/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)
+                                v_hat_R_2 = v_2_func_in(R_high/(G*Γ_hat) * a + Y_R+transfer,eps_shk,z_hat)
+                                value_R = d_hat_R*v_hat_R_1+(1-d_hat_R)*v_hat_R_2
+                                
+                                Ev += LivProb*value_R* P[z, z_hat]
+                            
+                Ez = Ez / (len(psi_shk_draws)*len(eps_shk_draws))
+                Ev = Ev / (len(psi_shk_draws)*len(eps_shk_draws))
+
+                ## the last step depends on if adjustment is fully flexible
+                ## the two cases can collapse into one formula, but I keep them separately.
+                if adjust_prob ==1.0:
+                    σ_2_out[i, j, z] =  u_prime_inv(β * R_high* Ez)
+                elif adjust_prob <1.0:
+                    σ_2_out[i, j, z] =  u_prime_inv(β * R_high*adjust_prob/(1-β*R_high*(1-adjust_prob))* Ez)
+                    ## need to check if LivProb should be in the denominator
+                    
+                ## value func 
+                v_2_out[i,j,z] = u_func(σ_2_out[i, j, z])-0.5+β*LivProb*Ev
+                ## 0.5 is the one-time utility cost
+                
     # Calculate endogenous asset grid
-    aϵ_out = np.empty_like(σ_out)
+    mϵ_2_out = np.empty_like(σ_2_out)
 
     for j,ϵ in enumerate(eps_grid):
         for z in range(n):
-            aϵ_out[:,j,z] = s_grid + σ_out[:,j,z]
+            mϵ_2_out[:,j,z] = a_grid + σ_2_out[:,j,z]
 
     # Fixing a consumption-asset pair at for the constraint region
     for j,ϵ in enumerate(eps_grid):
         for z in range(n):
-            if borrowing_cstr==True or ue_markov==False:  ## either hard constraint is zero or positive probability of losing job
-                σ_out[0,j,z] = 0.0
-                aϵ_out[0,j,z] = 0.0
-            elif borrowing_cstr==True or ue_markov==True:
-                σ_out[0,j,z] = 0.0
-                aϵ_out[0,j,z] = min(0.0,-unemp_insurance/R)
+            if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
+                σ_2_out[0,j,z] = 0.0
+                mϵ_2_out[0,j,z] = 0.0
             else:
-                σ_out[0,j,z] = 0.0
-                self_min_a = - np.exp(np.min(eps_grid))*G/R
-                self_min_a = min(self_min_a,-unemp_insurance/R)
-                aϵ_out[0,j,z] = self_min_a
+                if age <=lc.T-1:
+                    σ_2_out[0,j,z] = 0.0
+                    ## the lowest transitory draw at state z  
+                    if lc.state_dependent_belief:
+                        self_min_a = - np.exp(np.min(eps_shk_mkv_draws[z,:]))*G/R 
+                    else:
+                        self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
+
+                    self_min_a = min(self_min_a,-unemp_insurance/R)
+                    mϵ_2_out[0,j,z] = self_min_a
+                else:
+                    σ_2_out[0,j,z] = 0.0
+                    self_min_a = - pension*G/R
+                    mϵ_2_out[0,j,z] = self_min_a
+   
+    ### need some function to recast v2 to v1's grid 
+    
+    if lc.value_func:
+        v_2_tfunc_out = lambda m,ϵ,z: mlinterp((mϵ_2_out[:,0,z],
+                                             eps_grid),
+                                            vTransf(v_2_out[:,:,z]), 
+                                            (m,ϵ)) 
+        v_2_func_out  = lambda m,ϵ,z: vUntransf(v_2_tfunc_out(m,ϵ,z))
+        
+    for i,m in enumerate(mϵ_1_out[:,0,0]):
+        for j,ϵ in enumerate(eps_grid):
+            for z in range(n):
+                 v_2_out[i,j,z] = v_2_func_out(m,0,z)
+    
+    ## using choice 1's grid for both choices 
+    mϵ_out = mϵ_1_out
+    
+    ## decide discrete choice by comparing v1 and v2 over the same grids 
+    
+    d_out = v_1_out>v_2_out      
 
     ##############################################################   
     ### then compare the v_out_0, v_out_1 ... to get the d_out
@@ -653,203 +779,71 @@ def EGM_DC(aϵ_in, σ_in, d_in, v_in, lc):
     ##############################################################
     ## then need to calculate v_out 
     ## take care of the kink grids 
-    
     ############################################################
-    
-    return aϵ_out, σ_out, d_out, v_out
+
+    return mϵ_out, σ_1_out,σ_2_out, d_out, v_1_out,v_2_out
 
 
-# + code_folding=[4]
-## subjective agent
-### transitory shock affects risk perceptions
+# -
 
-@njit
-def EGM_br(mϵ_in, 
-         σ_in, 
-         age_id,
-         lc):
-    """
-    UNDER BOUNDED RATIONALITY assumption
-    The Coleman--Reffett operator for the life-cycle consumption problem. 
-    using the endogenous grid method.
-
-        * lc is an instance of life cycle model
-        * σ_in is a n1 x n2 x n3 dimension consumption policy 
-          * n1 = dim(s), n2 = dim(eps), n3 = dim(z)
-        * mϵ_in is the same sized grid points of the three state variable 
-        * mϵ_in[:,j,z] is the vector of asset grids corresponding to j-th grid of eps and z-th grid of z 
-        * σ_in[i,j,z] is consumption at aϵ_in[i,j,z]
-    """
-
-    # Simplify names
-    u_prime, u_prime_inv = lc.u_prime, lc.u_prime_inv
-    R, ρ, P, β = lc.R, lc.ρ, lc.P, lc.β
-    z_val = lc.z_val
-    a_grid,eps_grid = lc.a_grid,lc.eps_grid
-    psi_shk_draws, eps_shk_draws= lc.psi_shk_draws, lc.eps_shk_draws
-    borrowing_cstr = lc.borrowing_cstr
-    ue_prob = lc.U  ## uemp prob
-    unemp_insurance = lc.unemp_insurance
-    
-    adjust_prob = lc.adjust_prob  ## exogenous adjustment probability
-    Y = lc.Y
-    ####################
-    ρ = lc.ρ
-    Γ = lc.Γ
-    ####################################
-    G = lc.G[age_id+1]   ## get the age specific 
-    LivProb = lc.LivPrb[age_id+1]  ## live probabilituy
-    ####################################  
-    x = lc.x
-    λ = lc.λ
-    transfer = lc.transfer
-    pension = lc.pension
-    
-    ###################
-    T = lc.T
-    age = age_id+1
-    ###################
-    theta = lc.theta 
-    sigma_eps = lc.sigma_eps
-    eps_mean = -sigma_eps**2/2
-    ###################
-    
-    n = len(P)
-
-    # Create consumption function by linear interpolation
-    ########################################################
-    σ = lambda a,ϵ,z: mlinterp((mϵ_in[:,0,z],eps_grid),σ_in[:,:,z], (a,ϵ)) 
-    ########## need to replace with multiinterp 
-
-    # Allocate memory
-    σ_out = np.empty_like(σ_in)  ## grid_size_s X grid_size_ϵ X grid_size_z
-
-    # Obtain c_i at each s_i, z, store in σ_out[i, z], computing
-    # the expectation term by Monte Carlo
-    for i, a in enumerate(a_grid):
-        for j, eps in enumerate(eps_grid):
-            ##############################################################
-            #x_sj = extrapolate(theta,
-            #                   lc.x,
-            #                   eps-eps_mean) ## sj: subjective 
-            sigma_eps_sj = 0.05*np.sqrt((eps-eps_mean)**2)+0.95*lc.sigma_eps
-            
-            eps_shk_dist_sj= lognorm(sigma_eps_sj,100000,len(eps_shk_draws))
-            eps_shk_draws_sj = np.log(eps_shk_dist_sj.X)
-            #np.random.seed(166789)
-            #eps_shk_draws_sj = sigma_eps_sj*np.random.randn(lc.shock_draw_size)-sigma_eps_sj**2/2
-            #############################################################
-            for z in range(n):
-                # Compute expectation
-                Ez = 0.0
-                for z_hat in range(n):
-                    z_val_hat = z_val[z_hat]
-                    ################################
-                    for eps_shk in eps_shk_draws_sj:
-                        ############################
-                        for psi_shk in psi_shk_draws:
-                            Γ_hat = Γ(psi_shk) 
-                            ###############
-                            u_shk = x*eps+eps_shk
-                            ####################
-                            if age <=lc.T-1:
-                                # work  
-                                Y_hat = (1-λ)*Y(z_val_hat,u_shk) ## conditional on being employed 
-                                c_hat = σ(R/(G*Γ_hat) * a + Y_hat+transfer,eps_shk,z_hat)
-                                utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
-
-                                ## for unemployed next period
-                                Y_hat_u = (1-λ)*unemp_insurance
-                                c_hat_u = σ(R/(G*Γ_hat) * a + Y_hat_u+transfer ,eps_shk,z_hat)
-                                utility_u = (G*Γ_hat)**(1-ρ)*u_prime(c_hat_u)
-                                Ez += LivProb*((1-ue_prob)*utility * P[z, z_hat]+
-                                               ue_prob*utility_u* P[z, z_hat]
-                                              )
-                            else:
-                                
-                                ## retirement
-                                Y_R = lc.pension
-                                ## no income shocks affecting individuals
-                                Γ_hat = 1.0 
-                                eps_shk = 0.0
-                                c_hat = σ(R/(G*Γ_hat) * a + (Y_R+transfer),eps_shk,z_hat)
-                                utility = (G*Γ_hat)**(1-ρ)*u_prime(c_hat)
-                                Ez += LivProb*utility * P[z, z_hat]
-                Ez = Ez / (len(psi_shk_draws)*len(eps_shk_draws_sj))
-                ## the last step depends on if adjustment is fully flexible
-                if adjust_prob ==1.0:
-                    σ_out[i, j, z] =  u_prime_inv(β * R* Ez)
-                elif adjust_prob <=1.0:
-                    σ_out[i, j, z] =  adjust_prob/(1-β*R*(1-adjust_prob))*u_prime_inv(β * R* Ez)
-
-    # Calculate endogenous asset grid
-    mϵ_out = np.empty_like(σ_out)
-            
-    for j,ϵ in enumerate(eps_grid):
-        for z in range(n):
-            mϵ_out[:,j,z] = a_grid + σ_out[:,j,z]
-
-    # Fixing a consumption-asset pair at (0, 0) improves interpolation
-    for j,ϵ in enumerate(eps_grid):
-        for z in range(n):
-            if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
-                σ_out[0,j,z] = 0.0
-                mϵ_out[0,j,z] = 0.0
-            #elif borrowing_cstr==True or ue_markov==True:
-            #    σ_out[0,j,z] = 0.0
-            #    mϵ_out[0,j,z] = min(0.0,-unemp_insurance/R)
-            else:
-                if age <=T-1:
-                    σ_out[0,j,z] = 0.0
-                    self_min_a = - np.exp(np.min(eps_shk_draws_sj))*G/R
-                    self_min_a = min(self_min_a,-unemp_insurance/R)
-                    mϵ_out[0,j,z] = self_min_a
-                else:
-                    σ_out[0,j,z] = 0.0
-                    self_min_a = - pension*G/R
-                    mϵ_out[0,j,z] = self_min_a
-
-    return mϵ_out, σ_out
-
+# ## Need to modify 
 
 # + code_folding=[1]
 ## for life-cycle/finite horizon problem 
-def solve_model_backward_iter(model,        # Class with model information
+def solve_model_backward_iter_DC(model,        # Class with model information
                               mϵ_vec,        # Initial condition for assets and MA shocks
-                              σ_vec,        # Initial condition for consumption
+                              σ_1_vec,        # Initial condition for consumption
+                              σ_2_vec,        # Initial condition for consumption
+                              d_vec,
+                              v_1_vec,
+                              v_2_vec,
                               br = False):
 
     ## memories for life-cycle solutions 
-    n_grids1 = σ_vec.shape[0]
-    n_grids2 = σ_vec.shape[1]
+    n_grids1 = σ_1_vec.shape[0]
+    n_grids2 = σ_1_vec.shape[1]
     n_z = len(model.P)                       
     mϵs_new =  np.empty((model.L,n_grids1,n_grids2,n_z),dtype = np.float64)
-    σs_new =  np.empty((model.L,n_grids1,n_grids2,n_z),dtype = np.float64)
+    
+    σs_1_new =σs_2_new =  np.empty((model.L,n_grids1,n_grids2,n_z),dtype = np.float64)
+    vs_1_new = vs_2_new = np.empty((model.L,n_grids1,n_grids2,n_z),dtype = np.float64)
+    ds_new = np.empty((model.L,n_grids1,n_grids2,n_z),dtype =bool)
     
     mϵs_new[0,:,:,:] = mϵ_vec
-    σs_new[0,:,:,:] = σ_vec
-    
+    σs_1_new[0,:,:,:] = σ_1_vec
+    σs_2_new[0,:,:,:] = σ_2_vec
+    ds_new[0,:,:,:] = d_vec
+    vs_1_new[0,:,:,:] = v_1_vec
+    vs_2_new[0,:,:,:] = v_2_vec
+        
     for year2L in range(1,model.L): ## nb of years till L from 0 to Model.L-2
         age = model.L-year2L
         age_id = age-1
         #print("at work age of "+str(age))
-        mϵ_vec_next, σ_vec_next = mϵs_new[year2L-1,:,:,:],σs_new[year2L-1,:,:,:]
+        mϵ_vec_next, σ_1_vec_next,σ_2_vec_next,d_vec_next,v_1_vec_next,v_2_vec_next = mϵs_new[year2L-1,:,:,:],σs_1_new[year2L-1,:,:,:],σs_2_new[year2L-1,:,:,:],ds_new[year2L-1,:,:,:],vs_1_new[year2L-1,:,:,:],vs_2_new[year2L-1,:,:,:]
         if br==False:
-            mϵ_new, σ_new = EGM_combine(mϵ_vec_next, σ_vec_next, age_id, model)
+            mϵ_new, σ_1_new,σ_2_new,d_new,v_1_new,v_2_new = EGM_DC(mϵ_vec_next, σ_1_vec_next, σ_2_vec_next,d_vec_next, v_1_vec_next, v_2_vec_next, age_id, model)
         elif br==True:
             #print('subjective model with stochastic risk')
             mϵ_new, σ_new = EGM_br(mϵ_vec_next, σ_vec_next, age_id, model)
         mϵs_new[year2L,:,:,:] = mϵ_new
-        σs_new[year2L,:,:,:] = σ_new
-
-    return mϵs_new, σs_new
+        σs_1_new[year2L,:,:,:] = σ_1_new
+        σs_2_new[year2L,:,:,:] = σ_2_new
+        ds_new[year2L,:,:,:] = d_new
+        vs_1_new[year2L,:,:,:] = v_1_new
+        vs_2_new[year2L,:,:,:] = v_2_new
+    return mϵs_new, σs_1_new,σs_2_new,ds_new,vs_1_new,vs_2_new
 
 
 # + code_folding=[1]
 ## for infinite horizon problem 
-def solve_model_iter(model,        # Class with model information
+def solve_model_iter_DC(model,        # Class with model information
                      me_vec,        # Initial condition for assets and MA shocks
-                     σ_vec,        # Initial condition for consumption
+                     σ_1_vec,       
+                     σ_2_vec,       
+                     d_vec,
+                     v_1_vec,
+                     v_2_vec,
                       tol=1e-6,
                       max_iter=2000,
                       verbose=True,
@@ -863,7 +857,7 @@ def solve_model_iter(model,        # Class with model information
     ## memories for life-cycle solutions
     while i < max_iter and error > tol:
         if br==False:
-                me_new, σ_new = EGM_combine(me_vec, σ_vec, 0,model)
+                me_new, σ_1_new,σ_2_new,d_new,v_1_new,v_2_new = EGM_DC(me_vec, σ_1_vec,σ_2_vec,d_vec,v_1_vec,v_2_vec,0,model)
         elif br==True:
             #print('subjective model with stochastic risk')
             mϵ_new, σ_new = EGM_br(me_vec, σ_vec, 0, model)
@@ -872,7 +866,7 @@ def solve_model_iter(model,        # Class with model information
         i += 1
         if verbose and i % print_skip == 0:
             print(f"Error at iteration {i} is {error}.")
-        me_vec, σ_vec = np.copy(me_new), np.copy(σ_new)
+        me_vec, σ_1_vec,σ_2_vec,d_vec,v_1_vec,v_2_vec = np.copy(me_new), np.copy(σ_1_new),np.copy(σ_2_new), np.copy(d_new), np.copy(v_1_new),np.copy(v_2_new)
 
     if i == max_iter:
         print("Failed to converge!")
@@ -880,47 +874,7 @@ def solve_model_iter(model,        # Class with model information
     if verbose and i < max_iter:
         print(f"\nConverged in {i} iterations.")
 
-    return me_vec, σ_vec
-
-
-# + code_folding=[2]
-# a function to compare two solutions 
-
-def compare_2solutions(ms_stars,
-                      σs_stars):
-    """
-    input
-    ======
-    ms_stars: list of m grids
-    σs_stars: list of c policies 
-    
-    output
-    ======
-    diff12: difference between solution 1 and solution 2 (1 minus 2)
-    
-    """
-    if len(σs_stars)!=2 or len(σs_stars)!=2:
-        print('only the first two solutions are compared!')
-    m_star1, σ_star1 =ms_stars[0],σs_stars[0]
-    m_star2, σ_star2 =ms_stars[1],σs_stars[1]
-
-    ## get the interpolated c funcs
-    c_stars1 = np.empty_like(σ_star1)
-    c_stars2 = np.empty_like(σ_star2)
-    n_age,n_m,n_eps,n_z = c_stars1.shape
-    
-    m_grid = np.linspace(0.0,5.0,n_m)
-    
-    for i in range(n_age):
-        for j in range(n_eps):
-            for k in range(n_z):
-                c_func1 = lambda m: interp(m_star1[i,:,j,k],σ_star1[i,:,j,k],m)
-                c_stars1[i,:,j,k] = c_func1(m_grid)
-                c_func2 = lambda m: interp(m_star2[i,:,j,k],σ_star2[i,:,j,k],m)
-                c_stars2[i,:,j,k] = c_func2(m_grid)
-        
-    diff12 = c_stars1-c_stars2
-    return diff12 
+    return me_vec, σ_1_vec,σ_2_vec,d_vec,v_1_vec,v_2_vec
 
 
 # -
@@ -944,7 +898,7 @@ if __name__ == "__main__":
     G = np.ones(L)
     YPath = np.cumprod(G)
 
-# + code_folding=[0, 1]
+# + code_folding=[0]
 ## a deterministic income profile 
 if __name__ == "__main__":
 
@@ -956,7 +910,7 @@ if __name__ == "__main__":
 
 # ## Life-Cycle Problem 
 
-# + code_folding=[0, 1]
+# + code_folding=[0]
 if __name__ == "__main__":
     lc_paras = {'sigma_psi':0.15, # permanent 
                 'sigma_eps': 0.1, #transitory
@@ -972,42 +926,150 @@ if __name__ == "__main__":
                 'b_y':0.0, #no persistent state
                 'unemp_insurance':0.15,
                 #'q':1.0,
-               #'ρ_b':2.0
+               #'ρ_b':2.0,
+                'value_func': True
                }
+
+# + code_folding=[]
+if __name__ == "__main__":
+    lc_dc = LifeCycleDC(**lc_paras)
+
+# + code_folding=[2]
+# Initial the end-of-period consumption policy of σ = consume all assets
+
+if __name__ == "__main__":
+
+    ## initial consumption functions 
+    
+    m_init,σ_1_init,σ_2_init,d_init,v_1_init,v_2_init = lc_dc.terminal_solution()
+    plt.title('Value function in the last period')
+    plt.plot(m_init[int(m_init.shape[0]/2):-1,1,1],
+             v_1_init[int(m_init.shape[0]/2):-1,1,1],
+            'o-')
+    plt.xlabel('m')
+    plt.ylabel('v(m)')
+
+# + code_folding=[]
+if __name__ == "__main__":
+
+    t_start = time()
+
+    ### this line is very important!!!!
+    #### need to regenerate shock draws for new sigmas
+    lc_dc.prepare_shocks()
+
+    ## terminal solution
+    m_init,σ_1_init,σ_2_init,d_init,v_1_init,v_2_init = lc_dc.terminal_solution()
+    
+    m_init,σ_1_init,σ_2_init,d_init,v_1_init,v_2_init = EGM_DC(m_init,σ_1_init,σ_2_init,d_init,v_1_init,v_2_init, lc_dc.L-3, lc_dc)
+
+        
+    ## solve backward
+    #ms_star_basic, σs_1_star_basic,σs_2_star_basic, ds_start_basic, vs_1_star_basic,vs_2_star_basic = solve_model_backward_iter_DC(lc_dc,
+    #                                                                                                                               m_init,
+    #                                                                                                                               σ_1_init,
+    #                                                                                                                               σ_2_init,
+    #                                                                                                                               d_init,
+    #                                                                                                                               v_1_init,
+    #                                                                                                                               v_2_init)
+                             
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
+
+# + code_folding=[0]
+if __name__ == "__main__":
+
+
+    ## plot c func at different age /asset grid
+    years_left = [0,1,30,40]
+    start_m_at = 30
+    
+    n_sub = len(years_left)
+
+    eps_fix = 0 ## the first eps grid 
+
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
+
+    for x,year in enumerate(years_left):
+        age = lc_pt.L-year
+        i = lc_pt.L-age
+        for k,sigma_psi in enumerate(sigma_psi_ls):
+            m_plt,v_plt = ms_stars[k][i,start_m_at:-1,eps_fix,0],vs_stars[k][i,start_m_at:-1,eps_fix,0]
+            axes[x].plot(m_plt,
+                         v_plt,
+                         label = r'$\sigma_\psi=$'+str(sigma_psi),
+                         lw=3,
+                        )
+        axes[x].legend()
+        axes[x].set_xlim(0.0,np.max(m_plt))
+        axes[x].set_xlabel('asset')
+        axes[0].set_ylabel('v')
+        axes[x].set_title(r'$age={}$'.format(age))
 # -
 
 # ## Infinite horizon problem
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
     
     inf_liv_paras = copy(lc_paras)
     
-    
     ## initialize a model instance
 
-    inf_liv = LifeCycle(**inf_liv_paras)
-
+    inf_liv = LifeCycleDC(**inf_liv_paras)
 
     ## initial guess of consumption functions 
 
-    m_init,σ_init = inf_liv.terminal_solution()
+    m_init,σ_1_init,σ_2_init,d_init,v_1_init,v_2_init= inf_liv.terminal_solution()
    
+    plt.title('Value function in the last period')
+    plt.plot(m_init[int(m_init.shape[0]/2):-1,1,1],
+             v_1_init[int(m_init.shape[0]/2):-1,1,1],
+            'o-',label='choice=1')
+    
+    plt.plot(m_init[int(m_init.shape[0]/2):-1,1,1],
+             v_2_init[int(m_init.shape[0]/2):-1,1,1],
+            '*',label='choice=2')
+    
+    plt.xlabel('m')
+    plt.ylabel('v(m)')
+    plt.legend()
+# -
+
+if __name__ == "__main__":
 
     t_start = time()
 
+    ### this line is very important!!!!
+    #### need to regenerate shock draws for new sigmas
+    lc.prepare_shocks()
 
-   
-    ms_inf_stars =[]
-    σs_inf_stars = []
+    ## terminal solution
+    m_init,σ_init,v_init = lc.terminal_solution()
+
+    ## solve backward
+    ms_star_basic, σs_star_basic,vs_star_basic = solve_model_backward_iter_vfunc(lc,
+                                                                         m_init,
+                                                                         σ_init,
+                                                                         v_init)
+
+    t_finish = time()
+
+    print("Time taken, in seconds: "+ str(t_finish - t_start))
+
+if __name__ == "__main__":
+
+    t_start = time()
 
     ## set different ma parameters 
-    m_inf_star, σ_inf_star = solve_model_iter(inf_liv,
-                                              m_init,
-                                              σ_init)
-    ms_inf_stars.append(m_inf_star)
-    σs_inf_stars.append(σ_inf_star)
-
+    m_inf_star, σ_1_inf_star,σ_2_inf_star,d_inf_star,v_1_inf_star,v_2_inf_star = solve_model_iter_DC(inf_liv,
+                                                                                              m_init,
+                                                                                              σ_1_init,
+                                                                                              σ_2_init,
+                                                                                              d_init,
+                                                                                              v_1_init,
+                                                                                              v_2_init)
 
     t_finish = time()
 
@@ -1016,19 +1078,13 @@ if __name__ == "__main__":
 
     ## plot c func 
 
-
-    ms_inf_star = ms_inf_stars[0]
-    σs_inf_star = σs_inf_stars[0]
-
-
-    plt.plot(ms_inf_star[0:-1,0,0],
-             σs_inf_star[0:-1,0,0],
+    plt.plot(m_inf_star[0:-1,0,0],
+             σ_1_inf_star[0:-1,0,0],
              lw=3
             )
     plt.xlabel('asset')
     plt.ylabel('c')
     plt.title('Infinite horizon solution')
-# -
 
 # ## Infinite horizon with adjustment inertia
 #
