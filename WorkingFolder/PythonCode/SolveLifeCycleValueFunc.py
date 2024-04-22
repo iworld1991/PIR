@@ -379,10 +379,6 @@ class LifeCycle:
         else:
             for z in range(n):
                 for j in range(k2):
-                    ## q*a**(-rho_b) = c**(-rho) 
-                    ## c = q*a**(rho_b/rho)
-                    ## m = a + c
-                    #m_init[:,j,z] = self.a_grid 
                     σ_init[:,j,z] = (self.q*self.a_grid**(-self.ρ_b))**(-1/self.ρ)
                     m_init[:,j,z] = self.a_grid + σ_init[:,j,z]
                     if self.value_func:
@@ -428,7 +424,6 @@ def EGM_vfunc(mϵ_in,
     ue_prob = lc.U  ## uemp prob
     unemp_insurance = lc.unemp_insurance
     adjust_prob = lc.adjust_prob  ## exogenous adjustment probability
-    adjust_cost = lc.adjust_cost  ## adjustment cost of consumption 
     Y = lc.Y
     ####################
     Γ = lc.Γ
@@ -436,11 +431,7 @@ def EGM_vfunc(mϵ_in,
     G = lc.G[age_id+1]  ## get the age specific growth rate, G[T] is the sudden drop in retirement from working age
     LivProb = lc.LivPrb[age_id+1]  ## live probabilities
     ####################################
-    
-    #################################################
-    ## get the expected marginal utility scalor
-    E_psi_rho = np.mean((G/Γ(psi_shk_draws))**(-ρ))
-     #################################################
+
         
     x = lc.x
     λ = lc.λ
@@ -568,6 +559,10 @@ def EGM_vfunc(mϵ_in,
     # Fixing a consumption-asset pair at for the constraint region
     for j,ϵ in enumerate(eps_grid):
         for z in range(n):
+            ### anchor the value at the borrowing constraint to be negative infinity 
+            #####################
+            v_out[0,j,z] = - np.inf
+            ######################
             if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
                 σ_out[0,j,z] = 0.0
                 mϵ_out[0,j,z] = 0.0
@@ -689,15 +684,6 @@ if __name__ == "__main__":
     L = 60
     G = np.ones(L)
     YPath = np.cumprod(G)
-
-# + code_folding=[0]
-## a deterministic income profile 
-if __name__ == "__main__":
-
-    plt.title('Deterministic Life-cycle Income Profile \n')
-    plt.plot(YPath,'ro')
-    plt.xlabel('Age')
-    plt.ylabel(r'$\hat Y$')
 # -
 
 # ## Life-Cycle Problem 
@@ -705,7 +691,7 @@ if __name__ == "__main__":
 # + code_folding=[0, 1]
 if __name__ == "__main__":
     lc_paras = {'sigma_psi':0.15, # permanent 
-                'sigma_eps': 0.0, #transitory
+                'sigma_eps': 0.03, #transitory
                 'U':U,
                 'ρ':2,
                 'R':1.01,
@@ -717,8 +703,6 @@ if __name__ == "__main__":
                 'borrowing_cstr':True,
                 'b_y':0.0, #no persistent state
                 'unemp_insurance':0.15,
-                #'q':1.0,
-               #'ρ_b':2.0,
                 'grid_size':100,
                 'value_func':True,
                }
@@ -970,3 +954,6 @@ if __name__ == "__main__":
     plt.xlabel('asset')
     plt.ylabel('v')
     plt.title('Infinite horizon solution')
+# -
+
+
