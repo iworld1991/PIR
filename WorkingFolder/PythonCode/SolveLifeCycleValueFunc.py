@@ -386,7 +386,7 @@ class LifeCycle:
         return m_init,σ_init,v_init
 
 
-# + code_folding=[3, 88]
+# + code_folding=[]
 ## this extends EGM_combine to calculate value function 
 
 @njit
@@ -561,7 +561,7 @@ def EGM_vfunc(mϵ_in,
         for z in range(n):
             ### anchor the value at the borrowing constraint to be negative infinity 
             #####################
-            v_out[0,j,z] = - np.inf
+            v_out[0,j,z] = - 1e+10
             ######################
             if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
                 σ_out[0,j,z] = 0.0
@@ -730,7 +730,7 @@ if __name__ == "__main__":
     plt.xlabel('m')
     plt.ylabel('v(m)')
 
-# + code_folding=[0]
+# + code_folding=[]
 if __name__ == "__main__":
 
     t_start = time()
@@ -802,7 +802,7 @@ if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
     years_left = [0,1,30,40]
-    start_m_at = 30
+    start_m_at = 10
     
     n_sub = len(years_left)
 
@@ -893,8 +893,8 @@ if __name__ == "__main__":
 
     eps_fix = 0
 
-    plt.plot(m_inf_star[0:-1,eps_fix,0],
-             v_inf_star[0:-1,eps_fix,0],
+    plt.plot(m_inf_star[1:-1,eps_fix,0],
+             v_inf_star[1:-1,eps_fix,0],
              lw=3
             )
     plt.xlabel('asset')
@@ -938,14 +938,14 @@ if __name__ == "__main__":
 
     eps_fix = 0
 
-    plt.plot(m_imp_star[0:-1,eps_fix,1],
-             v_imp_star[0:-1,eps_fix,1],
+    plt.plot(m_imp_star[1:-1,eps_fix,1],
+             v_imp_star[1:-1,eps_fix,1],
              '-',
              label = 'imperfect adjustment',
              lw=3
             )
-    plt.plot(m_inf_star[0:-1,eps_fix,1],
-             v_inf_star[0:-1,eps_fix,1],
+    plt.plot(m_inf_star[1:-1,eps_fix,1],
+             v_inf_star[1:-1,eps_fix,1],
              '--',
              label = 'perfect adjustment',
              lw=3
