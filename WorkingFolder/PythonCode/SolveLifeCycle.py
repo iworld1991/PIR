@@ -364,10 +364,6 @@ class LifeCycle:
         else:
             for z in range(n):
                 for j in range(k2):
-                    ## q*a**(-rho_b) = c**(-rho) 
-                    ## c = q*a**(rho_b/rho)
-                    ## m = a + c
-                    #m_init[:,j,z] = self.a_grid 
                     σ_init[:,j,z] = (self.q*self.a_grid**(-self.ρ_b))**(-1/self.ρ)
                     m_init[:,j,z] = self.a_grid + σ_init[:,j,z]
         return m_init,σ_init
@@ -513,7 +509,7 @@ def EGM_combine(mϵ_in,
                     else:
                         self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
 
-                    self_min_a = min(self_min_a,-unemp_insurance/R)
+                    self_min_a = max(self_min_a,-unemp_insurance/R)
                     mϵ_out[0,j,z] = self_min_a
                 else:
                     σ_out[0,j,z] = 0.0
@@ -686,7 +682,7 @@ def EGM_br(mϵ_in,
                 if age <=T-1:
                     σ_out[0,j,z] = 0.0
                     self_min_a = - np.exp(np.min(eps_shk_draws_sj))*G/R
-                    self_min_a = min(self_min_a,-unemp_insurance/R)
+                    self_min_a = max(self_min_a,-unemp_insurance/R)
                     mϵ_out[0,j,z] = self_min_a
                 else:
                     σ_out[0,j,z] = 0.0

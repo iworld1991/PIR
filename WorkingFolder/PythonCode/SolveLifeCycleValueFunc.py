@@ -386,7 +386,7 @@ class LifeCycle:
         return m_init,σ_init,v_init
 
 
-# + code_folding=[]
+# + code_folding=[3]
 ## this extends EGM_combine to calculate value function 
 
 @njit
@@ -575,7 +575,7 @@ def EGM_vfunc(mϵ_in,
                     else:
                         self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
 
-                    self_min_a = min(self_min_a,-unemp_insurance/R)
+                    self_min_a = max(self_min_a,-unemp_insurance/R)
                     mϵ_out[0,j,z] = self_min_a
                 else:
                     σ_out[0,j,z] = 0.0
