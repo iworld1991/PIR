@@ -513,7 +513,7 @@ def EGM_combine(mϵ_in,
                     else:
                         self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
 
-                    self_min_a = min(self_min_a,-unemp_insurance/R)
+                    self_min_a = max(self_min_a,-unemp_insurance/R)
                     mϵ_out[0,j,z] = self_min_a
                 else:
                     σ_out[0,j,z] = 0.0
@@ -521,26 +521,6 @@ def EGM_combine(mϵ_in,
                     mϵ_out[0,j,z] = self_min_a
 
     return mϵ_out, σ_out
-
-
-# + code_folding=[3]
-## this function describes asymmetric extrapolation rule from realized income shock to the perceived risk
-
-@njit
-def extrapolate(theta,
-                x,
-                eps_shk):
-    """
-    extrapolation function from realized eps_shk from unbiased risk x to the subjective risk x_sub
-    x_sub = x when eps_shk = 0  
-    theta governs the degree of extrapolation 
-    """
-    if x ==0.0:
-        alpha=0.0
-    else:
-        alpha=np.log((1-x)/x) ## get the alpha for unbiased x
-    x_sub = 1/(1+np.exp(alpha-theta*eps_shk))
-    return x_sub
 
 
 # + code_folding=[]
@@ -612,16 +592,10 @@ def EGM_br(mϵ_in,
     # the expectation term by Monte Carlo
     for i, a in enumerate(a_grid):
         for j, eps in enumerate(eps_grid):
-            ##############################################################
-            #x_sj = extrapolate(theta,
-            #                   lc.x,
-            #                   eps-eps_mean) ## sj: subjective 
             sigma_eps_sj = 0.05*np.sqrt((eps-eps_mean)**2)+0.95*lc.sigma_eps
             
             eps_shk_dist_sj= lognorm(sigma_eps_sj,100000,len(eps_shk_draws))
             eps_shk_draws_sj = np.log(eps_shk_dist_sj.X)
-            #np.random.seed(166789)
-            #eps_shk_draws_sj = sigma_eps_sj*np.random.randn(lc.shock_draw_size)-sigma_eps_sj**2/2
             #############################################################
             for z in range(n):
                 # Compute expectation
@@ -679,14 +653,11 @@ def EGM_br(mϵ_in,
             if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
                 σ_out[0,j,z] = 0.0
                 mϵ_out[0,j,z] = 0.0
-            #elif borrowing_cstr==True or ue_markov==True:
-            #    σ_out[0,j,z] = 0.0
-            #    mϵ_out[0,j,z] = min(0.0,-unemp_insurance/R)
             else:
                 if age <=T-1:
                     σ_out[0,j,z] = 0.0
                     self_min_a = - np.exp(np.min(eps_shk_draws_sj))*G/R
-                    self_min_a = min(self_min_a,-unemp_insurance/R)
+                    self_min_a = max(self_min_a,-unemp_insurance/R)
                     mϵ_out[0,j,z] = self_min_a
                 else:
                     σ_out[0,j,z] = 0.0
