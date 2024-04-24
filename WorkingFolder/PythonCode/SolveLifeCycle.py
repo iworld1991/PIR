@@ -85,6 +85,7 @@ lc_data = [
     ('x',float64),               # MA(1) coefficient, or essentially the autocorrelation coef of non-permanent income
     ('b_y', float64),            # loading of macro state to income        x 
     ('borrowing_cstr',boolean),  ## artificial borrowing constraint if True, natural borrowing constraint if False
+    ('borrowing_cstr_value',float64), ## minimum asset grid point if borrowing constraint is True
     ('U',float64),               # the i.i.d. probability of being unemployed    * 
     ('sigma_psi_2mkv',float64[:]), # markov permanent risks, only 2 for now
     ('sigma_eps_2mkv',float64[:]), # markov transitory risk, only 2 for now
@@ -127,6 +128,7 @@ lc_data = [
     ## bequest motive 
     ('q',float64), ## q = 0 if no bequest motive 
     ('ρ_b',float64) ## elasticity of bequest 
+
 ]
 
 
@@ -148,7 +150,8 @@ class LifeCycle:
                  sigma_eps = 0.10,   ## size of transitory income risks
                  x = 0.0,            ## MA(1) coefficient of non-permanent income shocks
                  borrowing_cstr = True,  ## artificial zero borrowing constraint 
-                 U = 0.0,   ## unemployment risk probability (0-1)
+                 borrowing_cstr_value = 0.0, ## artificial borrowing constraint 
+                 U = 0.0,        ## unemployment risk probability (0-1)
                  LivPrb = 0.995*np.ones(60),       ## living probability 
                  b_y = 0.0,          ## loading of markov state on income  
                  R = 1.02,           ## interest factor 
@@ -158,6 +161,7 @@ class LifeCycle:
                  G = np.ones(60),    ## growth factor list of permanent income 
                  shock_draw_size = 7,
                  grid_max = 5.0,
+                 grid_min = 0.0,
                  grid_size = 50,
                  ## subjective state dependent 
                  subjective = False,
@@ -217,6 +221,7 @@ class LifeCycle:
         self.sigma_p_init = sigma_p_init
         self.init_b = init_b
         self.borrowing_cstr = borrowing_cstr
+        self.borrowing_cstr_value = borrowing_cstr_value
         self.b_y = b_y
         self.λ = λ
         self.λ_SS= λ_SS
@@ -235,14 +240,14 @@ class LifeCycle:
         self.P_sub = P_sub
         self.state_dependent_belief = state_dependent_belief
 
-            
+
         ## shocks 
         
         self.shock_draw_size = shock_draw_size
         self.prepare_shocks()
         
         ## saving a grid
-        a_grid_regular = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size-1))
+        a_grid_regular = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size-1))+grid_min
         self.a_grid = np.append(a_grid_regular,np.max(a_grid_regular)*100)
         
         ## ma(1) shock grid 
@@ -356,20 +361,18 @@ class LifeCycle:
         n = len(self.P)
         σ_init = np.empty((k,k2,n))
         m_init = np.empty((k,k2,n))
+
+        a_grid_positive = self.a_grid - self.a_grid[0] 
         if self.q ==0.0:
             for z in range(n):
                 for j in range(k2):
-                    m_init[:,j,z] = self.a_grid
+                    m_init[:,j,z] = a_grid_positive ## so that it is always positive 
                     σ_init[:,j,z] = m_init[:,j,z]
         else:
             for z in range(n):
                 for j in range(k2):
-                    ## q*a**(-rho_b) = c**(-rho) 
-                    ## c = q*a**(rho_b/rho)
-                    ## m = a + c
-                    #m_init[:,j,z] = self.a_grid 
-                    σ_init[:,j,z] = (self.q*self.a_grid**(-self.ρ_b))**(-1/self.ρ)
-                    m_init[:,j,z] = self.a_grid + σ_init[:,j,z]
+                    σ_init[:,j,z] = (self.q*a_grid_positive**(-self.ρ_b))**(-1/self.ρ)
+                    m_init[:,j,z] = a_grid_positive + σ_init[:,j,z]
         return m_init,σ_init
 
 
@@ -409,6 +412,8 @@ def EGM_combine(mϵ_in,
     psi_shk_draws, eps_shk_draws= lc.psi_shk_draws, lc.eps_shk_draws
     psi_shk_mkv_draws, eps_shk_mkv_draws = lc.psi_shk_mkv_draws, lc.eps_shk_mkv_draws
     borrowing_cstr = lc.borrowing_cstr 
+    borrowing_cstr_value = lc.borrowing_cstr_value
+
     ue_prob = lc.U  ## uemp prob
     unemp_insurance = lc.unemp_insurance
     adjust_prob = lc.adjust_prob  ## exogenous adjustment probability
@@ -430,7 +435,6 @@ def EGM_combine(mϵ_in,
     
     n = len(P)
     
-
     # Create consumption functions by linear interpolation
     ########################################################
     σ = lambda m,ϵ,z: mlinterp((mϵ_in[:,0,z],eps_grid),σ_in[:,:,z], (m,ϵ)) 
@@ -501,24 +505,24 @@ def EGM_combine(mϵ_in,
     # Fixing a consumption-asset pair at for the constraint region
     for j,ϵ in enumerate(eps_grid):
         for z in range(n):
+            ## get the natural borrowing constraint 
+            if age <=lc.T-1:
+                ## the lowest transitory draw at state z  
+                if lc.state_dependent_belief:
+                    self_min_a = - np.exp(np.min(eps_shk_mkv_draws[z,:]))*G/R 
+                else:
+                    self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
+                    self_min_a = max(self_min_a,-unemp_insurance/R)
+            else:
+                self_min_a = - pension*G/R
+            
             if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
                 σ_out[0,j,z] = 0.0
-                mϵ_out[0,j,z] = 0.0
-            else:
-                if age <=lc.T-1:
-                    σ_out[0,j,z] = 0.0
-                    ## the lowest transitory draw at state z  
-                    if lc.state_dependent_belief:
-                        self_min_a = - np.exp(np.min(eps_shk_mkv_draws[z,:]))*G/R 
-                    else:
-                        self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
-
-                    self_min_a = max(self_min_a,-unemp_insurance/R)
-                    mϵ_out[0,j,z] = self_min_a
-                else:
-                    σ_out[0,j,z] = 0.0
-                    self_min_a = - pension*G/R
-                    mϵ_out[0,j,z] = self_min_a
+                mϵ_out[0,j,z] = max(self_min_a,borrowing_cstr_value)
+            else: 
+                σ_out[0,j,z] = 0.0 
+                mϵ_out[0,j,z] = self_min_a
+            assert mϵ_out[0,j,z] < a_grid[0], "a grid goes below the borrowing constraint, make a_min bigger"
 
     return mϵ_out, σ_out
 
@@ -650,19 +654,22 @@ def EGM_br(mϵ_in,
     # Fixing a consumption-asset pair at (0, 0) improves interpolation
     for j,ϵ in enumerate(eps_grid):
         for z in range(n):
+            if age <=lc.T-1:
+                ## the lowest transitory draw at state z  
+                if lc.state_dependent_belief:
+                    self_min_a = - np.exp(np.min(eps_shk_mkv_draws[z,:]))*G/R 
+                else:
+                    self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
+                    self_min_a = max(self_min_a,-unemp_insurance/R)
+            else:
+                self_min_a = - pension*G/R
+            
             if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
                 σ_out[0,j,z] = 0.0
-                mϵ_out[0,j,z] = 0.0
-            else:
-                if age <=T-1:
-                    σ_out[0,j,z] = 0.0
-                    self_min_a = - np.exp(np.min(eps_shk_draws_sj))*G/R
-                    self_min_a = max(self_min_a,-unemp_insurance/R)
-                    mϵ_out[0,j,z] = self_min_a
-                else:
-                    σ_out[0,j,z] = 0.0
-                    self_min_a = - pension*G/R
-                    mϵ_out[0,j,z] = self_min_a
+                mϵ_out[0,j,z] = max(self_min_a,borrowing_cstr_value)
+            else: 
+                σ_out[0,j,z] = 0.0 
+                mϵ_out[0,j,z] = self_min_a
 
     return mϵ_out, σ_out
 
@@ -798,15 +805,6 @@ if __name__ == "__main__":
     L = 60
     G = np.ones(L)
     YPath = np.cumprod(G)
-
-# + code_folding=[]
-## a deterministic income profile 
-if __name__ == "__main__":
-
-    plt.title('Deterministic Life-cycle Income Profile \n')
-    plt.plot(YPath,'ro')
-    plt.xlabel('Age')
-    plt.ylabel(r'$\hat Y$')
 # -
 
 # ## Life-Cycle Problem 
@@ -821,11 +819,14 @@ if __name__ == "__main__":
                 'T':T,
                 'L':L,
                 'G':G,
-                'β':0.97,
+                'β':0.92,
                 'x':0.0,  # no MA shock 
                 'borrowing_cstr':True,
+                #'borrowing_cstr_value': 0.0,
                 'b_y':0.0, #no persistent state
-                'unemp_insurance':0.15,
+                'unemp_insurance':0.5,
+                'grid_max':5.0,
+                #'grid_min':1e-6,
                 #'q':1.0,
                #'ρ_b':2.0
                }
@@ -855,7 +856,6 @@ if __name__ == "__main__":
 
     t_start = time()
 
-    
     ### this line is very important!!!!
     #### need to regenerate shock draws for new sigmas
     lc.prepare_shocks()
@@ -934,11 +934,12 @@ if __name__ == "__main__":
             m_plt,c_plt = ms_stars[k][i,0:-1,eps_fix,0],σs_stars[k][i,0:-1,eps_fix,0]
             axes[x].plot(m_plt,
                          c_plt,
+                         'o-',
                          label = r'$\sigma_\psi=$'+str(sigma_psi),
                          lw=3,
                         )
         axes[x].legend()
-        axes[x].set_xlim(0.0,np.max(m_plt))
+        axes[x].set_xlim(-1.0,np.max(m_plt))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
@@ -970,7 +971,7 @@ if __name__ == "__main__":
     ax.set_title('Consumption over the life cycle')
     ax.set_xlabel('age')
     ax.set_ylabel('wealth')
-    ax.view_init(15, 30)
+    ax.view_init(20, 40)
 # -
 
 #
@@ -1056,7 +1057,7 @@ if __name__ == "__main__":
                          label ='good',
                          lw=3)
         axes[x].legend()
-        axes[x].set_xlim((0.0,np.max(m_plt_h)))
+        axes[x].set_xlim((-1.0,np.max(m_plt_h)))
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'c at $age={}$'.format(age))
@@ -1185,7 +1186,7 @@ if __name__ == "__main__":
                      label ='high risk',
                      lw=3)
         axes[x].legend()
-        axes[x].set_xlim((0.0,np.max(m_plt_h)))
+        axes[x].set_xlim((-1.0,np.max(m_plt_h)))
 
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
@@ -1235,7 +1236,7 @@ if __name__ == "__main__":
                      lw=3)
 
         axes[0].legend()
-        axes[x].set_xlim((0.0,np.max(m_plt)))
+        axes[x].set_xlim((-1.0,np.max(m_plt)))
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'working age$={}$'.format(age))
@@ -1326,7 +1327,7 @@ if __name__ == "__main__":
                      label ='employed',
                      lw=3)
         axes[x].legend()
-        axes[x].set_xlim((0.0,np.max(m_plt_e)))
+        axes[x].set_xlim((-1.0,np.max(m_plt_e)))
         axes[x].set_xlabel('asset')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'c under UE Markov at $age={}$'.format(age))
@@ -1505,7 +1506,7 @@ if __name__ == "__main__":
                          label ='emp + low risk',
                          lw=3)
         axes[0].legend()
-        axes[x].set_xlim((0.0,np.max(m_plt_e)))
+        axes[x].set_xlim((-1.0,np.max(m_plt_e)))
         axes[x].set_xlabel('m')
         axes[0].set_ylabel('c')
         axes[x].set_title(r'working age$={}$'.format(age))
@@ -1529,7 +1530,6 @@ if __name__ == "__main__":
 
     inf_liv = LifeCycle(**inf_liv_paras)
 
-
     ## initial guess of consumption functions 
 
     m_init,σ_init = inf_liv.terminal_solution()
@@ -1537,20 +1537,10 @@ if __name__ == "__main__":
 
     t_start = time()
 
-
-    x_ls = [0.0]
-    ms_inf_stars =[]
-    σs_inf_stars = []
-    for i,x in enumerate(x_ls):
-
-        ## set different ma parameters 
-        inf_liv.x = x
-        m_inf_star, σ_inf_star = solve_model_iter(inf_liv,
-                                                  m_init,
-                                                  σ_init)
-        ms_inf_stars.append(m_inf_star)
-        σs_inf_stars.append(σ_inf_star)
-
+    ## set different ma parameters 
+    m_inf_star, σ_inf_star = solve_model_iter(inf_liv,
+                                                m_init,
+                                                σ_init)
 
     t_finish = time()
 
@@ -1559,22 +1549,15 @@ if __name__ == "__main__":
 
     ## plot c func 
 
-    eps_ls = [0,1]
-
-    ms_inf_star = ms_inf_stars[0]
-    σs_inf_star = σs_inf_stars[0]
-
-
-    for eps in eps_ls:
-        plt.plot(ms_inf_star[0:-1,eps,0],
-                 σs_inf_star[0:-1,eps,0],
-                 label = r'$\epsilon=$'+str(round(inf_liv.eps_grid[eps],2)),
-                 lw=3
-                )
-        plt.legend()
-        plt.xlabel('asset')
-        plt.ylabel('c')
-        plt.title('Infinite horizon solution')
+    eps_fix = 0
+    plt.plot(m_inf_star[0:-1,eps_fix,0],
+            σ_inf_star[0:-1,eps_fix,0],
+            lw=3
+            )
+    plt.legend()
+    plt.xlabel('asset')
+    plt.ylabel('c')
+    plt.title('Infinite horizon solution')
 # -
 
 # ## Infinite horizon with adjustment inertia
@@ -1596,20 +1579,13 @@ if __name__ == "__main__":
 
     t_start = time()
 
-    x_ls = [0.0]
-    ms_imp_stars =[]
-    σs_imp_stars = []
-    for i,x in enumerate(x_ls):
-
-        ## set different ma parameters 
-        inf_liv.x = x
-        m_imp_star, σ_imp_star = solve_model_iter(imp_adjust,
-                                                  m_init,
-                                                  σ_init)
-        ms_imp_stars.append(m_imp_star)
-        σs_imp_stars.append(σ_imp_star)
-
-
+     
+    ## set different ma parameters 
+    inf_liv.x = x
+    m_imp_star, σ_imp_star = solve_model_iter(imp_adjust,
+                                                m_init,
+                                                σ_init)
+    
     t_finish = time()
 
     print("Time taken, in seconds: "+ str(t_finish - t_start))   
@@ -1617,25 +1593,22 @@ if __name__ == "__main__":
 
     ## plot c func at different age /asset grid
 
-    eps_ls = [0]
 
-    ms_imp_star = ms_imp_stars[0]
-    σs_imp_star = σs_imp_stars[0]
+    eps_fix = 0
 
-    for y,eps in enumerate(eps_ls):
-        plt.plot(ms_imp_star[0:-1,eps,1],
-                 σs_imp_star[0:-1,eps,1],
-                 '-',
-                 label = 'imperfect adjustment',
-                 lw=3
-                )
-        plt.plot(ms_inf_star[0:-1,eps,1],
-                 σs_inf_star[0:-1,eps,1],
-                 '--',
-                 label = 'perfect adjustment',
-                 lw=3
-                )
-        plt.legend()
-        plt.xlabel('asset')
-        plt.ylabel('c')
-        plt.title('Infinite horizon solution')
+    plt.plot(m_imp_star[0:-1,eps_fix,1],
+                σ_imp_star[0:-1,eps_fix,1],
+                '-',
+                label = 'imperfect adjustment',
+                lw=3
+            )
+    plt.plot(m_inf_star[0:-1,eps_fix,1],
+                σ_inf_star[0:-1,eps_fix,1],
+                '--',
+                label = 'perfect adjustment',
+                lw=3
+            )
+    plt.legend()
+    plt.xlabel('asset')
+    plt.ylabel('c')
+    plt.title('Infinite horizon solution')
