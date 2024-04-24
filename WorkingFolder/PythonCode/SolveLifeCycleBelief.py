@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.2
+#       jupytext_version: 1.11.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -17,7 +17,7 @@
 # ## A life-cycle consumption model with a state-dependent belief state (of income risks)
 #
 # - author: Tao Wang
-# - date: October 2022
+# - date: April 2024
 # - this is a companion notebook to the paper ["Perceived income risks"](https://github.com/iworld1991/PIR/blob/master/PIR.pdf)
 
 # - This notebook builds on a standard life-cycle consumption model with uninsured income risks and extends it to allow for a **state-dependent belief state** about income risks
@@ -89,6 +89,7 @@ lc_data = [
     ('x',float64),               # MA(1) coefficient, or essentially the autocorrelation coef of non-permanent income
     ('b_y', float64),            # loading of macro state to income        x 
     ('borrowing_cstr',boolean),  ## artificial borrowing constraint if True, natural borrowing constraint if False
+    ('borrowing_cstr_value',float64), ## minimum asset grid point if borrowing constraint is True
     ('U',float64),               # the i.i.d. probability of being unemployed    * 
     ('sigma_psi_2mkv',float64[:]), # markov permanent risks, only 2 for now
     ('sigma_eps_2mkv',float64[:]), # markov transitory risk, only 2 for now
@@ -152,6 +153,7 @@ class LifeCycle:
                  sigma_eps = 0.10,   ## size of transitory income risks
                  x = 0.0,            ## MA(1) coefficient of non-permanent income shocks
                  borrowing_cstr = True,  ## artificial zero borrowing constraint 
+                 borrowing_cstr_value = 0.0, ## borrowing constraint value
                  U = 0.0,   ## unemployment risk probability (0-1)
                  LivPrb = np.ones(60)*0.995,       ## living probability 
                  b_y = 0.0,          ## loading of markov state on income  
@@ -162,6 +164,7 @@ class LifeCycle:
                  G = np.ones(60),    ## growth factor list of permanent income 
                  shock_draw_size = 7,
                  grid_max = 5.0,
+                 grid_min = 0.0, 
                  grid_size = 50,
                  ## subjective state dependent 
                  subjective = False,
@@ -222,6 +225,7 @@ class LifeCycle:
         self.sigma_p_init = sigma_p_init
         self.init_b = init_b
         self.borrowing_cstr = borrowing_cstr
+        self.borrowing_cstr_value = borrowing_cstr_value
         self.b_y = b_y
         self.λ = λ
         self.λ_SS= λ_SS
@@ -248,7 +252,7 @@ class LifeCycle:
         self.prepare_shocks()
         
         ## saving a grid
-        a_grid_regular = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size-1))
+        a_grid_regular = np.exp(np.linspace(np.log(1e-6), np.log(grid_max), grid_size-1))+grid_min
         self.a_grid = np.append(a_grid_regular,np.max(a_grid_regular)*100)
               
         ## ma(1) shock grid 
@@ -362,18 +366,19 @@ class LifeCycle:
         σ_init = np.empty((k,k2,n_z,n_f))
         m_init = np.empty((k,k2,n_z,n_f))
         
+        a_grid_positive = self.a_grid - self.a_grid[0] 
         if self.q==0.0:
             for z in range(n_z):
                 for f in range(n_f):
                     for j in range(k2):
-                        m_init[:,j,z,f] = self.a_grid
+                        m_init[:,j,z,f] = a_grid_positive
                         σ_init[:,j,z,f] = m_init[:,j,z,f]
         else:
             for z in range(n_z):
                 for f in range(n_f):
                     for j in range(k2):
-                        σ_init[:,j,z,f] = (self.q*self.a_grid**(-self.ρ_b))**(-1/self.ρ)
-                        m_init[:,j,z,f] = self.a_grid + σ_init[:,j,z,f]
+                        σ_init[:,j,z,f] = (self.q*a_grid_positive**(-self.ρ_b))**(-1/self.ρ)
+                        m_init[:,j,z,f] = a_grid_positive + σ_init[:,j,z,f]
     
         return m_init,σ_init
 
@@ -430,7 +435,8 @@ def EGM_combine(mϵ_in,
     
     ## model
     borrowing_cstr = lc.borrowing_cstr 
-   
+    borrowing_cstr_value = lc.borrowing_cstr_value
+
     unemp_insurance = lc.unemp_insurance
     adjust_prob = lc.adjust_prob  ## exogenous adjustment probability
 
@@ -538,27 +544,24 @@ def EGM_combine(mϵ_in,
     for j,ϵ in enumerate(eps_grid):
         for z in range(n_z):
             for f in range(n_f):
+                ## get the natural borrowing constraint 
+                if age <=lc.T-1:
+                    ## the lowest transitory draw at state z  
+                    if lc.state_dependent_belief:
+                        self_min_a = - np.exp(np.min(eps_shk_mkv_draws[z,:]))*G/R 
+                    else:
+                        self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
+                        self_min_a = max(self_min_a,-unemp_insurance/R)
+                else:
+                    self_min_a = - pension*G/R
+
                 if borrowing_cstr==True:  ## either hard constraint is zero or positive probability of losing job
                     σ_out[0,j,z,f] = 0.0
-                    mϵ_out[0,j,z,f] = 0.0
+                    mϵ_out[0,j,z,f] = max(self_min_a,borrowing_cstr_value)
                 else:
-                    if age <=lc.T-1:
-                        σ_out[0,j,z,f] = 0.0
-                        if state_dependent_belief:
-                            self_min_a = - np.exp(np.min(eps_shk_mkv_draws[f,:]))*G/R
-                        else:
-                            self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
-                        if state_dependent_risk:
-                            self_min_a = - np.exp(np.min(eps_shk_mkv_draws[z,:]))*G/R
-                        else:
-                            self_min_a = - np.exp(np.min(eps_shk_draws))*G/R
-
-                        self_min_a = min(self_min_a,-unemp_insurance/R)
-                        mϵ_out[0,j,z,f] = self_min_a
-                    else:
-                        σ_out[0,j,z,f] = 0.0
-                        self_min_a = - pension*G/R
-                        mϵ_out[0,j,z,f] = self_min_a
+                    σ_out[0,j,z,f] = 0.0
+                    mϵ_out[0,j,z,f] = self_min_a
+                assert mϵ_out[0,j,z,f] < a_grid[0], "a grid goes below the borrowing constraint, make a_min bigger"
 
     return mϵ_out, σ_out
 
@@ -760,9 +763,9 @@ if __name__ == "__main__":
     for it in range(100):
         m_next, σ_next = EGM_combine(m_vec,
                              σ_vec,
-                             10,
+                             5,
                              lc_basic)
-        if it <5:
+        if it <3:
             ax.plot(m_next[0:-1,0,0,0],
                     σ_next[0:-1,0,0,0],
                     label='T-'+str(it+1))
@@ -963,7 +966,3 @@ if __name__ == "__main__":
     plt.xlabel('m: cash in hand')
     plt.ylabel('c: consumption')
     plt.title('Infinite horizon solution')
-
-# -
-
-
