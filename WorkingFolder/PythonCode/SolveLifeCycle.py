@@ -37,6 +37,7 @@ from numba.experimental import jitclass
 import matplotlib.pyplot as plt
 # %matplotlib inline
 from time import time
+from Utility import calculate_mpc
 from Utility import cal_ss_2markov,mean_preserving_spread
 from copy import copy 
 
@@ -826,6 +827,7 @@ if __name__ == "__main__":
                 'b_y':0.0, #no persistent state
                 'unemp_insurance':0.5,
                 'grid_max':5.0,
+                'grid_size': 200,
                 #'grid_min':1e-6,
                 #'q':1.0,
                #'ρ_b':2.0
@@ -944,6 +946,36 @@ if __name__ == "__main__":
         axes[0].set_ylabel('c')
         axes[x].set_title(r'$age={}$'.format(age))
 # -
+
+if __name__ == "__main__":
+
+    ## plot c func at different age /asset grid
+    years_left = [0,1,30,40]
+
+    n_sub = len(years_left)
+
+    eps_fix = 0 ## the first eps grid 
+
+    fig,axes = plt.subplots(1,n_sub,figsize=(6*n_sub,6))
+
+    for x,year in enumerate(years_left):
+        age = lc_pt.L-year
+        i = lc_pt.L-age
+        for k,sigma_psi in enumerate(sigma_psi_ls):
+            mpc_ms_star, mpcs = calculate_mpc(ms_stars[k],
+                                        σs_stars[k])
+            m_plt,mpc_plt = mpc_ms_star[i,:,eps_fix,0],mpcs[i,:,eps_fix,0] 
+            ## not including the 
+            axes[x].bar(m_plt,
+                        mpc_plt,
+                        alpha = 0.1,
+                        label = r'$\sigma_\psi=$'+str(sigma_psi)
+                        )
+            axes[x].legend()
+
+            axes[x].set_xlabel('asset')
+            axes[0].set_ylabel('MPC')
+            axes[x].set_title(r'$age={}$'.format(age))
 
 ## the size of consumption function is  T x nb_a x nb_eps x nb_z 
 if __name__ == "__main__":

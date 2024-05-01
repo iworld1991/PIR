@@ -7,7 +7,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.15.2
+#       jupytext_version: 1.11.2
 #   kernelspec:
 #     display_name: Python 3 (ipykernel)
 #     language: python
@@ -133,6 +133,34 @@ def make_grid_exp_mult(ming, maxg, ng, timestonest=20):
         Lgrid = np.arange(Lming, Lmaxg + 0.000001, Lstep)
         grid = np.exp(Lgrid)
     return grid
+
+
+# + code_folding=[2]
+## create a function that calculates the marginal propensity to consume 
+
+def calculate_mpc(ms_star,
+                  σs_star):
+    """
+    input
+    ======
+    ms_star: cash in hand grid, n_m x n_eps x n_z array 
+    σs_star: optimal consumption grid, n_m x n_eps x n_z array 
+
+    output
+    ======
+    ms_star: cash in hand grid, (n_m-1) x n_eps x n_z array
+    mpcs: marginal propensity to consume, (n_m-1) x n_eps x n_z array
+    """
+    mpcs = np.empty_like(ms_star)
+    n_age,n_m, n_eps,n_z = ms_star.shape
+    for age in range(n_age):
+        for i in range(n_eps):
+            for j in range(n_z):
+                mpcs[age,0:-2,i,j]= (σs_star[age,1:-1,i,j]-σs_star[age,0:-2,i,j])/(ms_star[age,1:-1,i,j]-ms_star[age,0:-2,i,j])
+    ms_star = ms_star[:,0:-2,:,:]
+    mpcs = mpcs[:,0:-2,:,:]
+    return ms_star, mpcs
+
 
 
 # -
@@ -695,7 +723,7 @@ def gen_tran_matrix(dist_mGrid,
                    shk_prbs,
                    perm_shks,
                    tran_shks):
-    
+    print('xxx')
     TranMatrix  = np.zeros((len(dist_mGrid)*len(dist_pGrid),
                            len(dist_mGrid)*len(dist_pGrid)))
 
@@ -712,8 +740,9 @@ def gen_tran_matrix(dist_mGrid,
     return TranMatrix
 
 
-# +
-### heterogeneity 
+# -
+
+# ### heterogeneity 
 
 # + code_folding=[3]
 
